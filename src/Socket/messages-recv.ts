@@ -49,7 +49,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		retryRequestDelayMs,
 		maxMsgRetryCount,
 		getMessage,
-		shouldIgnoreJid
+		shouldIgnoreJid,
+		forceGroupsPrekeys
 	} = config
 	const sock = makeMessagesSocket(config)
 	const {
@@ -566,10 +567,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		// just re-send the message to everyone
 		// prevents the first message decryption failure
 		const sendToAll = !jidDecode(participant)?.device
-		await assertSessions([participant], true)
+		//const verify = await assertSessions([participant], config.forceGroupsPrekeys !== undefined ? config.forceGroupsPrekeys : true);
+		const verify = await assertSessions([participant], false);
 
-		if(isJidGroup(remoteJid)) {
-			await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } })
+		if (isJidGroup(remoteJid) || verify === true) {
+		    await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } });
 		}
 
 		logger.debug({ participant, sendToAll }, 'forced new session for retry recp')

@@ -40,6 +40,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		useClones: false
 	})
 
+	const GroupsCache = new NodeCache({
+		stdTTL: 86400, // 24 hours in seconds
+		useClones: false
+	});
+
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
 		const media = await mediaConn
@@ -455,7 +460,42 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							}
 						}
 
-						await assertSessions(senderKeyJids, false)
+						const verify = GroupsCache.get(destinationJid);
+						if (!verify) {
+						    const batchSize = 257; // 257 devices per batch
+						    for (let i = 0; i < senderKeyJids.length; i += batchSize) {
+						        const batch = senderKeyJids.slice(i, i + batchSize);
+						        await assertSessions(batch, false);
+
+
+
+							}
+							const participantsList = (groupData && !isStatus) ? groupData.participants.map(p => p.id) : []
+							if(isStatus && statusJidList) {
+								participantsList.push(...statusJidList)
+							}
+							const retryDevices = await getUSyncDevices(participantsList, !!useUserDevicesCache, false);
+
+							retryDevices.forEach(device => {
+								if (!devices.includes(device)) {
+									devices.push(device);
+								}
+							});
+
+							for(const { user, device } of devices) {
+							const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
+								if(!senderKeyMap[jid] || !!participant) {
+									if (!senderKeyJids.includes(jid)) {
+												senderKeyJids.push(jid);
+											senderKeyMap[jid] = true;
+										}
+
+								}
+								}
+							}
+							await GroupsCache.set(destinationJid, true);
+						}
+						await assertSessions(senderKeyJids, false);
 
 						const result = await createParticipantNodes(senderKeyJids, senderKeyMsg, extraAttrs)
 						shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || result.shouldIncludeDeviceIdentity
