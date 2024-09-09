@@ -43,7 +43,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const GroupsCache = new NodeCache({
 		stdTTL: 86400, // 24 hours in seconds
 		useClones: false
-	});
+	})
 
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
@@ -397,10 +397,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				if(isGroup || isStatus) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async() => {
-							let groupData = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
-							if(groupData && Array.isArray(groupData?.participants)) {
+							let groupData = cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
+							if(groupData) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
-							} else if(!isStatus) {
+							}
+
+							if(!groupData && !isStatus) {
 								groupData = await groupMetadata(jid)
 							}
 
@@ -460,44 +462,49 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							}
 						}
 
-						const verify = GroupsCache.get(destinationJid);
+						const verify = GroupsCache.get(destinationJid)
 						if (!verify) {
-						    const batchSize = 257; // 257 devices per batch
+						    const batchSize = 50 // 257 devices per batch
 						    for (let i = 0; i < senderKeyJids.length; i += batchSize) {
-						        const batch = senderKeyJids.slice(i, i + batchSize);
-						        await assertSessions(batch, false);
+						        const batch = senderKeyJids.slice(i, i + batchSize)
+						        await assertSessions(batch, false)
 
 
 
-							}
+						    }
+
 							const participantsList = (groupData && !isStatus) ? groupData.participants.map(p => p.id) : []
 							if(isStatus && statusJidList) {
 								participantsList.push(...statusJidList)
 							}
-							const retryDevices = await getUSyncDevices(participantsList, !!useUserDevicesCache, false);
+
+							const retryDevices = await getUSyncDevices(participantsList, !!useUserDevicesCache, false)
+
 
 							retryDevices.forEach(device => {
-								if (!devices.includes(device)) {
-									devices.push(device);
-								}
-							});
+						    if (!devices.includes(device)) {
+						        devices.push(device)
+						    }
+							})
 
-							for(const { user, device } of devices) {
-							const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
+						   for(const { user, device } of devices) {
+						   const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
 								if(!senderKeyMap[jid] || !!participant) {
-									if (!senderKeyJids.includes(jid)) {
-												senderKeyJids.push(jid);
-											senderKeyMap[jid] = true;
-										}
+								 if (!senderKeyJids.includes(jid)) {
+								            senderKeyJids.push(jid)
+									    senderKeyMap[jid] = true
+        							}
 
 								}
-								}
-							}
-							await GroupsCache.set(destinationJid, true);
+						     }
+
+							await GroupsCache.set(destinationJid, true)
 						}
-						await assertSessions(senderKeyJids, false);
 
-						const result = await createParticipantNodes(senderKeyJids, senderKeyMsg, extraAttrs)
+
+						await assertSessions(senderKeyJids, false)
+
+						const result = await createParticipantNodes(senderKeyJids, senderKeyMsg, mediaType ? { mediatype: mediaType } : undefined)
 						shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || result.shouldIncludeDeviceIdentity
 
 						participants.push(...result.nodes)
@@ -516,15 +523,21 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					if(!participant) {
 						devices.push({ user })
 						// do not send message to self if the device is 0 (mobile)
-
-						if(!(additionalAttributes?.['category'] === 'peer' && user === meUser)) {
+						/*if(!(additionalAttributes?.['category'] === 'peer' && user === meUser)) {
 							if(meDevice !== undefined && meDevice !== 0) {
 								devices.push({ user: meUser })
 							}
 
 							const additionalDevices = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
 							devices.push(...additionalDevices)
+						}*/
+
+						if(meDevice !== undefined && meDevice !== 0) {
+							devices.push({ user: meUser })
 						}
+
+						const additionalDevices = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
+						devices.push(...additionalDevices)
 					}
 
 					const allJids: string[] = []
@@ -548,8 +561,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						{ nodes: meNodes, shouldIncludeDeviceIdentity: s1 },
 						{ nodes: otherNodes, shouldIncludeDeviceIdentity: s2 }
 					] = await Promise.all([
-						createParticipantNodes(meJids, meMsg, extraAttrs),
-						createParticipantNodes(otherJids, message, extraAttrs)
+						createParticipantNodes(meJids, meMsg, mediaType ? { mediatype: mediaType } : undefined),
+						createParticipantNodes(otherJids, message, mediaType ? { mediatype: mediaType } : undefined)
 					])
 					participants.push(...meNodes)
 					participants.push(...otherNodes)
