@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import { Boom } from '@hapi/boom'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -61,6 +62,8 @@ const MessageTypeProto = {
 	'sticker': WAProto.Message.StickerMessage,
    	'document': WAProto.Message.DocumentMessage,
 } as const
+
+const ButtonType = proto.Message.ButtonsMessage.HeaderType
 
 /**
  * Uses a regex to test whether the string contains a URL, and returns the URL if it does.
@@ -327,7 +330,7 @@ export const generateWAMessageContent = async(
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo = message.linkPreview
-		if(typeof urlInfo === 'undefined') {
+		if(typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
@@ -488,7 +491,7 @@ export const generateWAMessageContent = async(
 			options: message.poll.values.map(optionName => ({ optionName })),
 		}
 
-		if (message.poll.toAnnouncementGroup) {
+		if(message.poll.toAnnouncementGroup) {
 			// poll v2 is for community announcement groups (single select and multiple)
 			m.pollCreationMessageV2 = pollCreationMessage
 		} else {
@@ -511,6 +514,70 @@ export const generateWAMessageContent = async(
 			message,
 			options
 		)
+	}
+
+	if('buttons' in message && !!message.buttons) {
+		const buttonsMessage: proto.Message.IButtonsMessage = {
+			buttons: message.buttons!.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
+		}
+		if('text' in message) {
+			buttonsMessage.contentText = message.text
+			buttonsMessage.headerType = ButtonType.EMPTY
+		} else {
+			if('caption' in message) {
+				buttonsMessage.contentText = message.caption
+			}
+
+			const type = Object.keys(m)[0].replace('Message', '').toUpperCase()
+			buttonsMessage.headerType = ButtonType[type]
+
+			Object.assign(buttonsMessage, m)
+		}
+
+		if('footer' in message && !!message.footer) {
+			buttonsMessage.footerText = message.footer
+		}
+
+		m = { buttonsMessage }
+	} else if('templateButtons' in message && !!message.templateButtons) {
+		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
+			hydratedButtons: message.templateButtons
+		}
+
+		if('text' in message) {
+			msg.hydratedContentText = message.text
+		} else {
+
+			if('caption' in message) {
+				msg.hydratedContentText = message.caption
+			}
+
+			Object.assign(msg, m)
+		}
+
+		if('footer' in message && !!message.footer) {
+			msg.hydratedFooterText = message.footer
+		}
+
+		m = {
+			templateMessage: {
+				fourRowTemplate: msg,
+				hydratedTemplate: msg
+			}
+		}
+	}
+
+	if('sections' in message && !!message.sections) {
+		const listMessage: proto.Message.IListMessage = {
+			sections: message.sections,
+			buttonText: message.buttonText,
+			title: message.title,
+			footerText: message.footer,
+			description: message.text,
+			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		m = { listMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {

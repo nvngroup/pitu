@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import { AxiosRequestConfig } from 'axios'
 import type { Logger } from 'pino'
 import type { Readable } from 'stream'
@@ -61,9 +62,33 @@ type ViewOnce = {
     viewOnce?: boolean
 }
 
+type Buttonable = {
+    /** add buttons to the message  */
+    buttons?: proto.Message.ButtonsMessage.IButton[]
+}
+
+type Templatable = {
+    /** add buttons to the message (conflicts with normal buttons)*/
+    templateButtons?: proto.IHydratedTemplateButton[]
+
+    footer?: string
+}
+
 type Editable = {
   edit?: WAMessageKey
 }
+
+type Listable = {
+    /** Sections of the List */
+    sections?: proto.Message.ListMessage.ISection[]
+
+    /** Title of a List Message only */
+    title?: string
+
+    /** Text of the bnutton on the list (required) */
+    buttonText?: string
+}
+
 type WithDimensions = {
     width?: number
     height?: number
@@ -92,7 +117,7 @@ export type AnyMediaMessageContent = (
         image: WAMediaUpload
         caption?: string
         jpegThumbnail?: string
-    } & Mentionable & Contextable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & WithDimensions)
     | ({
         video: WAMediaUpload
         caption?: string
@@ -100,7 +125,7 @@ export type AnyMediaMessageContent = (
         jpegThumbnail?: string
         /** if set to true, will send as a `video note` */
         ptv?: boolean
-    } & Mentionable & Contextable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & WithDimensions)
     | {
         audio: WAMediaUpload
         /** if set to true, will send as a `voice note` */
@@ -116,7 +141,7 @@ export type AnyMediaMessageContent = (
         mimetype: string
         fileName?: string
         caption?: string
-    } & Contextable))
+    } & Contextable & Buttonable & Templatable))
     & { mimetype?: string } & Editable
 
 export type ButtonReplyInfo = {
@@ -142,11 +167,13 @@ export type AnyRegularMessageContent = (
 	    text: string
         linkPreview?: WAUrlInfo | null
     }
-    & Mentionable & Contextable & Editable)
+    & Mentionable & Contextable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
+        text?: string
+        linkPreview?: WAUrlInfo | null
         poll: PollMessageOptions
-    } & Mentionable & Contextable & Editable)
+    } & Mentionable & Contextable & Listable & Editable)
     | {
         contacts: {
             displayName?: string
@@ -181,7 +208,7 @@ export type AnyRegularMessageContent = (
         body?: string
         footer?: string
     } | SharePhoneNumber | RequestPhoneNumber
-) & ViewOnce
+) & ViewOnce & Buttonable & Templatable
 
 export type AnyMessageContent = AnyRegularMessageContent | {
 	forward: WAMessage
