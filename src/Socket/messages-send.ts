@@ -341,7 +341,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const relayMessage = async(
 		jid: string,
 		message: proto.IMessage,
-		{ messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList }: MessageRelayOptions
+		{ messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, statusJidList }: MessageRelayOptions
 	) => {
 		const meId = authState.creds.me!.id
 
@@ -355,7 +355,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 		msgId = msgId || generateMessageIDV2(sock.user?.id)
 		useUserDevicesCache = useUserDevicesCache !== false
-		useCachedGroupMetadata = useCachedGroupMetadata !== false && !isStatus
 
 		const participants: BinaryNode[] = []
 		const destinationJid = (!isStatus) ? jidEncode(user, isLid ? 'lid' : isGroup ? 'g.us' : 's.whatsapp.net') : statusJid
@@ -463,12 +462,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						}
 
 						const verify = GroupsCache.get(destinationJid)
-						if (!verify) {
+						if(!verify) {
 						    const batchSize = 50 // 257 devices per batch
-						    for (let i = 0; i < senderKeyJids.length; i += batchSize) {
+						    for(let i = 0; i < senderKeyJids.length; i += batchSize) {
 						        const batch = senderKeyJids.slice(i, i + batchSize)
 						        await assertSessions(batch, false)
-
 
 
 						    }
@@ -482,7 +480,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 
 							retryDevices.forEach(device => {
-						    if (!devices.includes(device)) {
+						    if(!devices.includes(device)) {
 						        devices.push(device)
 						    }
 							})
@@ -490,7 +488,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						   for(const { user, device } of devices) {
 						   const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
 								if(!senderKeyMap[jid] || !!participant) {
-								 if (!senderKeyJids.includes(jid)) {
+								 if(!senderKeyJids.includes(jid)) {
 								            senderKeyJids.push(jid)
 									    senderKeyMap[jid] = true
         							}
