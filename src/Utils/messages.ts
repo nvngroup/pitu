@@ -567,18 +567,17 @@ export const generateWAMessageContent = async(
 		}
 	}
 
-	if('sections' in message && !!message.sections) {
-		const listMessage: proto.Message.IListMessage = {
-			sections: message.sections,
-			buttonText: message.buttonText,
-			title: message.title,
-			footerText: message.footer,
-			description: message.text,
-			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
-		}
-
-		m = { listMessage }
-	}
+	if ('sections' in message && !!message.sections) {
+        const listMessage: proto.Message.IListMessage = {
+            sections: message.sections,
+            buttonText: message.buttonText,
+            title: message.title,
+            footerText: message.footer,
+            description: message.text,
+            listType: message.hasOwnProperty("listType") ? message.listType : proto.Message.ListMessage.ListType.PRODUCT_LIST
+        };
+        m = { listMessage };
+    }
 
 	if('viewOnce' in message && !!message.viewOnce) {
 		m = { viewOnceMessage: { message: m } }
