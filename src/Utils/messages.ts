@@ -574,7 +574,7 @@ export const generateWAMessageContent = async(
             title: message.title,
             footerText: message.footer,
             description: message.text,
-            listType: proto.Message.ListMessage.ListType.PRODUCT_LIST
+            listType: proto.Message.ListMessage.ListType.UNKNOWN
         };
         m = { listMessage };
     }
