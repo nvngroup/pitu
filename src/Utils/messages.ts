@@ -574,7 +574,7 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: proto.Message.ListMessage.ListType.PRODUCT_LIST
+			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 		m = { viewOnceMessageV2: { message: { messageContextInfo: { deviceListMetadataVersion: 2, deviceListMetadata: {} }, listMessage } } }
 	}
