@@ -87,9 +87,6 @@ type Listable = {
 
     /** Text of the bnutton on the list (required) */
     buttonText?: string
-
-    /* Type of Message List */
-    listType?: proto.Message.ListMessage.ListType
 }
 
 type WithDimensions = {
@@ -170,13 +167,13 @@ export type AnyRegularMessageContent = (
 	    text: string
         linkPreview?: WAUrlInfo | null
     }
-    & Mentionable & Contextable & Listable & Editable)
+    & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         text?: string
         linkPreview?: WAUrlInfo | null
         poll: PollMessageOptions
-    } & Mentionable & Contextable & Listable & Editable)
+    } & Mentionable & Contextable & Buttonable & Templatable & Editable)
     | {
         contacts: {
             displayName?: string
