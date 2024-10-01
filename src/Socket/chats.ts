@@ -3,7 +3,7 @@ import NodeCache from 'node-cache'
 import { proto } from '../../WAProto'
 import { DEFAULT_CACHE_TTLS, PROCESSABLE_HISTORY_TYPES } from '../Defaults'
 import { ALL_WA_PATCH_NAMES, ChatModification, ChatMutation, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
-import { Label, LabelActionBody } from '../Types/Label'
+import { LabelActionBody } from '../Types/Label'
 import { chatModificationToAppPatch, ChatMutationMap, decodePatches, decodeSyncdSnapshot, encodeSyncdPatch, extractSyncdPatches, generateProfilePicture, getHistoryMsg, newLTHashState, processSyncAction } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
@@ -225,7 +225,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	/** update the profile picture for yourself or a group */
 	const updateProfilePicture = async(jid: string, content: WAMediaUpload) => {
-		let targetJid;
+		let targetJid
 		if(!jid) {
 			throw new Boom('Illegal no-jid profile update. Please specify either your ID or the ID of the chat you wish to update')
 		}
@@ -255,7 +255,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	/** remove the profile picture for yourself or a group */
 	const removeProfilePicture = async(jid: string) => {
-		let targetJid;
+		let targetJid
 		if(!jid) {
 			throw new Boom('Illegal no-jid profile update. Please specify either your ID or the ID of the chat you wish to update')
 		}
