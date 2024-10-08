@@ -583,13 +583,13 @@ export const generateWAMessageContent = async(
 			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
+		const viewOnceMessage: proto.Message.IFutureProofMessage = {
 			message: {
 				listMessage
 			}
 		}
 
-		m = { viewOnceMessageV2 }
+		m = { viewOnceMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
