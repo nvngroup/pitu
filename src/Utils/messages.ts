@@ -539,9 +539,7 @@ export const generateWAMessageContent = async(
 		}
 
 		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
-			message: {
-				buttonsMessage
-			}
+			message: { buttonsMessage }
 		}
 
 		m = { viewOnceMessageV2 }
@@ -580,13 +578,11 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
+			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
 		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
-			message: {
-				listMessage
-			}
+			message: { listMessage }
 		}
 
 		m = { viewOnceMessageV2 }
