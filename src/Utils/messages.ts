@@ -538,13 +538,7 @@ export const generateWAMessageContent = async(
 			buttonsMessage.footerText = message.footer
 		}
 
-		const ephemeralMessage: proto.Message.IFutureProofMessage = {
-			message: {
-				buttonsMessage
-			}
-		}
-
-		m = { ephemeralMessage }
+		m = { buttonsMessage }
 	} else if('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
@@ -580,16 +574,10 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
+			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.UNKNOWN
 		}
 
-		const ephemeralMessage: proto.Message.IFutureProofMessage = {
-			message: {
-				listMessage
-			}
-		}
-
-		m = { ephemeralMessage }
+		m = { listMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
