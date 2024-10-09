@@ -538,13 +538,7 @@ export const generateWAMessageContent = async(
 			buttonsMessage.footerText = message.footer
 		}
 
-		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
-			message: {
-				buttonsMessage
-			}
-		}
-
-		m = { viewOnceMessageV2 }
+		m = { buttonsMessage }
 	} else if('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
@@ -583,13 +577,7 @@ export const generateWAMessageContent = async(
 			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		const viewOnceMessage: proto.Message.IFutureProofMessage = {
-			message: {
-				listMessage
-			}
-		}
-
-		m = { viewOnceMessage }
+		m = { listMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
