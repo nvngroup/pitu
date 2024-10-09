@@ -581,11 +581,11 @@ export const generateWAMessageContent = async(
 			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
+		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
 			message: { listMessage }
-		}
+		} */
 
-		m = { viewOnceMessageV2 }
+		m = { listMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
