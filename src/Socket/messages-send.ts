@@ -1,4 +1,5 @@
 /* eslint-disable linebreak-style */
+/* eslint-disable max-depth */
 
 import { Boom } from '@hapi/boom'
 import NodeCache from 'node-cache'
@@ -287,7 +288,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			}
 		}
 
-		const meJid = jidNormalizedUser(authState.creds.me.id)!
+		const meJid = jidNormalizedUser(authState.creds.me.id)
 
 		const msgId = await relayMessage(meJid, protocolMessage, {
 			additionalAttributes: {
@@ -479,22 +480,19 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							const retryDevices = await getUSyncDevices(participantsList, !!useUserDevicesCache, false)
 
 
-							retryDevices.forEach(device => {
-						    if(!devices.includes(device)) {
-						        devices.push(device)
-						    }
-							})
-
-						   for(const { user, device } of devices) {
-						   const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
-								if(!senderKeyMap[jid] || !!participant) {
-								 if(!senderKeyJids.includes(jid)) {
-								            senderKeyJids.push(jid)
-									    senderKeyMap[jid] = true
-        							}
-
+							for(const device of retryDevices) {
+								if(!devices.includes(device)) {
+									devices.push(device)
 								}
-						     }
+							}
+
+							for(const { user, device } of devices) {
+								const jid = jidEncode(user, isLid ? 'lid' : 's.whatsapp.net', device)
+								if((!senderKeyMap[jid] || !!participant) && !senderKeyJids.includes(jid)) {
+									senderKeyJids.push(jid)
+									senderKeyMap[jid] = true
+								}
+							}
 
 							await GroupsCache.set(destinationJid, true)
 						}
