@@ -27,7 +27,7 @@ import {
 } from '../Types'
 import { isJidGroup, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
 import { sha256 } from './crypto'
-import { generateMessageIDV2, getKeyAuthor, unixTimestampSeconds } from './generics'
+import { generateMessageID, getKeyAuthor, unixTimestampSeconds } from './generics'
 import { downloadContentFromMessage, encryptedStream, generateThumbnail, getAudioDuration, getAudioWaveform, MediaDownloadOptions } from './messages-media'
 
 type MediaUploadData = {
@@ -330,7 +330,7 @@ export const generateWAMessageContent = async(
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo = message.linkPreview
-		if(typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
+		if(typeof urlInfo === 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
@@ -564,9 +564,12 @@ export const generateWAMessageContent = async(
 		}
 
 		m = {
-			templateMessage: {
-				fourRowTemplate: msg,
-				hydratedTemplate: msg
+			documentWithCaptionMessage: {
+				message: {
+					templateMessage: {
+						hydratedTemplate: msg
+					}
+				}
 			}
 		}
 	}
@@ -578,7 +581,7 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.PRODUCT_LIST
+			listType: message.hasOwnProperty('listType') ? message.listType : proto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
 
 		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
@@ -682,7 +685,7 @@ export const generateWAMessageFromContent = (
 		key: {
 			remoteJid: jid,
 			fromMe: true,
-			id: options?.messageId || generateMessageIDV2(),
+			id: options?.messageId || generateMessageID(),
 		},
 		message: message,
 		messageTimestamp: timestamp,

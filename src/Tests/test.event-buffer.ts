@@ -1,6 +1,6 @@
 import { proto } from '../../WAProto'
 import { Chat, WAMessageKey, WAMessageStatus, WAMessageStubType, WAMessageUpdate } from '../Types'
-import { delay, generateMessageID, generateMessageIDV2, makeEventBuffer, toNumber, unixTimestampSeconds } from '../Utils'
+import { delay, generateMessageID, makeEventBuffer, toNumber, unixTimestampSeconds } from '../Utils'
 import logger from '../Utils/logger'
 import { randomJid } from './utils'
 
@@ -204,7 +204,7 @@ describe('Event Buffer Tests', () => {
 		const msg: proto.IWebMessageInfo = {
 			key: {
 				remoteJid: randomJid(),
-				id: generateMessageIDV2(),
+				id: generateMessageID(),
 				fromMe: false
 			},
 			messageStubType: WAMessageStubType.CIPHERTEXT,
@@ -239,7 +239,7 @@ describe('Event Buffer Tests', () => {
 		const msg: proto.IWebMessageInfo = {
 			key: {
 				remoteJid: randomJid(),
-				id: generateMessageIDV2(),
+				id: generateMessageID(),
 				fromMe: false
 			},
 			messageStubType: WAMessageStubType.CIPHERTEXT,
@@ -272,7 +272,7 @@ describe('Event Buffer Tests', () => {
 	it('should buffer multiple status updates', async() => {
 		const key: WAMessageKey = {
 			remoteJid: randomJid(),
-			id: generateMessageIDV2(),
+			id: generateMessageID(),
 			fromMe: false
 		}
 
@@ -294,7 +294,7 @@ describe('Event Buffer Tests', () => {
 		const msg: proto.IWebMessageInfo = {
 			key: {
 				remoteJid: '12345@s.whatsapp.net',
-				id: generateMessageIDV2(),
+				id: generateMessageID(),
 				fromMe: false
 			},
 			message: {

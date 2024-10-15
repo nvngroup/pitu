@@ -211,7 +211,7 @@ export type AnyRegularMessageContent = (
         body?: string
         footer?: string
     } | SharePhoneNumber | RequestPhoneNumber
-) & ViewOnce & Buttonable & Templatable
+) & ViewOnce
 
 export type AnyMessageContent = AnyRegularMessageContent | {
 	forward: WAMessage

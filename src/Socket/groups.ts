@@ -1,6 +1,6 @@
 import { proto } from '../../WAProto'
 import { GroupMetadata, GroupParticipant, ParticipantAction, SocketConfig, WAMessageKey, WAMessageStubType } from '../Types'
-import { generateMessageIDV2, unixTimestampSeconds } from '../Utils'
+import { generateMessageID, generateMessageIDV2, unixTimestampSeconds } from '../Utils'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString, jidEncode, jidNormalizedUser } from '../WABinary'
 import { makeChatsSocket } from './chats'
 
@@ -82,7 +82,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		...sock,
 		groupMetadata,
 		groupCreate: async(subject: string, participants: string[]) => {
-			const key = generateMessageIDV2()
+			const key = generateMessageID()
 			const result = await groupQuery(
 				'@g.us',
 				'set',
@@ -207,7 +207,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					{
 						tag: 'description',
 						attrs: {
-							...(description ? { id: generateMessageIDV2() } : { delete: 'true' }),
+							...(description ? { id: generateMessageID() } : { delete: 'true' }),
 							...(prev ? { prev } : {})
 						},
 						content: description ? [
