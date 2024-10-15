@@ -330,7 +330,7 @@ export const generateWAMessageContent = async(
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo = message.linkPreview
-		if(typeof urlInfo === 'undefined') {
+		if(typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
@@ -581,7 +581,7 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: message.hasOwnProperty('listType') ? message.listType : proto.Message.ListMessage.ListType.PRODUCT_LIST
+			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
 
 		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
