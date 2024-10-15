@@ -538,11 +538,11 @@ export const generateWAMessageContent = async(
 			buttonsMessage.footerText = message.footer
 		}
 
-		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
+		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
 			message: { buttonsMessage }
-		}
+		} */
 
-		m = { viewOnceMessageV2 }
+		m = { buttonsMessage }
 	} else if('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
@@ -578,14 +578,14 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.SINGLE_SELECT
+			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
 
-		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
+		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
 			message: { listMessage }
-		}
+		} */
 
-		m = { viewOnceMessageV2 }
+		m = { listMessage }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
