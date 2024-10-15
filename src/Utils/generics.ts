@@ -427,8 +427,8 @@ export function bytesToCrockford(buffer: Buffer): string {
 	let bitCount = 0
 	const crockford: string[] = []
 
-	for(let i = 0; i < buffer.length; i++) {
-		value = (value << 8) | (buffer[i] & 0xff)
+	for(const element of buffer) {
+		value = (value << 8) | (element & 0xff)
 		bitCount += 8
 
 		while(bitCount >= 5) {

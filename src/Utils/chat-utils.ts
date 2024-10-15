@@ -420,8 +420,7 @@ export const decodePatches = async(
 
 	const mutationMap: ChatMutationMap = {}
 
-	for(let i = 0; i < syncds.length; i++) {
-		const syncd = syncds[i]
+	for(const syncd of syncds) {
 		const { version, keyId, snapshotMac } = syncd
 		if(syncd.externalMutations) {
 			logger?.trace({ name, version }, 'downloading external patch')

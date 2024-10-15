@@ -73,7 +73,7 @@ export const parseAndInjectE2ESessions = async(
 	const extractKey = (key: BinaryNode) => (
 		key ? ({
 			keyId: getBinaryNodeChildUInt(key, 'id', 3)!,
-			publicKey: generateSignalPubKey(getBinaryNodeChildBuffer(key, 'value')!)!,
+			publicKey: generateSignalPubKey(getBinaryNodeChildBuffer(key, 'value')!),
 			signature: getBinaryNodeChildBuffer(key, 'signature')!,
 		}) : undefined
 	)
@@ -128,10 +128,10 @@ export const extractDeviceJids = (result: BinaryNode, myJid: string, excludeZero
 					for(const { tag, attrs } of deviceListNode!.content) {
 						const device = +attrs.id
 						if(
-							tag === 'device' && // ensure the "device" tag
-							(!excludeZeroDevices || device !== 0) && // if zero devices are not-excluded, or device is non zero
-							(myUser !== user || myDevice !== device) && // either different user or if me user, not this device
-							(device === 0 || !!attrs['key-index']) // ensure that "key-index" is specified for "non-zero" devices, produces a bad req otherwise
+							tag === 'device' &&
+							(!excludeZeroDevices || device !== 0) &&
+							(myUser !== user || myDevice !== device) &&
+							(device === 0 || !!attrs['key-index'])
 						) {
 							extracted.push({ user, device })
 						}

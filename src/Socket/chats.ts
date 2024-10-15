@@ -781,6 +781,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				authState.creds.lastPropHash = propsNode?.attrs?.hash
 				ev.emit('creds.update', authState.creds)
 			}
+
 			props = reduceBinaryNodeToDictionary(propsNode, 'prop')
 		}
 
@@ -1002,14 +1003,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				)
 		}
 
-		if(receivedPendingNotifications) {
-			// if we don't have the app state key
+		if(receivedPendingNotifications && // if we don't have the app state key
 			// we keep buffering events until we finally have
 			// the key and can sync the messages
-			if(!authState.creds?.myAppStateKeyId && !config.mobile) {
-				ev.buffer()
-				needToFlushWithAppStateSync = true
-			}
+			!authState.creds?.myAppStateKeyId && !config.mobile) {
+			ev.buffer()
+			needToFlushWithAppStateSync = true
 		}
 	})
 

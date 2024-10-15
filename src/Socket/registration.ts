@@ -98,10 +98,10 @@ export type RegistrationParams = RegistrationData & RegistrationOptions
 function convertBufferToUrlHex(buffer: Buffer) {
 	var id = ''
 
-	buffer.forEach((x) => {
+	for(const x of buffer) {
 		// encode random identity_id buffer as percentage url encoding
 		id += `%${x.toString(16).padStart(2, '0').toLowerCase()}`
-	})
+	}
 
 	return id
 }

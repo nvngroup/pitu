@@ -382,10 +382,8 @@ export const encryptedStream = async(
 			}
 
 			sha256Plain = sha256Plain.update(data)
-			if(writeStream) {
-				if(!writeStream.write(data)) {
-					await once(writeStream, 'drain')
-				}
+			if(writeStream && !writeStream.write(data)) {
+				await once(writeStream, 'drain')
 			}
 
 			onChunk(aes.update(data))
