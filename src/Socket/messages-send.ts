@@ -50,6 +50,24 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return msg
 	}
 
+	const patchMessageRequiresBeforeSending2 = (msg: proto.IMessage, recipientJids: string[]): proto.IMessage => {
+		if(msg?.deviceSentMessage?.message?.listMessage) {
+			msg = JSON.parse(JSON.stringify(msg))
+			msg.deviceSentMessage!.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		if(msg?.listMessage) {
+			msg = JSON.parse(JSON.stringify(msg))
+			msg.listMessage!.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
+			message: { listMessage }
+		}
+
+		return viewOnceMessageV2
+	}
+
 	const userDevicesCache = config.userDevicesCache || new NodeCache({
 		stdTTL: DEFAULT_CACHE_TTLS.USER_DEVICES, // 5 minutes
 		useClones: false
@@ -905,6 +923,15 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
+
+				try{
+					if (getContentType(fullMsg.message!) === 'listMessage') {
+						await relayMessage(jid, {viewOnceMessageV2: {message: fullMsg.message!} } , { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
+					}
+				} catch(err) {
+					logger.error(err);
+				}
+
 				if(config.emitOwnEvents) {
 					process.nextTick(() => {
 						processingMutex.mutex(() => (
