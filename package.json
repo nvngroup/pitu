@@ -1,6 +1,6 @@
 {
   "name": "baileys",
-  "version": "6.7.9",
+  "version": "6.7.10",
   "description": "WhatsApp API",
   "keywords": [
     "whatsapp",
@@ -70,13 +70,13 @@
     "conventional-changelog-cli": "^2.2.2",
     "eslint": "^8.0.0",
     "jest": "^27.0.6",
-    "jimp": "^0.16.1",
+    "jimp": "^0.22.12",
     "json": "^11.0.0",
     "link-preview-js": "^3.0.0",
     "open": "^8.4.2",
     "pbjs": "^0.0.14",
     "qrcode-terminal": "^0.12.0",
-    "release-it": "^15.10.3",
+    "release-it": "^17.10.0",
     "sharp": "^0.32.6",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.8.1",

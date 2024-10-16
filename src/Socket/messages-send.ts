@@ -906,12 +906,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
 
-				try{
-					if (getContentType(fullMsg.message!) === 'listMessage') {
-						await relayMessage(jid, {viewOnceMessageV2: {message: fullMsg.message!} } , { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
+				try {
+					if(getContentType(fullMsg.message!) === 'listMessage') {
+						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
 					}
 				} catch(err) {
-					logger.error(err);
+					logger.error(err)
 				}
 
 				if(config.emitOwnEvents) {
