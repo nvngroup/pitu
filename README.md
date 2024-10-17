@@ -2,13 +2,11 @@
 
 <div align='center'>
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/whiskeysockets/baileys/total)
-![NPM Downloads](https://img.shields.io/npm/dw/%40whiskeysockets%2Fbaileys?label=npm&color=%23CB3837)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/whiskeysockets/baileys)
-![GitHub License](https://img.shields.io/github/license/whiskeysockets/baileys)
-![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)
-![GitHub Repo stars](https://img.shields.io/github/stars/whiskeysockets/baileys)
-![GitHub forks](https://img.shields.io/github/forks/whiskeysockets/baileys)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/baileys/total)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/brunocgc/baileys)
+![GitHub License](https://img.shields.io/github/license/brunocgc/baileys)
+![GitHub Repo stars](https://img.shields.io/github/stars/brunocgc/baileys)
+![GitHub forks](https://img.shields.io/github/forks/brunocgc/baileys)
 
 </div>
 
