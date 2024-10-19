@@ -167,7 +167,10 @@ import makeWASocket from '@whiskeysockets/baileys'
 
 ## Connecting Account
 
- WhatsApp provides a multi-device API that allows Baileys to be authenticated as a second WhatsApp client by scanning a **QR code** or **Pairing Code** with WhatsApp on your phone.
+WhatsApp provides a multi-device API that allows Baileys to be authenticated as a second WhatsApp client by scanning a **QR code** or **Pairing Code** with WhatsApp on your phone.
+
+> [!NOTE]
+> **[Here](#example-to-start) is a simple example of event handling**
 
 > [!TIP]
 > **You can see all supported socket configs [here](https://baileys.whiskeysockets.io/types/SocketConfig.html) (Recommended)**
@@ -236,7 +239,7 @@ const sock = makeWASocket({
     const groupCache = new NodeCache({stdTTL: 5 * 60, useClones: false})
 
     const sock = makeWASocket({
-        cachedGroupMetadata: groupCache
+        cachedGroupMetadata: async (jid) => groupCache.get(jid)
     })
 
     sock.ev.on('groups.update', async ([event]) => {
@@ -272,7 +275,6 @@ You obviously don't want to keep scanning the QR code every time you want to con
 So, you can load the credentials to log back in:
 ```ts
 import makeWASocket, { BufferJSON, useMultiFileAuthState } from '@whiskeysockets/baileys'
-import * as fs from 'fs'
 
 const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
 
@@ -309,7 +311,7 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 ### Example to Start
 
 ```ts
-import makeWASocket, { DisconnectReason } from '@whiskeysockets/baileys'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 
 async function connectToWhatsApp () {
@@ -318,6 +320,7 @@ async function connectToWhatsApp () {
         printQRInTerminal: true
     })
     sock.ev.on('connection.update', (update) => {
+        const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
         const { connection, lastDisconnect } = update
         if(connection === 'close') {
             const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
@@ -338,6 +341,8 @@ async function connectToWhatsApp () {
             await sock.sendMessage(m.key.remoteJid!, { text: 'Hello Word' })
         }
     })
+    // to storage creds (session info) when it updates
+    sock.ev.on('creds.update', saveCreds)
 }
 // run in main file
 connectToWhatsApp()
