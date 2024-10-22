@@ -1,5 +1,5 @@
 {
-  "name": "baileys",
+  "name": "@brunocgc/baileys",
   "version": "6.7.10",
   "description": "WhatsApp API",
   "keywords": [
@@ -14,7 +14,7 @@
   ],
   "homepage": "https://github.com/brunocgc/Baileys",
   "repository": {
-    "url": "git@github.com:brunocgc/Baileys.git"
+    "url": "git+ssh://git@github.com/brunocgc/Baileys.git#dev"
   },
   "license": "MIT",
   "author": "Adhiraj Singh",
@@ -102,5 +102,11 @@
       "optional": true
     }
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/brunocgc/Baileys/issues"
+  }
 }

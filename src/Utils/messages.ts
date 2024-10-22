@@ -518,7 +518,7 @@ export const generateWAMessageContent = async(
 
 	if('buttons' in message && !!message.buttons) {
 		const buttonsMessage: proto.Message.IButtonsMessage = {
-			buttons: message.buttons.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
+			buttons: message.buttons!.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
 		}
 		if('text' in message) {
 			buttonsMessage.contentText = message.text
@@ -530,7 +530,6 @@ export const generateWAMessageContent = async(
 
 			const type = Object.keys(m)[0].replace('Message', '').toUpperCase()
 			buttonsMessage.headerType = ButtonType[type]
-
 			Object.assign(buttonsMessage, m)
 		}
 
@@ -538,20 +537,14 @@ export const generateWAMessageContent = async(
 			buttonsMessage.footerText = message.footer
 		}
 
-		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
-			message: { buttonsMessage }
-		} */
-
 		m = { buttonsMessage }
 	} else if('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
 		}
-
 		if('text' in message) {
 			msg.hydratedContentText = message.text
 		} else {
-
 			if('caption' in message) {
 				msg.hydratedContentText = message.caption
 			}
@@ -564,12 +557,9 @@ export const generateWAMessageContent = async(
 		}
 
 		m = {
-			documentWithCaptionMessage: {
-				message: {
-					templateMessage: {
-						hydratedTemplate: msg
-					}
-				}
+			templateMessage: {
+				fourRowTemplate: msg,
+				hydratedTemplate: msg
 			}
 		}
 	}
@@ -583,10 +573,6 @@ export const generateWAMessageContent = async(
 			description: message.text,
 			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
-
-		/* const viewOnceMessageV2: proto.Message.IFutureProofMessage = {
-			message: { listMessage }
-		} */
 
 		m = { listMessage }
 	}
