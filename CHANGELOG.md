@@ -516,6 +516,3 @@
 * Revert "feat: resync main app state on first open" ([2cc5cc2](https://github.com/brunocgc/Baileys/commit/2cc5cc2dd4424b4aeed700f62b4b59e6a3e3856e))
 * Revert "fix: remove redundant collectionSync" ([85574d1](https://github.com/brunocgc/Baileys/commit/85574d1d795f32f75f98dfd9ef52242960c68f2b))
 * example logger ([d9a4dae](https://github.com/brunocgc/Baileys/commit/d9a4dae23580444b87384f62d71b4d78fd84df4d))
-
-
-
