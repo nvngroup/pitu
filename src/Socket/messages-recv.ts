@@ -163,7 +163,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			logger.debug(`sendRetryRequest: requested placeholder resend for message ${msgId}`)
 		}
 
-		const deviceIdentity = encodeSignedDeviceIdentity(account, true)
+		const deviceIdentity = encodeSignedDeviceIdentity(account!, true)
 		await authState.keys.transaction(
 			async() => {
 				const receipt: BinaryNode = {
