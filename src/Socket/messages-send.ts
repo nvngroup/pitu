@@ -36,7 +36,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		groupToggleEphemeral,
 	} = sock
 
-	const patchMessageRequiresBeforeSending = (msg: proto.IMessage, recipientJids: string[]): proto.IMessage => {
+	const patchMessageRequiresBeforeSending = (msg: proto.IMessage): proto.IMessage => {
 		if(msg?.deviceSentMessage?.message?.listMessage) {
 			msg = JSON.parse(JSON.stringify(msg))
 			msg.deviceSentMessage!.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
@@ -302,7 +302,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			}
 		}
 
-		const meJid = jidNormalizedUser(authState.creds.me.id)
+		const meJid = jidNormalizedUser(authState.creds.me.id)!
 
 		const msgId = await relayMessage(meJid, protocolMessage, {
 			additionalAttributes: {
@@ -321,7 +321,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		extraAttrs?: BinaryNode['attrs']
 	) => {
 		const patched = await patchMessageBeforeSending(message, jids)
-		const requiredPatched = patchMessageRequiresBeforeSending(patched, jids)
+		const requiredPatched = patchMessageRequiresBeforeSending(patched)
 		const bytes = encodeWAMessage(requiredPatched)
 
 		let shouldIncludeDeviceIdentity = false
@@ -451,7 +451,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 
 					const patched = await patchMessageBeforeSending(message, devices.map(d => jidEncode(d.user, isLid ? 'lid' : 's.whatsapp.net', d.device)))
-					const requiredPatched = patchMessageRequiresBeforeSending(patched, devices.map(d => jidEncode(d.user, isLid ? 'lid' : 's.whatsapp.net', d.device)))
+					const requiredPatched = patchMessageRequiresBeforeSending(patched)
 					const bytes = encodeWAMessage(requiredPatched)
 
 					const { ciphertext, senderKeyDistributionMessage } = await signalRepository.encryptGroupMessage(
@@ -547,6 +547,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								devices.push({ user: meUser })
 							}
 
+						if(additionalAttributes?.['category'] !== 'peer') {
 							const additionalDevices = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
 							devices.push(...additionalDevices)
 						}*/
@@ -610,7 +611,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					tag: 'message',
 					attrs: {
 						id: msgId!,
-						type: 'text',
+						type: getMessageType(message),
 						...(additionalAttributes || {})
 					},
 					content: binaryNodeContent
@@ -669,6 +670,15 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		)
 
 		return msgId
+	}
+
+
+	const getMessageType = (message: proto.IMessage) => {
+		if(message.pollCreationMessage || message.pollCreationMessageV2 || message.pollCreationMessageV3) {
+			return 'poll'
+		}
+
+		return 'text'
 	}
 
 	const getMediaType = (message: proto.IMessage) => {
@@ -885,7 +895,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const isDeleteMsg = 'delete' in content && !!content.delete
 				const isEditMsg = 'edit' in content && !!content.edit
 				const isPinMsg = 'pin' in content && !!content.pin
+				const isPollMessage = 'poll' in content && !!content.poll
 				const additionalAttributes: BinaryNodeAttributes = { }
+				const additionalNodes: BinaryNode[] = []
 				// required for delete
 				if(isDeleteMsg) {
 					// if the chat is a group, and I am not the author, then delete the message as an admin
@@ -898,17 +910,24 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					additionalAttributes.edit = '1'
 				} else if(isPinMsg) {
 					additionalAttributes.edit = '2'
+				} else if(isPollMessage) {
+					additionalNodes.push({
+						tag: 'meta',
+						attrs: {
+							polltype: 'creation'
+						},
+					} as BinaryNode)
 				}
 
 				if('cachedGroupMetadata' in options) {
 					console.warn('cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
-				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
+				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
 					if(getContentType(fullMsg.message!) === 'listMessage') {
-						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList })
+						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
 				} catch(err) {
 					logger.error(err)

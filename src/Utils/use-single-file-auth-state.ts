@@ -28,7 +28,7 @@ export const useSingleFileAuthState = (filename: string, logger?: Logger): { sta
 
 	// save the authentication state to a file
 	const saveState = () => {
-		logger && logger.trace('saving auth state')
+		logger?.trace('saving auth state')
 		writeFileSync(
 			filename,
 			// BufferJSON replacer utility saves buffers nicely
