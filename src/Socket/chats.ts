@@ -813,6 +813,17 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	/**
+	 * remove label
+	 */
+	const removeLabel = (jid: string, labels: LabelActionBody) => {
+		return chatModify({
+			removeLabel: {
+				...labels
+			}
+		}, jid)
+	}
+
+	/**
 	 * Adds label
 	 */
 	const addLabel = (jid: string, labels: LabelActionBody) => {
@@ -1040,6 +1051,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		chatModify,
 		cleanDirtyBits,
 		addLabel,
+		removeLabel,
 		addChatLabel,
 		removeChatLabel,
 		addMessageLabel,
