@@ -1,4 +1,3 @@
-
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import NodeCache from 'node-cache'
@@ -44,6 +43,14 @@ import {
 } from '../WABinary'
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
+
+function toRequiredBuffer(data: Uint8Array | Buffer | undefined) {
+	if(data === undefined) {
+		throw new Boom('Invalid buffer', { statusCode: 400 })
+	}
+
+	return data instanceof Buffer ? data : Buffer.from(data)
+}
 
 export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const {
@@ -140,6 +147,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		offerContent.push({ tag: 'capability', attrs: { ver: '1' }, content: new Uint8Array([1, 4, 255, 131, 207, 4]) })
 		offerContent.push({ tag: 'encopt', attrs: { keygen: '2' }, content: undefined })
 		const encKey = randomBytes(32)
+		// eslint-disable-next-line unicorn/no-await-expression-member
 		const devices = (await getUSyncDevices([toJid], true, false)).map(({ user, device }) => jidEncode(user, 's.whatsapp.net', device))
 		await assertSessions(devices, true)
 		const { nodes: destinations, shouldIncludeDeviceIdentity } = await createParticipantNodes(devices, {
@@ -611,14 +619,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const iv = buffer.slice(32, 48)
 		const payload = buffer.slice(48, 80)
 		return aesDecryptCTR(payload, secretKey, iv)
-	}
-
-	function toRequiredBuffer(data: Uint8Array | Buffer | undefined) {
-		if(data === undefined) {
-			throw new Boom('Invalid buffer', { statusCode: 400 })
-		}
-
-		return data instanceof Buffer ? data : Buffer.from(data)
 	}
 
 	const willSendMessageAgain = (id: string, participant: string) => {

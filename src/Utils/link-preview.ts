@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-await-expression-member */
+/* eslint-disable unicorn/no-object-as-default-parameter */
 import { AxiosRequestConfig } from 'axios'
 import { Logger } from 'pino'
 import { WAMediaUploadFunction, WAUrlInfo } from '../Types'

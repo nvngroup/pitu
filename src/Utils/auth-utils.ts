@@ -6,6 +6,11 @@ import type { AuthenticationCreds, CacheStore, SignalDataSet, SignalDataTypeMap,
 import { Curve, signedKeyPair } from './crypto'
 import { delay, generateRegistrationId } from './generics'
 
+
+function getUniqueId(type: string, id: string) {
+	return `${type}.${id}`
+}
+
 /**
  * Adds caching capability to a SignalKeyStore
  * @param store the store to add caching to
@@ -22,10 +27,6 @@ export function makeCacheableSignalKeyStore(
 		useClones: false,
 		deleteOnExpire: true,
 	})
-
-	function getUniqueId(type: string, id: string) {
-		return `${type}.${id}`
-	}
 
 	return {
 		async get(type, ids) {

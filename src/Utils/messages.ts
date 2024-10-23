@@ -518,7 +518,7 @@ export const generateWAMessageContent = async(
 
 	if('buttons' in message && !!message.buttons) {
 		const buttonsMessage: proto.Message.IButtonsMessage = {
-			buttons: message.buttons!.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
+			buttons: message.buttons.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
 		}
 		if('text' in message) {
 			buttonsMessage.contentText = message.text

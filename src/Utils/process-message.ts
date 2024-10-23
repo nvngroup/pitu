@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-function-scoping */
 import { AxiosRequestConfig } from 'axios'
 import type { Logger } from 'pino'
 import { proto } from '../../WAProto'
