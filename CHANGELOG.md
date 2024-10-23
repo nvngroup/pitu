@@ -1,3 +1,12 @@
+## [6.7.14](https://github.com/brunocgc/Baileys/compare/v6.7.13...v6.7.14) (2024-10-23)
+
+
+### Features
+
+* remove label feature ([2816cd6](https://github.com/brunocgc/Baileys/commit/2816cd640752ffca0e6a7af8287c12d776c7c439))
+
+
+
 ## [6.7.13](https://github.com/brunocgc/Baileys/compare/v6.7.11...v6.7.13) (2024-10-22)
 
 
