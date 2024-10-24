@@ -736,6 +736,20 @@ sock.ev.on('messages.upsert', async ({ [m] }) => {
 await sock.updateMediaMessage(msg)
 ```
 
+## Offer Call
+
+```ts
+await sock.offerCall(jid, isVideo)
+```
+
+## Terminate Call
+
+- You can obtain `callId` and `callFrom` from `call` event
+
+```ts
+await sock.terminateCall(callId, callFrom)
+```
+
 ## Reject Call
 
 - You can obtain `callId` and `callFrom` from `call` event
