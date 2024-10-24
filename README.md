@@ -15,7 +15,7 @@
 This library was originally a project for **CS-2362 at Ashoka University** and is in no way affiliated with or endorsed by WhatsApp. Use at your own discretion. Do not spam people with this. We discourage any stalkerware, bulk or automated messaging usage.
 
 #### Liability and License Notice
-Baileys and its maintainers cannot be held liable for misuse of this application, as stated in the [MIT license](https://github.com/WhiskeySockets/Baileys/blob/master/LICENSE).
+Baileys and its maintainers cannot be held liable for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/Baileys/blob/master/LICENSE).
 The maintainers of Baileys do not in any way condone the use of this application in practices that violate the Terms of Service of WhatsApp. The maintainers of this application call upon the personal responsibility of its users to use this application in a fair way, as it is intended to be used.
 ##
 
@@ -42,23 +42,18 @@ To run the example script, download or clone the repo and then type the followin
 
 Use the stable version:
 ```
-yarn add @whiskeysockets/baileys
+yarn add @brunocgc/baileys
 ```
 
 Use the edge version (no guarantee of stability, but latest fixes + features)
 ```
-yarn add github:WhiskeySockets/Baileys
+yarn add github:brunocgc/Baileys
 ```
 
 Then import your code using:
 ```ts
-import makeWASocket from '@whiskeysockets/baileys'
+import makeWASocket from '@brunocgc/baileys'
 ```
-
-# Links
-
-- [Discord](https://discord.gg/WeJM5FP9GG)
-- [Docs](https://guide.whiskeysockets.io/)
 
 # Index
 
@@ -181,7 +176,7 @@ WhatsApp provides a multi-device API that allows Baileys to be authenticated as 
 > You can customize browser name if you connect with **QR-CODE**, with `Browser` constant, we have some browsers config, **see [here](https://baileys.whiskeysockets.io/types/BrowsersMap.html)**
 
 ```ts
-import makeWASocket from '@whiskeysockets/baileys'
+import makeWASocket from '@brunocgc/baileys'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -201,7 +196,7 @@ If the connection is successful, you will see a QR code printed on your terminal
 The phone number can't have `+` or `()` or `-`, only numbers, you must provide country code
 
 ```ts
-import makeWASocket from '@whiskeysockets/baileys'
+import makeWASocket from '@brunocgc/baileys'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -274,7 +269,7 @@ You obviously don't want to keep scanning the QR code every time you want to con
 
 So, you can load the credentials to log back in:
 ```ts
-import makeWASocket, { BufferJSON, useMultiFileAuthState } from '@whiskeysockets/baileys'
+import makeWASocket, { BufferJSON, useMultiFileAuthState } from '@brunocgc/baileys'
 
 const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
 
@@ -311,7 +306,7 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 ### Example to Start
 
 ```ts
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@brunocgc/baileys'
 import { Boom } from '@hapi/boom'
 
 async function connectToWhatsApp () {
@@ -391,7 +386,7 @@ sock.ev.on('messages.update', event => {
 It can be used as follows:
 
 ```ts
-import makeWASocket, { makeInMemoryStore } from '@whiskeysockets/baileys'
+import makeWASocket, { makeInMemoryStore } from '@brunocgc/baileys'
 // the store maintains the data of the WA connection in memory
 // can be written out to a file & read from it
 const store = makeInMemoryStore({ })
@@ -577,7 +572,7 @@ await sock.sendMessage(
 await sock.sendMessage(
     jid,
     {
-        text: 'Hi, this was sent using https://github.com/whiskeysockets/baileys'
+        text: 'Hi, this was sent using https://github.com/brunocgc/baileys'
     }
 )
 ```
@@ -707,7 +702,7 @@ await sock.sendMessage(jid, {
 If you want to save the media you received
 ```ts
 import { createWriteStream } from 'fs'
-import { downloadMediaMessage, getContentType } from '@whiskeysockets/baileys'
+import { downloadMediaMessage, getContentType } from '@brunocgc/baileys'
 
 sock.ev.on('messages.upsert', async ({ [m] }) => {
     if (!m.message) return // if there is no text or media message
