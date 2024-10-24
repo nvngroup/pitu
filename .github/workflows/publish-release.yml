@@ -44,11 +44,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish in NPM (as `baileys`)
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish in NPM (brunocgc scope)
         run: |
           npx json -I -f package.json -e "this.name='@brunocgc/baileys'"
