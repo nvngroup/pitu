@@ -99,7 +99,10 @@ import makeWASocket from '@brunocgc/baileys'
     - [Thumbnail in Media Messages](#thumbnail-in-media-messages)
     - [Downloading Media Messages](#downloading-media-messages)
     - [Re-upload Media Message to Whatsapp](#re-upload-media-message-to-whatsapp)
-- [Reject Call](#reject-call)
+- [Call](#call)
+    - [Offer Call](#offer-call)
+    - [Terminate Call](#terminate-call)
+    - [Reject Call](#reject-call)
 - [Send States in Chat](#send-states-in-chat)
     - [Reading Messages](#reading-messages)
     - [Update Presence](#update-presence)
@@ -736,13 +739,15 @@ sock.ev.on('messages.upsert', async ({ [m] }) => {
 await sock.updateMediaMessage(msg)
 ```
 
-## Offer Call
+## Call
+
+### Offer Call
 
 ```ts
 await sock.offerCall(jid, isVideo)
 ```
 
-## Terminate Call
+### Terminate Call
 
 - You can obtain `callId` and `callFrom` from `call` event
 
@@ -750,7 +755,7 @@ await sock.offerCall(jid, isVideo)
 await sock.terminateCall(callId, callFrom)
 ```
 
-## Reject Call
+### Reject Call
 
 - You can obtain `callId` and `callFrom` from `call` event
 
