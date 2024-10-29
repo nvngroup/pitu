@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-object-as-default-parameter */
 import { promisify } from 'util'
 import { inflate } from 'zlib'
 import * as constants from './constants'
