@@ -27,7 +27,7 @@ The maintainers of Baileys do not in any way condone the use of this application
 > [!IMPORTANT]
 > The original repository had to be removed by the original author - we now continue development in this repository here.
 This is the only official repository and is maintained by the community.
-> **Join the Discord [here](https://discord.gg/WeJM5FP9GG)**
+> **Join the Discord [here](https://discord.gg/N2UqQvJM)**
 
 ## Example
 
