@@ -1,0 +1,34 @@
+{
+    "key": {
+        "id": "XXXXXXXXXXXXXXXXXX",
+        "fromMe": false,
+        "remoteJid": "55XX9XXXXXX57@s.whatsapp.net"
+    },
+    "message": {
+        "templateMessage": {
+            "hydratedFourRowTemplate": {
+                "templateId": "78984651321567",
+                "hydratedButtons": [{
+                        "index": 0,
+                        "quickReplyButton": {
+                            "id": "Confirmar Presença",
+                            "displayText": "Confirmar Presença"
+                        }
+                    },
+                    {
+                        "index": 1,
+                        "quickReplyButton": {
+                            "id": "Não Confirmar",
+                            "displayText": "Não Confirmar"
+                        }
+                    }
+                ],
+                "hydratedContentText": "Texto"
+            }
+        }
+    },
+    "messageTimestamp": "1727893799",
+    "reportingTokenInfo": {
+        "reportingTag": "AbMI3eGkaHBpt+VVuLNAdA=="
+    }
+}
