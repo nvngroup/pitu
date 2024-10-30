@@ -1,3 +1,23 @@
+## [6.7.19](https://github.com/brunocgc/Baileys/compare/v6.7.18...v6.7.19) (2024-10-29)
+
+
+
+## [6.7.18](https://github.com/brunocgc/Baileys/compare/v6.7.17...v6.7.18) (2024-10-24)
+
+
+
+## [6.7.17](https://github.com/brunocgc/Baileys/compare/v6.7.16...v6.7.17) (2024-10-24)
+
+
+
+## [6.7.16](https://github.com/brunocgc/Baileys/compare/v6.7.15...v6.7.16) (2024-10-24)
+
+
+
+## [6.7.15](https://github.com/brunocgc/Baileys/compare/v6.7.14...v6.7.15) (2024-10-24)
+
+
+
 ## [6.7.14](https://github.com/brunocgc/Baileys/compare/v6.7.13...v6.7.14) (2024-10-23)
 
 

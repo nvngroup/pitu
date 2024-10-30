@@ -147,7 +147,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		offerContent.push({ tag: 'capability', attrs: { ver: '1' }, content: new Uint8Array([1, 4, 255, 131, 207, 4]) })
 		offerContent.push({ tag: 'encopt', attrs: { keygen: '2' }, content: undefined })
 		const encKey = randomBytes(32)
-		// eslint-disable-next-line unicorn/no-await-expression-member
 		const devices = (await getUSyncDevices([toJid], true, false)).map(({ user, device }) => jidEncode(user, 's.whatsapp.net', device))
 		await assertSessions(devices, true)
 		const { nodes: destinations, shouldIncludeDeviceIdentity } = await createParticipantNodes(devices, {

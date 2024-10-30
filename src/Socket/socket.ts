@@ -8,6 +8,8 @@ import {
 	DEF_TAG_PREFIX,
 	INITIAL_PREKEY_COUNT,
 	MIN_PREKEY_COUNT,
+	MOBILE_ENDPOINT,
+	MOBILE_PORT,
 	NOISE_WA_HEADER
 } from '../Defaults'
 import { DisconnectReason, SocketConfig } from '../Types'
@@ -21,6 +23,7 @@ import {
 	derivePairingCodeKey,
 	generateLoginNode,
 	generateMdTagPrefix,
+	generateMobileNode,
 	generateRegistrationNode,
 	getCodeFromWSError,
 	getErrorCodeFromStreamError,
@@ -65,14 +68,15 @@ export const makeSocket = (config: SocketConfig) => {
 		makeSignalRepository,
 	} = config
 
-	const url = typeof waWebSocketUrl === 'string' ? new URL(waWebSocketUrl) : waWebSocketUrl
+	let url = typeof waWebSocketUrl === 'string' ? new URL(waWebSocketUrl) : waWebSocketUrl
+	config.mobile = config.mobile || url.protocol === 'tcp:'
 
 
 	if(config.mobile || url.protocol === 'tcp:') {
-		throw new Boom('Mobile API is not supported anymore', { statusCode: DisconnectReason.loggedOut })
+		url = new URL(`tcp://${MOBILE_ENDPOINT}:${MOBILE_PORT}`)
 	}
 
-	if(url.protocol === 'wss' && authState?.creds?.routingInfo) {
+	if(!config.mobile && url.protocol === 'wss' && authState?.creds?.routingInfo) {
 		url.searchParams.append('ED', authState.creds.routingInfo.toString('base64url'))
 	}
 
@@ -87,6 +91,7 @@ export const makeSocket = (config: SocketConfig) => {
 	const noise = makeNoiseHandler({
 		keyPair: ephemeralKeyPair,
 		NOISE_HEADER: NOISE_WA_HEADER,
+		mobile: config.mobile,
 		logger,
 		routingInfo: authState?.creds?.routingInfo
 	})
@@ -241,7 +246,9 @@ export const makeSocket = (config: SocketConfig) => {
 		const keyEnc = noise.processHandshake(handshake, creds.noiseKey)
 
 		let node: proto.IClientPayload
-		if(!creds.me) {
+		if(config.mobile) {
+			node = generateMobileNode(config)
+		} else if(!creds.me) {
 			node = generateRegistrationNode(creds, config)
 			logger.info({ node }, 'not logged in, attempting registration...')
 		} else {
