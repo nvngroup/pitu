@@ -516,43 +516,46 @@ export const generateWAMessageContent = async(
 		)
 	}
 
-	if('buttons' in message && !!message.buttons) {
+	if ('buttons' in message && !!message.buttons) {
 		const buttonsMessage: proto.Message.IButtonsMessage = {
-			buttons: message.buttons.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
+			buttons: message.buttons!.map(b => ({ ...b, type: proto.Message.ButtonsMessage.Button.Type.RESPONSE }))
 		}
-		if('text' in message) {
+		if ('text' in message) {
 			buttonsMessage.contentText = message.text
 			buttonsMessage.headerType = ButtonType.EMPTY
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				buttonsMessage.contentText = message.caption
 			}
 
 			const type = Object.keys(m)[0].replace('Message', '').toUpperCase()
 			buttonsMessage.headerType = ButtonType[type]
+
 			Object.assign(buttonsMessage, m)
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			buttonsMessage.footerText = message.footer
 		}
 
 		m = { buttonsMessage }
-	} else if('templateButtons' in message && !!message.templateButtons) {
+	} else if ('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
 		}
-		if('text' in message) {
+
+		if ('text' in message) {
 			msg.hydratedContentText = message.text
 		} else {
-			if('caption' in message) {
+
+			if ('caption' in message) {
 				msg.hydratedContentText = message.caption
 			}
 
 			Object.assign(msg, m)
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			msg.hydratedFooterText = message.footer
 		}
 

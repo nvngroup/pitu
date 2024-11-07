@@ -933,6 +933,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.error(err)
 				}
 
+				try {
+					if (getContentType(fullMsg.message!) === 'interactiveMessage') {
+						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+					}
+				} catch (err) {
+					logger.error(err)
+				}
+
 				if(config.emitOwnEvents) {
 					process.nextTick(() => {
 						processingMutex.mutex(() => (
