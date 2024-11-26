@@ -931,26 +931,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.error(err)
 				}
 
-				try {
-					if(getContentType(fullMsg.message!) === 'listMessage') {
-						let text = `${fullMsg.message?.listMessage?.description}\n\n`
-						fullMsg.message?.listMessage?.sections?.map(list => {
-							list.rows?.map(l => {
-								text += `${l.rowId} - ${l.title}\n`
-							})
-						})
-
-						const message = {
-							extendedTextMessage: {
-								text: text
-							}
-						}
-						await relayMessage(jid, message, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
-					}
-				} catch(err) {
-					logger.error(err)
-				}
-
 				if(config.emitOwnEvents) {
 					process.nextTick(() => {
 						processingMutex.mutex(() => (
