@@ -491,8 +491,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						    for(let i = 0; i < senderKeyJids.length; i += batchSize) {
 						        const batch = senderKeyJids.slice(i, i + batchSize)
 						        await assertSessions(batch, false)
-
-
 						    }
 
 							const participantsList = (groupData && !isStatus) ? groupData.participants.map(p => p.id) : []
@@ -848,7 +846,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		sendMessage: async(
 			jid: string,
 			content: AnyMessageContent,
-			options: MiscMessageGenerationOptions = { }
+			options: MiscMessageGenerationOptions = {}
 		) => {
 			const userJid = authState.creds.me!.id
 			if(
@@ -875,7 +873,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								thumbnailWidth: linkPreviewImageThumbnailWidth,
 								fetchOpts: {
 									timeout: 3_000,
-									...axiosOptions || { }
+									...axiosOptions || {}
 								},
 								logger,
 								uploadImage: generateHighQualityLinkPreview
@@ -896,7 +894,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const isEditMsg = 'edit' in content && !!content.edit
 				const isPinMsg = 'pin' in content && !!content.pin
 				const isPollMessage = 'poll' in content && !!content.poll
-				const additionalAttributes: BinaryNodeAttributes = { }
+				const additionalAttributes: BinaryNodeAttributes = {}
 				const additionalNodes: BinaryNode[] = []
 				// required for delete
 				if(isDeleteMsg) {
@@ -934,10 +932,22 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				try {
-					if (getContentType(fullMsg.message!) === 'interactiveMessage') {
-						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+					if(getContentType(fullMsg.message!) === 'listMessage') {
+						let text = `${fullMsg.message?.listMessage?.description}\n\n`
+						fullMsg.message?.listMessage?.sections?.map(list => {
+							list.rows?.map(l => {
+								text += `${l.rowId} - ${l.title}\n`
+							})
+						})
+
+						const message = {
+							extendedTextMessage: {
+								text: text
+							}
+						}
+						await relayMessage(jid, message, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
-				} catch (err) {
+				} catch(err) {
 					logger.error(err)
 				}
 
