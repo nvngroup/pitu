@@ -2,11 +2,13 @@
 
 <div align='center'>
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/baileys/total)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/brunocgc/baileys)
-![GitHub License](https://img.shields.io/github/license/brunocgc/baileys)
-![GitHub Repo stars](https://img.shields.io/github/stars/brunocgc/baileys)
-![GitHub forks](https://img.shields.io/github/forks/brunocgc/baileys)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/whiskeysockets/baileys/total)
+![NPM Downloads](https://img.shields.io/npm/dw/%40whiskeysockets%2Fbaileys?label=npm&color=%23CB3837)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/whiskeysockets/baileys)
+![GitHub License](https://img.shields.io/github/license/whiskeysockets/baileys)
+![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)
+![GitHub Repo stars](https://img.shields.io/github/stars/whiskeysockets/baileys)
+![GitHub forks](https://img.shields.io/github/forks/whiskeysockets/baileys)
 
 </div>
 
@@ -27,7 +29,7 @@ The maintainers of Baileys do not in any way condone the use of this application
 > [!IMPORTANT]
 > The original repository had to be removed by the original author - we now continue development in this repository here.
 This is the only official repository and is maintained by the community.
-> **Join the Discord [here](https://discord.gg/N2UqQvJM)**
+> **Join the Discord [here](https://discord.gg/WeJM5FP9GG)**
 
 ## Example
 
@@ -52,8 +54,13 @@ yarn add github:brunocgc/Baileys
 
 Then import your code using:
 ```ts
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@whiskeysockets/baileys'
 ```
+
+# Links
+
+- [Discord](https://discord.gg/WeJM5FP9GG)
+- [Docs](https://guide.whiskeysockets.io/)
 
 # Index
 
@@ -99,10 +106,7 @@ import makeWASocket from '@brunocgc/baileys'
     - [Thumbnail in Media Messages](#thumbnail-in-media-messages)
     - [Downloading Media Messages](#downloading-media-messages)
     - [Re-upload Media Message to Whatsapp](#re-upload-media-message-to-whatsapp)
-- [Call](#call)
-    - [Offer Call](#offer-call)
-    - [Terminate Call](#terminate-call)
-    - [Reject Call](#reject-call)
+- [Reject Call](#reject-call)
 - [Send States in Chat](#send-states-in-chat)
     - [Reading Messages](#reading-messages)
     - [Update Presence](#update-presence)
@@ -179,7 +183,7 @@ WhatsApp provides a multi-device API that allows Baileys to be authenticated as 
 > You can customize browser name if you connect with **QR-CODE**, with `Browser` constant, we have some browsers config, **see [here](https://baileys.whiskeysockets.io/types/BrowsersMap.html)**
 
 ```ts
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@whiskeysockets/baileys'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -199,7 +203,7 @@ If the connection is successful, you will see a QR code printed on your terminal
 The phone number can't have `+` or `()` or `-`, only numbers, you must provide country code
 
 ```ts
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@whiskeysockets/baileys'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -272,7 +276,7 @@ You obviously don't want to keep scanning the QR code every time you want to con
 
 So, you can load the credentials to log back in:
 ```ts
-import makeWASocket, { BufferJSON, useMultiFileAuthState } from '@brunocgc/baileys'
+import makeWASocket, { useMultiFileAuthState } from '@whiskeysockets/baileys'
 
 const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
 
@@ -308,17 +312,21 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 
 ### Example to Start
 
+> [!NOTE]
+> This example includes basic auth storage too
+
 ```ts
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@brunocgc/baileys'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 
 async function connectToWhatsApp () {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
     const sock = makeWASocket({
         // can provide additional config here
+        auth: state,
         printQRInTerminal: true
     })
     sock.ev.on('connection.update', (update) => {
-        const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
         const { connection, lastDisconnect } = update
         if(connection === 'close') {
             const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
@@ -339,6 +347,7 @@ async function connectToWhatsApp () {
             await sock.sendMessage(m.key.remoteJid!, { text: 'Hello Word' })
         }
     })
+
     // to storage creds (session info) when it updates
     sock.ev.on('creds.update', saveCreds)
 }
@@ -389,7 +398,7 @@ sock.ev.on('messages.update', event => {
 It can be used as follows:
 
 ```ts
-import makeWASocket, { makeInMemoryStore } from '@brunocgc/baileys'
+import makeWASocket, { makeInMemoryStore } from '@whiskeysockets/baileys'
 // the store maintains the data of the WA connection in memory
 // can be written out to a file & read from it
 const store = makeInMemoryStore({ })
@@ -575,7 +584,7 @@ await sock.sendMessage(
 await sock.sendMessage(
     jid,
     {
-        text: 'Hi, this was sent using https://github.com/brunocgc/baileys'
+        text: 'Hi, this was sent using https://github.com/whiskeysockets/baileys'
     }
 )
 ```
@@ -705,7 +714,7 @@ await sock.sendMessage(jid, {
 If you want to save the media you received
 ```ts
 import { createWriteStream } from 'fs'
-import { downloadMediaMessage, getContentType } from '@brunocgc/baileys'
+import { downloadMediaMessage, getContentType } from '@whiskeysockets/baileys'
 
 sock.ev.on('messages.upsert', async ({ [m] }) => {
     if (!m.message) return // if there is no text or media message
@@ -739,23 +748,7 @@ sock.ev.on('messages.upsert', async ({ [m] }) => {
 await sock.updateMediaMessage(msg)
 ```
 
-## Call
-
-### Offer Call
-
-```ts
-await sock.offerCall(jid, isVideo)
-```
-
-### Terminate Call
-
-- You can obtain `callId` and `callFrom` from `call` event
-
-```ts
-await sock.terminateCall(callId, callFrom)
-```
-
-### Reject Call
+## Reject Call
 
 - You can obtain `callId` and `callFrom` from `call` event
 
@@ -1278,6 +1271,9 @@ sock.ws.on('CB:edge_routing,id:abcd', (node: BinaryNode) => { })
 // for any message with tag 'edge_routing', id attribute = abcd & first content node routing_info
 sock.ws.on('CB:edge_routing,id:abcd,routing_info', (node: BinaryNode) => { })
 ```
+
+> [!NOTE]
+> Also, this repo is now licenced under GPL 3 since it uses [libsignal-node](https://git.questbook.io/backend/service-coderunner/-/merge_requests/1)
 
 > [!NOTE]
 > Also, this repo is now licenced under GPL 3 since it uses [libsignal-node](https://git.questbook.io/backend/service-coderunner/-/merge_requests/1)
