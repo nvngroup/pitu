@@ -24,8 +24,8 @@ jobs:
 
       - name: Install packages
         run: |
-          npm ci
-          npm ci --pure-lockfile --cwd proto-extract
+          npm install
+          npm install --pure-lockfile --cwd proto-extract
 
       - name: Update WAProto.proto
         id: wa_proto_info
