@@ -1,3 +1,7 @@
+## [6.7.23](https://github.com/brunocgc/Baileys/compare/v6.7.22...v6.7.23) (2025-01-20)
+
+
+
 ## [6.7.22](https://github.com/brunocgc/Baileys/compare/v6.7.21...v6.7.22) (2024-11-26)
 
 
