@@ -9,13 +9,6 @@ import { encodeBigEndian } from './generics'
 import { createSignalIdentity } from './signal'
 
 const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
-	const osVersion = config.mobile ? '15.3.1' : '0.1'
-	const version = config.mobile ? [2, 24, 6] : config.version
-	const device = config.mobile ? 'iPhone_7' : 'Desktop'
-	const manufacturer = config.mobile ? 'Apple' : ''
-	const platform = config.mobile ? proto.ClientPayload.UserAgent.Platform.IOS : proto.ClientPayload.UserAgent.Platform.WEB
-	const phoneId = config.mobile ? { phoneId: config.auth.creds.phoneId } : {}
-
 	return {
 		appVersion: {
 			primary: version[0],
@@ -31,8 +24,9 @@ const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
 		device,
 		osBuildNumber: osVersion,
 		localeLanguageIso6391: 'en',
-		localeCountryIso31661Alpha2: 'US',
-		...phoneId
+		mnc: '000',
+		mcc: '000',
+		localeCountryIso31661Alpha2: config.countryCode,
 	}
 }
 
@@ -92,7 +86,8 @@ export const generateLoginNode = (userJid: string, config: SocketConfig): proto.
 	const { user, device } = jidDecode(userJid)!
 	const payload: proto.IClientPayload = {
 		...getClientPayload(config),
-		passive: true,
+		passive: false,
+		pull: true,
 		username: +user,
 		device: device,
 	}
@@ -125,6 +120,7 @@ export const generateRegistrationNode = (
 	const registerPayload: proto.IClientPayload = {
 		...getClientPayload(config),
 		passive: false,
+		pull: false,
 		devicePairingData: {
 			buildHash: appVersionBuf,
 			deviceProps: companionProto,
