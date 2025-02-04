@@ -11,18 +11,15 @@ import { createSignalIdentity } from './signal'
 const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
 	return {
 		appVersion: {
-			primary: version[0],
-			secondary: version[1],
-			tertiary: version[2],
+			primary: config.version[0],
+			secondary: config.version[1],
+			tertiary: config.version[2],
 		},
-		platform,
+		platform: proto.ClientPayload.UserAgent.Platform.WEB,
 		releaseChannel: proto.ClientPayload.UserAgent.ReleaseChannel.RELEASE,
-		mcc: config.auth.creds.registration?.phoneNumberMobileCountryCode || '000',
-		mnc: config.auth.creds.registration?.phoneNumberMobileNetworkCode || '000',
-		osVersion: osVersion,
-		manufacturer,
-		device,
-		osBuildNumber: osVersion,
+		osVersion: '0.1',
+		device: 'Desktop',
+		osBuildNumber: '0.1',
 		localeLanguageIso6391: 'en',
 		mnc: '000',
 		mcc: '000',
@@ -52,9 +49,11 @@ const getClientPayload = (config: SocketConfig) => {
 		userAgent: getUserAgent(config),
 	}
 
-	if(!config.mobile) {
+	/* if(!config.mobile) {
 		payload.webInfo = getWebInfo(config)
-	}
+	} */
+
+	payload.webInfo = getWebInfo(config)
 
 	return payload
 }
