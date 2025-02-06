@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Logger } from 'pino'
 import { proto } from '../../WAProto'
 import type { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from '../Types'

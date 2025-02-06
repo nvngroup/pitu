@@ -352,7 +352,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const normalizedMessage = normalizeMessageContent(message)
 		const isInteractiveMessage = getContentType(normalizedMessage) === 'interactiveMessage'
 
-		if (participant && !isInteractiveMessage) {
+		if(participant && !isInteractiveMessage) {
 			// when the retry request is not for a group
 			// only send to the specific device that asked for a retry
 			// otherwise the message is sent out to every device that should be a recipient
@@ -364,7 +364,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			devices.push({ user, device })
 		}
 
-		if (isInteractiveMessage) {
+		if(isInteractiveMessage) {
 			additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 		}
 
@@ -612,27 +612,27 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const getButtonType = (message: proto.IMessage) => {
-		if (message.buttonsMessage) {
+	/* const getButtonType = (message: proto.IMessage) => {
+		if(message.buttonsMessage) {
 			return 'buttons'
-		} else if (message.buttonsResponseMessage) {
+		} else if(message.buttonsResponseMessage) {
 			return 'buttons_response'
-		} else if (message.interactiveResponseMessage) {
+		} else if(message.interactiveResponseMessage) {
 			return 'interactive_response'
-		} else if (message.listMessage) {
+		} else if(message.listMessage) {
 			return 'list'
-		} else if (message.listResponseMessage) {
+		} else if(message.listResponseMessage) {
 			return 'list_response'
 		}
-	}
+	} */
 
 	const getButtonArgs = (message: proto.IMessage): BinaryNode['attrs'] => {
-		if (message.templateMessage) {
+		if(message.templateMessage) {
 			// TODO: Add attributes
 			return {}
-		} else if (message.listMessage) {
+		} else if(message.listMessage) {
 			const type = message.listMessage.listType
-			if (!type) {
+			if(!type) {
 				throw new Boom('Expected list type inside message')
 			}
 
@@ -823,12 +823,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
-					if (getContentType(fullMsg.message!) === 'listMessage') {
+					if(getContentType(fullMsg.message!) === 'listMessage') {
 						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
-				} catch (err) {
+				} catch(err) {
 					logger.error(err)
 				}
+
 				if(config.emitOwnEvents) {
 					process.nextTick(() => {
 						processingMutex.mutex(() => (
