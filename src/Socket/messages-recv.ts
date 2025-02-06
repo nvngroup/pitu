@@ -1,3 +1,4 @@
+
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import NodeCache from 'node-cache'
@@ -15,7 +16,6 @@ import {
 	derivePairingCodeKey,
 	encodeBigEndian,
 	encodeSignedDeviceIdentity,
-	generateMessageIDV2,
 	getCallStatusFromNode,
 	getHistoryMsg,
 	getNextPreKeys,
@@ -39,7 +39,6 @@ import {
 	isJidGroup, isJidStatusBroadcast,
 	isJidUser,
 	jidDecode,
-	jidEncode,
 	jidNormalizedUser,
 	S_WHATSAPP_NET
 } from '../WABinary'
@@ -103,7 +102,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 
 		if(!!errorCode) {
-		  stanza.attrs.error = errorCode.toString()
+			stanza.attrs.error = errorCode.toString()
 		}
 
 		if(!!attrs.participant) {
@@ -126,96 +125,21 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		await sendNode(stanza)
 	}
 
-	const offerCall = async(toJid: string, isVideo = false) => {
-		const callId = randomBytes(16).toString('hex').toUpperCase().substring(0, 64)
-		const offerContent: BinaryNode[] = []
-		offerContent.push({ tag: 'audio', attrs: { enc: 'opus', rate: '16000' }, content: undefined })
-		offerContent.push({ tag: 'audio', attrs: { enc: 'opus', rate: '8000' }, content: undefined })
-		if(isVideo) {
-			offerContent.push({
-				tag: 'video',
-				attrs: { enc: 'vp8', dec: 'vp8', orientation: '0', 'screen_width': '1920', 'screen_height': '1080', 'device_orientation': '0' },
-				content: undefined
-			})
-		}
-
-		offerContent.push({ tag: 'net', attrs: { medium: '3' }, content: undefined })
-		offerContent.push({ tag: 'capability', attrs: { ver: '1' }, content: new Uint8Array([1, 4, 255, 131, 207, 4]) })
-		offerContent.push({ tag: 'encopt', attrs: { keygen: '2' }, content: undefined })
-		const encKey = randomBytes(32)
-		const devices = (await getUSyncDevices([toJid], true, false)).map(({ user, device }) => jidEncode(user, 's.whatsapp.net', device))
-		await assertSessions(devices, true)
-		const { nodes: destinations, shouldIncludeDeviceIdentity } = await createParticipantNodes(devices, {
-			call: {
-				callKey: new Uint8Array(encKey)
-			}
-		}, { count: '0' })
-		offerContent.push({ tag: 'destination', attrs: {}, content: destinations })
-		if(shouldIncludeDeviceIdentity) {
-			offerContent.push({
-				tag: 'device-identity',
-				attrs: {},
-				content: encodeSignedDeviceIdentity(authState.creds.account!, true)
-			})
-		}
-
-		const stanza: BinaryNode = ({
-			tag: 'call',
-			attrs: {
-				id: generateMessageIDV2(),
-				to: toJid,
-			},
-			content: [{
-				tag: 'offer',
-				attrs: {
-					'call-id': callId,
-					'call-creator': authState.creds.me!.id,
-				},
-				content: offerContent,
-			}],
-		})
-		await query(stanza)
-		return {
-			id: callId,
-			to: toJid
-		}
-	}
-
-	const terminateCall = async(callId: string, toJid: string) => {
-		const stanza: BinaryNode = ({
-			tag: 'call',
-			attrs: {
-				id: generateMessageIDV2(),
-				to: toJid,
-			},
-			content: [{
-				tag: 'terminate',
-				attrs: {
-					'call-id': callId,
-					'call-creator': toJid,
-				},
-				content: undefined,
-			}],
-		})
-		await query(stanza)
-	}
-
 	const rejectCall = async(callId: string, callFrom: string) => {
 		const stanza: BinaryNode = ({
 			tag: 'call',
 			attrs: {
-				id: generateMessageIDV2(),
-				to: callFrom,
 				from: authState.creds.me!.id,
+				to: callFrom,
 			},
 			content: [{
-			    tag: 'reject',
-			    attrs: {
+				tag: 'reject',
+				attrs: {
 					'call-id': callId,
 					'call-creator': callFrom,
 					count: '0',
-			    },
-			    content: undefined,
+				},
+				content: undefined,
 			}],
 		})
 		await query(stanza)
@@ -267,7 +191,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						},
 						{
 							tag: 'registration',
-							attrs: { },
+							attrs: {},
 							content: encodeBigEndian(authState.creds.registrationId)
 						}
 					]
@@ -290,13 +214,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					const content = receipt.content! as BinaryNode[]
 					content.push({
 						tag: 'keys',
-						attrs: { },
+						attrs: {},
 						content: [
-							{ tag: 'type', attrs: { }, content: Buffer.from(KEY_BUNDLE_TYPE) },
-							{ tag: 'identity', attrs: { }, content: identityKey.public },
+							{ tag: 'type', attrs: {}, content: Buffer.from(KEY_BUNDLE_TYPE) },
+							{ tag: 'identity', attrs: {}, content: identityKey.public },
 							xmppPreKey(key, +keyId),
 							xmppSignedPreKey(signedPreKey),
-							{ tag: 'device-identity', attrs: { }, content: deviceIdentity }
+							{ tag: 'device-identity', attrs: {}, content: deviceIdentity }
 						]
 					})
 
@@ -394,32 +318,32 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			break
 		case 'subject':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_SUBJECT
-			msg.messageStubParameters = [ child.attrs.subject ]
+			msg.messageStubParameters = [child.attrs.subject]
 			break
 		case 'description':
 			const description = getBinaryNodeChild(child, 'body')?.content?.toString()
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_DESCRIPTION
-			msg.messageStubParameters = description ? [ description ] : undefined
+			msg.messageStubParameters = description ? [description] : undefined
 			break
 		case 'announcement':
 		case 'not_announcement':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_ANNOUNCE
-			msg.messageStubParameters = [ (child.tag === 'announcement') ? 'on' : 'off' ]
+			msg.messageStubParameters = [(child.tag === 'announcement') ? 'on' : 'off']
 			break
 		case 'locked':
 		case 'unlocked':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_RESTRICT
-			msg.messageStubParameters = [ (child.tag === 'locked') ? 'on' : 'off' ]
+			msg.messageStubParameters = [(child.tag === 'locked') ? 'on' : 'off']
 			break
 		case 'invite':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_INVITE_LINK
-			msg.messageStubParameters = [ child.attrs.code ]
+			msg.messageStubParameters = [child.attrs.code]
 			break
 		case 'member_add_mode':
 			const addMode = child.content
 			if(addMode) {
 				msg.messageStubType = WAMessageStubType.GROUP_MEMBER_ADD_MODE
-				msg.messageStubParameters = [ addMode.toString() ]
+				msg.messageStubParameters = [addMode.toString()]
 			}
 
 			break
@@ -427,24 +351,24 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const approvalMode = getBinaryNodeChild(child, 'group_join')
 			if(approvalMode) {
 				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE
-				msg.messageStubParameters = [ approvalMode.attrs.state ]
+				msg.messageStubParameters = [approvalMode.attrs.state]
 			}
 
 			break
 		case 'created_membership_requests':
 			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [ participantJid, 'created', child.attrs.request_method ]
+			msg.messageStubParameters = [participantJid, 'created', child.attrs.request_method]
 			break
 		case 'revoked_membership_requests':
 			const isDenied = areJidsSameUser(participantJid, participant)
 			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [ participantJid, isDenied ? 'revoked' : 'rejected' ]
+			msg.messageStubParameters = [participantJid, isDenied ? 'revoked' : 'rejected']
 			break
 		}
 	}
 
 	const processNotification = async(node: BinaryNode) => {
-		const result: Partial<proto.IWebMessageInfo> = { }
+		const result: Partial<proto.IWebMessageInfo> = {}
 		const [child] = getAllBinaryNodeChildren(node)
 		const nodeType = node.attrs.type
 		const from = jidNormalizedUser(node.attrs.from)
@@ -853,7 +777,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						await decrypt()
 						// message failed to decrypt
 						if(msg.messageStubType === proto.WebMessageInfo.StubType.CIPHERTEXT) {
-						  if(msg?.messageStubParameters?.[0] === MISSING_KEYS_ERROR_TEXT) {
+							if(msg?.messageStubParameters?.[0] === MISSING_KEYS_ERROR_TEXT) {
 								return sendMessageAck(node, NACK_REASONS.ParsingError)
 							}
 
@@ -1152,7 +1076,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			.catch(error => onUnexpectedError(error, 'handling bad ack'))
 	})
 
-	ev.on('call', ([ call ]) => {
+	ev.on('call', ([call]) => {
 		// missed call + group call notification message generation
 		if(call.status === 'timeout' || (call.status === 'offer' && call.isGroup)) {
 			const msg: proto.IWebMessageInfo = {
@@ -1189,9 +1113,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		...sock,
 		sendMessageAck,
 		sendRetryRequest,
-		offerCall,
 		rejectCall,
-		terminateCall,
 		fetchMessageHistory,
 		requestPlaceholderResend,
 	}
