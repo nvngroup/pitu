@@ -8,8 +8,6 @@ import {
 	DEF_TAG_PREFIX,
 	INITIAL_PREKEY_COUNT,
 	MIN_PREKEY_COUNT,
-	MOBILE_ENDPOINT,
-	MOBILE_PORT,
 	NOISE_WA_HEADER
 } from '../Defaults'
 import { DisconnectReason, SocketConfig } from '../Types'
@@ -23,7 +21,6 @@ import {
 	derivePairingCodeKey,
 	generateLoginNode,
 	generateMdTagPrefix,
-	generateMobileNode,
 	generateRegistrationNode,
 	getCodeFromWSError,
 	getErrorCodeFromStreamError,
@@ -68,15 +65,14 @@ export const makeSocket = (config: SocketConfig) => {
 		makeSignalRepository,
 	} = config
 
-	let url = typeof waWebSocketUrl === 'string' ? new URL(waWebSocketUrl) : waWebSocketUrl
-	config.mobile = config.mobile || url.protocol === 'tcp:'
+	const url = typeof waWebSocketUrl === 'string' ? new URL(waWebSocketUrl) : waWebSocketUrl
 
 
 	if(config.mobile || url.protocol === 'tcp:') {
-		url = new URL(`tcp://${MOBILE_ENDPOINT}:${MOBILE_PORT}`)
+		throw new Boom('Mobile API is not supported anymore', { statusCode: DisconnectReason.loggedOut })
 	}
 
-	if(!config.mobile && url.protocol === 'wss' && authState?.creds?.routingInfo) {
+	if(url.protocol === 'wss' && authState?.creds?.routingInfo) {
 		url.searchParams.append('ED', authState.creds.routingInfo.toString('base64url'))
 	}
 
@@ -91,7 +87,6 @@ export const makeSocket = (config: SocketConfig) => {
 	const noise = makeNoiseHandler({
 		keyPair: ephemeralKeyPair,
 		NOISE_HEADER: NOISE_WA_HEADER,
-		mobile: config.mobile,
 		logger,
 		routingInfo: authState?.creds?.routingInfo
 	})
@@ -246,9 +241,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const keyEnc = noise.processHandshake(handshake, creds.noiseKey)
 
 		let node: proto.IClientPayload
-		if(config.mobile) {
-			node = generateMobileNode(config)
-		} else if(!creds.me) {
+		if(!creds.me) {
 			node = generateRegistrationNode(creds, config)
 			logger.info({ node }, 'not logged in, attempting registration...')
 		} else {
@@ -649,20 +642,15 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 	// login complete
 	ws.on('CB:success', async(node: BinaryNode) => {
-		try {
-			await uploadPreKeysToServerIfRequired()
-			await sendPassiveIq('active')
+		await uploadPreKeysToServerIfRequired()
+		await sendPassiveIq('active')
 
-			logger.info('opened connection to WA')
-			clearTimeout(qrTimer) // will never happen in all likelyhood -- but just in case WA sends success on first try
+		logger.info('opened connection to WA')
+		clearTimeout(qrTimer) // will never happen in all likelyhood -- but just in case WA sends success on first try
 
-			ev.emit('creds.update', { me: { ...authState.creds.me!, lid: node.attrs.lid } })
+		ev.emit('creds.update', { me: { ...authState.creds.me!, lid: node.attrs.lid } })
 
-			ev.emit('connection.update', { connection: 'open' })
-		} catch(err) {
-			logger.error({ trace: err }, 'error opening connection')
-			end(err)
-		}
+		ev.emit('connection.update', { connection: 'open' })
 	})
 
 	ws.on('CB:stream:error', (node: BinaryNode) => {

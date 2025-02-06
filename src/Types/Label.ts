@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 export interface Label {
     /** Label uniq ID */
     id: string

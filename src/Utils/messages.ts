@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 import { Boom } from '@hapi/boom'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -330,7 +329,7 @@ export const generateWAMessageContent = async(
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo = message.linkPreview
-		if(typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
+		if (typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
@@ -567,7 +566,7 @@ export const generateWAMessageContent = async(
 		}
 	}
 
-	if('sections' in message && !!message.sections) {
+	if ('sections' in message && !!message.sections) {
 		const listMessage: proto.Message.IListMessage = {
 			sections: message.sections,
 			buttonText: message.buttonText,

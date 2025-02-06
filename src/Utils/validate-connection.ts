@@ -49,35 +49,9 @@ const getClientPayload = (config: SocketConfig) => {
 		userAgent: getUserAgent(config),
 	}
 
-	/* if(!config.mobile) {
-		payload.webInfo = getWebInfo(config)
-	} */
-
 	payload.webInfo = getWebInfo(config)
 
 	return payload
-}
-
-export const generateMobileNode = (config: SocketConfig): proto.IClientPayload => {
-	if(!config.auth.creds) {
-		throw new Boom('No registration data found', { data: config })
-	}
-
-	const payload: proto.IClientPayload = {
-		...getClientPayload(config),
-		sessionId: Math.floor(Math.random() * 999999999 + 1),
-		shortConnect: true,
-		connectAttemptCount: 0,
-		device: 0,
-		dnsSource: {
-			appCached: false,
-			dnsMethod: proto.ClientPayload.DNSSource.DNSResolutionMethod.SYSTEM,
-		},
-		passive: false, // XMPP heartbeat setting (false: server actively pings) (true: client actively pings)
-		pushName: 'test',
-		username: Number(`${config.auth.creds.registration.phoneNumberCountryCode}${config.auth.creds.registration.phoneNumberNationalNumber}`),
-	}
-	return proto.ClientPayload.fromObject(payload)
 }
 
 

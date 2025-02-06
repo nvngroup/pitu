@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 import { AxiosRequestConfig } from 'axios'
 import type { Logger } from 'pino'
 import type { Readable } from 'stream'
