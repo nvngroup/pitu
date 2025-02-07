@@ -21,7 +21,13 @@
         "@typescript-eslint/no-unnecessary-type-assertion": [
             "warn"
         ],
-        "no-restricted-syntax": "off",
+        "no-restricted-syntax":  [
+            "warn",
+            {
+                "selector": "TSEnumDeclaration",
+                "message": "Don't declare enums, use literals instead"
+            }
+        ],
         "keyword-spacing": [
             "warn"
         ]
