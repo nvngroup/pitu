@@ -266,6 +266,44 @@ const sock = makeWASocket({
         markOnlineOnConnect: false
     })
     ```
+## Important Notes About Socket Config
+
+### Caching Group Metadata (Recommended)
+- If you use baileys for groups, we recommend you to set `cachedGroupMetadata` in socket config, you need to implement a cache like this:
+
+    ```ts
+    const groupCache = new NodeCache({stdTTL: 5 * 60, useClones: false})
+
+    const sock = makeWASocket({
+        cachedGroupMetadata: async (jid) => groupCache.get(jid)
+    })
+
+    sock.ev.on('groups.update', async ([event]) => {
+        const metadata = await sock.groupMetadata(event.id)
+        groupCache.set(event.id, metadata)
+    })
+
+    sock.ev.on('group-participants.update', async (event) => {
+        const metadata = await sock.groupMetadata(event.id)
+        groupCache.set(event.id, metadata)
+    })
+    ```
+
+### Improve Retry System & Decrypt Poll Votes
+- If you want to improve sending message, retrying when error occurs and decrypt poll votes, you need to have a store and set `getMessage` config in socket like this:
+    ```ts
+    const sock = makeWASocket({
+        getMessage: async (key) => await getMessageFromStore(key)
+    })
+    ```
+
+### Receive Notifications in Whatsapp App
+- If you want to receive notifications in whatsapp app, set `markOnlineOnConnect` to `false`
+    ```ts
+    const sock = makeWASocket({
+        markOnlineOnConnect: false
+    })
+    ```
 ## Saving & Restoring Sessions
 
 You obviously don't want to keep scanning the QR code every time you want to connect.
@@ -276,14 +314,23 @@ import makeWASocket, { BufferJSON, useMultiFileAuthState } from '@brunocgc/baile
 
 const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
 
+
 // will use the given state to connect
 // so if valid credentials are available -- it'll connect without QR
 const sock = makeWASocket({ auth: state })
 
+const sock = makeWASocket({ auth: state })
+
 // this will be called as soon as the credentials are updated
+sock.ev.on('creds.update', saveCreds)
 sock.ev.on('creds.update', saveCreds)
 ```
 
+> [!IMPORTANT]
+> `useMultiFileAuthState` is a utility function to help save the auth state in a single folder, this function serves as a good guide to help write auth & key states for SQL/no-SQL databases, which I would recommend in any production grade system.
+
+> [!NOTE]
+> When a message is received/sent, due to signal sessions needing updating, the auth keys (`authState.keys`) will update. Whenever that happens, you must save the updated keys (`authState.keys.set()` is called). Not doing so will prevent your messages from reaching the recipient & cause other unexpected consequences. The `useMultiFileAuthState` function automatically takes care of that, but for any other serious implementation -- you will need to be very careful with the key state management.
 > [!IMPORTANT]
 > `useMultiFileAuthState` is a utility function to help save the auth state in a single folder, this function serves as a good guide to help write auth & key states for SQL/no-SQL databases, which I would recommend in any production grade system.
 
@@ -385,6 +432,10 @@ sock.ev.on('messages.update', event => {
 
 > [!IMPORTANT]
 > I highly recommend building your own data store, as storing someone's entire chat history in memory is a terrible waste of RAM.
+- Baileys does not come with a defacto storage for chats, contacts, or messages. However, a simple in-memory implementation has been provided. The store listens for chat updates, new messages, message updates, etc., to always have an up-to-date version of the data.
+
+> [!IMPORTANT]
+> I highly recommend building your own data store, as storing someone's entire chat history in memory is a terrible waste of RAM.
 
 It can be used as follows:
 
@@ -406,6 +457,8 @@ const sock = makeWASocket({ })
 store.bind(sock.ev)
 
 sock.ev.on('chats.upsert', () => {
+    // can use 'store.chats' however you want, even after the socket dies out
+    // 'chats' => a KeyedDB instance
     // can use 'store.chats' however you want, even after the socket dies out
     // 'chats' => a KeyedDB instance
     console.log('got chats', store.chats.all())
@@ -437,6 +490,17 @@ The store also provides some simple functions such as `loadMessages` that utiliz
 
 ## Sending Messages
 
+- Send all types of messages with a single function
+    - **[Here](https://baileys.whiskeysockets.io/types/AnyMessageContent.html) you can see all message contents supported, like text message**
+    - **[Here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html) you can see all options supported, like quote message**
+
+    ```ts
+    const jid: string
+    const content: AnyMessageContent
+    const options: MiscMessageGenerationOptions
+
+    sock.sendMessage(jid, content, options)
+    ```
 - Send all types of messages with a single function
     - **[Here](https://baileys.whiskeysockets.io/types/AnyMessageContent.html) you can see all message contents supported, like text message**
     - **[Here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html) you can see all options supported, like quote message**
@@ -494,12 +558,17 @@ await sock.sendMessage(
 ```
 #### Contact Message
 ```ts
+```
+#### Contact Message
+```ts
 const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
             + 'VERSION:3.0\n'
             + 'FN:Jeff Singh\n' // full name
             + 'ORG:Ashoka Uni;\n' // the organization of the contact
             + 'TEL;type=CELL;type=VOICE;waid=911234567890:+91 12345 67890\n' // WhatsApp ID + phone number
             + 'END:VCARD'
+
+await sock.sendMessage(
 
 await sock.sendMessage(
     id,
@@ -565,8 +634,63 @@ await sock.sendMessage(
 )
 ```
 
+#### Reaction Message
+- You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        react: {
+            text: '💖', // use an empty string to remove the reaction
+            key: message.key
+        }
+    }
+)
+```
+
+#### Pin Message
+- You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+
+- Time can be:
+
+| Time  | Seconds        |
+|-------|----------------|
+| 24h    | 86.400        |
+| 7d     | 604.800       |
+| 30d    | 2.592.000     |
+
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        pin: {
+            type: 1, // 0 to remove
+            time: 86400
+            key: message.key
+        }
+    }
+)
+```
+
+#### Poll Message
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        poll: {
+            name: 'My Poll',
+            values: ['Option 1', 'Option 2', ...],
+            selectableCount: 1,
+            toAnnouncementGroup: false // or true
+        }
+    }
+)
+```
+
+### Sending Messages with Link Previews
 ### Sending Messages with Link Previews
 
+1. By default, wa does not have link generation when sent from the web
 1. By default, wa does not have link generation when sent from the web
 2. Baileys has a function to generate the content for these link previews
 3. To enable this function's usage, add `link-preview-js` as a dependency to your project with `yarn add link-preview-js`
@@ -587,8 +711,19 @@ Sending media (video, stickers, images) is easier & more efficient than ever.
 > [!NOTE]
 > In media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://baileys.whiskeysockets.io/types/WAMediaUpload.html)
 
+Sending media (video, stickers, images) is easier & more efficient than ever.
+
+> [!NOTE]
+> In media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://baileys.whiskeysockets.io/types/WAMediaUpload.html)
+
 - When specifying a media url, Baileys never loads the entire buffer into memory; it even encrypts the media as a readable stream.
 
+> [!TIP]
+> It's recommended to use Stream or Url to save memory
+
+#### Gif Message
+- Whatsapp doesn't support `.gif` files, that's why we send gifs as common `.mp4` video with `gifPlayback` flag
+```ts
 > [!TIP]
 > It's recommended to use Stream or Url to save memory
 
@@ -604,7 +739,10 @@ await sock.sendMessage(
     }
 )
 ```
+```
 
+#### Video Message
+```ts
 #### Video Message
 ```ts
 await sock.sendMessage(
@@ -617,6 +755,21 @@ await sock.sendMessage(
 	    ptv: false // if set to true, will send as a `video note`
     }
 )
+```
+
+#### Audio Message
+- To audio message work in all devices you need to convert with some tool like `ffmpeg` with this flags:
+    ```bash
+        codec: libopus //ogg file
+        ac: 1 //one channel
+        avoid_negative_ts
+        make_zero
+    ```
+    - Example:
+    ```bash
+    ffmpeg -i input.mp4 -avoid_negative_ts make_zero -ac 1 output.ogg
+    ```
+```ts
 ```
 
 #### Audio Message
@@ -708,14 +861,19 @@ import { createWriteStream } from 'fs'
 import { downloadMediaMessage, getContentType } from '@brunocgc/baileys'
 
 sock.ev.on('messages.upsert', async ({ [m] }) => {
+sock.ev.on('messages.upsert', async ({ [m] }) => {
     if (!m.message) return // if there is no text or media message
+    const messageType = getContentType(m) // get what type of message it is (text, image, video...)
+
     const messageType = getContentType(m) // get what type of message it is (text, image, video...)
 
     // if the message is an image
     if (messageType === 'imageMessage') {
         // download the message
         const stream = await downloadMediaMessage(
+        const stream = await downloadMediaMessage(
             m,
+            'stream', // can be 'buffer' too
             'stream', // can be 'buffer' too
             { },
             {
@@ -726,6 +884,8 @@ sock.ev.on('messages.upsert', async ({ [m] }) => {
             }
         )
         // save to file
+        const writeStream = createWriteStream('./my-download.jpeg')
+        stream.pipe(writeStream)
         const writeStream = createWriteStream('./my-download.jpeg')
         stream.pipe(writeStream)
     }
@@ -796,6 +956,36 @@ await sock.sendPresenceUpdate('available', jid)
 
 WA uses an encrypted form of communication to send chat/app updates. This has been implemented mostly and you can send the following updates:
 
+> [!IMPORTANT]
+> If you mess up one of your updates, WA can log you out of all your devices and you'll have to log in again.
+
+### Archive a Chat
+```ts
+const lastMsgInChat = await getLastMessageInChat(jid) // implement this on your end
+await sock.chatModify({ archive: true, lastMessages: [lastMsgInChat] }, jid)
+```
+### Mute/Unmute a Chat
+
+- Supported times:
+
+| Time  | Miliseconds     |
+|-------|-----------------|
+| Remove | null           |
+| 8h     | 86.400.000     |
+| 7d     | 604.800.000    |
+
+```ts
+// mute for 8 hours
+await sock.chatModify({ mute: 8 * 60 * 60 * 1000 }, jid)
+// unmute
+await sock.chatModify({ mute: null }, jid)
+```
+### Mark a Chat Read/Unread
+```ts
+const lastMsgInChat = await getLastMessageInChat(jid) // implement this on your end
+// mark it unread
+await sock.chatModify({ markRead: false, lastMessages: [lastMsgInChat] }, jid)
+```
 > [!IMPORTANT]
 > If you mess up one of your updates, WA can log you out of all your devices and you'll have to log in again.
 
@@ -906,8 +1096,10 @@ await sock.sendMessage(
     { disappearingMessagesInChat: WA_DEFAULT_EPHEMERAL }
 )
 
+
 // will send as a disappearing message
 await sock.sendMessage(jid, { text: 'hello' }, { ephemeralExpiration: WA_DEFAULT_EPHEMERAL })
+
 
 // turn off disappearing messages
 await sock.sendMessage(
@@ -916,6 +1108,34 @@ await sock.sendMessage(
 )
 ```
 
+## User Querys
+
+### Check If ID Exists in Whatsapp
+```ts
+const [result] = await sock.onWhatsApp(jid)
+if (result.exists) console.log (`${jid} exists on WhatsApp, as jid: ${result.jid}`)
+```
+
+### Query Chat History (groups too)
+
+- You need to have oldest message in chat
+```ts
+const msg = await getOldestMessageInChat(jid)
+await sock.fetchMessageHistory(
+    50, //quantity (max: 50 per query)
+    msg.key,
+    msg.messageTimestamp
+)
+```
+- Messages will be received in `messaging.history-set` event
+
+### Fetch Status
+```ts
+const status = await sock.fetchStatus(jid)
+console.log('status: ' + status)
+```
+
+### Fetch Profile Picture (groups too)
 ## User Querys
 
 ### Check If ID Exists in Whatsapp
@@ -1178,7 +1398,24 @@ await sock.updateDefaultDisappearingMode(ephemeral)
 
 ### Send Broadcast & Stories
 - Messages can be sent to broadcasts & stories. You need to add the following message options in sendMessage, like this:
+### Send Broadcast & Stories
+- Messages can be sent to broadcasts & stories. You need to add the following message options in sendMessage, like this:
 ```ts
+await sock.sendMessage(
+    jid,
+    {
+        image: {
+            url: url
+        },
+        caption: caption
+    },
+    {
+        backgroundColor: backgroundColor,
+        font: font,
+        statusJidList: statusJidList,
+        broadcast: true
+    }
+)
 await sock.sendMessage(
     jid,
     {
@@ -1199,10 +1436,19 @@ await sock.sendMessage(
 - You can add `backgroundColor` and other options in the message options, see [here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html)
 - `broadcast: true` enables broadcast mode
 - `statusJidList`: a list of people that you can get which you need to provide, which are the people who will get this status message.
+- Message body can be a `extendedTextMessage` or `imageMessage` or `videoMessage` or `voiceMessage`, see [here](https://baileys.whiskeysockets.io/types/AnyRegularMessageContent.html)
+- You can add `backgroundColor` and other options in the message options, see [here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html)
+- `broadcast: true` enables broadcast mode
+- `statusJidList`: a list of people that you can get which you need to provide, which are the people who will get this status message.
 
 - You can send messages to broadcast lists the same way you send messages to groups & individual chats.
 - Right now, WA Web does not support creating broadcast lists, but you can still delete them.
 - Broadcast IDs are in the format `12345678@broadcast`
+### Query a Broadcast List's Recipients & Name
+```ts
+const bList = await sock.getBroadcastListInfo('1234@broadcast')
+console.log (`list name: ${bList.name}, recps: ${bList.recipients}`)
+```
 ### Query a Broadcast List's Recipients & Name
 ```ts
 const bList = await sock.getBroadcastListInfo('1234@broadcast')
@@ -1213,7 +1459,9 @@ console.log (`list name: ${bList.name}, recps: ${bList.recipients}`)
 Baileys is written with custom functionality in mind. Instead of forking the project & re-writing the internals, you can simply write your own extensions.
 
 ### Enabling Debug Level in Baileys Logs
+### Enabling Debug Level in Baileys Logs
 First, enable the logging of unhandled messages from WhatsApp by setting:
+```ts
 ```ts
 const sock = makeWASocket({
     logger: P({ level: 'debug' }),
