@@ -726,12 +726,6 @@ export const chatModificationToAppPatch = (
 	return patch
 }
 
-function isValidPatchBasedOnMessageRange(chat: Chat, msgRange: proto.SyncActionValue.ISyncActionMessageRange | null | undefined) {
-	const lastMsgTimestamp = Number(msgRange?.lastMessageTimestamp || msgRange?.lastSystemMessageTimestamp || 0)
-	const chatLastMsgTimestamp = Number(chat?.lastMessageRecvTimestamp || 0)
-	return lastMsgTimestamp >= chatLastMsgTimestamp
-}
-
 export const processSyncAction = (
 	syncAction: ChatMutation,
 	ev: BaileysEventEmitter,
@@ -891,5 +885,11 @@ export const processSyncAction = (
 				}
 			}
 			: undefined
+	}
+
+	function isValidPatchBasedOnMessageRange(chat: Chat, msgRange: proto.SyncActionValue.ISyncActionMessageRange | null | undefined) {
+		  const lastMsgTimestamp = Number(msgRange?.lastMessageTimestamp || msgRange?.lastSystemMessageTimestamp || 0)
+		  const chatLastMsgTimestamp = Number(chat?.lastMessageRecvTimestamp || 0)
+		  return lastMsgTimestamp >= chatLastMsgTimestamp
 	}
 }

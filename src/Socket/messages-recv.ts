@@ -46,14 +46,6 @@ import {
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
 
-function toRequiredBuffer(data: Uint8Array | Buffer | undefined) {
-	if(data === undefined) {
-		throw new Boom('Invalid buffer', { statusCode: 400 })
-	}
-
-	return data instanceof Buffer ? data : Buffer.from(data)
-}
-
 export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const {
 		logger,
@@ -626,6 +618,14 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		return aesDecryptCTR(payload, secretKey, iv)
 	}
 
+	function toRequiredBuffer(data: Uint8Array | Buffer | undefined) {
+		if(data === undefined) {
+			throw new Boom('Invalid buffer', { statusCode: 400 })
+		}
+
+		return data instanceof Buffer ? data : Buffer.from(data)
+	}
+
 	const willSendMessageAgain = (id: string, participant: string) => {
 		const key = `${id}:${participant}`
 		const retryCount = msgRetryCache.get<number>(key) || 0
@@ -650,11 +650,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		// just re-send the message to everyone
 		// prevents the first message decryption failure
 		const sendToAll = !jidDecode(participant)?.device
-		//const verify = await assertSessions([participant], config.forceGroupsPrekeys !== undefined ? config.forceGroupsPrekeys : true);
-		const verify = await assertSessions([participant], false)
+		await assertSessions([participant], true)
 
-		if(isJidGroup(remoteJid) || verify === true) {
-		    await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } })
+		if(isJidGroup(remoteJid)) {
+			await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } })
 		}
 
 		logger.debug({ participant, sendToAll }, 'forced new session for retry recp')

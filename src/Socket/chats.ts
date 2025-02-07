@@ -979,7 +979,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				)
 		}
 
-		if(receivedPendingNotifications && !authState.creds?.myAppStateKeyId && !config.mobile) {
+		if(receivedPendingNotifications && !authState.creds?.myAppStateKeyId) {
 			ev.buffer()
 			needToFlushWithAppStateSync = true
 		}
