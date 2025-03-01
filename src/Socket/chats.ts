@@ -1005,7 +1005,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		updateBlockStatus,
 		updateMessagesPrivacy,
 		updateCallPrivacy,
-		updateMessagesPrivacy,
 		updateLastSeenPrivacy,
 		updateOnlinePrivacy,
 		updateProfilePicturePrivacy,
