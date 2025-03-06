@@ -334,8 +334,7 @@ export const generateWAMessageContent = async(
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
-		if(urlInfo) {
-			extContent.canonicalUrl = urlInfo['canonical-url']
+		if (urlInfo) {
 			extContent.matchedText = urlInfo['matched-text']
 			extContent.jpegThumbnail = urlInfo.jpegThumbnail
 			extContent.description = urlInfo.description
