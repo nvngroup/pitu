@@ -16,7 +16,8 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib/*",
-    "WAProto/*",
+    "WAProto/*.ts",
+    "WAProto/*.js",
     "WASignalGroup/*.js",
     "engine-requirements.js"
   ],
@@ -39,13 +40,11 @@
     "update:package": "npx npm-check-updates"
   },
   "dependencies": {
-    "@adiwajshing/keyed-db": "^0.2.4",
     "@cacheable/node-cache": "^1.5.3",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/eslint-config": "github:whiskeysockets/eslint-config",
     "async-mutex": "^0.5.0",
     "axios": "^1.8.4",
-    "cache-manager": "^5.7.6",
     "libsignal": "github:WhiskeySockets/libsignal-node",
     "lodash": "^4.17.21",
     "music-metadata": "^7.12.3",
