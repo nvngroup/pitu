@@ -36,6 +36,20 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		groupToggleEphemeral,
 	} = sock
 
+	const patchMessageRequiresBeforeSending = (msg: proto.IMessage): proto.IMessage => {
+		if(msg?.deviceSentMessage?.message?.listMessage) {
+			msg = JSON.parse(JSON.stringify(msg))
+			msg.deviceSentMessage!.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		if(msg?.listMessage) {
+			msg = JSON.parse(JSON.stringify(msg))
+			msg.listMessage!.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		return msg
+	}
+
 	const userDevicesCache = config.userDevicesCache || new NodeCache({
 		stdTTL: DEFAULT_CACHE_TTLS.USER_DEVICES, // 5 minutes
 		useClones: false
@@ -855,31 +869,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					console.warn('cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
-				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+				const patched = patchMessageRequiresBeforeSending(fullMsg.message!);
+
+				await relayMessage(jid, patched!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
-					if(getContentType(fullMsg.message!) === 'listMessage') {
-						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
-					}
-				} catch(err) {
-					logger.error(err)
-				}
-
-				try {
-					if(getContentType(fullMsg.message!) === 'listMessage') {
-						let text = `${fullMsg.message?.listMessage?.description}\n\n`
-						fullMsg.message?.listMessage?.sections?.map(list => {
-							list.rows?.map(l => {
-								text += `${l.rowId} - ${l.title}\n`
-							})
-						})
-
-						const message = {
-							extendedTextMessage: {
-								text: text
-							}
-						}
-						await relayMessage(jid, message, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+					if (getContentType(patched!) === 'listMessage') {
+						await relayMessage(jid, { viewOnceMessageV2: { message: patched! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
 				} catch(err) {
 					logger.error(err)
