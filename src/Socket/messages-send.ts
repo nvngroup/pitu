@@ -875,7 +875,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				try {
 					if (getContentType(patched!) === 'listMessage') {
-						await relayMessage(jid, { viewOnceMessageV2: { message: patched! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+						await relayMessage(jid, { viewOnceMessage: { message: patched! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
 				} catch(err) {
 					logger.error(err)
