@@ -40,16 +40,16 @@
     "update:package": "npx npm-check-updates"
   },
   "dependencies": {
-    "@cacheable/node-cache": "^1.5.3",
+    "@cacheable/node-cache": "^1.5.4",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/eslint-config": "github:whiskeysockets/eslint-config",
     "async-mutex": "^0.5.0",
-    "axios": "^1.8.4",
+    "axios": "^1.9.0",
     "libsignal": "github:WhiskeySockets/libsignal-node",
     "lodash": "^4.17.21",
     "music-metadata": "^7.12.3",
     "pino": "^9.6",
-    "protobufjs": "^7.4.0",
+    "protobufjs": "^7.5.0",
     "ws": "^8.18.1"
   },
   "devDependencies": {
@@ -66,11 +66,11 @@
     "open": "^8.4.2",
     "release-it": "^18.1.2",
     "sharp": "^0.33.5",
-    "ts-jest": "^29.3.1",
+    "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.28.1",
-    "typedoc-plugin-markdown": "4.6.0",
-    "typescript": "^5.8.2"
+    "typedoc": "^0.28.3",
+    "typedoc-plugin-markdown": "4.6.3",
+    "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "audio-decode": "^2.1.3",
