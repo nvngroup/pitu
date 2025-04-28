@@ -573,10 +573,10 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: message.hasOwnProperty('listType') ? message.listType : WAProto.Message.ListMessage.ListType.SINGLE_SELECT
+			listType: proto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		m = { listMessage }
+		m = { viewOnceMessage: { message: { listMessage } } }
 	}
 
 	if('viewOnce' in message && !!message.viewOnce) {
