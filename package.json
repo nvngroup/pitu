@@ -29,7 +29,6 @@
     "changelog:preview": "conventional-changelog -p angular -u",
     "changelog:update": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "example": "node --inspect -r ts-node/register Example/example.ts",
-    "gen:protobuf": "sh WAProto/GenerateStatics.sh",
     "lint": "eslint src --ext .js,.ts",
     "lint:fix": "eslint src --ext .js,.ts --fix",
     "prepack": "tsc",
@@ -37,10 +36,15 @@
     "preinstall": "node ./engine-requirements.js",
     "release": "release-it",
     "test": "jest",
-    "update:package": "npx npm-check-updates"
+    "update:package": "npx npm-check-updates",
+    "protobuf:compile": "npm run fetch && npm run compile:ts && npm run compile:js",
+    "fetch": "node ./WAProtoGen/index.js",
+    "compile:js": "pbjs -t static-module --sparse -w commonjs -o ./WAProto/index.js ./WAProto/WAProto.proto",
+    "compile:ts": "pbts -o ./WAProto/index.d.ts ./WAProto/index.js"
+
   },
   "dependencies": {
-    "@cacheable/node-cache": "^1.5.4",
+    "@cacheable/node-cache": "^1.5.5",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/eslint-config": "github:whiskeysockets/eslint-config",
     "async-mutex": "^0.5.0",
@@ -48,9 +52,10 @@
     "libsignal": "github:WhiskeySockets/libsignal-node",
     "lodash": "^4.17.21",
     "music-metadata": "^7.12.3",
-    "pino": "^9.6",
-    "protobufjs": "^7.5.0",
-    "ws": "^8.18.1"
+    "pino": "^9.7",
+    "protobufjs": "^7.5.2",
+    "ws": "^8.18.2",
+    "long": "^5.3.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
@@ -61,16 +66,22 @@
     "jest": "^29.7.0",
     "jimp": "^0.16.1",
     "json": "^11.0.0",
-    "link-preview-js": "^3.0.14",
+    "link-preview-js": "^3.1.0",
     "npm-check-updates": "^17.1.16",
     "open": "^8.4.2",
-    "release-it": "^18.1.2",
-    "sharp": "^0.33.5",
+    "protobufjs-cli": "^1.1.3",
+    "release-it": "^19.0.2",
+    "sharp": "^0.34.2",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.28.3",
+    "typedoc": "^0.28.5",
     "typedoc-plugin-markdown": "4.6.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "acorn": "^8.14.1",
+    "acorn-walk": "^8.3.4",
+    "request": "^2.88.2",
+    "request-promise-core": "^1.1.4",
+    "request-promise-native": "^1.0.9"
   },
   "peerDependencies": {
     "audio-decode": "^2.1.3",
