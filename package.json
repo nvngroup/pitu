@@ -1,7 +1,7 @@
 {
   "name": "@brunocgc/baileys",
-  "version": "6.8.19",
-  "description": "A WebSockets library for interacting with WhatsApp Web",
+  "version": "6.8.22",
+  "description": "WhatsApp API",
   "keywords": [
     "whatsapp",
     "automation"
