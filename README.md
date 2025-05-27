@@ -78,7 +78,6 @@ import makeWASocket from 'baileys'
     - [Example to Start](#example-to-start)
     - [Decrypt Poll Votes](#decrypt-poll-votes)
     - [Summary of Events on First Connection](#summary-of-events-on-first-connection)
-- [Implementing a Data Store](#implementing-a-data-store)
 - [Whatsapp IDs Explain](#whatsapp-ids-explain)
 - [Utility Functions](#utility-functions)
 - [Sending Messages](#sending-messages)
@@ -381,52 +380,10 @@ sock.ev.on('messages.update', event => {
 })
 ```
 
-- `getMessage` is a [store](#implementing-a-data-store) implementation (in your end)
-
 ### Summary of Events on First Connection
 
 1. When you connect first time, `connection.update` will be fired requesting you to restart sock
 2. Then, history messages will be received in `messaging-history.set`
-
-## Implementing a Data Store
-
-- Baileys does not come with a defacto storage for chats, contacts, or messages. However, a simple in-memory implementation has been provided. The store listens for chat updates, new messages, message updates, etc., to always have an up-to-date version of the data.
-
-> [!IMPORTANT]
-> I highly recommend building your own data store, as storing someone's entire chat history in memory is a terrible waste of RAM.
-
-It can be used as follows:
-
-```ts
-import makeWASocket, { makeInMemoryStore } from 'baileys'
-// the store maintains the data of the WA connection in memory
-// can be written out to a file & read from it
-const store = makeInMemoryStore({ })
-// can be read from a file
-store.readFromFile('./baileys_store.json')
-// saves the state to a file every 10s
-setInterval(() => {
-    store.writeToFile('./baileys_store.json')
-}, 10_000)
-
-const sock = makeWASocket({ })
-// will listen from this socket
-// the store can listen from a new socket once the current socket outlives its lifetime
-store.bind(sock.ev)
-
-sock.ev.on('chats.upsert', () => {
-    // can use 'store.chats' however you want, even after the socket dies out
-    // 'chats' => a KeyedDB instance
-    console.log('got chats', store.chats.all())
-})
-
-sock.ev.on('contacts.upsert', () => {
-    console.log('got contacts', Object.values(store.contacts))
-})
-
-```
-
-The store also provides some simple functions such as `loadMessages` that utilize the store to speed up data retrieval.
 
 ## Whatsapp IDs Explain
 
@@ -483,7 +440,7 @@ await sock.sendMessage(
 ```
 
 #### Forward Messages
-- You need to have message object, can be retrieved from [store](#implementing-a-data-store) or use a [message](https://baileys.whiskeysockets.io/types/WAMessage.html) object
+- You need to have message object, use a [message](https://baileys.whiskeysockets.io/types/WAMessage.html) object
 ```ts
 const msg = getMessageFromStore() // implement this on your end
 await sock.sendMessage(jid, { forward: msg }) // WA forward the message!
@@ -522,7 +479,7 @@ await sock.sendMessage(
 ```
 
 #### Reaction Message
-- You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+- You need to pass the key of message, use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
 ```ts
 await sock.sendMessage(
     jid,
@@ -536,7 +493,7 @@ await sock.sendMessage(
 ```
 
 #### Pin Message
-- You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+- You need to pass the key of message, use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
 
 - Time can be:
 

@@ -858,7 +858,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
-					if (getContentType(fullMsg.message!) === 'listMessage') {
+					if(getContentType(fullMsg.message!) === 'listMessage') {
 						await relayMessage(jid, { viewOnceMessage: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
 				} catch(err) {
