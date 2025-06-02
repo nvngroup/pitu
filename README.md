@@ -83,6 +83,7 @@ import makeWASocket from 'baileys'
 - [Sending Messages](#sending-messages)
     - [Non-Media Messages](#non-media-messages)
         - [Text Message](#text-message)
+        - [List Message](#list-message)
         - [Quote Message](#quote-message-works-with-all-types)
         - [Mention User](#mention-user-works-with-most-types)
         - [Forward Messages](#forward-messages)
@@ -420,6 +421,28 @@ sock.ev.on('messages.update', event => {
 #### Text Message
 ```ts
 await sock.sendMessage(jid, { text: 'hello word' })
+```
+
+#### List Message
+```ts
+await sock.sendMessage(jid, {
+ listMessage: {
+    title: 'Title',
+    text: 'hello word',
+    footerText: "Selecione uma opção abaixo",
+    buttonText: "Escolha uma opção",
+    sections: {
+        title: 'Titulos',
+        rows: [{
+            title: "Opção 1",
+            rowId: '1'
+        }, {
+            title: "Opção 2",
+            rowId: '2'
+        }]
+     }
+ }
+})
 ```
 
 #### Quote Message (works with all types)
