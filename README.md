@@ -431,7 +431,7 @@ await sock.sendMessage(jid, {
     text: 'hello word',
     footerText: "Selecione uma opção abaixo",
     buttonText: "Escolha uma opção",
-    sections: {
+    sections: [{
         title: 'Titulos',
         rows: [{
             title: "Opção 1",
@@ -440,7 +440,7 @@ await sock.sendMessage(jid, {
             title: "Opção 2",
             rowId: '2'
         }]
-     }
+    }]
  }
 })
 ```
