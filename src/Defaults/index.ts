@@ -1,4 +1,4 @@
-import { proto } from '../../WAProto'
+import { waproto as proto } from '../../WAProto'
 import { makeLibSignalRepository } from '../Signal/libsignal'
 import type { AuthenticationState, MediaType, SocketConfig, WAVersion } from '../Types'
 import { Browsers } from '../Utils'

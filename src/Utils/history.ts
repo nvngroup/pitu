@@ -1,7 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import { promisify } from 'util'
 import { inflate } from 'zlib'
-import { proto } from '../../WAProto'
+import { waproto as proto } from '../../WAProto'
 import { Chat, Contact, WAMessageStubType } from '../Types'
 import { isJidUser } from '../WABinary'
 import { toNumber } from './generics'

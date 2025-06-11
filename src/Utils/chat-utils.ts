@@ -1,6 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { AxiosRequestConfig } from 'axios'
-import { proto } from '../../WAProto'
+import { waproto as proto } from '../../WAProto'
 import { BaileysEventEmitter, Chat, ChatModification, ChatMutation, ChatUpdate, Contact, InitialAppStateSyncOptions, LastMessageList, LTHashState, WAPatchCreate, WAPatchName } from '../Types'
 import { ChatLabelAssociation, LabelAssociationType, MessageLabelAssociation } from '../Types/LabelAssociation'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, jidNormalizedUser } from '../WABinary'

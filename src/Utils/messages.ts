@@ -4,7 +4,7 @@ import axios from 'axios'
 import { randomBytes } from 'crypto'
 import { promises as fs } from 'fs'
 import { type Transform } from 'stream'
-import { proto } from '../../WAProto'
+import { waproto as proto } from '../../WAProto'
 import { MEDIA_KEYS, URL_REGEX, WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import {
 	AnyMediaMessageContent,
@@ -232,6 +232,7 @@ export const prepareWAMessageMedia = async(
 
 					logger?.debug('removed tmp files')
 				} catch(error) {
+					logger?.error(error)
 					logger?.warn('failed to remove tmp file')
 				}
 			}

@@ -1,4 +1,4 @@
-import type { proto } from '../../WAProto'
+import type { waproto as proto } from '../../WAProto'
 import type { AccountSettings } from './Auth'
 import type { ContactAction } from './Contact'
 import type { BufferedEventData } from './Events'

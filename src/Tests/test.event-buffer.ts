@@ -1,4 +1,4 @@
-import { proto } from '../../WAProto'
+import { waproto as proto } from '../../WAProto'
 import { Chat, WAMessageKey, WAMessageStatus, WAMessageStubType, WAMessageUpdate } from '../Types'
 import { delay, generateMessageID, makeEventBuffer, toNumber, unixTimestampSeconds } from '../Utils'
 import logger from '../Utils/logger'

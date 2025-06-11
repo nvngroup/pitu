@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes }
 import * as libsignal from 'libsignal'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { KeyPair } from '../Types'
+import logger from './logger'
 
 // insure browser & node compatibility
 // const { subtle } = globalThis.crypto
@@ -34,6 +35,7 @@ export const Curve = {
 			libsignal.curve.verifySignature(generateSignalPubKey(pubKey), message, signature)
 			return true
 		} catch(error) {
+			logger.error(error)
 			return false
 		}
 	}
