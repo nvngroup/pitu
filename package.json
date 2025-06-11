@@ -1,6 +1,6 @@
 {
   "name": "@brunocgc/baileys",
-  "version": "6.8.22",
+  "version": "6.8.23",
   "description": "WhatsApp API",
   "keywords": [
     "whatsapp",
@@ -41,7 +41,6 @@
     "fetch": "node ./WAProtoGen/index.js",
     "compile:js": "pbjs -t static-module --sparse -w commonjs -o ./WAProto/index.js ./WAProto/WAProto.proto",
     "compile:ts": "pbts -o ./WAProto/index.d.ts ./WAProto/index.js"
-
   },
   "dependencies": {
     "@cacheable/node-cache": "^1.5.5",
