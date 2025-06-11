@@ -10,6 +10,8 @@ export type RequestJoinMethod = 'invite_link' | 'linked_group_join' | 'non_admin
 
 export interface GroupMetadata {
     id: string
+    /** group uses 'lid' or 'pn' to send messages */
+    addressingMode: 'pn' | 'lid'
     owner: string | undefined
     ownerJid?: string | undefined
     subject: string
