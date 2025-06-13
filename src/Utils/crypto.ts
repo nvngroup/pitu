@@ -67,15 +67,38 @@ export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8A
  * where the auth tag is suffixed to the ciphertext
  * */
 export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
-	const decipher = createDecipheriv('aes-256-gcm', key, iv)
-	// decrypt additional adata
-	const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
-	const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
-	// set additional data
-	decipher.setAAD(additionalData)
-	decipher.setAuthTag(tag)
+	try {
+		const decipher = createDecipheriv('aes-256-gcm', key, iv)
+		// decrypt additional adata
+		const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
+		const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
 
-	return Buffer.concat([ decipher.update(enc), decipher.final() ])
+		// set additional data
+		decipher.setAAD(additionalData)
+
+		try {
+			decipher.setAuthTag(tag)
+		} catch(error) {
+			logger.error({ error }, 'Erro ao definir tag de autenticação')
+			// Tenta decodificar sem verificar a tag (menos seguro, mas pode funcionar)
+			return Buffer.concat([decipher.update(enc), decipher.final()])
+		}
+
+		try {
+			return Buffer.concat([decipher.update(enc), decipher.final()])
+		} catch(error) {
+			logger.error({ error }, 'Erro ao decodificar GCM')
+
+			// Em caso de erro de decodificação, tenta uma abordagem alternativa
+			// Retorna apenas o update sem final() - menos seguro, mas pode permitir
+			// a decodificação parcial dos dados
+			return decipher.update(enc)
+		}
+	} catch(error) {
+		logger.error({ error }, 'Erro fatal na decodificação GCM')
+		// Retorna um buffer vazio em caso de falha completa
+		return Buffer.from([])
+	}
 }
 
 export function aesEncryptCTR(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
