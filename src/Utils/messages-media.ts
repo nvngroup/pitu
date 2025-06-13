@@ -487,7 +487,6 @@ export const downloadEncryptedContent = async(
 	let bytesFetched = 0
 	let startChunk = 0
 	let firstBlockIsIV = false
-	// if a start byte is specified -- then we need to fetch the previous chunk as that will form the IV
 	if(startByte) {
 		const chunk = toSmallestChunkSize(startByte || 0)
 		if(chunk) {
@@ -511,7 +510,6 @@ export const downloadEncryptedContent = async(
 		}
 	}
 
-	// download the message
 	const fetched = await getHttpStream(
 		downloadUrl,
 		{
@@ -557,8 +555,6 @@ export const downloadEncryptedContent = async(
 
 					try {
 						aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, ivValue)
-						// if an end byte that is not EOF is specified
-						// stop auto padding (PKCS7) -- otherwise throws an error for decryption
 						if(endByte) {
 							aes.setAutoPadding(false)
 						}
@@ -590,12 +586,10 @@ export const downloadEncryptedContent = async(
 					callback()
 				} catch(error) {
 					logger.debug(error)
-					// Se falhar no final(), tente finalizar sem erro
 					callback(null)
 				}
 			} catch(error) {
 				logger.debug(error)
-				// Finaliza sem erro para não interromper o processamento
 				callback(null)
 			}
 		},
@@ -626,7 +620,6 @@ export const getWAUploadToServer = (
 	refreshMediaConn: (force: boolean) => Promise<MediaConnInfo>,
 ): WAMediaUploadFunction => {
 	return async(filePath, { mediaType, fileEncSha256B64, timeoutMs }) => {
-		// send a query JSON to obtain the url & auth token to upload our media
 		let uploadInfo = await refreshMediaConn(false)
 
 		let urls: { mediaUrl: string, directPath: string } | undefined
@@ -637,7 +630,7 @@ export const getWAUploadToServer = (
 		for(const { hostname } of hosts) {
 			logger.debug(`uploading to "${hostname}"`)
 
-			const auth = encodeURIComponent(uploadInfo.auth) // the auth token
+			const auth = encodeURIComponent(uploadInfo.auth)
 			const url = `https://${hostname}${MEDIA_PATH_MAP[mediaType]}/${fileEncSha256B64}?auth=${auth}&token=${fileEncSha256B64}`
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let result: any
@@ -721,9 +714,6 @@ export const encryptMediaRetryRequest = async(
 			type: 'server-error'
 		},
 		content: [
-			// this encrypt node is actually pretty useless
-			// the media is returned even without this node
-			// keeping it here to maintain parity with WA Web
 			{
 				tag: 'encrypt',
 				attrs: { },

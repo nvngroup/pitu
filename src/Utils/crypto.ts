@@ -4,9 +4,6 @@ import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { KeyPair } from '../Types'
 import logger from './logger'
 
-// insure browser & node compatibility
-// const { subtle } = globalThis.crypto
-
 /** prefix version byte to the pub keys, required for some curve crypto functions */
 export const generateSignalPubKey = (pubKey: Uint8Array | Buffer) => (
 	pubKey.length === 33
@@ -19,7 +16,6 @@ export const Curve = {
 		const { pubKey, privKey } = libsignal.curve.generateKeyPair()
 		return {
 			private: Buffer.from(privKey),
-			// remove version byte
 			public: Buffer.from((pubKey as Uint8Array).slice(1))
 		}
 	},
@@ -69,18 +65,15 @@ export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8A
 export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
 	try {
 		const decipher = createDecipheriv('aes-256-gcm', key, iv)
-		// decrypt additional adata
 		const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
 		const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
 
-		// set additional data
 		decipher.setAAD(additionalData)
 
 		try {
 			decipher.setAuthTag(tag)
 		} catch(error) {
 			logger.error({ error }, 'Erro ao definir tag de autenticação')
-			// Tenta decodificar sem verificar a tag (menos seguro, mas pode funcionar)
 			return Buffer.concat([decipher.update(enc), decipher.final()])
 		}
 
@@ -89,14 +82,10 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 		} catch(error) {
 			logger.error({ error }, 'Erro ao decodificar GCM')
 
-			// Em caso de erro de decodificação, tenta uma abordagem alternativa
-			// Retorna apenas o update sem final() - menos seguro, mas pode permitir
-			// a decodificação parcial dos dados
 			return decipher.update(enc)
 		}
 	} catch(error) {
 		logger.error({ error }, 'Erro fatal na decodificação GCM')
-		// Retorna um buffer vazio em caso de falha completa
 		return Buffer.from([])
 	}
 }
