@@ -523,7 +523,6 @@ services:
 
 ### 🤝 Community
 
-- 💬 **Discord**: [discord.gg/WeJM5FP9GG](https://discord.gg/WeJM5FP9GG)
 - 🐙 **GitHub**: [github.com/brunocgc/Baileys](https://github.com/brunocgc/Baileys)
 - 🌐 **Website**: [nvngroup.com.br](https://www.nvngroup.com.br)
 
@@ -533,15 +532,3 @@ services:
 2. Provide code to reproduce the error
 3. Include complete error logs
 4. Specify Node.js and Baileys versions
-
----
-
-<div align="center">
-
-**💡 Didn't find your question? Ask on Discord!**
-
-[![Discord](https://img.shields.io/badge/Discord-Ask-5865F2?logo=discord&logoColor=white)](https://discord.gg/WeJM5FP9GG)
-
-**Your question can help other developers! 🤝**
-
-</div>

@@ -8,7 +8,6 @@
 
 [![GitHub Downloads](https://img.shields.io/github/downloads/brunocgc/Baileys/total)](https://github.com/brunocgc/Baileys)
 [![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)](https://www.npmjs.com/package/@brunocgc/baileys)
-[![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)](https://discord.gg/WeJM5FP9GG)
 
 </div>
 

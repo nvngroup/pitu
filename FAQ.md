@@ -523,7 +523,6 @@ services:
 
 ### 🤝 Comunidade
 
-- 💬 **Discord**: [discord.gg/WeJM5FP9GG](https://discord.gg/WeJM5FP9GG)
 - 🐙 **GitHub**: [github.com/brunocgc/Baileys](https://github.com/brunocgc/Baileys)
 - 🌐 **Site**: [nvngroup.com.br](https://www.nvngroup.com.br)
 
@@ -535,13 +534,3 @@ services:
 4. Especifique versão do Node.js e Baileys
 
 ---
-
-<div align="center">
-
-**💡 Não encontrou sua pergunta? Pergunte no Discord!**
-
-[![Discord](https://img.shields.io/badge/Discord-Perguntar-5865F2?logo=discord&logoColor=white)](https://discord.gg/WeJM5FP9GG)
-
-**Sua pergunta pode ajudar outros desenvolvedores! 🤝**
-
-</div>
