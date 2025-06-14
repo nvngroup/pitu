@@ -5,7 +5,6 @@
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/Baileys/total)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)
 ![GitHub License](https://img.shields.io/github/license/brunocgc/Baileys)
-![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)
 
 </div>
 
@@ -78,7 +77,6 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 
 - **GitHub:** https://github.com/brunocgc/Baileys
 - **NPM:** https://www.npmjs.com/package/@brunocgc/baileys
-- **Discord:** https://discord.gg/WeJM5FP9GG
 - **Site:** https://www.nvngroup.com.br
 
 ---
