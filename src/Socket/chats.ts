@@ -182,9 +182,19 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			.withLIDProtocol()
 
 		for(const jid of jids) {
-			const phone = `+${jid.replace('+', '').split('@')[0].split(':')[0]}`
-			usyncQuery.withUser(new USyncUser().withPhone(phone))
-		}
+			const withAt = jid.includes('@')
+			if(withAt) {
+				const isLid = jid.endsWith('@lid')
+				if(isLid) {
+					usyncQuery.withUser(new USyncUser().withLid(jid))
+				} else {
+					usyncQuery.withUser(new USyncUser().withId(jid))
+				}
+			} else {
+				const phone = `+${jid.replace('+', '').split('@')[0].split(':')[0]}`
+				usyncQuery.withUser(new USyncUser().withPhone(phone))
+			}
+	 	}
 
 		const results = await sock.executeUSyncQuery(usyncQuery)
 
