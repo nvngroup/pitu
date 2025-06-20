@@ -605,6 +605,17 @@ export const generateWAMessageContent = async(
 		m[messageType].contextInfo = message.contextInfo
 	}
 
+	if('nativeFlowMessage' in message && Array.isArray(message.nativeFlowMessage)) {
+		m.interactiveMessage = {
+			nativeFlowMessage: {
+				buttons: message.nativeFlowMessage.map(btn => ({
+					name: btn.name,
+					buttonParamsJson: btn.buttonParamsJson
+				}))
+			}
+		}
+	}
+
 	return WAProto.Message.fromObject(m)
 }
 

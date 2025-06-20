@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import NodeCache from '@cacheable/node-cache'
 import readline from 'readline'
-import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, downloadAndProcessHistorySyncNotification, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, getHistoryMsg, isJidNewsletter, makeCacheableSignalKeyStore, proto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
+import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto as proto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
 //import MAIN_LOGGER from '../src/Utils/logger'
 import open from 'open'
 import fs from 'fs'
@@ -289,3 +289,50 @@ const startSock = async() => {
 }
 
 startSock()
+
+// Exemplo: Enviando um botão Native Flow customizado
+const sendNativeFlowButtonExample = async (jid: string, sockInstance: ReturnType<typeof makeWASocket>) => {
+	await sockInstance.sendMessage(jid, {
+		// @ts-expect-error: campo customizado para Native Flow Button
+		nativeFlowMessage: [
+			{
+				name: 'payment_info',
+				buttonParamsJson: JSON.stringify({
+					order: {
+						status: 'payment_requested',
+						order_type: 'ORDER_WITHOUT_AMOUNT',
+						items: [
+							{
+								amount: { value: 0, offset: 1 },
+								retailer_id: 'custom-item-1749167034',
+								quantity: 0,
+								name: ''
+							}
+						],
+						subtotal: { value: 0, offset: 1 }
+					},
+					currency: 'BRL',
+					referral: 'chat_attachment',
+					reference_id: '4S8A2FCCAIF',
+					type: 'physical-goods',
+					additional_note: '',
+					payment_settings: [
+						{
+							type: 'pix_static_code',
+							pix_static_code: {
+								merchant_name: 'Teste de Pix',
+								key_type: 'PHONE',
+								key: '+5521999999999'
+							}
+						},
+						{
+							type: 'cards',
+							cards: { enabled: false }
+						}
+					],
+					total_amount: { value: 0, offset: 1 }
+				})
+			}
+		]
+	})
+}

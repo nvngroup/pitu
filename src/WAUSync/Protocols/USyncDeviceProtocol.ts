@@ -15,7 +15,7 @@ export type DeviceListData = {
 }
 
 export type ParsedDeviceInfo = {
-    deviceList?: DeviceListData[]
+  deviceList?: DeviceListData[]
 	keyIndex?: KeyIndexData
 }
 

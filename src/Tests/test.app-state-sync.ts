@@ -2,6 +2,7 @@ import { AccountSettings, ChatMutation, Contact, InitialAppStateSyncOptions } fr
 import { unixTimestampSeconds } from '../Utils'
 import { processSyncAction } from '../Utils/chat-utils'
 import logger from '../Utils/logger'
+import { randomJid } from './utils'
 
 describe('App State Sync Tests', () => {
 
@@ -57,11 +58,13 @@ describe('App State Sync Tests', () => {
 			]
 		]
 
-		for(const mutations of CASES) {
-			const events = processSyncAction(mutations, me, undefined, logger)
-			expect(events['chats.update']).toHaveLength(1)
-			const event = events['chats.update']?.[0]
-			expect(event.archive).toEqual(false)
+		for (const mutations of CASES) {
+			mutations.map(mutation => {
+				const events = processSyncAction(mutation, events, me, undefined, logger)
+				expect(events['chats.update']).toHaveLength(1)
+				const event = events['chats.update']?.[0]
+				expect(event.archive).toEqual(false)
+			})
 		}
 	})
 	// case when initial sync is on
@@ -139,9 +142,11 @@ describe('App State Sync Tests', () => {
 			accountSettings: { unarchiveChats: true }
 		}
 
-		for(const mutations of CASES) {
-			const events = processSyncActions(mutations, me, ctx, logger)
-			expect(events['chats.update']?.length).toBeFalsy()
+		for (const mutations of CASES) {
+			mutations.map(mutation => {
+				const events = processSyncAction(mutation, me, ctx, logger)
+				expect(events['chats.update']?.length).toBeFalsy()
+			})
 		}
 	})
 
@@ -198,10 +203,13 @@ describe('App State Sync Tests', () => {
 				},
 				accountSettings: settings
 			}
-			const events = processSyncActions(mutations, me, ctx, logger)
-			expect(events['chats.update']).toHaveLength(1)
-			const event = events['chats.update']?.[0]
-			expect(event.archive).toEqual(true)
+
+			mutations.map(mutation => {
+				const events = processSyncAction(mutation, me, ctx, logger)
+				expect(events['chats.update']).toHaveLength(1)
+				const event = events['chats.update']?.[0]
+				expect(event.archive).toEqual(true)
+			})
 		}
 	})
 })
