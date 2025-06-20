@@ -7,6 +7,11 @@ import type { BinaryNode, BinaryNodeCodingOptions } from './types'
 const inflatePromise = promisify(inflate)
 
 export const decompressingIfRequired = async(buffer: Buffer) => {
+	// Check if buffer has at least 1 byte before reading
+	if(buffer.length === 0) {
+		throw new Error('Buffer is empty, cannot decompress')
+	}
+
 	if(2 & buffer.readUInt8()) {
 		buffer = await inflatePromise(buffer.slice(1))
 	} else { // nodes with no compression have a 0x00 prefix, we remove that
@@ -263,6 +268,17 @@ export const decodeDecompressedBinaryNode = (
 }
 
 export const decodeBinaryNode = async(buff: Buffer): Promise<BinaryNode> => {
+	// Validate buffer before processing
+	if(!buff || buff.length === 0) {
+		throw new Error('Invalid buffer: Buffer is null or empty')
+	}
+
 	const decompBuff = await decompressingIfRequired(buff)
+
+	// Validate decompressed buffer
+	if(!decompBuff || decompBuff.length === 0) {
+		throw new Error('Invalid decompressed buffer: Buffer is null or empty')
+	}
+
 	return decodeDecompressedBinaryNode(decompBuff, constants)
 }

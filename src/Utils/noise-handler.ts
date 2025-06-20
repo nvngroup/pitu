@@ -42,6 +42,11 @@ export const makeNoiseHandler = ({
 	}
 
 	const decrypt = (ciphertext: Uint8Array) => {
+		// Validate input
+		if(!ciphertext || ciphertext.length === 0) {
+			throw new Error('Invalid ciphertext: empty or null')
+		}
+
 		// before the handshake is finished, we use the same counter
 		// after handshake, the counters are different
 		const iv = generateIV(isFinished ? readCounter : writeCounter)
@@ -163,8 +168,15 @@ export const makeNoiseHandler = ({
 			// so we get this data and separate out the frames
 			const getBytesSize = () => {
 				if(inBytes.length >= 3) {
-					return (inBytes.readUInt8() << 16) | inBytes.readUInt16BE(1)
+					try {
+						return (inBytes.readUInt8() << 16) | inBytes.readUInt16BE(1)
+					} catch(error) {
+						logger.warn({ error }, 'Failed to read bytes size from buffer')
+						return undefined
+					}
 				}
+
+				return undefined
 			}
 
 			inBytes = Buffer.concat([ inBytes, newData ])
@@ -172,13 +184,27 @@ export const makeNoiseHandler = ({
 			logger.trace(`recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
 
 			let size = getBytesSize()
-			while(size && inBytes.length >= size + 3) {
+			while(size && size > 0 && inBytes.length >= size + 3) {
 				let frame: Uint8Array | BinaryNode = inBytes.slice(3, size + 3)
 				inBytes = inBytes.slice(size + 3)
 
 				if(isFinished) {
 					const result = decrypt(frame)
-					frame = await decodeBinaryNode(result)
+					// Validate decrypted result before attempting to decode
+					if(!result || result.length === 0) {
+						logger.warn('Received empty or null decrypted frame, skipping')
+						size = getBytesSize()
+						continue
+					}
+
+					try {
+						frame = await decodeBinaryNode(result)
+					} catch(error) {
+						logger.error({ error }, 'Failed to decode binary node')
+						// Skip this frame and continue with the next one
+						size = getBytesSize()
+						continue
+					}
 				}
 
 				logger.trace({ msg: (frame as BinaryNode)?.attrs?.id }, 'recv frame')
