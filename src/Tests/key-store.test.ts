@@ -45,7 +45,7 @@ describe('Key Store w Transaction Tests', () => {
 					throw new Error('fail')
 				}
 			)
-		).rejects.toThrowError(
+		).rejects.toThrow(
 			'fail'
 		)
 
