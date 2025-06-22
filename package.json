@@ -36,11 +36,7 @@
     "preinstall": "node ./engine-requirements.js",
     "release": "release-it",
     "test": "jest",
-    "update:package": "npx npm-check-updates",
-    "gen:protobuf": "yarn fetch && yarn compile:js && yarn compile:ts",
-    "fetch": "node ./WAProtoGen/index.js",
-    "compile:ts": "pbts -o ./WAProto/index.d.ts ./WAProto/index.js",
-    "compile:js": "pbjs -t static-module --sparse -w commonjs -o ./dist/index.js ./WAProto/WAProto.proto"
+    "update:package": "npx npm-check-updates"
   },
   "dependencies": {
     "@cacheable/node-cache": "^1.5.6",
