@@ -8,9 +8,8 @@ import fs from 'fs'
 import P from 'pino'
 
 const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.destination('./wa-logs.txt'))
-logger.level = 'trace'
+logger.level = 'silent'
 
-const doReplies = process.argv.includes('--do-reply')
 const usePairingCode = process.argv.includes('--use-pairing-code')
 
 // external map to store retry counts of messages when decryption/encryption fails
@@ -24,7 +23,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const question = (text: string) => new Promise<string>((resolve) => rl.question(text, resolve))
 
 // start a connection
-const startSock = async() => {
+const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
 	// fetch latest version of WA Web
 	const { version, isLatest } = await fetchLatestBaileysVersion()
@@ -33,7 +32,6 @@ const startSock = async() => {
 	const sock = makeWASocket({
 		version,
 		logger,
-		printQRInTerminal: !usePairingCode,
 		auth: {
 			creds: state.creds,
 			/** caching makes the store faster to send/recv messages */
@@ -56,7 +54,7 @@ const startSock = async() => {
 		console.log(`Pairing code: ${code}`)
 	}
 
-	const sendMessageWTyping = async(msg: AnyMessageContent, jid: string) => {
+	const sendMessageWTyping = async (msg: AnyMessageContent, jid: string) => {
 		await sock.presenceSubscribe(jid)
 		await delay(500)
 
@@ -72,15 +70,15 @@ const startSock = async() => {
 	// efficiently in a batch
 	sock.ev.process(
 		// events is a map for event name => event data
-		async(events) => {
+		async (events) => {
 			// something about the connection changed
 			// maybe it closed, or we received all offline message or connection opened
-			if(events['connection.update']) {
+			if (events['connection.update']) {
 				const update = events['connection.update']
 				const { connection, lastDisconnect } = update
-				if(connection === 'close') {
+				if (connection === 'close') {
 					// reconnect if not logged out
-					if((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
+					if ((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
 						startSock()
 					} else {
 						console.log('Connection closed. You are logged out.')
@@ -95,7 +93,7 @@ const startSock = async() => {
 				// THE FIRST EVENT CONTAINS THE CONSTANT GLOBALS, EXCEPT THE seqenceNumber(in the event) and commitTime
 				// THIS INCLUDES STUFF LIKE ocVersion WHICH IS CRUCIAL FOR THE PREVENTION OF THE WARNING
 				const sendWAMExample = false;
-				if(connection === 'open' && sendWAMExample) {
+				if (connection === 'open' && sendWAMExample) {
 					/// sending WAM EXAMPLE
 					const {
 						header: {
@@ -114,134 +112,148 @@ const startSock = async() => {
 					const buffer = encodeWAM(binaryInfo);
 
 					const result = await sock.sendWAMBuffer(buffer)
-					console.log(result)
 				}
 
-				console.log('connection update', update)
+
+				if (update.qr) {
+					const website = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
+					console.log('QR code received, open in browser:', website)
+				}
 			}
 
 			// credentials updated -- save them
-			if(events['creds.update']) {
+			if (events['creds.update']) {
 				await saveCreds()
 			}
 
-			if(events['labels.association']) {
-				console.log(events['labels.association'])
+			if (events['labels.association']) {
+				// console.log(events['labels.association'])
 			}
 
 
-			if(events['labels.edit']) {
-				console.log(events['labels.edit'])
+			if (events['labels.edit']) {
+				// console.log(events['labels.edit'])
 			}
 
-			if(events.call) {
-				console.log('recv call event', events.call)
+			if (events.call) {
+				// console.log('recv call event', events.call)
 			}
 
 			// history received
-			if(events['messaging-history.set']) {
+			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
 				if (syncType === proto.HistorySync.HistorySyncType.ON_DEMAND) {
-					console.log('received on-demand history sync, messages=', messages)
+					// console.log('received on-demand history sync, messages=', messages)
 				}
-				console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
+				// console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
 			}
 
 			// received a new message
-			if(events['messages.upsert']) {
+			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
 				console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
 
-				if(upsert.type === 'notify') {
+				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages) {
-						//TODO: More built-in implementation of this
-						/* if (
-							msg.message?.protocolMessage?.type ===
-							proto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION
-						  ) {
-							const historySyncNotification = getHistoryMsg(msg.message)
-							if (
-							  historySyncNotification?.syncType ==
-							  proto.HistorySync.HistorySyncType.ON_DEMAND
-							) {
-							  const { messages } =
-								await downloadAndProcessHistorySyncNotification(
-								  historySyncNotification,
-								  {}
-								)
-
-
-								const chatId = onDemandMap.get(
-									historySyncNotification!.peerDataRequestSessionId!
-								)
-
-								console.log(messages)
-
-							  onDemandMap.delete(
-								historySyncNotification!.peerDataRequestSessionId!
-							  )
-
-							  /*
-								// 50 messages is the limit imposed by whatsapp
-								//TODO: Add ratelimit of 7200 seconds
-								//TODO: Max retries 10
-								const messageId = await sock.fetchMessageHistory(
-									50,
-									oldestMessageKey,
-									oldestMessageTimestamp
-								)
-								onDemandMap.set(messageId, chatId)
-							}
-						  } */
-
 						if (msg.message?.conversation || msg.message?.extendedTextMessage?.text) {
 							const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text
 							if (text == "requestPlaceholder" && !upsert.requestId) {
 								const messageId = await sock.requestPlaceholderResend(msg.key)
-								console.log('requested placeholder resync, id=', messageId)
+								// console.log('requested placeholder resync, id=', messageId)
 							} else if (upsert.requestId) {
-								console.log('Message received from phone, id=', upsert.requestId, msg)
+								// console.log('Message received from phone, id=', upsert.requestId, msg)
 							}
 
 							// go to an old chat and send this
 							if (text == "onDemandHistSync") {
 								const messageId = await sock.fetchMessageHistory(50, msg.key, msg.messageTimestamp!)
-								console.log('requested on-demand sync, id=', messageId)
+								// console.log('requested on-demand sync, id=', messageId)
 							}
-						}
 
-						if(!msg.key.fromMe && doReplies && !isJidNewsletter(msg.key?.remoteJid!)) {
+							if (text == "jid") {
+								try {
+									const lid = sock.user;
+									const phone = msg.key.remoteJid!.split('@')[0];
+									const lidUser = await sock.onWhatsApp(phone);
+									console.log('latest id is', lidUser, 'and my lid is', lid);
+									await sock!.readMessages([msg.key]);
 
-							console.log('replying to', msg.key.remoteJid)
-							await sock!.readMessages([msg.key])
-							await sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid!)
+									if (lidUser && lidUser.length > 0) {
+										await sendMessageWTyping({
+											text: `Enviado pelo ${msg.key.remoteJid!}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
+										}, msg.key.remoteJid!);
+									} else {
+										await sendMessageWTyping({
+											text: `Erro ao obter informações do usuário. JID: ${msg.key.remoteJid!}\nMeu lid: ${JSON.stringify(lid)}`
+										}, msg.key.remoteJid!);
+									}
+								} catch (error) {
+									console.error('Erro ao processar comando "jid":', error);
+									await sendMessageWTyping({
+										text: `Erro ao processar comando. JID: ${msg.key.remoteJid!}`
+									}, msg.key.remoteJid!);
+								}
+							}
+
+							if (text == "lid") {
+								try {
+									const lid = sock.user;
+									const phone = msg.key.remoteJid!.split('@')[0];
+									const lidUser = await sock.onWhatsApp(phone);
+									console.log('latest id is', lidUser, 'and my lid is', lid);
+									await sock!.readMessages([msg.key]);
+
+									// Verificar se lidUser existe e tem pelo menos um elemento
+									if (lidUser && lidUser.length > 0) {
+										// Usar o lid se existir e não for vazio, caso contrário usar o remoteJid original
+										const userLid = lidUser[0].lid;
+										const dados: string = (userLid && typeof userLid === 'string' && userLid !== '') ? userLid : msg.key.remoteJid!;
+										console.log(`dados ${dados}`);
+
+										await sendMessageWTyping({
+											text: `Enviado pelo ${dados}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
+										}, dados);
+									} else {
+										console.log('Erro: não foi possível obter informações do usuário');
+										await sendMessageWTyping({
+											text: `Erro ao obter informações do usuário. Usando JID original: ${msg.key.remoteJid!}`
+										}, msg.key.remoteJid!);
+									}
+								} catch (error) {
+									console.error('Erro ao processar comando "lid":', error);
+									await sendMessageWTyping({
+										text: `Erro ao processar comando. Usando JID original: ${msg.key.remoteJid!}`
+									}, msg.key.remoteJid!);
+								}
+							}
 						}
 					}
 				}
 			}
 
 			// messages updated like status delivered, message deleted etc.
-			if(events['messages.update']) {
-				console.log(
+			if (events['messages.update']) {
+				/* console.log(
 					JSON.stringify(events['messages.update'], undefined, 2)
-				)
+				) */
 
-				for(const { key, update } of events['messages.update']) {
-					if(update.pollUpdates) {
+				for (const { key, update } of events['messages.update']) {
+					if (update.pollUpdates) {
 						const pollCreation: proto.IMessage = {} // get the poll creation message somehow
-						if(pollCreation) {
-							console.log(
+						if (pollCreation) {
+							/* console.log(
 								'got poll update, aggregation: ',
 								getAggregateVotesInPollMessage({
 									message: pollCreation,
 									pollUpdates: update.pollUpdates,
 								})
-							)
+							) */
 						}
 					}
 				}
 			}
 
+			/*
 			if(events['message-receipt.update']) {
 				console.log(events['message-receipt.update'])
 			}
@@ -257,22 +269,23 @@ const startSock = async() => {
 			if(events['chats.update']) {
 				console.log(events['chats.update'])
 			}
+			*/
 
-			if(events['contacts.update']) {
-				for(const contact of events['contacts.update']) {
-					if(typeof contact.imgUrl !== 'undefined') {
+			if (events['contacts.update']) {
+				for (const contact of events['contacts.update']) {
+					if (typeof contact.imgUrl !== 'undefined') {
 						const newUrl = contact.imgUrl === null
 							? null
 							: await sock!.profilePictureUrl(contact.id!).catch(() => null)
-						console.log(
+						/* console.log(
 							`contact ${contact.id} has a new profile pic: ${newUrl}`,
-						)
+						) */
 					}
 				}
 			}
 
-			if(events['chats.delete']) {
-				console.log('chats deleted ', events['chats.delete'])
+			if (events['chats.delete']) {
+				// console.log('chats deleted ', events['chats.delete'])
 			}
 		}
 	)
@@ -280,8 +293,8 @@ const startSock = async() => {
 	return sock
 
 	async function getMessage(key: WAMessageKey): Promise<WAMessageContent | undefined> {
-	  // Implement a way to retreive messages that were upserted from messages.upsert
-			// up to you
+		// Implement a way to retreive messages that were upserted from messages.upsert
+		// up to you
 
 		// only if store is present
 		return proto.Message.fromObject({})
@@ -289,50 +302,3 @@ const startSock = async() => {
 }
 
 startSock()
-
-// Exemplo: Enviando um botão Native Flow customizado
-const sendNativeFlowButtonExample = async (jid: string, sockInstance: ReturnType<typeof makeWASocket>) => {
-	await sockInstance.sendMessage(jid, {
-		// @ts-expect-error: campo customizado para Native Flow Button
-		nativeFlowMessage: [
-			{
-				name: 'payment_info',
-				buttonParamsJson: JSON.stringify({
-					order: {
-						status: 'payment_requested',
-						order_type: 'ORDER_WITHOUT_AMOUNT',
-						items: [
-							{
-								amount: { value: 0, offset: 1 },
-								retailer_id: 'custom-item-1749167034',
-								quantity: 0,
-								name: ''
-							}
-						],
-						subtotal: { value: 0, offset: 1 }
-					},
-					currency: 'BRL',
-					referral: 'chat_attachment',
-					reference_id: '4S8A2FCCAIF',
-					type: 'physical-goods',
-					additional_note: '',
-					payment_settings: [
-						{
-							type: 'pix_static_code',
-							pix_static_code: {
-								merchant_name: 'Teste de Pix',
-								key_type: 'PHONE',
-								key: '+5521999999999'
-							}
-						},
-						{
-							type: 'cards',
-							cards: { enabled: false }
-						}
-					],
-					total_amount: { value: 0, offset: 1 }
-				})
-			}
-		]
-	})
-}
