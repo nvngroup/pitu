@@ -816,7 +816,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							},
 						),
 						//TODO: CACHE
-						getProfilePicUrl: sock.profilePictureUrl,
+						getProfilePicUrl: (jid: string) => sock.profilePictureUrl(jid, 'preview', 30000),
 						upload: waUploadToServer,
 						mediaCache: config.mediaCache,
 						options: config.options,

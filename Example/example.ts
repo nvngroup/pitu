@@ -276,7 +276,7 @@ const startSock = async () => {
 					if (typeof contact.imgUrl !== 'undefined') {
 						const newUrl = contact.imgUrl === null
 							? null
-							: await sock!.profilePictureUrl(contact.id!).catch(() => null)
+							: await sock!.profilePictureUrl(contact.id!, 'preview', 30000).catch(() => null)
 						/* console.log(
 							`contact ${contact.id} has a new profile pic: ${newUrl}`,
 						) */
