@@ -113,6 +113,7 @@ export function decodeMessageNode(
 		senderLid: stanza?.attrs?.sender_lid,
 		senderPn: stanza?.attrs?.sender_pn,
 		participant,
+		participantPn: stanza?.attrs?.participant_pn,
 		participantLid: stanza?.attrs?.participant_lid
 	}
 
