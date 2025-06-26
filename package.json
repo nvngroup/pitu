@@ -18,7 +18,6 @@
     "lib/*",
     "WAProto/*.ts",
     "WAProto/*.js",
-    "WASignalGroup/*.js",
     "engine-requirements.js"
   ],
   "scripts": {
