@@ -53,11 +53,6 @@ jobs:
       - name: Verify NPM Authentication
         run: npm whoami
 
-      - name: Publish in NPM (as `@brunocgc`)
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Generate Changelog
         id: generate_changelog
         run: |
