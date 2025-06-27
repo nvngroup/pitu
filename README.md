@@ -85,3 +85,10 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 ---
 
 **Nota:** Este README serve como um ponto de entrada simples. Toda a documentação abrangente foi movida para arquivos dedicados para melhor organização e experiência de aprendizado.
+
+**Desenvolvido com ❤️ por NvN Group**
+
+<sub>© 2025 NvN Group - Todos os direitos reservados</sub>
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-green.svg)](CODE_OF_CONDUCT.md)
