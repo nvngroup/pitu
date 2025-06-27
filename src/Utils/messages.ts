@@ -493,7 +493,7 @@ export const generateWAMessageContent = async(
 			// poll v2 is for community announcement groups (single select and multiple)
 			m.pollCreationMessageV2 = pollCreationMessage
 		} else {
-			if(message.poll.selectableCount > 0) {
+			if(message.poll.selectableCount === 1) {
 				//poll v3 is for single select polls
 				m.pollCreationMessageV3 = pollCreationMessage
 			} else {
