@@ -91,14 +91,6 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 <table>
 <tr>
 <td align="center">
-<h3>🚀 Comece Agora</h3>
-<p>
-<a href="#-quick-start">
-<img src="https://img.shields.io/badge/Quick%20Start-Começar%20Agora-brightgreen?style=for-the-badge&logo=rocket" alt="Quick Start"/>
-</a>
-</p>
-</td>
-<td align="center">
 <h3>📞 Suporte</h3>
 <p>
 <a href="https://wa.me/552120428610">
@@ -109,7 +101,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 <td align="center">
 <h3>⭐ GitHub</h3>
 <p>
-<a href="https://github.com/brunocgc/whaticket-nvnplus">
+<a href="https://github.com/brunocgc/Baileys">
 <img src="https://img.shields.io/badge/GitHub-Dar%20Estrela-181717?style=for-the-badge&logo=github" alt="GitHub"/>
 </a>
 </p>
@@ -117,7 +109,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 <td align="center">
 <h3>💬 Comunidade</h3>
 <p>
-<a href="https://github.com/brunocgc/whaticket-nvnplus/discussions">
+<a href="https://github.com/brunocgc/Baileys/discussions">
 <img src="https://img.shields.io/badge/Discord-Entrar%20Agora-7289DA?style=for-the-badge&logo=discord" alt="Discord"/>
 </a>
 </p>
