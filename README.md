@@ -86,9 +86,52 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 
 **Nota:** Este README serve como um ponto de entrada simples. Toda a documentação abrangente foi movida para arquivos dedicados para melhor organização e experiência de aprendizado.
 
+<div align="center">
+
+<table>
+<tr>
+<td align="center">
+<h3>🚀 Comece Agora</h3>
+<p>
+<a href="#-quick-start">
+<img src="https://img.shields.io/badge/Quick%20Start-Começar%20Agora-brightgreen?style=for-the-badge&logo=rocket" alt="Quick Start"/>
+</a>
+</p>
+</td>
+<td align="center">
+<h3>📞 Suporte</h3>
+<p>
+<a href="https://wa.me/552120428610">
+<img src="https://img.shields.io/badge/WhatsApp-Falar%20Conosco-25D366?style=for-the-badge&logo=whatsapp" alt="WhatsApp"/>
+</a>
+</p>
+</td>
+<td align="center">
+<h3>⭐ GitHub</h3>
+<p>
+<a href="https://github.com/brunocgc/whaticket-nvnplus">
+<img src="https://img.shields.io/badge/GitHub-Dar%20Estrela-181717?style=for-the-badge&logo=github" alt="GitHub"/>
+</a>
+</p>
+</td>
+<td align="center">
+<h3>💬 Comunidade</h3>
+<p>
+<a href="https://github.com/brunocgc/whaticket-nvnplus/discussions">
+<img src="https://img.shields.io/badge/Discord-Entrar%20Agora-7289DA?style=for-the-badge&logo=discord" alt="Discord"/>
+</a>
+</p>
+</td>
+</tr>
+</table>
+
+<br>
+
 **Desenvolvido com ❤️ por NvN Group**
 
-<sub>© 2025 NvN Group - Todos os direitos reservados</sub>
+<sub>© 2025 NVN.PLUS - Todos os direitos reservados</sub>
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-green.svg)](CODE_OF_CONDUCT.md)
+
+</div>
