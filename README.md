@@ -86,6 +86,8 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 
 **Nota:** Este README serve como um ponto de entrada simples. Toda a documentação abrangente foi movida para arquivos dedicados para melhor organização e experiência de aprendizado.
 
+---
+
 <div align="center">
 
 <table>

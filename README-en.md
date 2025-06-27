@@ -86,6 +86,8 @@ We welcome contributions to improve Baileys! Here's how you can help:
 
 **Note:** This README serves as a simple entry point. All comprehensive documentation has been moved to dedicated files for better organization and learning experience.
 
+---
+
 <div align="center">
 
 <table>
