@@ -1,4 +1,6 @@
-<div align="center">
+# <div align='center'>Baileys - API TypeScript/Javascript para WhatsApp Web</div>
+
+<div align='center'>
 
 ![NVN.PLUS Logo](https://github.com/user-attachments/assets/8cd401e2-a783-4b69-a3b2-ab371fac711a)
 
