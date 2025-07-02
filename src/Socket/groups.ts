@@ -381,3 +381,5 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 	}
 	return metadata
 }
+
+export type GroupsSocket = ReturnType<typeof makeGroupsSocket>

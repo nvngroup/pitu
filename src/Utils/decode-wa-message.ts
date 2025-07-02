@@ -114,7 +114,8 @@ export function decodeMessageNode(
 		senderPn: stanza?.attrs?.sender_pn,
 		participant,
 		participantPn: stanza?.attrs?.participant_pn,
-		participantLid: stanza?.attrs?.participant_lid
+		participantLid: stanza?.attrs?.participant_lid,
+		...(msgType === 'newsletter' && stanza.attrs.server_id ? { serverId: stanza.attrs.server_id } : {})
 	}
 
 	const fullMessage: proto.IWebMessageInfo = {

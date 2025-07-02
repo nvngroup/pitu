@@ -54,6 +54,47 @@ export const hkdfInfoKey = (type: MediaType) => {
 	return `WhatsApp ${hkdfInfo} Keys`
 }
 
+export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: MediaType, logger?: ILogger) => {
+	const { stream } = await getStream(media)
+	logger?.debug('got stream for raw upload')
+
+	const hasher = Crypto.createHash('sha256')
+	const filePath = join(tmpdir(), mediaType + generateMessageIDV2())
+	const fileWriteStream = createWriteStream(filePath)
+
+	let fileLength = 0
+	try {
+		for await (const data of stream) {
+			fileLength += data.length
+			hasher.update(data)
+			if(!fileWriteStream.write(data)) {
+				await once(fileWriteStream, 'drain')
+			}
+		}
+
+		fileWriteStream.end()
+		await once(fileWriteStream, 'finish')
+		stream.destroy()
+		const fileSha256 = hasher.digest()
+		logger?.debug('hashed data for raw upload')
+		return {
+			filePath: filePath,
+			fileSha256,
+			fileLength
+		}
+	} catch(error) {
+		fileWriteStream.destroy()
+		stream.destroy()
+		try {
+			await fs.unlink(filePath)
+		} catch{
+			//
+		}
+
+		throw error
+	}
+}
+
 /** generates all the keys required to encrypt/decrypt & sign a media message */
 export async function getMediaKeys(buffer: Uint8Array | string | null | undefined, mediaType: MediaType): Promise<MediaDecryptionKeyInfo> {
 	if(!buffer) {
@@ -142,6 +183,7 @@ export const encodeBase64EncodedStringForUpload = (b64: string) => (
 )
 
 export const generateProfilePicture = async(mediaUpload: WAMediaUpload, dimensions?: { w: number; h: number }) => {
+
 	const { w = 640, h = 640 } = dimensions || {}
 	let bufferOrFilePath: Buffer | string
 	if(Buffer.isBuffer(mediaUpload)) {

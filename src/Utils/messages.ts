@@ -10,7 +10,6 @@ import {
 	AnyMediaMessageContent,
 	AnyMessageContent,
 	DownloadableMessage,
-	MediaGenerationOptions,
 	MediaType,
 	MessageContentGenerationOptions,
 	MessageGenerationOptions,
@@ -24,11 +23,11 @@ import {
 	WAProto,
 	WATextMessage,
 } from '../Types'
-import { isJidGroup, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
+import { isJidGroup, isJidNewsletter, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
 import { sha256 } from './crypto'
 import { generateMessageIDV2, getKeyAuthor, unixTimestampSeconds } from './generics'
 import { ILogger } from './logger'
-import { downloadContentFromMessage, encryptedStream, generateThumbnail, getAudioDuration, getAudioWaveform, MediaDownloadOptions } from './messages-media'
+import { downloadContentFromMessage, encryptedStream, generateThumbnail, getAudioDuration, getAudioWaveform, getRawMediaUploadData, MediaDownloadOptions } from './messages-media'
 
 type MediaUploadData = {
 	media: WAMediaUpload
@@ -101,7 +100,7 @@ const assertColor = async(color) => {
 
 export const prepareWAMessageMedia = async(
 	message: AnyMediaMessageContent,
-	options: MediaGenerationOptions
+	options: MessageContentGenerationOptions
 ) => {
 	const logger = options.logger
 
@@ -121,12 +120,12 @@ export const prepareWAMessageMedia = async(
 		media: message[mediaType]
 	}
 	delete uploadData[mediaType]
-	// check if cacheable + generate cache key
+
 	const cacheableKey = typeof uploadData.media === 'object' &&
 			('url' in uploadData.media) &&
 			!!uploadData.media.url &&
 			!!options.mediaCache && (
-	// generate the key
+
 		mediaType + ':' + uploadData.media.url.toString()
 	)
 
@@ -138,7 +137,6 @@ export const prepareWAMessageMedia = async(
 		uploadData.mimetype = MIMETYPE_MAP[mediaType]
 	}
 
-	// check for cache hit
 	if(cacheableKey) {
 		const mediaBuff = options.mediaCache!.get<Buffer>(cacheableKey)
 		if(mediaBuff) {
@@ -151,6 +149,48 @@ export const prepareWAMessageMedia = async(
 
 			return obj
 		}
+	}
+
+	const isNewsletter = !!options.jid && isJidNewsletter(options.jid)
+	if(isNewsletter) {
+		logger?.info({ key: cacheableKey }, 'Preparing raw media for newsletter')
+		const { filePath, fileSha256, fileLength } = await getRawMediaUploadData(
+			uploadData.media,
+			options.mediaTypeOverride || mediaType,
+			logger
+		)
+
+		const fileSha256B64 = fileSha256.toString('base64')
+		const { mediaUrl, directPath } = await options.upload(filePath, {
+			fileEncSha256B64: fileSha256B64,
+			mediaType: mediaType,
+			timeoutMs: options.mediaUploadTimeoutMs
+		})
+
+		await fs.unlink(filePath)
+
+		const obj = WAProto.Message.fromObject({
+			[`${mediaType}Message`]: MessageTypeProto[mediaType].fromObject({
+				url: mediaUrl,
+				directPath,
+				fileSha256,
+				fileLength,
+				...uploadData,
+				media: undefined
+			})
+		})
+
+		if(uploadData.ptv) {
+			obj.ptvMessage = obj.videoMessage
+			delete obj.videoMessage
+		}
+
+		if(cacheableKey) {
+			logger?.debug({ cacheableKey }, 'set cache')
+			options.mediaCache!.set(cacheableKey, WAProto.Message.encode(obj).finish())
+		}
+
+		return obj
 	}
 
 	const requiresDurationComputation = mediaType === 'audio' && typeof uploadData.seconds === 'undefined'
@@ -175,7 +215,7 @@ export const prepareWAMessageMedia = async(
 			opts: options.options
 		}
 	)
-	 // url safe Base64 encode the SHA256 hash of the body
+
 	const fileEncSha256B64 = fileEncSha256.toString('base64')
 	const [{ mediaUrl, directPath }] = await Promise.all([
 		(async() => {
@@ -635,7 +675,7 @@ export const generateWAMessageFromContent = (
 	const timestamp = unixTimestampSeconds(options.timestamp)
 	const { quoted, userJid } = options
 
-	if(quoted) {
+	if(quoted && !isJidNewsletter(jid)) {
 		const participant = quoted.key.fromMe ? userJid : (quoted.participant || quoted.key.participant || quoted.key.remoteJid)
 
 		let quotedMsg = normalizeMessageContent(quoted.message)!
@@ -668,7 +708,9 @@ export const generateWAMessageFromContent = (
 		// and it's not a protocol message -- delete, toggle disappear message
 		key !== 'protocolMessage' &&
 		// already not converted to disappearing message
-		key !== 'ephemeralMessage'
+		key !== 'ephemeralMessage' &&
+		// newsletters don't support ephemeral messages
+		!isJidNewsletter(jid)
 	) {
 		innerMessage[key].contextInfo = {
 			...(innerMessage[key].contextInfo || {}),
@@ -701,14 +743,8 @@ export const generateWAMessage = async(
 ) => {
 	// ensure msg ID is with every log
 	options.logger = options?.logger?.child({ msgId: options.messageId })
-	return generateWAMessageFromContent(
-		jid,
-		await generateWAMessageContent(
-			content,
-			options
-		),
-		options
-	)
+	// Pass jid in the options to generateWAMessageContent
+	return generateWAMessageFromContent(jid, await generateWAMessageContent(content, { ...options, jid }), options)
 }
 
 /** Get the key to access the true type of content */

@@ -65,6 +65,15 @@ export type BaileysEventMap = {
     'call': WACallEvent[]
     'labels.edit': Label
     'labels.association': { association: LabelAssociation, type: 'add' | 'remove' }
+    /** Newsletter-related events */
+    'newsletter.reaction': {
+        id: string
+        server_id: string
+        reaction: { code?: string; count?: number; removed?: boolean }
+    }
+    'newsletter.view': { id: string; serverId: string; count: number }
+    'newsletter-participants.update': { id: string; author: string; user: string; newRole: string; action: string }
+    'newsletter-settings.update': { id: string; update: any }
 }
 
 export type BufferedEventData = {

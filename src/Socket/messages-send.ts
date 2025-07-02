@@ -6,11 +6,12 @@ import { Boom } from '@hapi/boom'
 import { waproto as proto } from '../../WAProto'
 import { DEFAULT_CACHE_TTLS, WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AnyMessageContent, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, SocketConfig, WAMessageKey } from '../Types'
-import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
+import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeNewsletterMessage, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncUser } from '../WAUSync'
 import { makeGroupsSocket } from './groups'
+import { makeNewsletterSocket, NewsletterSocket } from './newsletter'
 import ListType = proto.Message.ListMessage.ListType;
 
 export const makeMessagesSocket = (config: SocketConfig) => {
@@ -22,7 +23,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		patchMessageBeforeSending,
 		cachedGroupMetadata,
 	} = config
-	const sock = makeGroupsSocket(config)
+	const sock: NewsletterSocket = makeNewsletterSocket(makeGroupsSocket(config))
 	const {
 		ev,
 		authState,
@@ -339,6 +340,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isGroup = server === 'g.us'
 		const isStatus = jid === statusJid
 		const isLid = server === 'lid'
+		const isNewsletter = server === 'newsletter'
 
 		msgId = msgId || generateMessageIDV2(sock.user?.id)
 		useUserDevicesCache = useUserDevicesCache !== false
@@ -383,6 +385,30 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const mediaType = getMediaType(message)
 				if(mediaType) {
 					extraAttrs['mediatype'] = mediaType
+				}
+
+				if(isNewsletter) {
+					// Patch message if needed, then encode as plaintext
+					const patched = patchMessageBeforeSending ? await patchMessageBeforeSending(message, []) : message
+					const bytes = encodeNewsletterMessage(patched as proto.IMessage)
+					binaryNodeContent.push({
+						tag: 'plaintext',
+						attrs: {},
+						content: bytes
+					})
+					const stanza: BinaryNode = {
+						tag: 'message',
+						attrs: {
+							to: jid,
+							id: msgId,
+							type: getMessageType(message),
+							...(additionalAttributes || {})
+						},
+						content: binaryNodeContent
+					}
+					logger.debug({ msgId }, `sending newsletter message to ${jid}`)
+					await sendNode(stanza)
+					return
 				}
 
 				if(normalizeMessageContent(message)?.pinInChatMessage) {
@@ -577,7 +603,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					(stanza.content as BinaryNode[]).push({
 						tag: 'device-identity',
 						attrs: { },
-						content: encodeSignedDeviceIdentity(authState.creds.account!, true)
+						content: encodeSignedDeviceIdentity(authState.creds.account, true)
 					})
 
 					logger.debug({ jid }, 'adding device identity')

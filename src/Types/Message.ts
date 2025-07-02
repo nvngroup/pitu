@@ -15,10 +15,11 @@ export type WAMessageContent = proto.IMessage
 export type WAContactMessage = proto.Message.IContactMessage
 export type WAContactsArrayMessage = proto.Message.IContactsArrayMessage
 export type WAMessageKey = proto.IMessageKey & {
-    senderLid ?: string
-    senderPn ?: string
-    participantLid ?: string
-    participantPn ?: string
+    senderLid?: string
+    serverId?: string
+    senderPn?: string
+    participantLid?: string
+    participantPn?: string
 }
 export type WATextMessage = proto.Message.IExtendedTextMessage
 export type WAContextInfo = proto.IContextInfo
@@ -291,6 +292,7 @@ export type MediaGenerationOptions = {
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
 	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
     getProfilePicUrl?: (jid: string, type: 'image' | 'preview') => Promise<string | undefined>
+    jid?: string
 }
 export type MessageGenerationOptions = MessageContentGenerationOptions & MessageGenerationOptionsFromContent
 
