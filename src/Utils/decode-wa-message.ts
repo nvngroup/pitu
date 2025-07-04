@@ -1,6 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { waproto as proto } from '../../WAProto'
-import { SignalRepository, WAMessageKey } from '../Types'
+import { SignalRepository, WAMessage, WAMessageKey } from '../Types'
 import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
@@ -118,7 +118,7 @@ export function decodeMessageNode(
 		...(msgType === 'newsletter' && stanza.attrs.server_id ? { serverId: stanza.attrs.server_id } : {})
 	}
 
-	const fullMessage: proto.IWebMessageInfo = {
+	const fullMessage: WAMessage = {
 		key,
 		messageTimestamp: +stanza.attrs.t,
 		pushName: pushname,
@@ -156,6 +156,10 @@ export const decryptMessageNode = (
 						const cert = proto.VerifiedNameCertificate.decode(content)
 						const details = proto.VerifiedNameCertificate.Details.decode(cert.details!)
 						fullMessage.verifiedBizName = details.verifiedName
+					}
+
+					if (tag === 'unavailable' && attrs.type === 'view_once') {
+						fullMessage.key.isViewOnce = true
 					}
 
 					if(tag !== 'enc' && tag !== 'plaintext') {
