@@ -173,51 +173,76 @@ export type WASendableProduct = Omit<proto.Message.ProductMessage.IProductSnapsh
 }
 
 export type AnyRegularMessageContent = (
-    ({
-	    text: string
-        linkPreview?: WAUrlInfo | null
-    }
-    & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
+    // === BASIC TEXT AND RICH TEXT ===
+    TextMessageContent
+
+    // === MEDIA MESSAGES ===
     | AnyMediaMessageContent
-    | ({
-        text?: string
-        linkPreview?: WAUrlInfo | null
-        poll: PollMessageOptions
-    } & Mentionable & Contextable & Buttonable & Templatable & Editable)
-    | {
-        contacts: {
-            displayName?: string
-            contacts: proto.Message.IContactMessage[]
-        }
-    }
-    | {
-        location: WALocationMessage
-    }
-    | { react: proto.Message.IReactionMessage }
-    | {
-        buttonReply: ButtonReplyInfo
-        type: 'template' | 'plain'
-    }
-    | {
-        groupInvite: GroupInviteInfo
-    }
-    | {
-        listReply: Omit<proto.Message.IListResponseMessage, 'contextInfo'>
-    }
+
+    // === POLL MESSAGES ===
+    | PollMessageContent
+
+    // === CONTACT MESSAGES ===
+    | ContactMessageContent
+
+    // === LOCATION MESSAGES ===
+    | LocationMessageContent
+
+    // === REACTION MESSAGES ===
+    | ReactionMessageContent
+
+    // === INTERACTIVE MESSAGES ===
+    | InteractiveMessageContent
+
+    // === GROUP AND CHAT MANAGEMENT ===
+    | { groupInvite: GroupInviteInfo }
+    | { chat: proto.Message.IChat }
     | {
         pin: WAMessageKey
         type: proto.PinInChat.Type
-        /**
-         * 24 hours, 7 days, 30 days
-         */
+        /** 24 hours, 7 days, 30 days */
         time?: 86400 | 604800 | 2592000
     }
-    | {
-        product: WASendableProduct
-        businessOwnerJid?: string
-        body?: string
-        footer?: string
-    } | SharePhoneNumber | RequestPhoneNumber
+    | { keepInChat: proto.Message.IKeepInChatMessage }
+
+    // === COMMERCE AND PAYMENTS ===
+    | CommerceMessageContent
+
+    // === POLLS AND VOTING ===
+    | { pollUpdate: proto.Message.IPollUpdateMessage }
+    | { pollVote: { pollCreationMessageKey: proto.IMessageKey, selectedOptions: Uint8Array[] } }
+    | { pollResultSnapshot: proto.Message.IPollResultSnapshotMessage }
+
+    // === CALLS AND SCHEDULING ===
+    | CallMessageContent
+
+    // === EVENTS ===
+    | { event: proto.Message.IEventMessage }
+    | { eventResponse: proto.Message.IEncEventResponseMessage }
+
+    // === COMMENTS ===
+    | { comment: proto.Message.ICommentMessage }
+    | { encComment: proto.Message.IEncCommentMessage }
+
+    // === STICKERS AND MEDIA PACKS ===
+    | { sticker: proto.Message.IStickerMessage }
+    | { stickerPack: proto.Message.IStickerPackMessage }
+    | { stickerSyncRmr: proto.Message.IStickerSyncRMRMessage }
+    | { album: proto.Message.IAlbumMessage }
+
+    // === NEWSLETTERS AND ADMIN ===
+    | { newsletterAdminInvite: proto.Message.INewsletterAdminInviteMessage }
+
+    // === STATUS AND NOTIFICATIONS ===
+    | { statusNotification: proto.Message.IStatusNotificationMessage }
+    | SharePhoneNumber
+    | RequestPhoneNumber
+
+    // === AI AND BOT MESSAGES ===
+    | { aiRichResponse: proto.IAIRichResponseMessage }
+
+    // === SYSTEM MESSAGES ===
+    | SystemMessageContent
 ) & ViewOnce
 
 export type AnyMessageContent = AnyRegularMessageContent | {
@@ -269,9 +294,6 @@ export type MiscMessageGenerationOptions = MinimalRelayOptions & {
     /** if it is broadcast */
     broadcast?: boolean
 }
-export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
-	userJid: string
-}
 
 export type WAMediaUploadFunction = (encFilePath: string, opts: { fileEncSha256B64: string, mediaType: MediaType, timeoutMs?: number }) => Promise<{ mediaUrl: string, directPath: string }>
 
@@ -290,11 +312,17 @@ export type MediaGenerationOptions = {
 
     font?: number
 }
+
+export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
+	userJid: string
+}
+
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
 	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
     getProfilePicUrl?: (jid: string, type: 'image' | 'preview') => Promise<string | undefined>
     jid?: string
 }
+
 export type MessageGenerationOptions = MessageContentGenerationOptions & MessageGenerationOptionsFromContent
 
 /**
@@ -319,3 +347,98 @@ export type MediaDecryptionKeyInfo = {
 }
 
 export type MinimalMessage = Pick<proto.IWebMessageInfo, 'key' | 'messageTimestamp'>
+
+// === AUXILIARY MESSAGE TYPES FOR BETTER ORGANIZATION ===
+
+/** Basic text and extended text message types */
+export type TextMessageContent = {
+    text: string
+    linkPreview?: WAUrlInfo | null
+} & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable
+
+/** Poll-related message types */
+export type PollMessageContent = {
+    text?: string
+    linkPreview?: WAUrlInfo | null
+    poll: PollMessageOptions
+} & Mentionable & Contextable & Buttonable & Templatable & Editable
+
+/** Contact-related message types */
+export type ContactMessageContent = {
+    contacts: {
+        displayName?: string
+        contacts: proto.Message.IContactMessage[]
+    }
+}
+
+/** Location-related message types */
+export type LocationMessageContent =
+    | { location: WALocationMessage }
+    | { liveLocation: proto.Message.ILiveLocationMessage }
+
+/** Reaction-related message types */
+export type ReactionMessageContent =
+    | { react: proto.Message.IReactionMessage }
+    | { encReaction: proto.Message.IEncReactionMessage }
+
+/** Interactive message types for buttons, templates, lists, etc. */
+export type InteractiveMessageContent =
+    | {
+        buttonReply: ButtonReplyInfo
+        type: 'template' | 'plain'
+    }
+    | { interactiveMessage: proto.Message.IInteractiveMessage }
+    | {
+        nativeFlow: {
+            buttons: proto.Message.InteractiveMessage.NativeFlowMessage.INativeFlowButton[]
+            messageParamsJson?: string
+            messageVersion?: number
+        }
+    }
+    | { interactiveResponse: proto.Message.IInteractiveResponseMessage }
+    | { buttonsMessage: proto.Message.IButtonsMessage }
+    | { templateMessage: proto.Message.ITemplateMessage }
+    | { listMessage: proto.Message.IListMessage }
+    | { listReply: Omit<proto.Message.IListResponseMessage, 'contextInfo'> }
+    | { highlyStructuredMessage: proto.Message.IHighlyStructuredMessage }
+
+/** Commerce and payment-related message types */
+export type CommerceMessageContent =
+    | {
+        product: WASendableProduct
+        businessOwnerJid?: string
+        body?: string
+        footer?: string
+    }
+    | { invoice: proto.Message.IInvoiceMessage }
+    | { sendPayment: proto.Message.ISendPaymentMessage }
+    | { requestPayment: proto.Message.IRequestPaymentMessage }
+    | { cancelPaymentRequest: proto.Message.ICancelPaymentRequestMessage }
+    | { declinePaymentRequest: proto.Message.IDeclinePaymentRequestMessage }
+    | { paymentInvite: proto.Message.IPaymentInviteMessage }
+    | { order: proto.Message.IOrderMessage }
+
+/** Call-related message types */
+export type CallMessageContent =
+    | { call: proto.Message.ICall }
+    | { scheduledCallCreation: proto.Message.IScheduledCallCreationMessage }
+    | { scheduledCallEdit: proto.Message.IScheduledCallEditMessage }
+    | { callLog: proto.Message.ICallLogMessage }
+    | { bcall: proto.Message.IBCallMessage }
+
+/** System and infrastructure message types */
+export type SystemMessageContent =
+    | { senderKeyDistribution: proto.Message.ISenderKeyDistributionMessage }
+    | { fastRatchetKeySenderKeyDistribution: proto.Message.ISenderKeyDistributionMessage }
+    | { secretEncrypted: proto.Message.ISecretEncryptedMessage }
+    | {
+        deviceSentMessage: {
+            destinationJid: string
+            message: proto.IMessage
+        }
+    }
+    | { messageHistoryBundle: proto.Message.IMessageHistoryBundle }
+    | { messageHistoryNotice: proto.Message.IMessageHistoryNotice }
+    | { placeholder: proto.Message.IPlaceholderMessage }
+    | { peerDataOperationRequest: proto.Message.IPeerDataOperationRequestMessage }
+    | { peerDataOperationResponse: proto.Message.IPeerDataOperationRequestResponseMessage }

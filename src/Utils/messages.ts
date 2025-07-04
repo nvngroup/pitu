@@ -547,9 +547,168 @@ export const generateWAMessageContent = async(
 		}
 	} else if('requestPhoneNumber' in message) {
 		m.requestPhoneNumberMessage = {}
+	} else if('deviceSentMessage' in message) {
+		// Handle deviceSentMessage by returning the inner message directly
+		return message.deviceSentMessage.message
+	} else if('interactiveMessage' in message) {
+		// Handle interactive messages including NativeFlow
+		m.interactiveMessage = message.interactiveMessage
+	} else if('liveLocation' in message) {
+		// Handle live location messages
+		m.liveLocationMessage = WAProto.Message.LiveLocationMessage.fromObject(message.liveLocation)
+	} else if('sticker' in message) {
+		// Handle sticker messages (alternative to media processing)
+		m.stickerMessage = WAProto.Message.StickerMessage.fromObject(message.sticker)
+	} else if('invoice' in message) {
+		// Handle invoice messages
+		m.invoiceMessage = WAProto.Message.InvoiceMessage.fromObject(message.invoice)
+	} else if('sendPayment' in message) {
+		// Handle send payment messages
+		m.sendPaymentMessage = WAProto.Message.SendPaymentMessage.fromObject(message.sendPayment)
+	} else if('requestPayment' in message) {
+		// Handle request payment messages
+		m.requestPaymentMessage = WAProto.Message.RequestPaymentMessage.fromObject(message.requestPayment)
+	} else if('cancelPaymentRequest' in message) {
+		// Handle cancel payment request messages
+		m.cancelPaymentRequestMessage = WAProto.Message.CancelPaymentRequestMessage.fromObject(message.cancelPaymentRequest)
+	} else if('declinePaymentRequest' in message) {
+		// Handle decline payment request messages
+		m.declinePaymentRequestMessage = WAProto.Message.DeclinePaymentRequestMessage.fromObject(message.declinePaymentRequest)
+	} else if('paymentInvite' in message) {
+		// Handle payment invite messages
+		m.paymentInviteMessage = WAProto.Message.PaymentInviteMessage.fromObject(message.paymentInvite)
+	} else if('order' in message) {
+		// Handle order messages
+		m.orderMessage = WAProto.Message.OrderMessage.fromObject(message.order)
+	} else if('listMessage' in message) {
+		// Handle list messages (direct)
+		m.listMessage = WAProto.Message.ListMessage.fromObject(message.listMessage)
+	} else if('buttonsMessage' in message) {
+		// Handle buttons messages (direct)
+		m.buttonsMessage = WAProto.Message.ButtonsMessage.fromObject(message.buttonsMessage)
+	} else if('templateMessage' in message) {
+		// Handle template messages (direct) - Ensure mobile compatibility
+		const templateMsg = { ...message.templateMessage }
+
+		// Add templateId if not present for mobile compatibility
+		if(!templateMsg.templateId) {
+			templateMsg.templateId = generateMessageIDV2()
+		}
+
+		// Ensure proper format structure for mobile devices
+		if(templateMsg.hydratedFourRowTemplate && !templateMsg.hydratedTemplate) {
+			templateMsg.hydratedTemplate = templateMsg.hydratedFourRowTemplate
+		}
+
+		m.templateMessage = WAProto.Message.TemplateMessage.fromObject(templateMsg)
+	} else if('highlyStructuredMessage' in message) {
+		// Handle HSM messages
+		m.highlyStructuredMessage = WAProto.Message.HighlyStructuredMessage.fromObject(message.highlyStructuredMessage)
+	} else if('senderKeyDistribution' in message) {
+		// Handle sender key distribution messages
+		m.senderKeyDistributionMessage = WAProto.Message.SenderKeyDistributionMessage.fromObject(message.senderKeyDistribution)
+	} else if('fastRatchetKeySenderKeyDistribution' in message) {
+		// Handle fast ratchet key sender key distribution messages
+		m.fastRatchetKeySenderKeyDistributionMessage = WAProto.Message.SenderKeyDistributionMessage.fromObject(message.fastRatchetKeySenderKeyDistribution)
+	} else if('call' in message) {
+		// Handle call messages
+		m.call = WAProto.Message.Call.fromObject(message.call)
+	} else if('chat' in message) {
+		// Handle chat messages
+		m.chat = WAProto.Message.Chat.fromObject(message.chat)
+	} else if('keepInChat' in message) {
+		// Handle keep in chat messages
+		m.keepInChatMessage = WAProto.Message.KeepInChatMessage.fromObject(message.keepInChat)
+	} else if('interactiveResponse' in message) {
+		// Handle interactive response messages
+		m.interactiveResponseMessage = WAProto.Message.InteractiveResponseMessage.fromObject(message.interactiveResponse)
+	} else if('pollUpdate' in message) {
+		// Handle poll update messages
+		m.pollUpdateMessage = WAProto.Message.PollUpdateMessage.fromObject(message.pollUpdate)
+	} else if('pollVote' in message) {
+		// Handle poll vote messages (legacy)
+		m.pollUpdateMessage = {
+			pollCreationMessageKey: message.pollVote.pollCreationMessageKey,
+			vote: {
+				encPayload: new Uint8Array(),
+				encIv: new Uint8Array()
+			}
+		}
+	} else if('scheduledCallCreation' in message) {
+		// Handle scheduled call creation messages
+		m.scheduledCallCreationMessage = WAProto.Message.ScheduledCallCreationMessage.fromObject(message.scheduledCallCreation)
+	} else if('scheduledCallEdit' in message) {
+		// Handle scheduled call edit messages
+		m.scheduledCallEditMessage = WAProto.Message.ScheduledCallEditMessage.fromObject(message.scheduledCallEdit)
+	} else if('event' in message) {
+		// Handle event messages
+		m.eventMessage = WAProto.Message.EventMessage.fromObject(message.event)
+	} else if('eventResponse' in message) {
+		// Handle event response messages
+		m.encEventResponseMessage = WAProto.Message.EncEventResponseMessage.fromObject(message.eventResponse)
+	} else if('comment' in message) {
+		// Handle comment messages
+		m.commentMessage = WAProto.Message.CommentMessage.fromObject(message.comment)
+	} else if('encComment' in message) {
+		// Handle encrypted comment messages
+		m.encCommentMessage = WAProto.Message.EncCommentMessage.fromObject(message.encComment)
+	} else if('callLog' in message) {
+		// Handle call log messages
+		m.callLogMesssage = WAProto.Message.CallLogMessage.fromObject(message.callLog)
+	} else if('messageHistoryBundle' in message) {
+		// Handle message history bundle messages
+		m.messageHistoryBundle = WAProto.Message.MessageHistoryBundle.fromObject(message.messageHistoryBundle)
+	} else if('messageHistoryNotice' in message) {
+		// Handle message history notice messages
+		m.messageHistoryNotice = WAProto.Message.MessageHistoryNotice.fromObject(message.messageHistoryNotice)
+	} else if('newsletterAdminInvite' in message) {
+		// Handle newsletter admin invite messages
+		m.newsletterAdminInviteMessage = WAProto.Message.NewsletterAdminInviteMessage.fromObject(message.newsletterAdminInvite)
+	} else if('placeholder' in message) {
+		// Handle placeholder messages
+		m.placeholderMessage = WAProto.Message.PlaceholderMessage.fromObject(message.placeholder)
+	} else if('secretEncrypted' in message) {
+		// Handle secret encrypted messages
+		m.secretEncryptedMessage = WAProto.Message.SecretEncryptedMessage.fromObject(message.secretEncrypted)
+	} else if('album' in message) {
+		// Handle album messages
+		m.albumMessage = WAProto.Message.AlbumMessage.fromObject(message.album)
+	} else if('stickerPack' in message) {
+		// Handle sticker pack messages
+		m.stickerPackMessage = WAProto.Message.StickerPackMessage.fromObject(message.stickerPack)
+	} else if('stickerSyncRmr' in message) {
+		// Handle sticker sync RMR messages
+		m.stickerSyncRmrMessage = WAProto.Message.StickerSyncRMRMessage.fromObject(message.stickerSyncRmr)
+	} else if('pollResultSnapshot' in message) {
+		// Handle poll result snapshot messages
+		m.pollResultSnapshotMessage = WAProto.Message.PollResultSnapshotMessage.fromObject(message.pollResultSnapshot)
+	} else if('aiRichResponse' in message) {
+		// Handle AI rich response messages
+		m.richResponseMessage = WAProto.AIRichResponseMessage.fromObject(message.aiRichResponse)
+	} else if('statusNotification' in message) {
+		// Handle status notification messages
+		m.statusNotificationMessage = WAProto.Message.StatusNotificationMessage.fromObject(message.statusNotification)
+	} else if('bcall' in message) {
+		// Handle bcall messages
+		m.bcallMessage = WAProto.Message.BCallMessage.fromObject(message.bcall)
+	} else if('encReaction' in message) {
+		// Handle encrypted reaction messages
+		m.encReactionMessage = WAProto.Message.EncReactionMessage.fromObject(message.encReaction)
+	} else if('peerDataOperationRequest' in message) {
+		// Handle peer data operation request messages
+		m.protocolMessage = {
+			type: WAProto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_MESSAGE,
+			peerDataOperationRequestMessage: WAProto.Message.PeerDataOperationRequestMessage.fromObject(message.peerDataOperationRequest)
+		}
+	} else if('peerDataOperationResponse' in message) {
+		// Handle peer data operation response messages
+		m.protocolMessage = {
+			type: WAProto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE,
+			peerDataOperationRequestResponseMessage: WAProto.Message.PeerDataOperationRequestResponseMessage.fromObject(message.peerDataOperationResponse)
+		}
 	} else {
 		m = await prepareWAMessageMedia(
-			message,
+			message as AnyMediaMessageContent,
 			options
 		)
 	}
@@ -579,7 +738,8 @@ export const generateWAMessageContent = async(
 		m = { buttonsMessage }
 	} else if('templateButtons' in message && !!message.templateButtons) {
 		const msg: proto.Message.TemplateMessage.IHydratedFourRowTemplate = {
-			hydratedButtons: message.templateButtons
+			hydratedButtons: message.templateButtons,
+			templateId: generateMessageIDV2() // Add unique template ID for better compatibility
 		}
 
 		if('text' in message) {
@@ -597,10 +757,12 @@ export const generateWAMessageContent = async(
 			msg.hydratedFooterText = message.footer
 		}
 
+		// Use only hydratedFourRowTemplate for better mobile compatibility
 		m = {
 			templateMessage: {
-				fourRowTemplate: msg,
-				hydratedTemplate: msg
+				hydratedFourRowTemplate: msg,
+				hydratedTemplate: msg, // Keep for backward compatibility
+				contextInfo: message.contextInfo || undefined
 			}
 		}
 	}
@@ -643,17 +805,6 @@ export const generateWAMessageContent = async(
 		const [messageType] = Object.keys(m)
 		m[messageType] = m[messageType] || {}
 		m[messageType].contextInfo = message.contextInfo
-	}
-
-	if('nativeFlowMessage' in message && Array.isArray(message.nativeFlowMessage)) {
-		m.interactiveMessage = {
-			nativeFlowMessage: {
-				buttons: message.nativeFlowMessage.map(btn => ({
-					name: btn.name,
-					buttonParamsJson: btn.buttonParamsJson
-				}))
-			}
-		}
 	}
 
 	return WAProto.Message.fromObject(m)

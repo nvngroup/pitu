@@ -37,20 +37,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		groupToggleEphemeral,
 	} = sock
 
-	const patchMessageRequiresBeforeSending = (msg: proto.IMessage): proto.IMessage => {
-		if(msg?.deviceSentMessage?.message?.listMessage) {
-			msg = JSON.parse(JSON.stringify(msg))
-			msg.deviceSentMessage!.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
-		}
-
-		if(msg?.listMessage) {
-			msg = JSON.parse(JSON.stringify(msg))
-			msg.listMessage!.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT
-		}
-
-		return msg
-	}
-
 	const userDevicesCache = config.userDevicesCache || new NodeCache({
 		stdTTL: DEFAULT_CACHE_TTLS.USER_DEVICES, // 5 minutes
 		useClones: false
@@ -298,8 +284,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		message: proto.IMessage,
 		extraAttrs?: BinaryNode['attrs']
 	) => {
-		const requiredPatch = patchMessageRequiresBeforeSending(message)
-		let patched = await patchMessageBeforeSending(requiredPatch, jids)
+		let patched = await patchMessageBeforeSending(message, jids)
 		if(!Array.isArray(patched)) {
 		  patched = jids ? jids.map(jid => ({ recipientJid: jid, ...patched })) : [patched]
 		}
@@ -403,9 +388,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				if(isNewsletter) {
-					// Patch message if needed, then encode as plaintext
-					const requiredPatch = patchMessageRequiresBeforeSending(message)
-					const patched = patchMessageBeforeSending ? await patchMessageBeforeSending(requiredPatch, []) : requiredPatch
+					const patched = patchMessageBeforeSending ? await patchMessageBeforeSending(message, []) : message
 					const bytes = encodeNewsletterMessage(patched as proto.IMessage)
 					binaryNodeContent.push({
 						tag: 'plaintext',
@@ -470,8 +453,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						devices.push(...additionalDevices)
 					}
 
-					const requiredPatch = patchMessageRequiresBeforeSending(message)
-					const patched = await patchMessageBeforeSending(requiredPatch)
+					const patched = await patchMessageBeforeSending(message)
 
 					if(Array.isArray(patched)) {
 					  throw new Boom('Per-jid patching is not supported in groups')
