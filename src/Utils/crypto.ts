@@ -63,31 +63,36 @@ export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8A
  * where the auth tag is suffixed to the ciphertext
  * */
 export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
-	try {
-		const decipher = createDecipheriv('aes-256-gcm', key, iv)
-		const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
-		const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
+	   try {
+			   const decipher = createDecipheriv('aes-256-gcm', key, iv)
+			   const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
+			   const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
 
-		decipher.setAAD(additionalData)
+			   decipher.setAAD(additionalData)
 
-		try {
-			decipher.setAuthTag(tag)
-		} catch(error) {
-			logger.error({ error }, 'Erro ao definir tag de autenticação')
-			return Buffer.concat([decipher.update(enc), decipher.final()])
-		}
+			   try {
+					   decipher.setAuthTag(tag)
+			   } catch(error) {
+					   logger.error({ error, tag }, 'Erro ao definir tag de autenticação')
+					   return Buffer.concat([decipher.update(enc), decipher.final()])
+			   }
 
-		try {
-			return Buffer.concat([decipher.update(enc), decipher.final()])
-		} catch(error) {
-			logger.error({ error }, 'Erro ao decodificar GCM')
-
-			return decipher.update(enc)
-		}
-	} catch(error) {
-		logger.error({ error }, 'Erro fatal na decodificação GCM')
-		return Buffer.from([])
-	}
+			   try {
+					   return Buffer.concat([decipher.update(enc), decipher.final()])
+			   } catch(error) {
+					   logger.error({ error, enc }, 'Erro ao decodificar GCM')
+					   return decipher.update(enc)
+			   }
+	   } catch(error) {
+			   logger.error({
+					   error,
+					   ciphertextLength: ciphertext.length,
+					   keyLength: key.length,
+					   ivLength: iv.length,
+					   additionalDataLength: additionalData.length
+			   }, 'Erro fatal na decodificação GCM')
+			   return Buffer.from([])
+	   }
 }
 
 export function aesEncryptCTR(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
