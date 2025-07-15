@@ -24,10 +24,8 @@ export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo
 export type WALocationMessage = waproto.Message.ILocationMessage
 export type WAGenericMediaMessage = waproto.Message.IVideoMessage | waproto.Message.IImageMessage | waproto.Message.IAudioMessage | waproto.Message.IDocumentMessage | waproto.Message.IStickerMessage
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-export import WAMessageStubType = waproto.WebMessageInfo.StubType
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-export import WAMessageStatus = waproto.WebMessageInfo.Status
+export const WAMessageStubType = waproto.WebMessageInfo.StubType
+export const WAMessageStatus = waproto.WebMessageInfo.Status
 import { ILogger } from '../Utils/logger'
 export type WAMediaPayloadURL = { url: URL | string }
 export type WAMediaPayloadStream = { stream: Readable }

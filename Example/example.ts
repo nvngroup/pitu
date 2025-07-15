@@ -2,7 +2,7 @@ import { Boom } from '@hapi/boom'
 import NodeCache from '@cacheable/node-cache'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
-import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, proto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
+import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
 //import MAIN_LOGGER from '../src/Utils/logger'
 import open from 'open'
 import fs from 'fs'
@@ -143,7 +143,7 @@ const startSock = async () => {
 			// history received
 			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
-				if (syncType === proto.HistorySync.HistorySyncType.ON_DEMAND) {
+				if (syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
 					// console.log('received on-demand history sync, messages=', messages)
 				}
 				// console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
@@ -551,7 +551,7 @@ const startSock = async () => {
 									setTimeout(async () => {
 										await sock.sendMessage(msg.key.remoteJid!, {
 											pin: sentMsg.key,
-											type: proto.PinInChat.Type.PIN_FOR_ALL,
+											type: waproto.PinInChat.Type.PIN_FOR_ALL,
 											time: 86400 // 24 horas
 										});
 									}, 2000);
@@ -700,7 +700,7 @@ const startSock = async () => {
 
 				for (const { key, update } of events['messages.update']) {
 					if (update.pollUpdates) {
-						const pollCreation: proto.IMessage = {} // get the poll creation message somehow
+						const pollCreation: waproto.IMessage = {} // get the poll creation message somehow
 						if (pollCreation) {
 							/* console.log(
 								'got poll update, aggregation: ',
@@ -758,7 +758,7 @@ const startSock = async () => {
 		// up to you
 
 		// only if store is present
-		return proto.Message.fromObject({})
+		return waproto.Message.fromObject({})
 	}
 }
 

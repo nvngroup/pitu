@@ -153,7 +153,7 @@ export const decryptMessageNode = (
 				for(const { tag, attrs, content } of stanza.content) {
 					if(tag === 'verified_name' && content instanceof Uint8Array) {
 						const cert = waproto.VerifiedNameCertificate.decode(content)
-						const details = waproto.VerifiedNameCertificate.Details.decode(cert.details)
+						const details = waproto.VerifiedNameCertificate.Details.decode(cert.details!)
 						fullMessage.verifiedBizName = details.verifiedName
 					}
 
