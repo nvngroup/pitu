@@ -359,7 +359,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			deviceSentMessage: {
 				destinationJid,
 				message
-			}
+			},
+			messageContextInfo: message.messageContextInfo
 		}
 
 		const extraAttrs = {}
