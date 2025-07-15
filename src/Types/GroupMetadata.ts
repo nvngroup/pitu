@@ -13,6 +13,7 @@ export interface GroupMetadata {
     addressingMode: 'pn' | 'lid'
     owner: string | undefined
     ownerJid?: string
+    ownerCountryCode: string
     subject: string
     /** group subject owner */
     subjectOwner?: string
