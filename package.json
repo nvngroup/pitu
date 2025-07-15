@@ -50,6 +50,7 @@
     "music-metadata": "^7.12.3",
     "pino": "^9.7",
     "protobufjs": "^7.5.3",
+    "qrcode-terminal": "^0.12.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {

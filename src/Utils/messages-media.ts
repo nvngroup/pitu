@@ -15,7 +15,7 @@ import { BaileysEventMap, DownloadableMessage, MediaConnInfo, MediaDecryptionKey
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildBuffer, jidNormalizedUser } from '../WABinary'
 import { aesDecryptGCM, aesEncryptGCM, hkdf } from './crypto'
 import { generateMessageIDV2 } from './generics'
-import { ILogger } from './logger'
+import logger, { ILogger } from './logger'
 
 const getTmpFilesDirectory = () => tmpdir()
 
@@ -541,41 +541,62 @@ export const downloadEncryptedContent = async(
 
 	const output = new Transform({
 		transform(chunk, _, callback) {
-			let data = Buffer.concat([remainingBytes, chunk])
-
-			const decryptLength = toSmallestChunkSize(data.length)
-			remainingBytes = data.slice(decryptLength)
-			data = data.slice(0, decryptLength)
-
-			if(!aes) {
-				let ivValue = iv
-				if(firstBlockIsIV) {
-					ivValue = data.slice(0, AES_CHUNK_SIZE)
-					data = data.slice(AES_CHUNK_SIZE)
-				}
-
-				aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, ivValue)
-				// if an end byte that is not EOF is specified
-				// stop auto padding (PKCS7) -- otherwise throws an error for decryption
-				if(endByte) {
-					aes.setAutoPadding(false)
-				}
-
-			}
-
 			try {
-				pushBytes(aes.update(data), b => this.push(b))
-				callback()
+				let data = Buffer.concat([remainingBytes, chunk])
+
+				const decryptLength = toSmallestChunkSize(data.length)
+				remainingBytes = data.slice(decryptLength)
+				data = data.slice(0, decryptLength)
+
+				if(!aes) {
+					let ivValue = iv
+					if(firstBlockIsIV) {
+						ivValue = data.slice(0, AES_CHUNK_SIZE)
+						data = data.slice(AES_CHUNK_SIZE)
+					}
+
+					try {
+						aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, ivValue)
+						// if an end byte that is not EOF is specified
+						// stop auto padding (PKCS7) -- otherwise throws an error for decryption
+						if(endByte) {
+							aes.setAutoPadding(false)
+						}
+					} catch(error) {
+						callback(new Error(`Falha ao criar decifrador: ${error.message}`))
+						return
+					}
+				}
+
+				try {
+					pushBytes(aes.update(data), b => this.push(b))
+					callback()
+				} catch(error) {
+					callback(new Error(`Erro na descriptografia (update): ${error.message}`))
+				}
 			} catch(error) {
-				callback(error)
+				callback(new Error(`Erro geral de descriptografia: ${error.message}`))
 			}
 		},
 		final(callback) {
 			try {
-				pushBytes(aes.final(), b => this.push(b))
-				callback()
+				if(!aes) {
+					callback(new Error('Decifrador não iniciado corretamente'))
+					return
+				}
+
+				try {
+					pushBytes(aes.final(), b => this.push(b))
+					callback()
+				} catch(error) {
+					logger.debug(error)
+					// Se falhar no final(), tente finalizar sem erro
+					callback(null)
+				}
 			} catch(error) {
-				callback(error)
+				logger.debug(error)
+				// Finaliza sem erro para não interromper o processamento
+				callback(null)
 			}
 		},
 	})
