@@ -14,7 +14,12 @@ export type WAMessage = waproto.IWebMessageInfo
 export type WAMessageContent = waproto.IMessage
 export type WAContactMessage = waproto.Message.IContactMessage
 export type WAContactsArrayMessage = waproto.Message.IContactsArrayMessage
-export type WAMessageKey = waproto.IMessageKey & { senderLid?: string; participantLid?: string; senderPn?: string }
+export type WAMessageKey = waproto.IMessageKey & {
+    senderLid?: string
+    senderPn?: string
+    participantLid?: string
+    participantPn?: string
+}
 export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo
 export type WALocationMessage = waproto.Message.ILocationMessage
