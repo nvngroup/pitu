@@ -345,7 +345,7 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 	const memberAddMode: boolean = getBinaryNodeChildString(group, 'member_add_mode') === 'all_member_add'
 	const metadata: GroupMetadata = {
 		id: groupId,
-		addressingMode: group.attrs.addressing_mode,
+		addressingMode: group.attrs.addressing_mode as 'pn' | 'lid',
 		subject: group.attrs.subject,
 		subjectOwner: group.attrs.s_o,
 		subjectOwnerJid: group.attrs.s_o_pn,

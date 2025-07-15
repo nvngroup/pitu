@@ -442,12 +442,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							participantsList.push(...statusJidList)
 						}
 
-						if(!isStatus) {
+						/* if(!isStatus) {
 							additionalAttributes = {
 								...additionalAttributes,
 								addressingMode: groupData?.addressingMode || 'pn'
 							}
-						}
+						} */
 
 						const additionalDevices = await getUSyncDevices(participantsList, !!useUserDevicesCache, false)
 						devices.push(...additionalDevices)
