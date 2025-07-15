@@ -481,7 +481,7 @@ export const makeSocket = (config: SocketConfig) => {
 		end(new Boom(msg || 'Intentional Logout', { statusCode: DisconnectReason.loggedOut }))
 	}
 
-	onst requestPairingCode = async (phoneNumber: string, customPairingCode?: string): Promise<string> => {
+	const requestPairingCode = async (phoneNumber: string, customPairingCode?: string): Promise<string> => {
 		const pairingCode = customPairingCode ?? bytesToCrockford(randomBytes(5))
 
 		if (customPairingCode && customPairingCode?.length !== 8) {
