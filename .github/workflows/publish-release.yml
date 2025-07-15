@@ -4,6 +4,25 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Tipo de release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+      dry_run:
+        description: 'Dry run (apenas simular, não executar)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
 
 permissions: write-all
 
@@ -43,14 +62,6 @@ jobs:
         run: yarn
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Generate Changelog
-        id: generate_changelog
-        run: |
-          changelog=$(npm run changelog:last --silent)
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "${changelog}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Make Package
         run: npm pack
