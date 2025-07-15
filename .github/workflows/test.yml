@@ -1,0 +1,145 @@
+name: Run Tests
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
+        id: run_tests
+        run: yarn test
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            test-results/
+            coverage/
+          retention-days: 7
+
+      - name: Create issue for test failures
+        if: steps.run_tests.outcome == 'failure' && github.event_name == 'push'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              // Informações sobre o contexto
+              const { sha, ref } = context;
+              const branch = ref.replace('refs/heads/', '');
+              const nodeVersion = '${{ matrix.node-version }}';
+              const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+              // Título da issue
+              const title = `Test Failure - Node.js ${nodeVersion} - ${branch}`;
+
+              // Corpo da issue simplificado
+              const body = `## Test Failure Alert
+
+            **Falha nos testes detectada automaticamente**
+
+            ### Detalhes:
+            - **Branch:** \`${branch}\`
+            - **Commit:** \`${sha.substring(0, 7)}\`
+            - **Node.js:** \`${nodeVersion}\`
+            - **Workflow:** [Ver execução](${runUrl})
+            - **Data:** ${new Date().toISOString()}
+
+            ### Próximos Passos:
+            - [ ] Analisar logs do workflow
+            - [ ] Reproduzir erro localmente
+            - [ ] Corrigir testes quebrados
+            - [ ] Fazer commit com correção
+
+            ---
+            Issue criada automaticamente pelo workflow de testes
+
+            /cc @${context.actor}`;
+
+              // Verificar se já existe uma issue similar aberta (últimas 24h)
+              try {
+                const existingIssues = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  labels: 'test-failure'
+                });
+
+                const recentSimilarIssue = existingIssues.data.find(issue =>
+                  issue.title.includes(nodeVersion) &&
+                  issue.title.includes(branch) &&
+                  new Date(issue.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+                );
+
+                if (recentSimilarIssue) {
+                  console.log(`Similar issue already exists: #${recentSimilarIssue.number}`);
+
+                  // Adicionar comentário na issue existente
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: recentSimilarIssue.number,
+                    body: `🔄 **Nova falha detectada**
+
+            **Commit:** \`${sha.substring(0, 7)}\`
+            **Workflow:** [Ver execução](${runUrl})
+            **Horário:** ${new Date().toISOString()}
+
+            A falha continua ocorrendo. Por favor, priorize a correção.`
+                  });
+                } else {
+                  // Criar nova issue
+                  const issue = await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title,
+                    body: body,
+                    labels: ['bug', 'test-failure', 'automated']
+                  });
+
+                  console.log(`Created issue: #${issue.data.number}`);
+                }
+              } catch (error) {
+                console.error('Error checking/creating issues:', error);
+                console.log('Test failed but could not create issue. Check repository permissions.');
+              }
+            } catch (error) {
+              console.error('Script execution error:', error);
+            }
+
+      - name: Fail job if tests failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1
