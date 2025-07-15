@@ -41,6 +41,7 @@
     "@cacheable/node-cache": "^1.5.8",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/eslint-config": "github:whiskeysockets/eslint-config",
+    "async-lock": "^1.4.1",
     "async-mutex": "^0.5.0",
     "axios": "^1.10.0",
     "jimp": "^1.6.0",

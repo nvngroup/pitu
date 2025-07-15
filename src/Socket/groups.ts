@@ -1,7 +1,7 @@
 import { proto } from '../../WAProto'
 import { GroupMetadata, GroupParticipant, ParticipantAction, SocketConfig, WAMessageKey, WAMessageStubType } from '../Types'
 import { generateMessageIDV2, unixTimestampSeconds } from '../Utils'
-import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString, jidEncode, jidNormalizedUser } from '../WABinary'
+import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString, isJidUser, isLidUser, jidEncode, jidNormalizedUser } from '../WABinary'
 import { makeChatsSocket } from './chats'
 
 export const makeGroupsSocket = (config: SocketConfig) => {
@@ -368,7 +368,8 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 			({ attrs }) => {
 				return {
 					id: attrs.jid,
-					jid: attrs.phone_number ? jidNormalizedUser(attrs.phone_number) : undefined,
+					jid: isJidUser(attrs.jid) ? attrs.jid : jidNormalizedUser(attrs.phone_number),
+					lid: isLidUser(attrs.jid) ? attrs.jid : attrs.lid,
 					admin: (attrs.type || null) as GroupParticipant['admin'],
 				}
 			}
