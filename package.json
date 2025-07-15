@@ -38,6 +38,7 @@
     "update:package": "npx npm-check-updates"
   },
   "dependencies": {
+    "@adiwajshing/keyed-db": "^0.2.4",
     "@cacheable/node-cache": "^1.5.8",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/eslint-config": "github:whiskeysockets/eslint-config",
