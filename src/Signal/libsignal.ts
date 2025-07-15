@@ -19,7 +19,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		},
 		async processSenderKeyDistributionMessage({ item, authorJid }) {
 			const builder = new GroupSessionBuilder(storage)
-			if (!item.groupId) {
+			if(!item.groupId) {
 				throw new Error('Group ID is required for sender key distribution message')
 			}
 
@@ -105,7 +105,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 				return libsignal.SessionRecord.deserialize(sess)
 			}
 		},
-		storeSession: async (id: string, session: libsignal.SessionRecord) => {
+		storeSession: async(id: string, session: libsignal.SessionRecord) => {
 			await keys.set({ 'session': { [id]: session.serialize() } })
 		},
 		isTrustedIdentity: () => {
@@ -129,15 +129,16 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 				pubKey: Buffer.from(key.keyPair.public)
 			}
 		},
-		loadSenderKey: async (senderKeyName: SenderKeyName) => {
+		loadSenderKey: async(senderKeyName: SenderKeyName) => {
 			const keyId = senderKeyName.toString()
 			const { [keyId]: key } = await keys.get('sender-key', [keyId])
 			if(key) {
 				return SenderKeyRecord.deserialize(key)
 			}
+
 			return new SenderKeyRecord()
 		},
-		storeSenderKey: async (senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
+		storeSenderKey: async(senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
 			const keyId = senderKeyName.toString()
 			const serialized = JSON.stringify(key.serialize())
 			await keys.set({

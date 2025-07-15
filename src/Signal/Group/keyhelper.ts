@@ -4,11 +4,11 @@ import { generateKeyPair } from 'libsignal/src/curve'
 type KeyPairType = ReturnType<typeof generateKeyPair>
 
 export function generateSenderKey(): Buffer {
-  return nodeCrypto.randomBytes(32)
+	return nodeCrypto.randomBytes(32)
 }
 
 export function generateSenderKeyId(): number {
-  return nodeCrypto.randomInt(2147483647)
+	return nodeCrypto.randomInt(2147483647)
 }
 
 export interface SigningKeyPair {
@@ -17,12 +17,12 @@ export interface SigningKeyPair {
 }
 
 export function generateSenderSigningKey(key?: KeyPairType): SigningKeyPair {
-  if (!key) {
-    key = generateKeyPair()
-  }
+	if(!key) {
+		key = generateKeyPair()
+	}
 
-  return {
-    public: Buffer.from(key.pubKey),
-    private: Buffer.from(key.privKey)
-  }
+	return {
+		public: Buffer.from(key.pubKey),
+		private: Buffer.from(key.privKey)
+	}
 }

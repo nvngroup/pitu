@@ -50,7 +50,7 @@ export class WebSocketClient extends AbstractSocketClient {
 		this.socket = null
 	}
 	async restart(): Promise<void> {
-		if (this.socket) {
+		if(this.socket) {
 			await new Promise(resolve => {
 				this.socket!.once('close', resolve)
 				this.socket!.terminate()

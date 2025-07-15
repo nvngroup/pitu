@@ -73,18 +73,18 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 
 		try {
 			decipher.setAuthTag(tag)
-		} catch (error) {
+		} catch(error) {
 			logger.error({ error, tag }, 'Erro ao definir tag de autenticação')
 			return Buffer.concat([decipher.update(enc), decipher.final()])
 		}
 
 		try {
 			return Buffer.concat([decipher.update(enc), decipher.final()])
-		} catch (error) {
+		} catch(error) {
 			logger.error({ error, enc }, 'Erro ao decodificar GCM')
 			return decipher.update(enc)
 		}
-	} catch (error) {
+	} catch(error) {
 		logger.error({
 			error,
 			ciphertextLength: ciphertext.length,

@@ -21,7 +21,6 @@ import {
 	WAMessage,
 	WAMessageContent,
 	WAMessageStatus,
-	WAProto,
 	WATextMessage,
 } from '../Types'
 import { isJidGroup, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
@@ -232,7 +231,7 @@ export const prepareWAMessageMedia = async(
 
 					logger?.debug('removed tmp files')
 				} catch(error) {
-					logger?.warn('failed to remove tmp file')
+					logger?.error(error, 'failed to remove tmp files')
 				}
 			}
 		)
@@ -492,7 +491,7 @@ export const generateWAMessageContent = async(
 			// poll v2 is for community announcement groups (single select and multiple)
 			m.pollCreationMessageV2 = pollCreationMessage
 		} else {
-			if (message.poll.selectableCount === 1) {
+			if(message.poll.selectableCount === 1) {
 			//poll v3 is for single select polls
 				m.pollCreationMessageV3 = pollCreationMessage
 			} else {

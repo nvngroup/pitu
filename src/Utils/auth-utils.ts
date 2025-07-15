@@ -167,6 +167,7 @@ export const addTransactionCapability = (
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')
 								break
 							} catch(error) {
+								logger.error(error, `failed to commit transaction, tries left=${tries}`)
 								logger.warn(`failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
 								await delay(delayBetweenTriesMs)
 							}

@@ -5,6 +5,7 @@ import { waproto } from '../../WAProto'
 import { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from '../Types'
 import { initAuthCreds } from './auth-utils'
 import { BufferJSON } from './generics'
+import logger from './logger'
 
 // We need to lock files due to the fact that we are using async functions to read and write files
 // https://github.com/WhiskeySockets/Baileys/issues/794
@@ -39,6 +40,7 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 			)
 			return JSON.parse(data, BufferJSON.reviver)
 		} catch(error) {
+			logger.error(error, `Failed to read data from ${file} in ${folder}`)
 			return null
 		}
 	}

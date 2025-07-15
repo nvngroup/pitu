@@ -1,4 +1,4 @@
-export * from './USyncDeviceProtocol'
 export * from './USyncContactProtocol'
-export * from './USyncStatusProtocol'
+export * from './USyncDeviceProtocol'
 export * from './USyncDisappearingModeProtocol'
+export * from './USyncStatusProtocol'
