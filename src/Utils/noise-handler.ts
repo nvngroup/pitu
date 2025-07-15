@@ -1,5 +1,5 @@
 import { Boom } from '@hapi/boom'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { NOISE_MODE, WA_CERT_DETAILS } from '../Defaults'
 import { KeyPair } from '../Types'
 import { BinaryNode, decodeBinaryNode } from '../WABinary'
@@ -106,7 +106,7 @@ export const makeNoiseHandler = ({
 		authenticate,
 		mixIntoKey,
 		finishInit,
-		processHandshake: async({ serverHello }: proto.HandshakeMessage, noiseKey: KeyPair) => {
+		processHandshake: async({ serverHello }: waproto.HandshakeMessage, noiseKey: KeyPair) => {
 			authenticate(serverHello!.ephemeral!)
 			await mixIntoKey(Curve.sharedKey(privateKey, serverHello!.ephemeral!))
 
@@ -115,9 +115,9 @@ export const makeNoiseHandler = ({
 
 			const certDecoded = decrypt(serverHello!.payload!)
 
-			const { intermediate: certIntermediate } = proto.CertChain.decode(certDecoded)
+			const { intermediate: certIntermediate } = waproto.CertChain.decode(certDecoded)
 
-			const { issuerSerial } = proto.CertChain.NoiseCertificate.Details.decode(certIntermediate!.details!)
+			const { issuerSerial } = waproto.CertChain.NoiseCertificate.Details.decode(certIntermediate!.details!)
 
 			if(issuerSerial !== WA_CERT_DETAILS.SERIAL) {
 				throw new Boom('certification match failed', { statusCode: 400 })

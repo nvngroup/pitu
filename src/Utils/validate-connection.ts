@@ -1,6 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { createHash } from 'crypto'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import type { AuthenticationCreds, SignalCreds, SocketConfig } from '../Types'
 import { BinaryNode, getBinaryNodeChild, jidDecode, S_WHATSAPP_NET } from '../WABinary'
@@ -8,15 +8,15 @@ import { Curve, hmacSign } from './crypto'
 import { encodeBigEndian } from './generics'
 import { createSignalIdentity } from './signal'
 
-const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
+const getUserAgent = (config: SocketConfig): waproto.ClientPayload.IUserAgent => {
 	return {
 		appVersion: {
 			primary: config.version[0],
 			secondary: config.version[1],
 			tertiary: config.version[2],
 		},
-		platform: proto.ClientPayload.UserAgent.Platform.WEB,
-		releaseChannel: proto.ClientPayload.UserAgent.ReleaseChannel.RELEASE,
+		platform: waproto.ClientPayload.UserAgent.Platform.WEB,
+		releaseChannel: waproto.ClientPayload.UserAgent.ReleaseChannel.RELEASE,
 		osVersion: '0.1',
 		device: 'Desktop',
 		osBuildNumber: '0.1',
@@ -28,12 +28,12 @@ const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
 }
 
 const PLATFORM_MAP = {
-	'Mac OS': proto.ClientPayload.WebInfo.WebSubPlatform.DARWIN,
-	'Windows': proto.ClientPayload.WebInfo.WebSubPlatform.WIN32
+	'Mac OS': waproto.ClientPayload.WebInfo.WebSubPlatform.DARWIN,
+	'Windows': waproto.ClientPayload.WebInfo.WebSubPlatform.WIN32
 }
 
-const getWebInfo = (config: SocketConfig): proto.ClientPayload.IWebInfo => {
-	let webSubPlatform = proto.ClientPayload.WebInfo.WebSubPlatform.WEB_BROWSER
+const getWebInfo = (config: SocketConfig): waproto.ClientPayload.IWebInfo => {
+	let webSubPlatform = waproto.ClientPayload.WebInfo.WebSubPlatform.WEB_BROWSER
 	if(config.syncFullHistory && PLATFORM_MAP[config.browser[0]]) {
 		webSubPlatform = PLATFORM_MAP[config.browser[0]]
 	}
@@ -43,9 +43,9 @@ const getWebInfo = (config: SocketConfig): proto.ClientPayload.IWebInfo => {
 
 
 const getClientPayload = (config: SocketConfig) => {
-	const payload: proto.IClientPayload = {
-		connectType: proto.ClientPayload.ConnectType.WIFI_UNKNOWN,
-		connectReason: proto.ClientPayload.ConnectReason.USER_ACTIVATED,
+	const payload: waproto.IClientPayload = {
+		connectType: waproto.ClientPayload.ConnectType.WIFI_UNKNOWN,
+		connectReason: waproto.ClientPayload.ConnectReason.USER_ACTIVATED,
 		userAgent: getUserAgent(config),
 	}
 
@@ -55,21 +55,21 @@ const getClientPayload = (config: SocketConfig) => {
 }
 
 
-export const generateLoginNode = (userJid: string, config: SocketConfig): proto.IClientPayload => {
+export const generateLoginNode = (userJid: string, config: SocketConfig): waproto.IClientPayload => {
 	const { user, device } = jidDecode(userJid)!
-	const payload: proto.IClientPayload = {
+	const payload: waproto.IClientPayload = {
 		...getClientPayload(config),
 		passive: false,
 		pull: true,
 		username: +user,
 		device: device,
 	}
-	return proto.ClientPayload.fromObject(payload)
+	return waproto.ClientPayload.fromObject(payload)
 }
 
-const getPlatformType = (platform: string): proto.DeviceProps.PlatformType => {
+const getPlatformType = (platform: string): waproto.DeviceProps.PlatformType => {
 	const platformType = platform.toUpperCase()
-	return proto.DeviceProps.PlatformType[platformType] || proto.DeviceProps.PlatformType.DESKTOP
+	return waproto.DeviceProps.PlatformType[platformType] || waproto.DeviceProps.PlatformType.DESKTOP
 }
 
 export const generateRegistrationNode = (
@@ -82,15 +82,15 @@ export const generateRegistrationNode = (
 		.update(config.version.join('.')) // join as string
 		.digest()
 
-	const companion: proto.IDeviceProps = {
+	const companion: waproto.IDeviceProps = {
 		os: config.browser[0],
 		platformType: getPlatformType(config.browser[1]),
 		requireFullSync: config.syncFullHistory,
 	}
 
-	const companionProto = proto.DeviceProps.encode(companion).finish()
+	const companionProto = waproto.DeviceProps.encode(companion).finish()
 
-	const registerPayload: proto.IClientPayload = {
+	const registerPayload: waproto.IClientPayload = {
 		...getClientPayload(config),
 		passive: false,
 		pull: false,
@@ -106,7 +106,7 @@ export const generateRegistrationNode = (
 		},
 	}
 
-	return proto.ClientPayload.fromObject(registerPayload)
+	return waproto.ClientPayload.fromObject(registerPayload)
 }
 
 export const configureSuccessfulPairing = (
@@ -129,14 +129,14 @@ export const configureSuccessfulPairing = (
 	const bizName = businessNode?.attrs.name
 	const jid = deviceNode.attrs.jid
 
-	const { details, hmac } = proto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
+	const { details, hmac } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
 	// check HMAC matches
 	const advSign = hmacSign(details, Buffer.from(advSecretKey, 'base64'))
 	if(Buffer.compare(hmac, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
 
-	const account = proto.ADVSignedDeviceIdentity.decode(details)
+	const account = waproto.ADVSignedDeviceIdentity.decode(details)
 	const { accountSignatureKey, accountSignature, details: deviceDetails } = account
 	// verify the device signature matches
 	const accountMsg = Buffer.concat([ Buffer.from([6, 0]), deviceDetails, signedIdentityKey.public ])
@@ -151,7 +151,7 @@ export const configureSuccessfulPairing = (
 	const identity = createSignalIdentity(jid, accountSignatureKey)
 	const accountEnc = encodeSignedDeviceIdentity(account, false)
 
-	const deviceIdentity = proto.ADVDeviceIdentity.decode(account.details)
+	const deviceIdentity = waproto.ADVDeviceIdentity.decode(account.details)
 
 	const reply: BinaryNode = {
 		tag: 'iq',
@@ -192,7 +192,7 @@ export const configureSuccessfulPairing = (
 }
 
 export const encodeSignedDeviceIdentity = (
-	account: proto.IADVSignedDeviceIdentity,
+	account: waproto.IADVSignedDeviceIdentity,
 	includeSignatureKey: boolean
 ) => {
 	account = { ...account }
@@ -202,7 +202,7 @@ export const encodeSignedDeviceIdentity = (
 		account.accountSignatureKey = null
 	}
 
-	return proto.ADVSignedDeviceIdentity
+	return waproto.ADVSignedDeviceIdentity
 		.encode(account)
 		.finish()
 }

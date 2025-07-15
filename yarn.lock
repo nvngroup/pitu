@@ -2430,6 +2430,13 @@ c12@3.0.4:
     pkg-types "^2.1.0"
     rc9 "^2.1.2"
 
+cache-manager@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/cache-manager/-/cache-manager-7.0.1.tgz#018934791251638efe13b1ab1e2b2c0c9d49d0ca"
+  integrity sha512-Hd7FOyTtwhwLgkKeKQWEw6Ixj63VKuUWYwkGgL6g6Q7eISW6uxci5+DtUXlqI0gtbLCPPdhL1+HP9Zht27DbrA==
+  dependencies:
+    keyv "^5.3.4"
+
 cacheable@^1.10.1:
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/cacheable/-/cacheable-1.10.1.tgz#101662a52370072680212f1f9488e89f8b29be83"

@@ -44,6 +44,7 @@
     "async-lock": "^1.4.1",
     "async-mutex": "^0.5.0",
     "axios": "^1.10.0",
+    "cache-manager": "^7.0.1",
     "jimp": "^1.6.0",
     "libsignal": "github:WhiskeySockets/libsignal-node",
     "lodash": "^4.17.21",

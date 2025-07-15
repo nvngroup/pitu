@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, WAMessage, WAMessageStatus } from '../Types'
 import { trimUndefined } from './generics'
 import { ILogger } from './logger'
@@ -616,4 +616,4 @@ function concatChats<C extends Partial<Chat>>(a: C, b: Partial<Chat>) {
 	return Object.assign(a, b)
 }
 
-const stringifyMessageKey = (key: proto.IMessageKey) => `${key.remoteJid},${key.id},${key.fromMe ? '1' : '0'}`
+const stringifyMessageKey = (key: waproto.IMessageKey) => `${key.remoteJid},${key.id},${key.fromMe ? '1' : '0'}`

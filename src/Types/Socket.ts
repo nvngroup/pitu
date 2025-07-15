@@ -2,7 +2,7 @@
 import { AxiosRequestConfig } from 'axios'
 import type { Agent } from 'https'
 import type { URL } from 'url'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { ILogger } from '../Utils/logger'
 import { AuthenticationState, SignalAuthState, TransactionCapabilityOptions } from './Auth'
 import { GroupMetadata } from './GroupMetadata'
@@ -61,7 +61,7 @@ export type SocketConfig = {
     /** provide an auth state object to maintain the auth state */
     auth: AuthenticationState
     /** manage history processing with this control; by default will sync up everything */
-    shouldSyncHistoryMessage: (msg: proto.Message.IHistorySyncNotification) => boolean
+    shouldSyncHistoryMessage: (msg: waproto.Message.IHistorySyncNotification) => boolean
     /** transaction capability options for SignalKeyStore */
     transactionOpts: TransactionCapabilityOptions
     /** marks the client as online whenever the socket successfully connects */
@@ -103,9 +103,9 @@ export type SocketConfig = {
      * Optionally patch the message before sending out
      * */
     patchMessageBeforeSending: (
-        msg: proto.IMessage,
+        msg: waproto.IMessage,
         recipientJids: string[],
-    ) => Promise<proto.IMessage> | proto.IMessage
+    ) => Promise<waproto.IMessage> | waproto.IMessage
 
     /** verify app state MACs */
     appStateMacVerification: {
@@ -120,7 +120,7 @@ export type SocketConfig = {
      * implement this so that messages failed to send
      * (solves the "this message can take a while" issue) can be retried
      * */
-    getMessage: (key: proto.IMessageKey) => Promise<proto.IMessage | undefined>
+    getMessage: (key: waproto.IMessageKey) => Promise<waproto.IMessage | undefined>
 
     /** cached group metadata, use to prevent redundant requests to WA & speed up msg sending */
     cachedGroupMetadata: (jid: string) => Promise<GroupMetadata | undefined>

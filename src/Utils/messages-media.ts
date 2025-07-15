@@ -9,7 +9,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { Readable, Transform } from 'stream'
 import { URL } from 'url'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { DEFAULT_ORIGIN, MEDIA_HKDF_KEY_MAPPING, MEDIA_PATH_MAP } from '../Defaults'
 import { BaileysEventMap, DownloadableMessage, MediaConnInfo, MediaDecryptionKeyInfo, MediaType, MessageType, SocketConfig, WAGenericMediaMessage, WAMediaUpload, WAMediaUploadFunction, WAMessageContent } from '../Types'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildBuffer, jidNormalizedUser } from '../WABinary'
@@ -698,12 +698,12 @@ const getMediaRetryKey = (mediaKey: Buffer | Uint8Array) => {
  * Generate a binary node that will request the phone to re-upload the media & return the newly uploaded URL
  */
 export const encryptMediaRetryRequest = async(
-	key: proto.IMessageKey,
+	key: waproto.IMessageKey,
 	mediaKey: Buffer | Uint8Array,
 	meId: string
 ) => {
-	const recp: proto.IServerErrorReceipt = { stanzaId: key.id }
-	const recpBuffer = proto.ServerErrorReceipt.encode(recp).finish()
+	const recp: waproto.IServerErrorReceipt = { stanzaId: key.id }
+	const recpBuffer = waproto.ServerErrorReceipt.encode(recp).finish()
 
 	const iv = Crypto.randomBytes(12)
 	const retryKey = await getMediaRetryKey(mediaKey)
@@ -783,14 +783,14 @@ export const decryptMediaRetryData = async(
 ) => {
 	const retryKey = await getMediaRetryKey(mediaKey)
 	const plaintext = aesDecryptGCM(ciphertext, retryKey, iv, Buffer.from(msgId))
-	return proto.MediaRetryNotification.decode(plaintext)
+	return waproto.MediaRetryNotification.decode(plaintext)
 }
 
 export const getStatusCodeForMediaRetry = (code: number) => MEDIA_RETRY_STATUS_MAP[code]
 
 const MEDIA_RETRY_STATUS_MAP = {
-	[proto.MediaRetryNotification.ResultType.SUCCESS]: 200,
-	[proto.MediaRetryNotification.ResultType.DECRYPTION_ERROR]: 412,
-	[proto.MediaRetryNotification.ResultType.NOT_FOUND]: 404,
-	[proto.MediaRetryNotification.ResultType.GENERAL_ERROR]: 418,
+	[waproto.MediaRetryNotification.ResultType.SUCCESS]: 200,
+	[waproto.MediaRetryNotification.ResultType.DECRYPTION_ERROR]: 412,
+	[waproto.MediaRetryNotification.ResultType.NOT_FOUND]: 404,
+	[waproto.MediaRetryNotification.ResultType.GENERAL_ERROR]: 418,
 } as const

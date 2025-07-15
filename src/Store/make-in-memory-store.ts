@@ -1,6 +1,6 @@
 import type KeyedDB from '@adiwajshing/keyed-db'
 import type { Comparable } from '@adiwajshing/keyed-db/lib/Types'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { DEFAULT_CONNECTION_CONFIG } from '../Defaults'
 import type makeMDSocket from '../Socket'
 import type { BaileysEventEmitter, Chat, ConnectionState, Contact, GroupMetadata, PresenceData, WAMessage, WAMessageCursor, WAMessageKey } from '../Types'
@@ -96,7 +96,7 @@ export default (config: BaileysInMemoryStoreConfig) => {
 			isLatest,
 			syncType
 		}) => {
-			if(syncType === proto.HistorySync.HistorySyncType.ON_DEMAND) {
+			if(syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
 				return // FOR NOW,
 				//TODO: HANDLE
 			}
@@ -342,7 +342,7 @@ export default (config: BaileysInMemoryStoreConfig) => {
 		for(const jid in json.messages) {
 			const list = assertMessageList(jid)
 			for(const msg of json.messages[jid]) {
-				list.upsert(proto.WebMessageInfo.fromObject(msg), 'append')
+				list.upsert(waproto.WebMessageInfo.fromObject(msg), 'append')
 			}
 		}
 	}

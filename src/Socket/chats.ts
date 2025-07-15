@@ -1,13 +1,13 @@
 import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { DEFAULT_CACHE_TTLS, PROCESSABLE_HISTORY_TYPES } from '../Defaults'
 import { ALL_WA_PATCH_NAMES, ChatModification, ChatMutation, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
 import { LabelActionBody } from '../Types/Label'
 import { chatModificationToAppPatch, ChatMutationMap, decodePatches, decodeSyncdSnapshot, encodeSyncdPatch, extractSyncdPatches, generateProfilePicture, getHistoryMsg, newLTHashState, processSyncAction } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
-import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
+import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncUser } from '../WAUSync'
 import { makeUSyncSocket } from './usync'
 
@@ -560,10 +560,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				}
 			})
 		} else {
+			const { server } = jidDecode(toJid)!
+			const isLid = server === 'lid'
 			await sendNode({
 				tag: 'chatstate',
 				attrs: {
-					from: me.id,
+					from: isLid ? me.lid! : me.id,
 					to: toJid!,
 				},
 				content: [
@@ -643,7 +645,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 
 		let initial: LTHashState
-		let encodeResult: { patch: proto.ISyncdPatch, state: LTHashState }
+		let encodeResult: { patch: waproto.ISyncdPatch, state: LTHashState }
 
 		await processingMutex.mutex(
 			async() => {
@@ -687,7 +689,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 												{
 													tag: 'patch',
 													attrs: {},
-													content: proto.SyncdPatch.encode(patch).finish()
+													content: waproto.SyncdPatch.encode(patch).finish()
 												}
 											]
 										}

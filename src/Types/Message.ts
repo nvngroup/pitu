@@ -2,33 +2,33 @@
 import { AxiosRequestConfig } from 'axios'
 import type { Readable } from 'stream'
 import type { URL } from 'url'
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { MEDIA_HKDF_KEY_MAPPING } from '../Defaults'
 import { BinaryNode } from '../WABinary'
 import type { GroupMetadata } from './GroupMetadata'
 import { CacheStore } from './Socket'
 
 // export the WAMessage Prototypes
-export { proto as WAProto }
-export type WAMessage = proto.IWebMessageInfo
-export type WAMessageContent = proto.IMessage
-export type WAContactMessage = proto.Message.IContactMessage
-export type WAContactsArrayMessage = proto.Message.IContactsArrayMessage
-export type WAMessageKey = proto.IMessageKey & { senderLid?: string; participantLid?: string; senderPn?: string }
-export type WATextMessage = proto.Message.IExtendedTextMessage
-export type WAContextInfo = proto.IContextInfo
-export type WALocationMessage = proto.Message.ILocationMessage
-export type WAGenericMediaMessage = proto.Message.IVideoMessage | proto.Message.IImageMessage | proto.Message.IAudioMessage | proto.Message.IDocumentMessage | proto.Message.IStickerMessage
+export { waproto as WAProto }
+export type WAMessage = waproto.IWebMessageInfo
+export type WAMessageContent = waproto.IMessage
+export type WAContactMessage = waproto.Message.IContactMessage
+export type WAContactsArrayMessage = waproto.Message.IContactsArrayMessage
+export type WAMessageKey = waproto.IMessageKey & { senderLid?: string; participantLid?: string; senderPn?: string }
+export type WATextMessage = waproto.Message.IExtendedTextMessage
+export type WAContextInfo = waproto.IContextInfo
+export type WALocationMessage = waproto.Message.ILocationMessage
+export type WAGenericMediaMessage = waproto.Message.IVideoMessage | waproto.Message.IImageMessage | waproto.Message.IAudioMessage | waproto.Message.IDocumentMessage | waproto.Message.IStickerMessage
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-export import WAMessageStubType = proto.WebMessageInfo.StubType
+export import WAMessageStubType = waproto.WebMessageInfo.StubType
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-export import WAMessageStatus = proto.WebMessageInfo.Status
+export import WAMessageStatus = waproto.WebMessageInfo.Status
 import { ILogger } from '../Utils/logger'
 export type WAMediaPayloadURL = { url: URL | string }
 export type WAMediaPayloadStream = { stream: Readable }
 export type WAMediaUpload = Buffer | WAMediaPayloadStream | WAMediaPayloadURL
 /** Set of message types that are supported by the library */
-export type MessageType = keyof proto.Message
+export type MessageType = keyof waproto.Message
 
 export type DownloadableMessage = { mediaKey?: Uint8Array | null, directPath?: string | null, url?: string | null }
 
@@ -47,7 +47,7 @@ export interface WAUrlInfo {
     title: string
     description?: string
     jpegThumbnail?: Buffer
-    highQualityThumbnail?: proto.Message.IImageMessage
+    highQualityThumbnail?: waproto.Message.IImageMessage
     originalThumbnailUrl?: string
 }
 
@@ -58,7 +58,7 @@ type Mentionable = {
 }
 type Contextable = {
     /** add contextInfo to the message */
-    contextInfo?: proto.IContextInfo
+    contextInfo?: waproto.IContextInfo
 }
 type ViewOnce = {
     viewOnce?: boolean
@@ -66,12 +66,12 @@ type ViewOnce = {
 
 type Buttonable = {
     /** add buttons to the message  */
-    buttons?: proto.Message.ButtonsMessage.IButton[]
+    buttons?: waproto.Message.ButtonsMessage.IButton[]
 }
 
 type Templatable = {
     /** add buttons to the message (conflicts with normal buttons)*/
-    templateButtons?: proto.IHydratedTemplateButton[]
+    templateButtons?: waproto.IHydratedTemplateButton[]
 
     footer?: string
 }
@@ -82,7 +82,7 @@ type Editable = {
 
 type Listable = {
     /** Sections of the List */
-    sections?: proto.Message.ListMessage.ISection[]
+    sections?: waproto.Message.ListMessage.ISection[]
 
     /** Title of a List Message only */
     title?: string
@@ -91,7 +91,7 @@ type Listable = {
     buttonText?: string
 
     /** ListType of the List */
-    listType?: proto.Message.ListMessage.ListType
+    listType?: waproto.Message.ListMessage.ListType
 }
 
 type WithDimensions = {
@@ -163,7 +163,7 @@ export type GroupInviteInfo = {
     subject: string
 }
 
-export type WASendableProduct = Omit<proto.Message.ProductMessage.IProductSnapshot, 'productImage'> & {
+export type WASendableProduct = Omit<waproto.Message.ProductMessage.IProductSnapshot, 'productImage'> & {
     productImage: WAMediaUpload
 }
 
@@ -182,13 +182,13 @@ export type AnyRegularMessageContent = (
     | {
         contacts: {
             displayName?: string
-            contacts: proto.Message.IContactMessage[]
+            contacts: waproto.Message.IContactMessage[]
         }
     }
     | {
         location: WALocationMessage
     }
-    | { react: proto.Message.IReactionMessage }
+    | { react: waproto.Message.IReactionMessage }
     | {
         buttonReply: ButtonReplyInfo
         type: 'template' | 'plain'
@@ -197,11 +197,11 @@ export type AnyRegularMessageContent = (
         groupInvite: GroupInviteInfo
     }
     | {
-        listReply: Omit<proto.Message.IListResponseMessage, 'contextInfo'>
+        listReply: Omit<waproto.Message.IListResponseMessage, 'contextInfo'>
     }
     | {
         pin: WAMessageKey
-        type: proto.PinInChat.Type
+        type: waproto.PinInChat.Type
         /**
          * 24 hours, 7 days, 30 days
          */
@@ -298,13 +298,13 @@ export type MessageGenerationOptions = MessageContentGenerationOptions & Message
  */
 export type MessageUpsertType = 'append' | 'notify'
 
-export type MessageUserReceipt = proto.IUserReceipt
+export type MessageUserReceipt = waproto.IUserReceipt
 
-export type WAMessageUpdate = { update: Partial<WAMessage>, key: proto.IMessageKey }
+export type WAMessageUpdate = { update: Partial<WAMessage>, key: waproto.IMessageKey }
 
 export type WAMessageCursor = { before: WAMessageKey | undefined } | { after: WAMessageKey | undefined }
 
-export type MessageUserReceiptUpdate = { key: proto.IMessageKey, receipt: MessageUserReceipt }
+export type MessageUserReceiptUpdate = { key: waproto.IMessageKey, receipt: MessageUserReceipt }
 
 export type MediaDecryptionKeyInfo = {
     iv: Buffer
@@ -312,4 +312,4 @@ export type MediaDecryptionKeyInfo = {
     macKey?: Buffer
 }
 
-export type MinimalMessage = Pick<proto.IWebMessageInfo, 'key' | 'messageTimestamp'>
+export type MinimalMessage = Pick<waproto.IWebMessageInfo, 'key' | 'messageTimestamp'>

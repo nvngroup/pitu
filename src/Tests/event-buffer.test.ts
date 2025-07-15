@@ -1,4 +1,4 @@
-import { proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import { Chat, WAMessageKey, WAMessageStatus, WAMessageStubType, WAMessageUpdate } from '../Types'
 import { delay, generateMessageID, makeEventBuffer, toNumber, unixTimestampSeconds } from '../Utils'
 import logger from '../Utils/logger'
@@ -201,7 +201,7 @@ describe('Event Buffer Tests', () => {
 
 	it('should buffer message upsert events', async() => {
 		const messageTimestamp = unixTimestampSeconds()
-		const msg: proto.IWebMessageInfo = {
+		const msg: waproto.IWebMessageInfo = {
 			key: {
 				remoteJid: randomJid(),
 				id: generateMessageID(),
@@ -211,7 +211,7 @@ describe('Event Buffer Tests', () => {
 			messageTimestamp
 		}
 
-		const msgs: proto.IWebMessageInfo[] = []
+		const msgs: waproto.IWebMessageInfo[] = []
 
 		ev.on('messages.upsert', c => {
 			msgs.push(...c.messages)
@@ -219,12 +219,12 @@ describe('Event Buffer Tests', () => {
 		})
 
 		ev.buffer()
-		ev.emit('messages.upsert', { messages: [proto.WebMessageInfo.fromObject(msg)], type: 'notify' })
+		ev.emit('messages.upsert', { messages: [waproto.WebMessageInfo.fromObject(msg)], type: 'notify' })
 
 		msg.messageTimestamp = unixTimestampSeconds() + 1
 		msg.messageStubType = undefined
 		msg.message = { conversation: 'Test' }
-		ev.emit('messages.upsert', { messages: [proto.WebMessageInfo.fromObject(msg)], type: 'notify' })
+		ev.emit('messages.upsert', { messages: [waproto.WebMessageInfo.fromObject(msg)], type: 'notify' })
 		ev.emit('messages.update', [{ key: msg.key, update: { status: WAMessageStatus.READ } }])
 
 		ev.flush()
@@ -236,7 +236,7 @@ describe('Event Buffer Tests', () => {
 	})
 
 	it('should buffer a message receipt update', async() => {
-		const msg: proto.IWebMessageInfo = {
+		const msg: waproto.IWebMessageInfo = {
 			key: {
 				remoteJid: randomJid(),
 				id: generateMessageID(),
@@ -246,13 +246,13 @@ describe('Event Buffer Tests', () => {
 			messageTimestamp: unixTimestampSeconds()
 		}
 
-		const msgs: proto.IWebMessageInfo[] = []
+		const msgs: waproto.IWebMessageInfo[] = []
 
 		ev.on('messages.upsert', c => msgs.push(...c.messages))
 		ev.on('message-receipt.update', () => fail('should not emit'))
 
 		ev.buffer()
-		ev.emit('messages.upsert', { messages: [proto.WebMessageInfo.fromObject(msg)], type: 'notify' })
+		ev.emit('messages.upsert', { messages: [waproto.WebMessageInfo.fromObject(msg)], type: 'notify' })
 		ev.emit('message-receipt.update', [
 			{
 				key: msg.key,
@@ -291,7 +291,7 @@ describe('Event Buffer Tests', () => {
 	})
 
 	it('should remove chat unread counter', async() => {
-		const msg: proto.IWebMessageInfo = {
+		const msg: waproto.IWebMessageInfo = {
 			key: {
 				remoteJid: '12345@s.whatsapp.net',
 				id: generateMessageID(),
@@ -308,7 +308,7 @@ describe('Event Buffer Tests', () => {
 		ev.on('chats.update', c => chats.push(...c))
 
 		ev.buffer()
-		ev.emit('messages.upsert', { messages: [proto.WebMessageInfo.fromObject(msg)], type: 'notify' })
+		ev.emit('messages.upsert', { messages: [waproto.WebMessageInfo.fromObject(msg)], type: 'notify' })
 		ev.emit('chats.update', [{ id: msg.key.remoteJid!, unreadCount: 1, conversationTimestamp: msg.messageTimestamp }])
 		ev.emit('messages.update', [{ key: msg.key, update: { status: WAMessageStatus.READ } }])
 
