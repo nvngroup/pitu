@@ -40,6 +40,10 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 			)
 			return JSON.parse(data, BufferJSON.reviver)
 		} catch(error) {
+			if(error && (error.code === 'ENOENT' || error.errno === -4058)) {
+				return null
+			}
+
 			logger.error(error, `Failed to read data from ${file} in ${folder}`)
 			return null
 		}

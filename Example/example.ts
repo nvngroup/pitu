@@ -12,38 +12,23 @@ const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.dest
 logger.level = 'silent'
 
 const usePairingCode = process.argv.includes('--use-pairing-code')
-
-// external map to store retry counts of messages when decryption/encryption fails
-// keep this out of the socket itself, so as to prevent a message decryption/encryption loop across socket restarts
 const msgRetryCounterCache = new NodeCache()
-
 const onDemandMap = new Map<string, string>()
-
-// Read line interface
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (text: string) => new Promise<string>((resolve) => rl.question(text, resolve))
-
-// start a connection
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
-	// fetch latest version of WA Web
 	const { version, isLatest } = await fetchLatestBaileysVersion()
 	console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
-
 	const sock = makeWASocket({
 		version,
 		logger,
 		auth: {
 			creds: state.creds,
-			/** caching makes the store faster to send/recv messages */
 			keys: makeCacheableSignalKeyStore(state.keys, logger),
 		},
 		msgRetryCounterCache,
 		generateHighQualityLinkPreview: true,
-		// ignore all broadcast messages -- to receive the same
-		// comment the line below out
-		// shouldIgnoreJid: jid => isJidBroadcast(jid),
-		// implement to handle retries & poll updates
 		getMessage,
 	})
 
@@ -86,13 +71,6 @@ const startSock = async () => {
 					}
 				}
 
-				// WARNING: THIS WILL SEND A WAM EXAMPLE AND THIS IS A ****CAPTURED MESSAGE.****
-				// DO NOT ACTUALLY ENABLE THIS UNLESS YOU MODIFIED THE FILE.JSON!!!!!
-				// THE ANALYTICS IN THE FILE ARE OLD. DO NOT USE THEM.
-				// YOUR APP SHOULD HAVE GLOBALS AND ANALYTICS ACCURATE TO TIME, DATE AND THE SESSION
-				// THIS FILE.JSON APPROACH IS JUST AN APPROACH I USED, BE FREE TO DO THIS IN ANOTHER WAY.
-				// THE FIRST EVENT CONTAINS THE CONSTANT GLOBALS, EXCEPT THE seqenceNumber(in the event) and commitTime
-				// THIS INCLUDES STUFF LIKE ocVersion WHICH IS CRUCIAL FOR THE PREVENTION OF THE WARNING
 				const sendWAMExample = false;
 				if (connection === 'open' && sendWAMExample) {
 					/// sending WAM EXAMPLE
@@ -117,7 +95,7 @@ const startSock = async () => {
 
 
 				if (update.qr) {
-					const website = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
+					const website: string = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
 					console.log('QR code received, open in browser:', website)
 				}
 			}
