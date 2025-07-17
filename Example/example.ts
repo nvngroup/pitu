@@ -8,8 +8,12 @@ import open from 'open'
 import fs from 'fs'
 import P from 'pino'
 
-const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.destination('./wa-logs.txt'))
-logger.level = 'silent'
+const streams = [
+  { stream: process.stdout },
+  { stream: P.destination('./wa-logs.txt') }
+]
+const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.multistream(streams))
+logger.level = 'debug'
 
 const usePairingCode = process.argv.includes('--use-pairing-code')
 const msgRetryCounterCache = new NodeCache()
@@ -130,7 +134,7 @@ const startSock = async () => {
 			// received a new message
 			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
-				console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
+				// console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
 
 				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages) {
@@ -142,7 +146,7 @@ const startSock = async () => {
 									const lid = sock.user;
 									const phone = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
-									console.log('latest id is', lidUser, 'and my lid is', lid);
+									// console.log('latest id is', lidUser, 'and my lid is', lid);
 									await sock!.readMessages([msg.key]);
 
 									if (lidUser && lidUser.length > 0) {
@@ -713,13 +717,13 @@ const startSock = async () => {
 			if (events['contacts.upsert']) {
 				// console.log('contacts upserted ', events['contacts.upsert'])
 				for (const contact of events['contacts.upsert']) {
-					console.log('contact upserted', contact)
+					// console.log('contact upserted', contact)
 				}
 			}
 
 			if (events['contacts.update']) {
 				for (const contact of events['contacts.update']) {
-					console.log('contact updated', contact)
+					// console.log('contact updated', contact)
 				}
 			}
 
