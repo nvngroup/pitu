@@ -1,6 +1,7 @@
 export class USyncUser {
 	id: string
 	lid: string
+	username?: string
 	phone: string
 	type: string
 
