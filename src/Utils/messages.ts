@@ -59,7 +59,7 @@ const MessageTypeProto = {
 	'video': waproto.Message.VideoMessage,
 	'audio': waproto.Message.AudioMessage,
 	'sticker': waproto.Message.StickerMessage,
-   	'document': waproto.Message.DocumentMessage,
+	'document': waproto.Message.DocumentMessage,
 } as const
 
 const ButtonType = waproto.Message.ButtonsMessage.HeaderType
