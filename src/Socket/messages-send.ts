@@ -1,6 +1,3 @@
-/* eslint-disable linebreak-style */
-/* eslint-disable max-depth */
-
 import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
