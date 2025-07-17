@@ -27,7 +27,7 @@ export class SenderKeyMessage extends CiphertextMessage {
 		super()
 
 		if(serialized) {
-			const version = serialized[0]
+			const version: number = serialized[0]
 			const message = serialized.slice(1, serialized.length - this.SIGNATURE_LENGTH)
 			const signature = serialized.slice(-1 * this.SIGNATURE_LENGTH)
 			const senderKeyMessage = waproto.SenderKeyMessage.decode(message).toJSON() as SenderKeyMessageStructure
@@ -42,7 +42,7 @@ export class SenderKeyMessage extends CiphertextMessage {
         	: senderKeyMessage.ciphertext
 			this.signature = signature
 		} else {
-			const version = (((this.CURRENT_VERSION << 4) | this.CURRENT_VERSION) & 0xff) % 256
+			const version: number = (((this.CURRENT_VERSION << 4) | this.CURRENT_VERSION) & 0xff) % 256
 			const ciphertextBuffer = Buffer.from(ciphertext!)
 			const message = waproto.SenderKeyMessage.encode(
 				waproto.SenderKeyMessage.create({
@@ -78,7 +78,7 @@ export class SenderKeyMessage extends CiphertextMessage {
 	public verifySignature(signatureKey: Uint8Array): void {
 		const part1 = this.serialized.slice(0, this.serialized.length - this.SIGNATURE_LENGTH)
 		const part2 = this.serialized.slice(-1 * this.SIGNATURE_LENGTH)
-		const res = verifySignature(signatureKey, part1, part2)
+		const res: boolean = verifySignature(signatureKey, part1, part2)
 		if(!res) {
 			throw new Error('Invalid signature!')
 		}

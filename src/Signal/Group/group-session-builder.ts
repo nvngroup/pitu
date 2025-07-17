@@ -2,6 +2,7 @@ import * as keyhelper from './keyhelper'
 import { SenderKeyDistributionMessage } from './sender-key-distribution-message'
 import { SenderKeyName } from './sender-key-name'
 import { SenderKeyRecord } from './sender-key-record'
+import { SenderKeyState } from './sender-key-state'
 
 interface SenderKeyStore {
   loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
@@ -33,7 +34,7 @@ export class GroupSessionBuilder {
 		const senderKeyRecord = await this.senderKeyStore.loadSenderKey(senderKeyName)
 
 		if(senderKeyRecord.isEmpty()) {
-			const keyId = keyhelper.generateSenderKeyId()
+			const keyId: number = keyhelper.generateSenderKeyId()
 			const senderKey = keyhelper.generateSenderKey()
 			const signingKey = keyhelper.generateSenderSigningKey()
 
@@ -41,7 +42,7 @@ export class GroupSessionBuilder {
 			await this.senderKeyStore.storeSenderKey(senderKeyName, senderKeyRecord)
 		}
 
-		const state = senderKeyRecord.getSenderKeyState()
+		const state: SenderKeyState = senderKeyRecord.getSenderKeyState()!
 		if(!state) {
 			throw new Error('No session state available')
 		}

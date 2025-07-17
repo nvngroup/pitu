@@ -5,6 +5,7 @@ import { SenderKeyMessage } from './sender-key-message'
 import { SenderKeyName } from './sender-key-name'
 import { SenderKeyRecord } from './sender-key-record'
 import { SenderKeyState } from './sender-key-state'
+import { SenderMessageKey } from './sender-message-key'
 
 export interface SenderKeyStore {
   loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
@@ -26,18 +27,18 @@ export class GroupCipher {
 
 	public async encrypt(paddedPlaintext: Uint8Array | string): Promise<Uint8Array> {
 		return await this.queueJob(async() => {
-			const record = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
+			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if(!record) {
 				throw new Error('No SenderKeyRecord found for encryption')
 			}
 
-			const senderKeyState = record.getSenderKeyState()
+			const senderKeyState: SenderKeyState = record.getSenderKeyState()!
 			if(!senderKeyState) {
 				throw new Error('No session to encrypt message')
 			}
 
-			const iteration = senderKeyState.getSenderChainKey().getIteration()
-			const senderKey = this.getSenderKey(senderKeyState, iteration === 0 ? 0 : iteration + 1)
+			const iteration: number = senderKeyState.getSenderChainKey().getIteration()
+			const senderKey: SenderMessageKey = this.getSenderKey(senderKeyState, iteration === 0 ? 0 : iteration + 1)
 
 			const ciphertext = await this.getCipherText(senderKey.getIv(), senderKey.getCipherKey(), paddedPlaintext)
 
@@ -55,19 +56,19 @@ export class GroupCipher {
 
 	public async decrypt(senderKeyMessageBytes: Uint8Array): Promise<Uint8Array> {
 		return await this.queueJob(async() => {
-			const record = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
+			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if(!record) {
 				throw new Error('No SenderKeyRecord found for decryption')
 			}
 
 			const senderKeyMessage = new SenderKeyMessage(null, null, null, null, senderKeyMessageBytes)
-			const senderKeyState = record.getSenderKeyState(senderKeyMessage.getKeyId())
+			const senderKeyState: SenderKeyState = record.getSenderKeyState(senderKeyMessage.getKeyId())!
 			if(!senderKeyState) {
 				throw new Error('No session found to decrypt message')
 			}
 
 			senderKeyMessage.verifySignature(senderKeyState.getSigningKeyPublic())
-			const senderKey = this.getSenderKey(senderKeyState, senderKeyMessage.getIteration())
+			const senderKey: SenderMessageKey = this.getSenderKey(senderKeyState, senderKeyMessage.getIteration())
 
 			const plaintext = await this.getPlainText(
 				senderKey.getIv(),
@@ -84,7 +85,7 @@ export class GroupCipher {
 		let senderChainKey = senderKeyState.getSenderChainKey()
 		if(senderChainKey.getIteration() > iteration) {
 			if(senderKeyState.hasSenderMessageKey(iteration)) {
-				const messageKey = senderKeyState.removeSenderMessageKey(iteration)
+				const messageKey: SenderMessageKey = senderKeyState.removeSenderMessageKey(iteration)!
 				if(!messageKey) {
 					throw new Error('No sender message key found for iteration')
 				}

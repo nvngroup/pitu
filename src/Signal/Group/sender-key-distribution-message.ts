@@ -46,7 +46,7 @@ export class SenderKeyDistributionMessage extends CiphertextMessage {
 				throw new Error(String(e))
 			}
 		} else {
-			const version = this.intsToByteHighAndLow(this.CURRENT_VERSION, this.CURRENT_VERSION)
+			const version: number = this.intsToByteHighAndLow(this.CURRENT_VERSION, this.CURRENT_VERSION)
 			this.id = id!
 			this.iteration = iteration!
 			this.chainKey = chainKey!

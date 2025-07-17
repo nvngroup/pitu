@@ -66,7 +66,7 @@ export class SenderKeyRecord {
 		if(typeof data === 'string') {
 			parsed = JSON.parse(data, BufferJSON.reviver)
 		} else if(data instanceof Uint8Array) {
-			const str = Buffer.from(data).toString('utf-8')
+			const str: string = Buffer.from(data).toString('utf-8')
 			parsed = JSON.parse(str, BufferJSON.reviver)
 		} else {
 			parsed = data
