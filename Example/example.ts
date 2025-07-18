@@ -141,6 +141,38 @@ const startSock = async () => {
 						if (msg.message?.conversation || msg.message?.extendedTextMessage?.text) {
 							const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text
 
+							if (text == "!lid") {
+								try {
+									const lid = sock.user;
+									const phone = msg.key.remoteJid!.split('@')[0];
+									const lidUser = await sock.onWhatsApp(phone);
+									console.log('latest id is', lidUser, 'and my lid is', lid);
+									await sock!.readMessages([msg.key]);
+
+									// Verificar se lidUser existe e tem pelo menos um elemento
+									if (lidUser && lidUser.length > 0) {
+										// Usar o lid se existir e não for vazio, caso contrário usar o remoteJid original
+										const userLid = lidUser[0].lid;
+										const dados: string = (userLid && typeof userLid === 'string' && userLid !== '') ? userLid : msg.key.remoteJid!;
+										console.log(`dados ${dados}`);
+
+										await sendMessageWTyping({
+											text: `Enviado pelo ${dados}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
+										}, dados);
+									} else {
+										console.log('Erro: não foi possível obter informações do usuário');
+										await sendMessageWTyping({
+											text: `Erro ao obter informações do usuário. Usando JID original: ${msg.key.remoteJid!}`
+										}, msg.key.remoteJid!);
+									}
+								} catch (error) {
+									console.error('Erro ao processar comando "lid":', error);
+									await sendMessageWTyping({
+										text: `Erro ao processar comando. Usando JID original: ${msg.key.remoteJid!}`
+									}, msg.key.remoteJid!);
+								}
+							}
+
 							if (text == "!jid") {
 								try {
 									const lid = sock.user;

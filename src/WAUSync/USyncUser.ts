@@ -24,5 +24,4 @@ export class USyncUser {
 		this.type = type
 		return this
 	}
-
 }
