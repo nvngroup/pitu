@@ -20,6 +20,11 @@ export class USyncUser {
 		return this
 	}
 
+	withUsername(username: string) {
+		this.username = username
+		return this
+	}
+
 	withType(type: string) {
 		this.type = type
 		return this
