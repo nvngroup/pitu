@@ -30,10 +30,10 @@ export function makeCacheableSignalKeyStore(
 
 	return {
 		async get(type, ids) {
-			const data: { [_: string]: SignalDataTypeMap[typeof type] } = { }
+			const data: { [_: string]: SignalDataTypeMap[typeof type] } = {}
 			const idsToFetch: string[] = []
 			for(const id of ids) {
-				const item = cache.get<SignalDataTypeMap[typeof type]>(getUniqueId(type, id))
+				const item = cache.get<SignalDataTypeMap[typeof type]>(getUniqueId(type, id)) as any
 				if(typeof item !== 'undefined') {
 					data[id] = item
 				} else {
@@ -96,7 +96,7 @@ export const addTransactionCapability = (
 	let transactionsInProgress = 0
 
 	return {
-		get: async(type, ids) => {
+		get: async (type, ids) => {
 			if(isInTransaction()) {
 				const dict = transactionCache[type]
 				const idsRequiringFetch = dict

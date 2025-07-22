@@ -1,4 +1,4 @@
-/* eslint-disable linebreak-style */
+ 
 import { Boom } from '@hapi/boom'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -71,7 +71,7 @@ const ButtonType = waproto.Message.ButtonsMessage.HeaderType
  */
 export const extractUrlFromText = (text: string) => text.match(URL_REGEX)?.[0]
 
-export const generateLinkPreviewIfRequired = async(text: string, getUrlInfo: MessageGenerationOptions['getUrlInfo'], logger: MessageGenerationOptions['logger']) => {
+export const generateLinkPreviewIfRequired = async (text: string, getUrlInfo: MessageGenerationOptions['getUrlInfo'], logger: MessageGenerationOptions['logger']) => {
 	const url = extractUrlFromText(text)
 	if(!!getUrlInfo && url) {
 		try {
@@ -83,7 +83,7 @@ export const generateLinkPreviewIfRequired = async(text: string, getUrlInfo: Mes
 	}
 }
 
-const assertColor = async(color) => {
+const assertColor = async (color) => {
 	let assertedColor
 	if(typeof color === 'number') {
 		assertedColor = color > 0 ? color : 0xffffffff + Number(color) + 1
@@ -98,7 +98,7 @@ const assertColor = async(color) => {
 	}
 }
 
-export const prepareWAMessageMedia = async(
+export const prepareWAMessageMedia = async (
 	message: AnyMediaMessageContent,
 	options: MediaGenerationOptions
 ) => {
@@ -177,7 +177,7 @@ export const prepareWAMessageMedia = async(
 	 // url safe Base64 encode the SHA256 hash of the body
 	const fileEncSha256B64 = fileEncSha256.toString('base64')
 	const [{ mediaUrl, directPath }] = await Promise.all([
-		(async() => {
+		(async () => {
 			const result = await options.upload(
 				encFilePath,
 				{ fileEncSha256B64, mediaType, timeoutMs: options.mediaUploadTimeoutMs }
@@ -185,7 +185,7 @@ export const prepareWAMessageMedia = async(
 			logger?.debug({ mediaType, cacheableKey }, 'uploaded media')
 			return result
 		})(),
-		(async() => {
+		(async () => {
 			try {
 				if(requiresThumbnailComputation) {
 					const {
@@ -222,7 +222,7 @@ export const prepareWAMessageMedia = async(
 		})(),
 	])
 		.finally(
-			async() => {
+			async () => {
 				try {
 					await fs.unlink(encFilePath)
 					if(originalFilePath) {
@@ -318,7 +318,7 @@ export const generateForwardMessageContent = (
 	return content
 }
 
-export const generateWAMessageContent = async(
+export const generateWAMessageContent = async (
 	message: AnyMessageContent,
 	options: MessageContentGenerationOptions
 ) => {
@@ -681,7 +681,7 @@ export const generateWAMessageFromContent = (
 	return waproto.WebMessageInfo.fromObject(messageJSON)
 }
 
-export const generateWAMessage = async(
+export const generateWAMessage = async (
 	jid: string,
 	content: AnyMessageContent,
 	options: MessageGenerationOptions,
@@ -925,7 +925,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 	ctx?: DownloadMediaMessageContext
 ) => {
 	const result = await downloadMsg()
-		.catch(async(error) => {
+		.catch(async (error) => {
 			if(ctx && axios.isAxiosError(error) && REUPLOAD_REQUIRED_STATUS.includes(error.response?.status!)) {
 				ctx.logger.info({ key: message.key }, 'sending reupload media request...')
 				message = await ctx.reuploadRequest(message)

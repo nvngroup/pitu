@@ -221,7 +221,7 @@ export async function uploadingNecessaryImagesOfProduct<T extends ProductUpdate 
 /**
  * Uploads images not already uploaded to WA's servers
  */
-export const uploadingNecessaryImages = async(
+export const uploadingNecessaryImages = async (
 	images: WAMediaUpload[],
 	waUploadToServer: WAMediaUploadFunction,
 	timeoutMs = 30_000

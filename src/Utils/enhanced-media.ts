@@ -13,7 +13,7 @@ export type MediaDownloadOptions = {
  * Versão modificada da função downloadEncryptedContent que tenta usar
  * o método de descriptografia alternativo caso o método original falhe
  */
-export const enhancedDownloadEncryptedContent = async(
+export const enhancedDownloadEncryptedContent = async (
 	downloadUrl: string,
 	keys: MediaDecryptionKeyInfo,
 	options: MediaDownloadOptions = {}
@@ -40,7 +40,7 @@ export const enhancedDownloadEncryptedContent = async(
 		const buffer = Buffer.from(response.data)
 		const nodeReadable = new Readable()
 
-		nodeReadable._read = function() { } // eslint-disable-line no-empty-function
+		nodeReadable._read = function () { }  
 
 		nodeReadable.push(buffer)
 		nodeReadable.push(null)

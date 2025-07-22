@@ -145,7 +145,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 		buffer,
 		flush,
 		createBufferedFunction(work) {
-			return async(...args) => {
+			return async (...args) => {
 				buffer()
 				try {
 					const result = await work(...args)

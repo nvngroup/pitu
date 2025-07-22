@@ -1,4 +1,4 @@
-/* eslint-disable linebreak-style */
+ 
 import { AxiosRequestConfig } from 'axios'
 import type { Readable } from 'stream'
 import type { URL } from 'url'

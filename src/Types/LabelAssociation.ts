@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax */
+ 
 /** Association type */
 export enum LabelAssociationType {
   Chat = 'label_jid',

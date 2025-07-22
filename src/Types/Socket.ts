@@ -80,6 +80,8 @@ export type SocketConfig = {
     callOfferCache?: CacheStore
     /** cache to track placeholder resends */
     placeholderResendCache?: CacheStore
+    /** cache to track onWhatsApp status */
+    onWhatsAppCache?: CacheStore
     /** width for link preview images */
     linkPreviewImageThumbnailWidth: number
     /** Should Baileys ask the phone for full history, will be received async */

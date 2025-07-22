@@ -149,7 +149,7 @@ export function decryptPollVote(
 	}
 }
 
-const processMessage = async(
+const processMessage = async (
 	message: waproto.IWebMessageInfo,
 	{
 		shouldProcessHistoryMsg,
@@ -235,7 +235,7 @@ const processMessage = async(
 			if(keys?.length) {
 				let newAppStateSyncKeyId = ''
 				await keyStore.transaction(
-					async() => {
+					async () => {
 						const newKeys: string[] = []
 						for(const { keyData, keyId } of keys) {
 							const strKeyId = Buffer.from(keyId!.keyId!).toString('base64')

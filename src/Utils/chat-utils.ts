@@ -14,7 +14,7 @@ type FetchAppStateSyncKey = (keyId: string) => Promise<waproto.Message.IAppState
 
 export type ChatMutationMap = { [index: string]: ChatMutation }
 
-const mutationKeys = async(keydata: Uint8Array) => {
+const mutationKeys = async (keydata: Uint8Array) => {
 	const expanded = await hkdf(keydata, 160, { info: 'WhatsApp Mutation Keys' })
 	return {
 		indexKey: expanded.slice(0, 32),
@@ -86,7 +86,7 @@ const makeLtHashGenerator = ({ indexValueMap, hash }: Pick<LTHashState, 'hash' |
 				subBuffs.push(new Uint8Array(prevOp.valueMac).buffer)
 			}
 		},
-		finish: async() => {
+		finish: async () => {
 			const hashArrayBuffer = new Uint8Array(hash).buffer
 			const result = await LT_HASH_ANTI_TAMPERING.subtractThenAdd(hashArrayBuffer, addBuffs, subBuffs)
 			const buffer = Buffer.from(result)
@@ -120,7 +120,7 @@ const generatePatchMac = (snapshotMac: Uint8Array, valueMacs: Uint8Array[], vers
 
 export const newLTHashState = (): LTHashState => ({ version: 0, hash: Buffer.alloc(128), indexValueMap: {} })
 
-export const encodeSyncdPatch = async(
+export const encodeSyncdPatch = async (
 	{ type, index, syncAction, apiVersion, operation }: WAPatchCreate,
 	myAppStateKeyId: string,
 	state: LTHashState,
@@ -185,7 +185,7 @@ export const encodeSyncdPatch = async(
 	return { patch, state }
 }
 
-export const decodeSyncdMutations = async(
+export const decodeSyncdMutations = async (
 	msgMutations: (waproto.ISyncdMutation | waproto.ISyncdRecord)[],
 	initialState: LTHashState,
 	getAppStateSyncKey: FetchAppStateSyncKey,
@@ -246,7 +246,7 @@ export const decodeSyncdMutations = async(
 	}
 }
 
-export const decodeSyncdPatch = async(
+export const decodeSyncdPatch = async (
 	msg: waproto.ISyncdPatch,
 	name: WAPatchName,
 	initialState: LTHashState,
@@ -274,7 +274,7 @@ export const decodeSyncdPatch = async(
 	return result
 }
 
-export const extractSyncdPatches = async(
+export const extractSyncdPatches = async (
 	result: BinaryNode,
 	options: AxiosRequestConfig<{}>
 ) => {
@@ -332,7 +332,7 @@ export const extractSyncdPatches = async(
 }
 
 
-export const downloadExternalBlob = async(
+export const downloadExternalBlob = async (
 	blob: waproto.IExternalBlobReference,
 	options: AxiosRequestConfig<{}>
 ) => {
@@ -345,7 +345,7 @@ export const downloadExternalBlob = async(
 	return Buffer.concat(bufferArray)
 }
 
-export const downloadExternalPatch = async(
+export const downloadExternalPatch = async (
 	blob: waproto.IExternalBlobReference,
 	options: AxiosRequestConfig<{}>
 ) => {
@@ -354,7 +354,7 @@ export const downloadExternalPatch = async(
 	return syncData
 }
 
-export const decodeSyncdSnapshot = async(
+export const decodeSyncdSnapshot = async (
 	name: WAPatchName,
 	snapshot: waproto.ISyncdSnapshot,
 	getAppStateSyncKey: FetchAppStateSyncKey,
@@ -403,7 +403,7 @@ export const decodeSyncdSnapshot = async(
 	}
 }
 
-export const decodePatches = async(
+export const decodePatches = async (
 	name: WAPatchName,
 	syncds: waproto.ISyncdPatch[],
 	initial: LTHashState,

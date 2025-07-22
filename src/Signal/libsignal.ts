@@ -99,19 +99,19 @@ const jidToSignalSenderKeyName = (group: string, user: string): SenderKeyName =>
 
 function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Record<string, any> {
 	return {
-		loadSession: async(id: string) => {
+		loadSession: async (id: string) => {
 			const { [id]: sess } = await keys.get('session', [id])
 			if(sess) {
 				return libsignal.SessionRecord.deserialize(sess)
 			}
 		},
-		storeSession: async(id: string, session: libsignal.SessionRecord) => {
+		storeSession: async (id: string, session: libsignal.SessionRecord) => {
 			await keys.set({ 'session': { [id]: session.serialize() } })
 		},
 		isTrustedIdentity: () => {
 			return true
 		},
-		loadPreKey: async(id: number | string) => {
+		loadPreKey: async (id: number | string) => {
 			const keyId = id.toString()
 			const { [keyId]: key } = await keys.get('pre-key', [keyId])
 			if(key) {
@@ -129,7 +129,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 				pubKey: Buffer.from(key.keyPair.public)
 			}
 		},
-		loadSenderKey: async(senderKeyName: SenderKeyName) => {
+		loadSenderKey: async (senderKeyName: SenderKeyName) => {
 			const keyId = senderKeyName.toString()
 			const { [keyId]: key } = await keys.get('sender-key', [keyId])
 			if(key) {
@@ -138,7 +138,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 
 			return new SenderKeyRecord()
 		},
-		storeSenderKey: async(senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
+		storeSenderKey: async (senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
 			const keyId = senderKeyName.toString()
 			const serialized = JSON.stringify(key.serialize())
 			await keys.set({

@@ -10,7 +10,7 @@ import { downloadContentFromMessage } from './messages-media'
 
 const inflatePromise = promisify(inflate)
 
-export const downloadHistory = async(
+export const downloadHistory = async (
 	msg: waproto.Message.IHistorySyncNotification,
 	options: AxiosRequestConfig<{}>
 ) => {
@@ -104,7 +104,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 	}
 }
 
-export const downloadAndProcessHistorySyncNotification = async(
+export const downloadAndProcessHistorySyncNotification = async (
 	msg: waproto.Message.IHistorySyncNotification,
 	options: AxiosRequestConfig<{}>
 ) => {

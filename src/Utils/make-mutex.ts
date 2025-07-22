@@ -6,7 +6,7 @@ export const makeMutex = () => {
 
 	return {
 		mutex<T>(code: () => Promise<T> | T): Promise<T> {
-			task = (async() => {
+			task = (async () => {
 				// wait for the previous task to complete
 				// if there is an error, we swallow so as to not block the queue
 				try {

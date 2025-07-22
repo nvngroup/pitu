@@ -64,8 +64,8 @@ export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
 		snapshot: false,
 	},
 	countryCode: 'US',
-	getMessage: async() => undefined,
-	cachedGroupMetadata: async() => undefined,
+	getMessage: async () => undefined,
+	cachedGroupMetadata: async () => undefined,
 	makeSignalRepository: makeLibSignalRepository
 }
 
@@ -113,4 +113,6 @@ export const DEFAULT_CACHE_TTLS = {
 	MSG_RETRY: 60 * 60, // 1 hour
 	CALL_OFFER: 5 * 60, // 5 minutes
 	USER_DEVICES: 15 * 60, // 15 minutes
+	ON_WHATSAPP: 24 * 60 * 60, // 24 hours
+	PLACEHOLDER_RESEND: 60 * 60, // 1 hour
 }

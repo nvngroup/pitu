@@ -206,7 +206,7 @@ export const generateMessageIDV2 = (userId?: string): string => {
 export const generateMessageID = () => '3EB0' + randomBytes(18).toString('hex').toUpperCase()
 
 export function bindWaitForEvent<T extends keyof BaileysEventMap>(ev: BaileysEventEmitter, event: T) {
-	return async(check: (u: BaileysEventMap[T]) => Promise<boolean | undefined>, timeoutMs?: number) => {
+	return async (check: (u: BaileysEventMap[T]) => Promise<boolean | undefined>, timeoutMs?: number) => {
 		let listener: (item: BaileysEventMap[T]) => void
 		let closeListener: (state: Partial<ConnectionState>) => void
 		await (
@@ -223,7 +223,7 @@ export function bindWaitForEvent<T extends keyof BaileysEventMap>(ev: BaileysEve
 					}
 
 					ev.on('connection.update', closeListener)
-					listener = async(update) => {
+					listener = async (update) => {
 						if(await check(update)) {
 							resolve()
 						}
@@ -243,7 +243,7 @@ export function bindWaitForEvent<T extends keyof BaileysEventMap>(ev: BaileysEve
 export const bindWaitForConnectionUpdate = (ev: BaileysEventEmitter) => bindWaitForEvent(ev, 'connection.update')
 
 export const printQRIfNecessaryListener = (ev: BaileysEventEmitter, logger: ILogger) => {
-	ev.on('connection.update', async({ qr }) => {
+	ev.on('connection.update', async ({ qr }) => {
 		if(qr) {
 			const QR = await import('qrcode-terminal')
 				.then(m => m.default || m)
@@ -259,7 +259,7 @@ export const printQRIfNecessaryListener = (ev: BaileysEventEmitter, logger: ILog
  * utility that fetches latest baileys version from the master branch.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<{}> = { }) => {
+export const fetchLatestBaileysVersion = async (options: AxiosRequestConfig<{}> = { }) => {
 	const URL = 'https://raw.githubusercontent.com/brunocgc/Baileys/refs/heads/dev/src/Defaults/baileys-version.json'
 	try {
 		const result = await axios.get<{ version: WAVersion }>(
@@ -286,7 +286,7 @@ export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<{}> =
  * A utility that fetches the latest web version of whatsapp.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestWaWebVersion = async(options: AxiosRequestConfig<{}>) => {
+export const fetchLatestWaWebVersion = async (options: AxiosRequestConfig<{}>) => {
 	try {
 		const { data } = await axios.get(
 			'https://web.whatsapp.com/sw.js',
