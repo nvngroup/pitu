@@ -539,8 +539,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				const blocklists = getBinaryNodeChildren(child, 'item')
 
 				for(const { attrs } of blocklists) {
-					const blocklist = [attrs.jid]
-					const type = (attrs.action === 'block') ? 'add' : 'remove'
+					const blocklist: string[] = [attrs.jid]
+					const type: 'add' | 'remove' = (attrs.action === 'block') ? 'add' : 'remove'
 					ev.emit('blocklist.update', { blocklist, type })
 				}
 			}
@@ -645,12 +645,12 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		retryNode: BinaryNode
 	) => {
 		const msgs = await Promise.all(ids.map(id => getMessage({ ...key, id })))
-		const remoteJid = key.remoteJid!
-		const participant = key.participant || remoteJid
+		const remoteJid: string = key.remoteJid!
+		const participant: string = key.participant || remoteJid
 		// if it's the primary jid sending the request
 		// just re-send the message to everyone
 		// prevents the first message decryption failure
-		const sendToAll = !jidDecode(participant)?.device
+		const sendToAll: boolean = !jidDecode(participant)?.device
 		await assertSessions([participant], true)
 
 		if(isJidGroup(remoteJid)) {
@@ -700,7 +700,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			return
 		}
 
-		const ids = [attrs.id]
+		const ids: string[] = [attrs.id]
 		if(Array.isArray(content)) {
 			const items = getBinaryNodeChildren(content[0], 'item')
 			ids.push(...items.map(i => i.attrs.id))
