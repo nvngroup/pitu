@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { waproto } from '../../WAProto'
 import { DownloadableMessage, MediaType } from '../Types'
 import { downloadContentFromMessage } from '../Utils'
+import logger from '../Utils/logger'
 
 jest.setTimeout(20_000)
 
@@ -69,7 +70,7 @@ describe('Media Download Tests', () => {
 				const expectedHex = plaintext.slice(range.startByte || 0, range.endByte || undefined).toString('hex')
 				expect(hex).toBe(expectedHex)
 
-				console.log('success on ', range)
+				logger.trace('success on ', range)
 			}
 		}
 	})

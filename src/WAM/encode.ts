@@ -1,3 +1,4 @@
+import logger from '../Utils/logger'
 import { BinaryInfo } from './BinaryInfo'
 import { FLAG_BYTE, FLAG_EVENT, FLAG_EXTENDED, FLAG_FIELD, FLAG_GLOBAL, Value, WEB_EVENTS, WEB_GLOBALS } from './constants'
 
@@ -9,7 +10,7 @@ export const encodeWAM = (binaryInfo: BinaryInfo) => {
 	encodeWAMHeader(binaryInfo)
 	encodeEvents(binaryInfo)
 
-	console.log(binaryInfo.buffer)
+	logger.trace(binaryInfo.buffer)
 	const totalSize = binaryInfo.buffer
 		.map((a) => a.length)
 		.reduce((a, b) => a + b)
