@@ -170,7 +170,7 @@ export const makeNoiseHandler = ({
 					try {
 						return (inBytes.readUInt8() << 16) | inBytes.readUInt16BE(1)
 					} catch(error) {
-						logger.warn({ error }, 'Failed to read bytes size from buffer')
+						logger.error({ error }, 'Failed to read bytes size from buffer')
 						return undefined
 					}
 				}

@@ -105,7 +105,7 @@ export const getUrlInfo = async (
 						? (await getCompressedJpegThumbnail(image, opts)).buffer
 						: undefined
 				} catch(error) {
-					opts.logger?.debug(
+					opts.logger?.error(
 						{ err: error.stack, url: previewLink },
 						'error in generating thumbnail'
 					)

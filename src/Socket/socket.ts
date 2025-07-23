@@ -229,7 +229,7 @@ export const makeSocket = (config: SocketConfig) => {
 		}
 		helloMsg = waproto.HandshakeMessage.fromObject(helloMsg)
 
-		logger.info({ browser, helloMsg }, 'connected to WA')
+		logger.trace({ browser, helloMsg }, 'connected to WA')
 
 		const init = waproto.HandshakeMessage.encode(helloMsg).finish()
 
@@ -243,10 +243,10 @@ export const makeSocket = (config: SocketConfig) => {
 		let node: waproto.IClientPayload
 		if(!creds.me) {
 			node = generateRegistrationNode(creds, config)
-			logger.info({ node }, 'not logged in, attempting registration...')
+			logger.trace({ node }, 'not logged in, attempting registration...')
 		} else {
 			node = generateLoginNode(creds.me.id, config)
-			logger.info({ node }, 'logging in...')
+			logger.trace({ node }, 'logging in...')
 		}
 
 		const payloadEnc = noise.encrypt(
@@ -285,20 +285,20 @@ export const makeSocket = (config: SocketConfig) => {
 	const uploadPreKeys = async (count = INITIAL_PREKEY_COUNT) => {
 		await keys.transaction(
 			async () => {
-				logger.info({ count }, 'uploading pre-keys')
+				logger.trace({ count }, 'uploading pre-keys')
 				const { update, node } = await getNextPreKeysNode({ creds, keys }, count)
 
 				await query(node)
 				ev.emit('creds.update', update)
 
-				logger.info({ count }, 'uploaded pre-keys')
+				logger.trace({ count }, 'uploaded pre-keys')
 			}
 		)
 	}
 
 	const uploadPreKeysToServerIfRequired = async () => {
 		const preKeyCount = await getAvailablePreKeysOnServer()
-		logger.info(`${preKeyCount} pre-keys found on server`)
+		logger.trace(`${preKeyCount} pre-keys found on server`)
 		if(preKeyCount <= MIN_PREKEY_COUNT) {
 			await uploadPreKeys()
 		}
@@ -350,7 +350,7 @@ export const makeSocket = (config: SocketConfig) => {
 		}
 
 		closed = true
-		logger.info(
+		logger.trace(
 			{ trace: error?.stack },
 			error ? 'connection errored' : 'connection closed'
 		)
@@ -508,7 +508,7 @@ export const makeSocket = (config: SocketConfig) => {
 					attrs: {
 						jid: authState.creds.me.id,
 						stage: 'companion_hello',
-						 
+
 						should_show_push_notification: 'true'
 					},
 					content: [
@@ -632,7 +632,7 @@ export const makeSocket = (config: SocketConfig) => {
 		try {
 			const { reply, creds: updatedCreds } = configureSuccessfulPairing(stanza, creds)
 
-			logger.info(
+			logger.trace(
 				{ me: updatedCreds.me, platform: updatedCreds.platform },
 				'pairing configured successfully, expect to restart the connection...'
 			)
@@ -642,7 +642,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 			await sendNode(reply)
 		} catch(error) {
-			logger.info({ trace: error.stack }, 'error in pairing')
+			logger.error({ trace: error.stack }, 'error in pairing')
 			end(error)
 		}
 	})
@@ -651,7 +651,7 @@ export const makeSocket = (config: SocketConfig) => {
 		await uploadPreKeysToServerIfRequired()
 		await sendPassiveIq('active')
 
-		logger.info('opened connection to WA')
+		logger.trace('opened connection to WA')
 		clearTimeout(qrTimer) // will never happen in all likelyhood -- but just in case WA sends success on first try
 
 		ev.emit('creds.update', { me: { ...authState.creds.me!, lid: node.attrs.lid } })
@@ -677,7 +677,7 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 
 	ws.on('CB:ib,,offline_preview', (node: BinaryNode) => {
-	  logger.info('offline preview received', JSON.stringify(node))
+	  logger.trace('offline preview received', JSON.stringify(node))
 		sendNode({
 			tag: 'ib',
 			attrs: {},
@@ -711,7 +711,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const child = getBinaryNodeChild(node, 'offline')
 		const offlineNotifs = +(child?.attrs.count || 0)
 
-		logger.info(`handled ${offlineNotifs} offline messages/notifications`)
+		logger.trace(`handled ${offlineNotifs} offline messages/notifications`)
 		if(didStartBuffer) {
 			ev.flush()
 			logger.trace('flushed events for initial buffer')
@@ -731,7 +731,7 @@ export const makeSocket = (config: SocketConfig) => {
 				attrs: { name: name! }
 			})
 				.catch(err => {
-					logger.warn({ trace: err.stack }, 'error in sending presence update on name change')
+					logger.error({ trace: err.stack }, 'error in sending presence update on name change')
 				})
 		}
 

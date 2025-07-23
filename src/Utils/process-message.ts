@@ -453,7 +453,7 @@ const processMessage = async (
 					}
 				])
 			} catch(err) {
-				logger?.warn(
+				logger?.error(
 					{ err, creationMsgKey },
 					'failed to decrypt poll vote'
 				)

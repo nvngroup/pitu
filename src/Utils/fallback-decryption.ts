@@ -28,11 +28,11 @@ export const tryAlternativeDecryption = (
 			decipher.setAuthTag(tag)
 			return Buffer.concat([decipher.update(enc), decipher.final()])
 		} catch(error) {
-			logger.debug(error, 'Falha na descriptografia GCM com tag, tentando sem verificação')
+			logger.error(error, 'Falha na descriptografia GCM com tag, tentando sem verificação')
 			return decipher.update(enc)
 		}
 	} catch(error) {
-		logger.debug('Falha na primeira tentativa de descriptografia: ' + error.message)
+		logger.error('Falha na primeira tentativa de descriptografia: ' + error.message)
 	}
 
 	// Tentativa 2: AES-256-CBC
@@ -40,7 +40,7 @@ export const tryAlternativeDecryption = (
 		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 	} catch(error) {
-		logger.debug('Falha na segunda tentativa de descriptografia: ' + error.message)
+		logger.error('Falha na segunda tentativa de descriptografia: ' + error.message)
 	}
 
 	// Tentativa 3: AES-256-CTR
@@ -48,7 +48,7 @@ export const tryAlternativeDecryption = (
 		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
 	} catch(error) {
-		logger.debug('Falha na terceira tentativa de descriptografia: ' + error.message)
+		logger.error('Falha na terceira tentativa de descriptografia: ' + error.message)
 	}
 
 	// Se todas as tentativas falharem, retorna um buffer vazio

@@ -1,4 +1,4 @@
- 
+
 import { Boom } from '@hapi/boom'
 import axios from 'axios'
 import { randomBytes } from 'crypto'
@@ -78,7 +78,7 @@ export const generateLinkPreviewIfRequired = async (text: string, getUrlInfo: Me
 			const urlInfo = await getUrlInfo(url)
 			return urlInfo
 		} catch(error) { // ignore if fails
-			logger?.warn({ trace: error.stack }, 'url generation failed')
+			logger?.error({ trace: error.stack }, 'url generation failed')
 		}
 	}
 }
@@ -217,7 +217,7 @@ export const prepareWAMessageMedia = async (
 					logger?.debug('computed backgroundColor audio status')
 				}
 			} catch(error) {
-				logger?.warn({ trace: error.stack }, 'failed to obtain extra info')
+				logger?.error({ trace: error.stack }, 'failed to obtain extra info')
 			}
 		})(),
 	])
@@ -927,7 +927,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 	const result = await downloadMsg()
 		.catch(async (error) => {
 			if(ctx && axios.isAxiosError(error) && REUPLOAD_REQUIRED_STATUS.includes(error.response?.status!)) {
-				ctx.logger.info({ key: message.key }, 'sending reupload media request...')
+				ctx.logger.trace({ key: message.key }, 'sending reupload media request...')
 				message = await ctx.reuploadRequest(message)
 				const result = await downloadMsg()
 				return result

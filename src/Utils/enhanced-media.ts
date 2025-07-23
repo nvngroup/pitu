@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
 import { downloadEncryptedContent as originalDownloadEncryptedContent } from '../Utils/messages-media'
+import logger from './logger'
 
 export type MediaDownloadOptions = {
   startByte?: number
@@ -23,7 +24,7 @@ export const enhancedDownloadEncryptedContent = async (
 		return await originalDownloadEncryptedContent(downloadUrl, keys, options)
 	} catch(error) {
 		// Se der erro, registra e tenta o método alternativo
-		console.error('Erro na descriptografia original, tentando método alternativo', error)
+		logger.error('Erro na descriptografia original, tentando método alternativo', error)
 
 		const response = await axios.get(downloadUrl, {
 			responseType: 'arraybuffer',
@@ -40,7 +41,7 @@ export const enhancedDownloadEncryptedContent = async (
 		const buffer = Buffer.from(response.data)
 		const nodeReadable = new Readable()
 
-		nodeReadable._read = function () { }  
+		nodeReadable._read = function () { }
 
 		nodeReadable.push(buffer)
 		nodeReadable.push(null)

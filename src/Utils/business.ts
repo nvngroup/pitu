@@ -7,6 +7,7 @@ import { CatalogCollection, CatalogStatus, OrderDetails, OrderProduct, Product, 
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString } from '../WABinary'
 import { generateMessageIDV2 } from './generics'
 import { getStream, getUrlFromDirectPath } from './messages-media'
+import logger from './logger'
 
 export const parseCatalogNode = (node: BinaryNode) => {
 	const catalogNode = getBinaryNodeChild(node, 'product_catalog')
@@ -258,7 +259,7 @@ export const uploadingNecessaryImages = async (
 				)
 				await fs
 					.unlink(filePath)
-					.catch(err => console.log('Error deleting temp file ', err))
+					.catch(err => logger.error('Error deleting temp file ', err))
 				return { url: getUrlFromDirectPath(directPath) }
 			}
 		)

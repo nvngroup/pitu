@@ -113,7 +113,7 @@ export class GroupCipher {
 		try {
 			return decrypt(key, ciphertext, iv)
 		} catch(e) {
-			logger.trace(e)
+			logger.error(e)
 			throw new Error('InvalidMessageException')
 		}
 	}
@@ -129,7 +129,7 @@ export class GroupCipher {
 			const plaintextBuffer = typeof plaintext === 'string' ? Buffer.from(plaintext) : plaintext
 			return encrypt(keyBuffer, plaintextBuffer, ivBuffer)
 		} catch(e) {
-			logger.trace(e)
+			logger.error(e)
 			throw new Error('InvalidMessageException')
 		}
 	}

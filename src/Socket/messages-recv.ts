@@ -308,7 +308,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 				await sendNode(receipt)
 
-				logger.info({ msgAttrs: node.attrs, retryCount }, 'sent retry receipt')
+				logger.trace({ msgAttrs: node.attrs, retryCount }, 'sent retry receipt')
 			}
 		)
 	}
@@ -327,11 +327,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		} else {
 			const identityNode = getBinaryNodeChild(node, 'identity')
 			if(identityNode) {
-				logger.info({ jid: from }, 'identity changed')
+				logger.trace({ jid: from }, 'identity changed')
 				// not handling right now
 				// signal will override new identity anyway
 			} else {
-				logger.info({ node }, 'unknown encrypt notification')
+				logger.trace({ node }, 'unknown encrypt notification')
 			}
 		}
 	}
@@ -482,7 +482,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const devices = getBinaryNodeChildren(child, 'device')
 			if(areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
 				const deviceJids = devices.map(d => d.attrs.jid)
-				logger.info({ deviceJids }, 'got my own devices')
+				logger.trace({ deviceJids }, 'got my own devices')
 			}
 
 			break
@@ -524,7 +524,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				const newDuration = +child.attrs.duration
 				const timestamp = +child.attrs.t
 
-				logger.info({ newDuration }, 'updated account disappearing mode')
+				logger.trace({ newDuration }, 'updated account disappearing mode')
 
 				ev.emit('creds.update', {
 					accountSettings: {
@@ -758,10 +758,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 										logger.error({ key, ids, trace: error.stack }, 'error in sending message again')
 									}
 								} else {
-									logger.info({ attrs, key }, 'recv retry for not fromMe message')
+									logger.trace({ attrs, key }, 'recv retry for not fromMe message')
 								}
 							} else {
-								logger.info({ attrs, key }, 'will not send message again, as sent too many times')
+								logger.trace({ attrs, key }, 'will not send message again, as sent too many times')
 							}
 						}
 					}
@@ -1023,7 +1023,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		// // it means -- the message hasn't reached all devices yet
 		// // we'll retry sending the message here
 		// if(attrs.phash) {
-		// 	logger.info({ attrs }, 'received phash in ack, resending message...')
+		// 	logger.trace({ attrs }, 'received phash in ack, resending message...')
 		// 	const msg = await getMessage(key)
 		// 	if(msg) {
 		// 		await relayMessage(key.remoteJid!, msg, { messageId: key.id!, useUserDevicesCache: false })

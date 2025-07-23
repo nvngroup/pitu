@@ -266,7 +266,7 @@ export async function getAudioWaveform(buffer: Buffer | string | Readable, logge
 
 		return waveform
 	} catch(e) {
-		logger?.debug('Failed to generate waveform: ' + e)
+		logger?.error('Failed to generate waveform: ' + e)
 	}
 }
 
@@ -339,7 +339,7 @@ export async function generateThumbnail(
 
 			await fs.unlink(imgFilename)
 		} catch(err) {
-			options.logger?.debug('could not generate video thumb: ' + err)
+			options.logger?.error('could not generate video thumb: ' + err)
 		}
 	}
 
@@ -616,11 +616,11 @@ export const downloadEncryptedContent = async (
 					pushBytes(aes.final(), b => this.push(b))
 					callback()
 				} catch(error) {
-					logger.debug(error)
+					logger.error(error)
 					callback(null)
 				}
 			} catch(error) {
-				logger.debug(error)
+				logger.error(error)
 				callback(null)
 			}
 		},

@@ -23,7 +23,7 @@ export function makeCacheableSignalKeyStore(
 	_cache?: CacheStore
 ): SignalKeyStore {
 	const cache = _cache || new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.SIGNAL_STORE, // 5 minutes
+		stdTTL: DEFAULT_CACHE_TTLS.SIGNAL_STORE, // 15 minutes
 		useClones: false,
 		deleteOnExpire: true,
 	})
@@ -56,7 +56,7 @@ export function makeCacheableSignalKeyStore(
 			return data
 		},
 		async set(data) {
-			let keys = 0
+			let keys: number = 0
 			for(const type in data) {
 				for(const id in data[type]) {
 					cache.set(getUniqueId(type, id), data[type][id])
@@ -167,8 +167,7 @@ export const addTransactionCapability = (
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')
 								break
 							} catch(error) {
-								logger.error(error, `failed to commit transaction, tries left=${tries}`)
-								logger.warn(`failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
+								logger.error(`failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
 								await delay(delayBetweenTriesMs)
 							}
 						}

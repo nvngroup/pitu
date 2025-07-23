@@ -365,7 +365,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const cleanDirtyBits = async (type: 'account_sync' | 'groups', fromTimestamp?: number | string) => {
-		logger.info({ fromTimestamp }, 'clean dirty bits ' + type)
+		logger.trace({ fromTimestamp }, 'clean dirty bits ' + type)
 		await sendNode({
 			tag: 'iq',
 			attrs: {
@@ -432,7 +432,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 						states[name] = state
 
-						logger.info(`resyncing ${name} from v${state.version}`)
+						logger.trace(`resyncing ${name} from v${state.version}`)
 
 						nodes.push({
 							tag: 'collection',
@@ -478,7 +478,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								states[name] = newState
 								Object.assign(globalMutationMap, mutationMap)
 
-								logger.info(`restored state of ${name} from snapshot to v${newState.version} with mutations`)
+								logger.trace(`restored state of ${name} from snapshot to v${newState.version} with mutations`)
 
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 							}
@@ -498,24 +498,24 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 
-								logger.info(`synced ${name} to v${newState.version}`)
+								logger.trace(`synced ${name} to v${newState.version}`)
 								initialVersionMap[name] = newState.version
 
 								Object.assign(globalMutationMap, mutationMap)
 							}
 
 							if(hasMorePatches) {
-								logger.info(`${name} has more patches...`)
+								logger.trace(`${name} has more patches...`)
 							} else { // collection is done with sync
 								collectionsToHandle.delete(name)
 							}
 						} catch(error) {
 							// if retry attempts overshoot
 							// or key not found
-							const isIrrecoverableError = attemptsMap[name]! >= MAX_SYNC_ATTEMPTS
+							const isIrrecoverableError: boolean = attemptsMap[name]! >= MAX_SYNC_ATTEMPTS
 								|| error.output?.statusCode === 404
 								|| error.name === 'TypeError'
-							logger.info(
+							logger.error(
 								{ name, error: error.stack },
 								`failed to sync state from version${isIrrecoverableError ? '' : ', removing and trying from scratch'}`
 							)
@@ -962,7 +962,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		async function doAppStateSync() {
 			if(!authState.creds.accountSyncCounter) {
-				logger.info('doing initial app state sync')
+				logger.trace('doing initial app state sync')
 				await resyncAppState(ALL_WA_PATCH_NAMES, true)
 
 				const accountSyncCounter = (authState.creds.accountSyncCounter || 0) + 1
@@ -999,7 +999,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			// handled in groups.ts
 			break
 		default:
-			logger.info({ node }, 'received unknown sync')
+			logger.trace({ node }, 'received unknown sync')
 			break
 		}
 	})
