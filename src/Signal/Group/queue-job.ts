@@ -1,3 +1,5 @@
+import logger from "../../Utils/logger"
+
 interface QueueJob<T> {
   awaitable: () => Promise<T>
   resolve: (value: T | PromiseLike<T>) => void
@@ -38,7 +40,7 @@ async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => v
 export default function queueJob<T>(bucket: string | number, awaitable: () => Promise<T>): Promise<T> {
 	// Skip name assignment since it's readonly in strict mode
 	if(typeof bucket !== 'string') {
-		console.warn('Unhandled bucket type (for naming):', typeof bucket, bucket)
+		logger.warn('Unhandled bucket type (for naming):', typeof bucket, bucket)
 	}
 
 	let inactive = false
