@@ -3,7 +3,6 @@ import NodeCache from '@cacheable/node-cache'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
 import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
-//import MAIN_LOGGER from '../src/Utils/logger'
 import open from 'open'
 import fs from 'fs'
 import P from 'pino'
@@ -16,8 +15,6 @@ const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.mult
 logger.level = 'debug'
 
 const usePairingCode = process.argv.includes('--use-pairing-code')
-const msgRetryCounterCache = new NodeCache()
-const onDemandMap = new Map<string, string>()
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (text: string) => new Promise<string>((resolve) => rl.question(text, resolve))
 const startSock = async () => {
@@ -31,7 +28,6 @@ const startSock = async () => {
 			creds: state.creds,
 			keys: makeCacheableSignalKeyStore(state.keys, logger),
 		},
-		msgRetryCounterCache,
 		generateHighQualityLinkPreview: true,
 		getMessage,
 	})
@@ -39,8 +35,8 @@ const startSock = async () => {
 	// Pairing code for Web clients
 	if (usePairingCode && !sock.authState.creds.registered) {
 		// todo move to QR event
-		const phoneNumber = await question('Please enter your phone number:\n')
-		const code = await sock.requestPairingCode(phoneNumber)
+		const phoneNumber: string = await question('Please enter your phone number:\n')
+		const code: string = await sock.requestPairingCode(phoneNumber)
 		console.log(`Pairing code: ${code}`)
 	}
 
@@ -144,13 +140,13 @@ const startSock = async () => {
 							if (text == "!lid") {
 								try {
 									const lid = sock.user;
-									const phone = msg.key.remoteJid!.split('@')[0];
+									const phone: string = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
 									console.log('latest id is', lidUser, 'and my lid is', lid);
 									await sock!.readMessages([msg.key]);
 
 									// Verificar se lidUser existe e tem pelo menos um elemento
-									if (lidUser && lidUser.length > 0) {
+									if (Array.isArray(lidUser) && lidUser.length > 0) {
 										// Usar o lid se existir e não for vazio, caso contrário usar o remoteJid original
 										const userLid = lidUser[0].lid;
 										const dados: string = (userLid && typeof userLid === 'string' && userLid !== '') ? userLid : msg.key.remoteJid!;
@@ -176,12 +172,12 @@ const startSock = async () => {
 							if (text == "!jid") {
 								try {
 									const lid = sock.user;
-									const phone = msg.key.remoteJid!.split('@')[0];
+									const phone: string = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
 									// console.log('latest id is', lidUser, 'and my lid is', lid);
 									await sock!.readMessages([msg.key]);
 
-									if (lidUser && lidUser.length > 0) {
+									if (Array.isArray(lidUser) && lidUser.length > 0) {
 										await sendMessageWTyping({
 											text: `Enviado pelo ${msg.key.remoteJid!}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
 										}, msg.key.remoteJid!);
@@ -656,7 +652,7 @@ const startSock = async () => {
 
 📍 *LOCALIZAÇÃO:*
 !location - Localização
-!livelocation - Localização ao vivo
+~!livelocation - Localização ao vivo~
 
 👤 *CONTATO:*
 !contact - Compartilhar contato
@@ -667,9 +663,9 @@ const startSock = async () => {
 !polladvanced - Enquete avançada
 !buttons - Botões
 !list - Lista de opções
-!template - Template buttons
-!interactive - Mensagem interativa
-!allbuttons - Todos tipos de botão
+~!template - Template buttons~
+~!interactive - Mensagem interativa~
+~!allbuttons - Todos tipos de botão~
 
 ✏️ *AÇÕES:*
 !edit - Editar mensagem

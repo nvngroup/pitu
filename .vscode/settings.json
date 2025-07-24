@@ -11,4 +11,8 @@
     "editor.wordWrap": "on",
     "editor.minimap.enabled": true,
     "window.zoomLevel": -1,
+	"editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+	"eslint.validate": ["javascript", "typescript", "html", "json", "markdown"],
 }
