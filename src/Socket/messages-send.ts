@@ -745,7 +745,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								try {
 									const media = await decryptMediaRetryData(result.media!, mediaKey, result.key.id!)
 									if(media.result !== waproto.MediaRetryNotification.ResultType.SUCCESS) {
-										const resultStr = waproto.MediaRetryNotification.ResultType[media.result!]
+										const resultStr: string = waproto.MediaRetryNotification.ResultType[media.result!]
 										throw new Boom(
 											`Media re-upload failed by device (${resultStr})`,
 											{ data: media, statusCode: getStatusCodeForMediaRetry(media.result!) || 404 }
