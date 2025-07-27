@@ -56,7 +56,7 @@ export function makeCacheableSignalKeyStore(
 			return data
 		},
 		async set(data) {
-			let keys: number = 0
+			let keys = 0
 			for(const type in data) {
 				for(const id in data[type]) {
 					cache.set(getUniqueId(type, id), data[type][id])

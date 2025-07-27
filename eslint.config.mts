@@ -7,8 +7,8 @@ import { FlatCompat } from "@eslint/eslintrc";
 import base from "@whiskeysockets/eslint-config";
 
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename: string = fileURLToPath(import.meta.url);
+const __dirname: string = path.dirname(__filename);
 const compat = new FlatCompat({
  baseDirectory: __dirname,
  recommendedConfig: js.configs.recommended,
