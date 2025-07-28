@@ -727,11 +727,11 @@ const startSock = async () => {
 			if(events['presence.update']) {
 				logger.info(events['presence.update'])
 			}
+			*/
 
 			if(events['chats.update']) {
 				logger.info(events['chats.update'])
 			}
-			*/
 
 			if (events['contacts.upsert']) {
 				// logger.info('contacts upserted ', events['contacts.upsert'])
@@ -742,7 +742,7 @@ const startSock = async () => {
 
 			if (events['contacts.update']) {
 				for (const contact of events['contacts.update']) {
-					// logger.info('contact updated', contact)
+					logger.info(`contact updated ${JSON.stringify(contact)}`)
 				}
 			}
 
