@@ -10,8 +10,7 @@ export const encodeWAM = (binaryInfo: BinaryInfo) => {
 	encodeWAMHeader(binaryInfo)
 	encodeEvents(binaryInfo)
 
-	logger.trace(binaryInfo.buffer)
-	const totalSize = binaryInfo.buffer
+	const totalSize: number = binaryInfo.buffer
 		.map((a) => a.length)
 		.reduce((a, b) => a + b)
 	const buffer = Buffer.alloc(totalSize)

@@ -28,11 +28,11 @@ export const tryAlternativeDecryption = (
 			decipher.setAuthTag(tag)
 			return Buffer.concat([decipher.update(enc), decipher.final()])
 		} catch(error) {
-			logger.error(error, 'Falha na descriptografia GCM com tag, tentando sem verificação')
+			logger.error(error, 'GCM decryption failed with tag, trying without verification')
 			return decipher.update(enc)
 		}
 	} catch(error) {
-		logger.error('Falha na primeira tentativa de descriptografia: ' + error.message)
+		logger.error('First decryption attempt failed: ' + error.message)
 	}
 
 	// Tentativa 2: AES-256-CBC
@@ -40,7 +40,7 @@ export const tryAlternativeDecryption = (
 		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 	} catch(error) {
-		logger.error('Falha na segunda tentativa de descriptografia: ' + error.message)
+		logger.error('Second decryption attempt failed: ' + error.message)
 	}
 
 	// Tentativa 3: AES-256-CTR
@@ -48,11 +48,11 @@ export const tryAlternativeDecryption = (
 		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
 	} catch(error) {
-		logger.error('Falha na terceira tentativa de descriptografia: ' + error.message)
+		logger.error('Third decryption attempt failed: ' + error.message)
 	}
 
 	// Se todas as tentativas falharem, retorna um buffer vazio
-	logger.error('Todas as tentativas de descriptografia falharam')
+	logger.error('All decryption attempts failed')
 	return Buffer.from([])
 }
 
@@ -92,7 +92,7 @@ export const createFallbackDecryptStream = (
 					try {
 						aes = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivValue)
 					} catch(error) {
-						logger.error({ error }, 'Erro ao criar decifragem')
+						logger.error({ error }, 'Error creating CBC decryption')
 						callback(null)
 						return
 					}
@@ -102,11 +102,11 @@ export const createFallbackDecryptStream = (
 					this.push(aes.update(data))
 					callback()
 				} catch(error) {
-					logger.error({ error }, 'Erro na descriptografia (update)')
+					logger.error({ error }, 'Error in decryption (update)')
 					callback(null)
 				}
 			} catch(error) {
-				logger.error({ error }, 'Erro geral de descriptografia')
+				logger.error({ error }, 'General decryption error')
 				callback(null)
 			}
 		},
@@ -117,14 +117,14 @@ export const createFallbackDecryptStream = (
 					try {
 						this.push(aes.final())
 					} catch(error) {
-						logger.error({ error }, 'Erro no final da descriptografia')
+						logger.error({ error }, 'Error in final decryption')
 						// Ignora erro e continua
 					}
 				}
 
 				callback()
 			} catch(error) {
-				logger.error({ error }, 'Erro final')
+				logger.error({ error }, 'Error in final decryption')
 				callback()
 			}
 		}

@@ -32,7 +32,7 @@ export const Curve = {
 			libsignal.curve.verifySignature(generateSignalPubKey(pubKey), message, signature)
 			return true
 		} catch(error) {
-			logger.error({ error }, 'Erro ao verificar assinatura')
+			logger.error({ error }, 'Error verifying signature')
 			return false
 		}
 	}
@@ -80,7 +80,7 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 			keyLength: key.length,
 			ivLength: iv.length,
 			additionalDataLength: additionalData.length
-		}, 'Erro fatal na decodificação GCM')
+		}, 'Fatal error in GCM decoding')
 		return Buffer.from([])
 	}
 }
