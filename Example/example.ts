@@ -1,18 +1,9 @@
 import { Boom } from '@hapi/boom'
-import NodeCache from '@cacheable/node-cache'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
 import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
-import open from 'open'
 import fs from 'fs'
-import P from 'pino'
-
-const streams = [
-  { stream: process.stdout },
-  { stream: P.destination('./wa-logs.txt') }
-]
-const logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.multistream(streams))
-logger.level = 'debug'
+import logger from '../src/Utils/logger'
 
 const usePairingCode = process.argv.includes('--use-pairing-code')
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
@@ -20,7 +11,7 @@ const question = (text: string) => new Promise<string>((resolve) => rl.question(
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
 	const { version, isLatest } = await fetchLatestBaileysVersion()
-	console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+	logger.info(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
 	const sock = makeWASocket({
 		version,
 		logger,
@@ -37,7 +28,7 @@ const startSock = async () => {
 		// todo move to QR event
 		const phoneNumber: string = await question('Please enter your phone number:\n')
 		const code: string = await sock.requestPairingCode(phoneNumber)
-		console.log(`Pairing code: ${code}`)
+		logger.info(`Pairing code: ${code}`)
 	}
 
 	const sendMessageWTyping = async (msg: AnyMessageContent, jid: string) => {
@@ -67,7 +58,7 @@ const startSock = async () => {
 					if ((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
 						startSock()
 					} else {
-						console.log('Connection closed. You are logged out.')
+						logger.info('Connection closed. You are logged out.')
 					}
 				}
 
@@ -96,7 +87,7 @@ const startSock = async () => {
 
 				if (update.qr) {
 					const website: string = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
-					console.log('QR code received, open in browser:', website)
+					logger.info(`QR code received, open in browser: ${website}`)
 				}
 			}
 
@@ -106,31 +97,31 @@ const startSock = async () => {
 			}
 
 			if (events['labels.association']) {
-				// console.log(events['labels.association'])
+				// logger.info(events['labels.association'])
 			}
 
 
 			if (events['labels.edit']) {
-				// console.log(events['labels.edit'])
+				// logger.info(events['labels.edit'])
 			}
 
 			if (events.call) {
-				// console.log('recv call event', events.call)
+				// logger.info('recv call event', events.call)
 			}
 
 			// history received
 			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
 				if (syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
-					// console.log('received on-demand history sync, messages=', messages)
+					// logger.info('received on-demand history sync, messages=', messages)
 				}
-				// console.log(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
+				// logger.info(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
 			}
 
 			// received a new message
 			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
-				// console.log('recv messages ', JSON.stringify(upsert, undefined, 2))
+				// logger.info('recv messages ', JSON.stringify(upsert, undefined, 2))
 
 				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages) {
@@ -142,7 +133,7 @@ const startSock = async () => {
 									const lid = sock.user;
 									const phone: string = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
-									console.log('latest id is', lidUser, 'and my lid is', lid);
+									logger.info('latest id is', lidUser, 'and my lid is', lid);
 									await sock!.readMessages([msg.key]);
 
 									// Verificar se lidUser existe e tem pelo menos um elemento
@@ -150,13 +141,13 @@ const startSock = async () => {
 										// Usar o lid se existir e não for vazio, caso contrário usar o remoteJid original
 										const userLid = lidUser[0].lid;
 										const dados: string = (userLid && typeof userLid === 'string' && userLid !== '') ? userLid : msg.key.remoteJid!;
-										console.log(`dados ${dados}`);
+										logger.info(`dados ${dados}`);
 
 										await sendMessageWTyping({
 											text: `Enviado pelo ${dados}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
 										}, dados);
 									} else {
-										console.log('Erro: não foi possível obter informações do usuário');
+										logger.info('Erro: não foi possível obter informações do usuário');
 										await sendMessageWTyping({
 											text: `Erro ao obter informações do usuário. Usando JID original: ${msg.key.remoteJid!}`
 										}, msg.key.remoteJid!);
@@ -174,7 +165,7 @@ const startSock = async () => {
 									const lid = sock.user;
 									const phone: string = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
-									// console.log('latest id is', lidUser, 'and my lid is', lid);
+									// logger.info('latest id is', lidUser, 'and my lid is', lid);
 									await sock!.readMessages([msg.key]);
 
 									if (Array.isArray(lidUser) && lidUser.length > 0) {
@@ -704,7 +695,7 @@ const startSock = async () => {
 
 			// messages updated like status delivered, message deleted etc.
 			if (events['messages.update']) {
-				/* console.log(
+				/* logger.info(
 					JSON.stringify(events['messages.update'], undefined, 2)
 				) */
 
@@ -712,7 +703,7 @@ const startSock = async () => {
 					if (update.pollUpdates) {
 						const pollCreation: waproto.IMessage = {} // get the poll creation message somehow
 						if (pollCreation) {
-							/* console.log(
+							/* logger.info(
 								'got poll update, aggregation: ',
 								getAggregateVotesInPollMessage({
 									message: pollCreation,
@@ -726,37 +717,37 @@ const startSock = async () => {
 
 			/*
 			if(events['message-receipt.update']) {
-				console.log(events['message-receipt.update'])
+				logger.info(events['message-receipt.update'])
 			}
 
 			if(events['messages.reaction']) {
-				console.log(events['messages.reaction'])
+				logger.info(events['messages.reaction'])
 			}
 
 			if(events['presence.update']) {
-				console.log(events['presence.update'])
+				logger.info(events['presence.update'])
 			}
 
 			if(events['chats.update']) {
-				console.log(events['chats.update'])
+				logger.info(events['chats.update'])
 			}
 			*/
 
 			if (events['contacts.upsert']) {
-				// console.log('contacts upserted ', events['contacts.upsert'])
+				// logger.info('contacts upserted ', events['contacts.upsert'])
 				for (const contact of events['contacts.upsert']) {
-					// console.log('contact upserted', contact)
+					// logger.info('contact upserted', contact)
 				}
 			}
 
 			if (events['contacts.update']) {
 				for (const contact of events['contacts.update']) {
-					// console.log('contact updated', contact)
+					// logger.info('contact updated', contact)
 				}
 			}
 
 			if (events['chats.delete']) {
-				// console.log('chats deleted ', events['chats.delete'])
+				// logger.info('chats deleted ', events['chats.delete'])
 			}
 		}
 	)

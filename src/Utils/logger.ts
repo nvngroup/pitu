@@ -10,4 +10,17 @@ export interface ILogger {
     error(obj: unknown, msg?: string)
 }
 
-export default P({ timestamp: () => `,"time":"${new Date().toJSON()}"` })
+const transport = P.transport({
+    targets: [
+        {
+            level: "debug",
+            target: "pino-pretty",
+            options: { levelFirst: true, translateTime: true, colorize: true }
+        }
+    ]
+});
+
+export default P(transport);
+
+
+// export default P({ timestamp: () => `,"time":"${new Date().toJSON()}"` })
