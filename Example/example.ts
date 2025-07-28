@@ -133,7 +133,7 @@ const startSock = async () => {
 									const lid = sock.user;
 									const phone: string = msg.key.remoteJid!.split('@')[0];
 									const lidUser = await sock.onWhatsApp(phone);
-									logger.info(`latest id is ${ lidUser }, and my lid is ${ lid }`);
+									logger.info(`latest id is ${JSON.stringify(lidUser)}, and my lid is ${JSON.stringify(lid)}`);
 									await sock!.readMessages([msg.key]);
 
 									// Verificar se lidUser existe e tem pelo menos um elemento
