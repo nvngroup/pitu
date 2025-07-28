@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'crypto'
+import { CipherGCM, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, randomBytes } from 'crypto'
 import * as libsignal from 'libsignal'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { KeyPair } from '../Types'
@@ -70,21 +70,10 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 		const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
 
 		decipher.setAAD(additionalData)
+		decipher.setAuthTag(tag)
 
-		try {
-			decipher.setAuthTag(tag)
-		} catch(error) {
-			logger.error({ error, tag }, 'Erro ao definir tag de autenticação')
-			return Buffer.concat([decipher.update(enc), decipher.final()])
-		}
-
-		try {
-			return Buffer.concat([decipher.update(enc), decipher.final()])
-		} catch(error) {
-			logger.error({ error, enc }, 'Erro ao decodificar GCM')
-			return decipher.update(enc)
-		}
-	} catch(error) {
+		return Buffer.concat([decipher.update(enc), decipher.final()])
+	} catch (error) {
 		logger.error({
 			error,
 			ciphertextLength: ciphertext.length,
