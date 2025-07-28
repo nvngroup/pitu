@@ -1,4 +1,3 @@
-import logger from '../Utils/logger'
 import { BinaryInfo } from './BinaryInfo'
 import { FLAG_BYTE, FLAG_EVENT, FLAG_EXTENDED, FLAG_FIELD, FLAG_GLOBAL, Value, WEB_EVENTS, WEB_GLOBALS } from './constants'
 
