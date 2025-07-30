@@ -38,7 +38,8 @@ jobs:
         with:
           node-version: 20
       - run: yarn
-      - run: yarn build
+      - run: yarn prepack
+      - run: yarn prepare
 
   publish-gpr:
     needs: build
