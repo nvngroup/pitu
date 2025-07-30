@@ -6,6 +6,28 @@ name: Node.js Package
 on:
   release:
     types: [created]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Tipo de release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+      dry_run:
+        description: 'Dry run (apenas simular, não executar)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+        - 'false'
+        - 'true'
 
 jobs:
   build:
