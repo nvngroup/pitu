@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
-import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey } from '../src'
+import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey, jidNormalizedUser } from '../src'
 import fs from 'fs'
 import logger from '../src/Utils/logger'
 
@@ -124,34 +124,17 @@ const startSock = async () => {
 				// logger.info('recv messages ', JSON.stringify(upsert, undefined, 2))
 
 				if (upsert.type === 'notify') {
-					for (const msg of upsert.messages) {
+					for (const msg of upsert.messages as any[]) {
 						if (msg.message?.conversation || msg.message?.extendedTextMessage?.text) {
 							const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text
 
 							if (text == "!lid") {
 								try {
-									const lid = sock.user;
-									const phone: string = msg.key.remoteJid!.split('@')[0];
-									const lidUser = await sock.onWhatsApp(phone);
-									logger.info(`latest id is ${JSON.stringify(lidUser)}, and my lid is ${JSON.stringify(lid)}`);
-									await sock!.readMessages([msg.key]);
-
-									// Verificar se lidUser existe e tem pelo menos um elemento
-									if (Array.isArray(lidUser) && lidUser.length > 0) {
-										// Usar o lid se existir e não for vazio, caso contrário usar o remoteJid original
-										const userLid = lidUser[0].lid;
-										const dados: string = (userLid && typeof userLid === 'string' && userLid !== '') ? userLid : msg.key.remoteJid!;
-										logger.info(`dados ${dados}`);
-
+									const lid = msg.key.senderLid || msg.key.remoteJid!
+									const me = sock.user
 										await sendMessageWTyping({
-											text: `Enviado pelo ${dados}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
-										}, dados);
-									} else {
-										logger.info('Erro: não foi possível obter informações do usuário');
-										await sendMessageWTyping({
-											text: `Erro ao obter informações do usuário. Usando JID original: ${msg.key.remoteJid!}`
-										}, msg.key.remoteJid!);
-									}
+											text: `Enviado pelo ${jidNormalizedUser(lid)}\n\nSeu lid: ${jidNormalizedUser(lid)}\nMeu lid: ${jidNormalizedUser(me?.lid)}`
+										}, lid);
 								} catch (error) {
 									console.error('Erro ao processar comando "lid":', error);
 									await sendMessageWTyping({
@@ -162,21 +145,11 @@ const startSock = async () => {
 
 							if (text == "!jid") {
 								try {
-									const lid = sock.user;
-									const phone: string = msg.key.remoteJid!.split('@')[0];
-									const lidUser = await sock.onWhatsApp(phone);
-									// logger.info(`latest id is ${ lidUser }, and my lid is ${ lid }`);
-									await sock!.readMessages([msg.key]);
-
-									if (Array.isArray(lidUser) && lidUser.length > 0) {
-										await sendMessageWTyping({
-											text: `Enviado pelo ${msg.key.remoteJid!}\n\nSeu lid: ${JSON.stringify(lidUser[0])}\nMeu lid: ${JSON.stringify(lid)}`
-										}, msg.key.remoteJid!);
-									} else {
-										await sendMessageWTyping({
-											text: `Erro ao obter informações do usuário. JID: ${msg.key.remoteJid!}\nMeu lid: ${JSON.stringify(lid)}`
-										}, msg.key.remoteJid!);
-									}
+									const jid = msg.key.senderPn || msg.key.remoteJid!
+									const me = sock.user
+									await sendMessageWTyping({
+										text: `Enviado pelo ${jidNormalizedUser(jid)}\n\nSeu jid: ${jidNormalizedUser(jid)}\nMeu jid: ${jidNormalizedUser(me?.id)}`,
+									}, jid);
 								} catch (error) {
 									console.error('Erro ao processar comando "jid":', error);
 									await sendMessageWTyping({
