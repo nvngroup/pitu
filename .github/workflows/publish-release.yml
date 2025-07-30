@@ -68,3 +68,8 @@ jobs:
 
       - name: Rename Pack
         run: mv *.tgz nvngroup-baileys.tgz
+
+      - name: Publish to npmjs
+        run: npm publish nvngroup-baileys.tgz --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
