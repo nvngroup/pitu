@@ -12,7 +12,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	const storage: SenderKeyStore = signalStorage(auth)
 	return {
 		decryptGroupMessage({ group, authorJid, msg }) {
-			const senderName = jidToSignalSenderKeyName(group, authorJid)
+			const senderName: SenderKeyName = jidToSignalSenderKeyName(group, authorJid)
 			const cipher = new GroupCipher(storage, senderName)
 
 			return cipher.decrypt(msg)
@@ -23,10 +23,10 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				throw new Error('Group ID is required for sender key distribution message')
 			}
 
-			const senderName = jidToSignalSenderKeyName(item.groupId, authorJid)
+			const senderName: SenderKeyName = jidToSignalSenderKeyName(item.groupId, authorJid)
 
 			const senderMsg = new SenderKeyDistributionMessage(null, null, null, null, item.axolotlSenderKeyDistributionMessage)
-			const senderNameStr = senderName.toString()
+			const senderNameStr: string = senderName.toString()
 			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
 			if(!senderKey) {
 				await storage.storeSenderKey(senderName, new SenderKeyRecord())
@@ -56,13 +56,13 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const cipher = new libsignal.SessionCipher(storage, addr)
 
 			const { type: sigType, body } = await cipher.encrypt(data)
-			const type = sigType === 3 ? 'pkmsg' : 'msg'
+			const type: 'pkmsg' | 'msg' = sigType === 3 ? 'pkmsg' : 'msg'
 			return { type, ciphertext: Buffer.from(body, 'binary') }
 		},
 		async encryptGroupMessage({ group, meId, data }) {
-			const senderName = jidToSignalSenderKeyName(group, meId)
+			const senderName: SenderKeyName = jidToSignalSenderKeyName(group, meId)
 			const builder = new GroupSessionBuilder(storage)
-			const senderNameStr = senderName.toString()
+			const senderNameStr: string = senderName.toString()
 			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
 
 			if(!senderKey) {
@@ -112,7 +112,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 			return true
 		},
 		loadPreKey: async (id: number | string) => {
-			const keyId = id.toString()
+			const keyId: string = id.toString()
 			const { [keyId]: key } = await keys.get('pre-key', [keyId])
 			if(key) {
 				return {
@@ -130,7 +130,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 			}
 		},
 		loadSenderKey: async (senderKeyName: SenderKeyName) => {
-			const keyId = senderKeyName.toString()
+			const keyId: string = senderKeyName.toString()
 			const { [keyId]: key } = await keys.get('sender-key', [keyId])
 			if(key) {
 				return SenderKeyRecord.deserialize(key)
@@ -139,8 +139,8 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 			return new SenderKeyRecord()
 		},
 		storeSenderKey: async (senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
-			const keyId = senderKeyName.toString()
-			const serialized = JSON.stringify(key.serialize())
+			const keyId: string = senderKeyName.toString()
+			const serialized: string = JSON.stringify(key.serialize())
 			await keys.set({
 				'sender-key': {
 					[keyId]: Buffer.from(serialized, 'utf-8')

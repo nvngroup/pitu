@@ -197,7 +197,7 @@ const processMessage = async (
 			const process = shouldProcessHistoryMsg
 			const isLatest = !creds.processedHistoryMessages?.length
 
-			logger?.info({
+			logger?.trace({
 				histNotification,
 				process,
 				id: message.key.id,

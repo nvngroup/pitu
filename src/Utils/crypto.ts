@@ -75,7 +75,7 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 		return Buffer.concat([decipher.update(enc), decipher.final()])
 	} catch (error) {
 		logger.error({
-			error,
+			error: error instanceof Error ? error.message : String(error),
 			ciphertextLength: ciphertext.length,
 			keyLength: key.length,
 			ivLength: iv.length,
