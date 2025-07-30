@@ -5,9 +5,9 @@
 ![NVN.PLUS Logo](https://github.com/user-attachments/assets/8cd401e2-a783-4b69-a3b2-ab371fac711a)
 
 [![Versão](https://img.shields.io/badge/versão-6.10.8-blue.svg)](https://nvn.plus)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/Baileys/total)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/nvngroup/Baileys/total)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)
-![GitHub License](https://img.shields.io/github/license/brunocgc/Baileys)
+![GitHub License](https://img.shields.io/github/license/nvngroup/Baileys)
 
 </div>
 
@@ -17,10 +17,10 @@
 
 Esta biblioteca foi originalmente um projeto para **CS-2362 na Universidade Ashoka** e **não é afiliada ou endossada pelo WhatsApp**. Use por sua própria conta e risco. Desencorajamos qualquer uso de stalkerware, mensagens em massa ou automatizadas.
 
-**Código original por [@WhiskeySockets](https://github.com/WhiskeySockets) - Este fork é mantido por [@brunocgc](https://github.com/brunocgc)**
+**Código original por [@WhiskeySockets](https://github.com/WhiskeySockets) - Este fork é mantido por [@nvngroup](https://github.com/nvngroup)**
 
 ### 📜 Aviso de Responsabilidade e Licença
-O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso indevido desta aplicação, conforme declarado na [licença MIT](https://github.com/brunocgc/Baileys/blob/master/LICENSE). Os mantenedores não aprovam o uso desta aplicação em práticas que violem os Termos de Serviço do WhatsApp. Os usuários são responsáveis por usar esta aplicação de forma ética e legal.
+O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso indevido desta aplicação, conforme declarado na [licença MIT](https://github.com/nvngroup/Baileys/blob/master/LICENSE). Os mantenedores não aprovam o uso desta aplicação em práticas que violem os Termos de Serviço do WhatsApp. Os usuários são responsáveis por usar esta aplicação de forma ética e legal.
 
 ---
 
@@ -52,12 +52,12 @@ Para uma experiência de aprendizado abrangente, confira nossa documentação or
 Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode ajudar:
 
 ### 🐛 **Relatórios de Bug**
-- Verifique primeiro as [issues existentes](https://github.com/brunocgc/Baileys/issues)
+- Verifique primeiro as [issues existentes](https://github.com/nvngroup/Baileys/issues)
 - Forneça passos detalhados para reprodução
 - Inclua detalhes do seu ambiente (versão do Node.js, SO, etc.)
 
 ### 💡 **Solicitações de Funcionalidades**
-- Abra uma [issue](https://github.com/brunocgc/Baileys/issues) com a label "enhancement"
+- Abra uma [issue](https://github.com/nvngroup/Baileys/issues) com a label "enhancement"
 - Descreva a funcionalidade e seu caso de uso
 - Forneça exemplos se possível
 
@@ -78,7 +78,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 
 ## 🔗 Links
 
-- **GitHub:** https://github.com/brunocgc/Baileys
+- **GitHub:** https://github.com/nvngroup/Baileys
 - **NPM:** https://www.npmjs.com/package/@brunocgc/baileys
 - **Site:** https://www.nvngroup.com.br
 
@@ -103,7 +103,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 <td align="center">
 <h3>⭐ GitHub</h3>
 <p>
-<a href="https://github.com/brunocgc/Baileys">
+<a href="https://github.com/nvngroup/Baileys">
 <img src="https://img.shields.io/badge/GitHub-Dar%20Estrela-181717?style=for-the-badge&logo=github" alt="GitHub"/>
 </a>
 </p>
@@ -111,7 +111,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 <td align="center">
 <h3>💬 Comunidade</h3>
 <p>
-<a href="https://github.com/brunocgc/Baileys/discussions">
+<a href="https://github.com/nvngroup/Baileys/discussions">
 <img src="https://img.shields.io/badge/Discord-Entrar%20Agora-7289DA?style=for-the-badge&logo=discord" alt="Discord"/>
 </a>
 </p>
