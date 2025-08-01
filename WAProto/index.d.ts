@@ -12674,7 +12674,8 @@ export namespace waproto {
             UNKNOWN = 0,
             CHAT = 1,
             STATUS = 2,
-            CHANNELS = 3
+            CHANNELS = 3,
+            META_AI = 4
         }
 
         /** Properties of a ForwardedAIBotMessageInfo. */
@@ -14431,6 +14432,9 @@ export namespace waproto {
 
             /** HistorySyncConfig onDemandReady */
             onDemandReady?: (boolean|null);
+
+            /** HistorySyncConfig supportGuestChat */
+            supportGuestChat?: (boolean|null);
         }
 
         /** Represents a HistorySyncConfig. */
@@ -14489,6 +14493,9 @@ export namespace waproto {
 
             /** HistorySyncConfig onDemandReady. */
             public onDemandReady?: (boolean|null);
+
+            /** HistorySyncConfig supportGuestChat. */
+            public supportGuestChat?: (boolean|null);
 
             /**
              * Creates a new HistorySyncConfig instance using the specified properties.
@@ -21103,6 +21110,9 @@ export namespace waproto {
 
             /** BotFeedbackMessage kindReport */
             kindReport?: (waproto.Message.BotFeedbackMessage.ReportKind|null);
+
+            /** BotFeedbackMessage sideBySideSurveyMetadata */
+            sideBySideSurveyMetadata?: (waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata|null);
         }
 
         /** Represents a BotFeedbackMessage. */
@@ -21131,6 +21141,9 @@ export namespace waproto {
 
             /** BotFeedbackMessage kindReport. */
             public kindReport?: (waproto.Message.BotFeedbackMessage.ReportKind|null);
+
+            /** BotFeedbackMessage sideBySideSurveyMetadata. */
+            public sideBySideSurveyMetadata?: (waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata|null);
 
             /**
              * Creates a new BotFeedbackMessage instance using the specified properties.
@@ -21253,6 +21266,251 @@ export namespace waproto {
             enum ReportKind {
                 NONE = 0,
                 GENERIC = 1
+            }
+
+            /** Properties of a SideBySideSurveyMetadata. */
+            interface ISideBySideSurveyMetadata {
+
+                /** SideBySideSurveyMetadata selectedRequestId */
+                selectedRequestId?: (string|null);
+
+                /** SideBySideSurveyMetadata surveyId */
+                surveyId?: (number|null);
+
+                /** SideBySideSurveyMetadata simonSessionFbid */
+                simonSessionFbid?: (string|null);
+
+                /** SideBySideSurveyMetadata responseOtid */
+                responseOtid?: (string|null);
+
+                /** SideBySideSurveyMetadata responseTimestampMsString */
+                responseTimestampMsString?: (string|null);
+
+                /** SideBySideSurveyMetadata isSelectedResponsePrimary */
+                isSelectedResponsePrimary?: (boolean|null);
+
+                /** SideBySideSurveyMetadata messageIdToEdit */
+                messageIdToEdit?: (string|null);
+
+                /** SideBySideSurveyMetadata analyticsData */
+                analyticsData?: (waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData|null);
+            }
+
+            /** Represents a SideBySideSurveyMetadata. */
+            class SideBySideSurveyMetadata implements ISideBySideSurveyMetadata {
+
+                /**
+                 * Constructs a new SideBySideSurveyMetadata.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata);
+
+                /** SideBySideSurveyMetadata selectedRequestId. */
+                public selectedRequestId?: (string|null);
+
+                /** SideBySideSurveyMetadata surveyId. */
+                public surveyId?: (number|null);
+
+                /** SideBySideSurveyMetadata simonSessionFbid. */
+                public simonSessionFbid?: (string|null);
+
+                /** SideBySideSurveyMetadata responseOtid. */
+                public responseOtid?: (string|null);
+
+                /** SideBySideSurveyMetadata responseTimestampMsString. */
+                public responseTimestampMsString?: (string|null);
+
+                /** SideBySideSurveyMetadata isSelectedResponsePrimary. */
+                public isSelectedResponsePrimary?: (boolean|null);
+
+                /** SideBySideSurveyMetadata messageIdToEdit. */
+                public messageIdToEdit?: (string|null);
+
+                /** SideBySideSurveyMetadata analyticsData. */
+                public analyticsData?: (waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData|null);
+
+                /**
+                 * Creates a new SideBySideSurveyMetadata instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns SideBySideSurveyMetadata instance
+                 */
+                public static create(properties?: waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata;
+
+                /**
+                 * Encodes the specified SideBySideSurveyMetadata message. Does not implicitly {@link waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.verify|verify} messages.
+                 * @param message SideBySideSurveyMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified SideBySideSurveyMetadata message, length delimited. Does not implicitly {@link waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.verify|verify} messages.
+                 * @param message SideBySideSurveyMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: waproto.Message.BotFeedbackMessage.ISideBySideSurveyMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a SideBySideSurveyMetadata message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns SideBySideSurveyMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata;
+
+                /**
+                 * Decodes a SideBySideSurveyMetadata message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns SideBySideSurveyMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata;
+
+                /**
+                 * Verifies a SideBySideSurveyMetadata message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a SideBySideSurveyMetadata message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns SideBySideSurveyMetadata
+                 */
+                public static fromObject(object: { [k: string]: any }): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata;
+
+                /**
+                 * Creates a plain object from a SideBySideSurveyMetadata message. Also converts values to other types if specified.
+                 * @param message SideBySideSurveyMetadata
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this SideBySideSurveyMetadata to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for SideBySideSurveyMetadata
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace SideBySideSurveyMetadata {
+
+                /** Properties of a SideBySideSurveyAnalyticsData. */
+                interface ISideBySideSurveyAnalyticsData {
+
+                    /** SideBySideSurveyAnalyticsData tessaEvent */
+                    tessaEvent?: (string|null);
+
+                    /** SideBySideSurveyAnalyticsData tessaSessionFbid */
+                    tessaSessionFbid?: (string|null);
+                }
+
+                /** Represents a SideBySideSurveyAnalyticsData. */
+                class SideBySideSurveyAnalyticsData implements ISideBySideSurveyAnalyticsData {
+
+                    /**
+                     * Constructs a new SideBySideSurveyAnalyticsData.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData);
+
+                    /** SideBySideSurveyAnalyticsData tessaEvent. */
+                    public tessaEvent?: (string|null);
+
+                    /** SideBySideSurveyAnalyticsData tessaSessionFbid. */
+                    public tessaSessionFbid?: (string|null);
+
+                    /**
+                     * Creates a new SideBySideSurveyAnalyticsData instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns SideBySideSurveyAnalyticsData instance
+                     */
+                    public static create(properties?: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData;
+
+                    /**
+                     * Encodes the specified SideBySideSurveyAnalyticsData message. Does not implicitly {@link waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.verify|verify} messages.
+                     * @param message SideBySideSurveyAnalyticsData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified SideBySideSurveyAnalyticsData message, length delimited. Does not implicitly {@link waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.verify|verify} messages.
+                     * @param message SideBySideSurveyAnalyticsData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a SideBySideSurveyAnalyticsData message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns SideBySideSurveyAnalyticsData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData;
+
+                    /**
+                     * Decodes a SideBySideSurveyAnalyticsData message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns SideBySideSurveyAnalyticsData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData;
+
+                    /**
+                     * Verifies a SideBySideSurveyAnalyticsData message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a SideBySideSurveyAnalyticsData message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns SideBySideSurveyAnalyticsData
+                     */
+                    public static fromObject(object: { [k: string]: any }): waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData;
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyAnalyticsData message. Also converts values to other types if specified.
+                     * @param message SideBySideSurveyAnalyticsData
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: waproto.Message.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this SideBySideSurveyAnalyticsData to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyAnalyticsData
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
             }
         }
 
@@ -21902,6 +22160,9 @@ export namespace waproto {
 
             /** Call nativeFlowCallButtonPayload */
             nativeFlowCallButtonPayload?: (string|null);
+
+            /** Call deeplinkPayload */
+            deeplinkPayload?: (string|null);
         }
 
         /** Represents a Call. */
@@ -21936,6 +22197,9 @@ export namespace waproto {
 
             /** Call nativeFlowCallButtonPayload. */
             public nativeFlowCallButtonPayload?: (string|null);
+
+            /** Call deeplinkPayload. */
+            public deeplinkPayload?: (string|null);
 
             /**
              * Creates a new Call instance using the specified properties.
@@ -37302,7 +37566,8 @@ export namespace waproto {
             enum Attribution {
                 NONE = 0,
                 GIPHY = 1,
-                TENOR = 2
+                TENOR = 2,
+                KLIPY = 3
             }
 
             /** VideoSourceType enum. */
@@ -46043,6 +46308,12 @@ export namespace waproto {
 
         /** SyncActionValue maibaAiFeaturesControlAction */
         maibaAiFeaturesControlAction?: (waproto.SyncActionValue.IMaibaAIFeaturesControlAction|null);
+
+        /** SyncActionValue businessBroadcastListAction */
+        businessBroadcastListAction?: (waproto.SyncActionValue.IBusinessBroadcastListAction|null);
+
+        /** SyncActionValue musicUserIdAction */
+        musicUserIdAction?: (waproto.SyncActionValue.IMusicUserIdAction|null);
     }
 
     /** Represents a SyncActionValue. */
@@ -46236,6 +46507,12 @@ export namespace waproto {
 
         /** SyncActionValue maibaAiFeaturesControlAction. */
         public maibaAiFeaturesControlAction?: (waproto.SyncActionValue.IMaibaAIFeaturesControlAction|null);
+
+        /** SyncActionValue businessBroadcastListAction. */
+        public businessBroadcastListAction?: (waproto.SyncActionValue.IBusinessBroadcastListAction|null);
+
+        /** SyncActionValue musicUserIdAction. */
+        public musicUserIdAction?: (waproto.SyncActionValue.IMusicUserIdAction|null);
 
         /**
          * Creates a new SyncActionValue instance using the specified properties.
@@ -46814,6 +47091,115 @@ export namespace waproto {
 
             /**
              * Gets the default type url for BusinessBroadcastAssociationAction
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of a BusinessBroadcastListAction. */
+        interface IBusinessBroadcastListAction {
+
+            /** BusinessBroadcastListAction deleted */
+            deleted?: (boolean|null);
+
+            /** BusinessBroadcastListAction phoneNumbers */
+            phoneNumbers?: (string[]|null);
+
+            /** BusinessBroadcastListAction listName */
+            listName?: (string|null);
+        }
+
+        /** Represents a BusinessBroadcastListAction. */
+        class BusinessBroadcastListAction implements IBusinessBroadcastListAction {
+
+            /**
+             * Constructs a new BusinessBroadcastListAction.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.SyncActionValue.IBusinessBroadcastListAction);
+
+            /** BusinessBroadcastListAction deleted. */
+            public deleted?: (boolean|null);
+
+            /** BusinessBroadcastListAction phoneNumbers. */
+            public phoneNumbers: string[];
+
+            /** BusinessBroadcastListAction listName. */
+            public listName?: (string|null);
+
+            /**
+             * Creates a new BusinessBroadcastListAction instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns BusinessBroadcastListAction instance
+             */
+            public static create(properties?: waproto.SyncActionValue.IBusinessBroadcastListAction): waproto.SyncActionValue.BusinessBroadcastListAction;
+
+            /**
+             * Encodes the specified BusinessBroadcastListAction message. Does not implicitly {@link waproto.SyncActionValue.BusinessBroadcastListAction.verify|verify} messages.
+             * @param message BusinessBroadcastListAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.SyncActionValue.IBusinessBroadcastListAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified BusinessBroadcastListAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.BusinessBroadcastListAction.verify|verify} messages.
+             * @param message BusinessBroadcastListAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.SyncActionValue.IBusinessBroadcastListAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a BusinessBroadcastListAction message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns BusinessBroadcastListAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.SyncActionValue.BusinessBroadcastListAction;
+
+            /**
+             * Decodes a BusinessBroadcastListAction message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns BusinessBroadcastListAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.SyncActionValue.BusinessBroadcastListAction;
+
+            /**
+             * Verifies a BusinessBroadcastListAction message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a BusinessBroadcastListAction message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns BusinessBroadcastListAction
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.SyncActionValue.BusinessBroadcastListAction;
+
+            /**
+             * Creates a plain object from a BusinessBroadcastListAction message. Also converts values to other types if specified.
+             * @param message BusinessBroadcastListAction
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.SyncActionValue.BusinessBroadcastListAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this BusinessBroadcastListAction to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for BusinessBroadcastListAction
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */
@@ -49765,6 +50151,103 @@ export namespace waproto {
                 ACTIVE = 0,
                 INACTIVE = 1
             }
+        }
+
+        /** Properties of a MusicUserIdAction. */
+        interface IMusicUserIdAction {
+
+            /** MusicUserIdAction musicUserId */
+            musicUserId?: (string|null);
+        }
+
+        /** Represents a MusicUserIdAction. */
+        class MusicUserIdAction implements IMusicUserIdAction {
+
+            /**
+             * Constructs a new MusicUserIdAction.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.SyncActionValue.IMusicUserIdAction);
+
+            /** MusicUserIdAction musicUserId. */
+            public musicUserId?: (string|null);
+
+            /**
+             * Creates a new MusicUserIdAction instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns MusicUserIdAction instance
+             */
+            public static create(properties?: waproto.SyncActionValue.IMusicUserIdAction): waproto.SyncActionValue.MusicUserIdAction;
+
+            /**
+             * Encodes the specified MusicUserIdAction message. Does not implicitly {@link waproto.SyncActionValue.MusicUserIdAction.verify|verify} messages.
+             * @param message MusicUserIdAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.SyncActionValue.IMusicUserIdAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MusicUserIdAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.MusicUserIdAction.verify|verify} messages.
+             * @param message MusicUserIdAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.SyncActionValue.IMusicUserIdAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MusicUserIdAction message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MusicUserIdAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.SyncActionValue.MusicUserIdAction;
+
+            /**
+             * Decodes a MusicUserIdAction message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MusicUserIdAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.SyncActionValue.MusicUserIdAction;
+
+            /**
+             * Verifies a MusicUserIdAction message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MusicUserIdAction message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MusicUserIdAction
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.SyncActionValue.MusicUserIdAction;
+
+            /**
+             * Creates a plain object from a MusicUserIdAction message. Also converts values to other types if specified.
+             * @param message MusicUserIdAction
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.SyncActionValue.MusicUserIdAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MusicUserIdAction to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for MusicUserIdAction
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
         }
 
         /** Properties of a MuteAction. */
