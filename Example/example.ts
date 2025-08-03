@@ -660,8 +660,6 @@ const startSock = async () => {
 								}, msg.key.remoteJid!);
 							}
 						}
-
-
 					}
 				}
 			}
