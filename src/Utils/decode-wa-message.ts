@@ -4,6 +4,7 @@ import { SignalRepository, WAMessageKey } from '../Types'
 import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
+import { macErrorManager } from './mac-error-handler'
 
 export const NO_MESSAGE_FOUND_ERROR_TEXT = 'Message absent from node'
 export const MISSING_KEYS_ERROR_TEXT = 'Key used already or never filled'
@@ -215,12 +216,47 @@ export const decryptMessageNode = (
 							fullMessage.message = msg
 						}
 					} catch(err) {
-						logger.error(
-							{ key: fullMessage.key, err },
-							'failed to decrypt message'
-						)
+						// Usar o gerenciador MAC para classificar o erro
+						const isMacError = macErrorManager.isMACError(err)
+						const isSessionError = isMacError ||
+											  err.message?.includes('InvalidMessageException') ||
+											  err.message?.includes('session')
+
+						if(isMacError) {
+							// Para erros MAC, obter estatísticas e recomendações
+							const jid = fullMessage.key?.remoteJid || 'unknown'
+							const stats = macErrorManager.getErrorStats(jid)
+
+							logger.warn({
+								key: fullMessage.key,
+								sender: jid,
+								error: err.message,
+								errorStats: stats,
+								canRetry: macErrorManager.shouldAttemptRecovery(jid)
+							}, 'MAC verification error during message decryption')
+						} else if(isSessionError) {
+							logger.warn({
+								key: fullMessage.key,
+								sender: fullMessage.key?.remoteJid,
+								error: err.message
+							}, 'Session decryption error - possible key corruption')
+						} else {
+							logger.error(
+								{ key: fullMessage.key, err },
+								'failed to decrypt message'
+							)
+						}
+
 						fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
-						fullMessage.messageStubParameters = [err.message]
+
+						// Mensagem de erro mais informativa
+						if(isMacError) {
+							fullMessage.messageStubParameters = ['MAC verification failed - session may need reset']
+						} else if(isSessionError) {
+							fullMessage.messageStubParameters = ['Session key error - message corrupted']
+						} else {
+							fullMessage.messageStubParameters = [err.message || 'Unknown decryption error']
+						}
 					}
 				}
 			}

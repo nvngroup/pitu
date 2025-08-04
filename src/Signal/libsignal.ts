@@ -2,6 +2,7 @@ import * as libsignal from 'libsignal'
 import { SignalAuthState } from '../Types'
 import { SignalRepository } from '../Types/Signal'
 import { generateSignalPubKey } from '../Utils'
+import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
 import { jidDecode } from '../WABinary'
 import type { SenderKeyStore } from './Group/group_cipher'
 import { SenderKeyName } from './Group/sender-key-name'
@@ -15,7 +16,22 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const senderName: SenderKeyName = jidToSignalSenderKeyName(group, authorJid)
 			const cipher = new GroupCipher(storage, senderName)
 
-			return cipher.decrypt(msg)
+			try {
+				return cipher.decrypt(msg)
+			} catch(error) {
+				if (macErrorManager.isMACError(error)) {
+					// Handler específico para erros MAC em grupos
+					handleMACError(
+						`${group}:${authorJid}`,
+						error,
+						async () => {
+							const keyId = senderName.toString()
+							await auth.keys.set({ 'sender-key': { [keyId]: null } })
+						}
+					)
+				}
+				throw error
+			}
 		},
 		async processSenderKeyDistributionMessage({ item, authorJid }) {
 			const builder = new GroupSessionBuilder(storage)
@@ -38,15 +54,30 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const addr = jidToSignalProtocolAddress(jid)
 			const session = new libsignal.SessionCipher(storage, addr)
 			let result: Buffer
-			switch (type) {
-			case 'pkmsg':
-				result = await session.decryptPreKeyWhisperMessage(ciphertext)
-				break
-			case 'msg':
-				result = await session.decryptWhisperMessage(ciphertext)
-				break
-			default:
-				throw new Error(`Unknown message type: ${type}`)
+
+			try {
+				switch (type) {
+				case 'pkmsg':
+					result = await session.decryptPreKeyWhisperMessage(ciphertext)
+					break
+				case 'msg':
+					result = await session.decryptWhisperMessage(ciphertext)
+					break
+				default:
+					throw new Error(`Unknown message type: ${type}`)
+				}
+			} catch(error) {
+				if (macErrorManager.isMACError(error)) {
+					// Handler específico para erros MAC individuais
+					await handleMACError(
+						jid,
+						error,
+						async () => {
+							await auth.keys.set({ 'session': { [addr.toString()]: null } })
+						}
+					)
+				}
+				throw error
 			}
 
 			return result
