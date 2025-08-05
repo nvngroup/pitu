@@ -162,33 +162,11 @@ jobs:
             echo "Changes detected in WAProto files or baileys-version.json"
           fi
 
-      - name: Create Pull Request with changes
+      - name: Commit and push changes to dev
         if: steps.check_changes.outputs.changes == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          path: baileys
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update WAProto files from wa-proto repository"
-          title: "🤖 Auto-update WAProto files"
-          base: ${{ github.event.repository.default_branch || 'dev' }}
-          body: |
-            ## 🔄 Automated WAProto Update
-
-            Este PR foi criado automaticamente pelo workflow `update-proto`.
-
-            ### Alterações:
-            - ✅ Atualizado `WAProto/WAProto.proto`
-            - ✅ Atualizado `WAProto/index.js`
-            - ✅ Atualizado `WAProto/index.d.ts`
-            - ✅ Atualizado `src/Defaults/baileys-version.json` com a versão mais recente do WhatsApp
-
-            ### Origem:
-            - Repositório: https://github.com/wppconnect-team/wa-proto.git
-            - Data da execução: ${{ github.run_id }}
-
-            ⚠️ **Revisar antes de fazer merge!**
-          branch: auto-update-proto
-          delete-branch: true
-          add-paths: |
-            WAProto/
-            src/Defaults/baileys-version.json
+        working-directory: baileys
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update WAProto files from wa-proto repository"
+          git push origin dev
