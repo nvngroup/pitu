@@ -111,8 +111,8 @@ export function decodeMessageNode(
 		remoteJid: chatId,
 		fromMe,
 		id: msgId,
-		senderLid: stanza?.attrs?.sender_lid,
-		senderPn: stanza?.attrs?.sender_pn,
+		senderLid: stanza?.attrs?.sender_lid || chatId,
+		senderPn: stanza?.attrs?.sender_pn || chatId,
 		participant,
 		participantPn: stanza?.attrs?.participant_pn,
 		participantLid: stanza?.attrs?.participant_lid
