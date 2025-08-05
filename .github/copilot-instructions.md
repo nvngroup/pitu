@@ -1,3 +1,13 @@
+# Mensagem de Commit
+**PRIORIDADE MÁXIMA: Todas as mensagens de commit DEVEM ser escritas em inglês.**
+
+A mensagem de commit deve ser clara e concisa, descrevendo a alteração feita. Deve obrigatoriamente seguir o formato: `type: description` sempre em inglês. Exemplos:
+- `feat: add login feature`
+- `fix: correct user endpoint`
+- `docs: update installation instructions`
+- `refactor: improve button reusability`
+- `style: adjust header spacing`
+
 # Nunca comente no código
 Comentários só devem ser adicionados quando explicitamente solicitados. Não insira comentários automaticamente.
 
