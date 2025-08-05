@@ -2,7 +2,7 @@ name: Update WA Proto Files
 
 on:
   schedule:
-    - cron: "10 1 * * *"
+    - cron: "0 10 * * 1,3,5"
   workflow_dispatch:
     inputs:
       release_type:
