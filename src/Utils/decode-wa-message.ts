@@ -220,25 +220,40 @@ export const decryptMessageNode = (
 						const isMacError = macErrorManager.isMACError(err)
 						const isSessionError = isMacError ||
 											  err.message?.includes('InvalidMessageException') ||
-											  err.message?.includes('session')
+											  err.message?.includes('session') ||
+											  err.message?.includes('Bad MAC')
+
+						const jid = fullMessage.key?.remoteJid || 'unknown'
 
 						if(isMacError) {
-							// Para erros MAC, obter estatísticas e recomendações
-							const jid = fullMessage.key?.remoteJid || 'unknown'
+							// Registrar o erro MAC
+							macErrorManager.recordMACError(jid, err)
 							const stats = macErrorManager.getErrorStats(jid)
+							const canRetry = macErrorManager.shouldAttemptRecovery(jid)
 
 							logger.warn({
 								key: fullMessage.key,
 								sender: jid,
 								error: err.message,
 								errorStats: stats,
-								canRetry: macErrorManager.shouldAttemptRecovery(jid)
+								canRetry,
+								recommendations: macErrorManager.getRecoveryRecommendations(jid)
 							}, 'MAC verification error during message decryption')
+
+							// Para erros MAC persistentes, marcar mensagem como não decifrável
+							if(!canRetry) {
+								logger.error({
+									key: fullMessage.key,
+									sender: jid,
+									error: 'Persistent MAC errors - session requires manual intervention'
+								}, 'Maximum MAC error retries exceeded')
+							}
 						} else if(isSessionError) {
 							logger.warn({
 								key: fullMessage.key,
-								sender: fullMessage.key?.remoteJid,
-								error: err.message
+								sender: jid,
+								error: err.message,
+								recommendation: 'Session may need to be reset'
 							}, 'Session decryption error - possible key corruption')
 						} else {
 							logger.error(
@@ -249,9 +264,14 @@ export const decryptMessageNode = (
 
 						fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 
-						// Mensagem de erro mais informativa
+						// Mensagem de erro mais informativa baseada no tipo
 						if(isMacError) {
-							fullMessage.messageStubParameters = ['MAC verification failed - session may need reset']
+							const canRetry = macErrorManager.shouldAttemptRecovery(jid)
+							fullMessage.messageStubParameters = [
+								canRetry
+									? 'MAC verification failed - attempting recovery'
+									: 'MAC verification failed - session needs reset'
+							]
 						} else if(isSessionError) {
 							fullMessage.messageStubParameters = ['Session key error - message corrupted']
 						} else {

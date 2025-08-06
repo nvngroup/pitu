@@ -28,15 +28,20 @@ export class MACErrorManager {
 	 */
 	isMACError(error: Error): boolean {
 		const errorMsg = error.message?.toLowerCase() || ''
+		const stackTrace = error.stack?.toLowerCase() || ''
+
 		const macPatterns = [
 			'bad mac',
 			'invalid mac',
 			'mac verification failed',
 			'mac error',
-			'authentication failed'
+			'authentication failed',
+			'verifymac' // Para capturar erros do libsignal
 		]
 
-		return macPatterns.some(pattern => errorMsg.includes(pattern))
+		return macPatterns.some(pattern =>
+			errorMsg.includes(pattern) || stackTrace.includes(pattern)
+		)
 	}
 
 	/**
@@ -86,15 +91,18 @@ export class MACErrorManager {
 		const recommendations: string[] = []
 
 		if (attemptCount === 1) {
-			recommendations.push('Remover sessão corrompida')
-			recommendations.push('Aguardar nova troca de chaves')
+			recommendations.push('Clear corrupted session data')
+			recommendations.push('Wait for new key exchange')
+			recommendations.push('Message will be retried automatically')
 		} else if (attemptCount === 2) {
-			recommendations.push('Verificar conectividade')
-			recommendations.push('Reiniciar handshake de sessão')
-		} else {
-			recommendations.push('Possível problema persistente de rede')
-			recommendations.push('Considerar restart completo da sessão')
-			recommendations.push('Verificar integridade do banco de dados')
+			recommendations.push('Force session reset')
+			recommendations.push('Restart handshake process')
+			recommendations.push('Check network connectivity')
+		} else if (attemptCount >= 3) {
+			recommendations.push('Persistent MAC error detected')
+			recommendations.push('Manual session intervention required')
+			recommendations.push('Consider full authentication reset')
+			recommendations.push('Contact recipient to reinitiate encryption')
 		}
 
 		return recommendations
@@ -114,25 +122,67 @@ export class MACErrorManager {
 	getErrorStats(jid?: string): any {
 		if (jid) {
 			const history = this.errorHistory.get(jid) || []
+			const recentErrors = history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod)
 			return {
 				totalErrors: history.length,
-				recentErrors: history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod).length,
-				lastError: history[history.length - 1]?.timestamp || 0
+				recentErrors: recentErrors.length,
+				lastError: history[history.length - 1]?.timestamp || 0,
+				errorRate: recentErrors.length / Math.max(1, Math.ceil(this.cooldownPeriod / 60000)), // erros por minuto
+				needsIntervention: recentErrors.length >= this.maxRetries
 			}
 		}
 
 		// Estatísticas globais
 		let totalErrors = 0
 		let recentErrors = 0
+		let jidsWithIssues = 0
+
 		this.errorHistory.forEach(history => {
+			const recentForJid = history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod)
 			totalErrors += history.length
-			recentErrors += history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod).length
+			recentErrors += recentForJid.length
+			if(recentForJid.length >= this.maxRetries) {
+				jidsWithIssues++
+			}
 		})
 
 		return {
 			totalJIDs: this.errorHistory.size,
 			totalErrors,
-			recentErrors
+			recentErrors,
+			jidsWithIssues,
+			healthScore: Math.max(0, 100 - (jidsWithIssues / Math.max(1, this.errorHistory.size)) * 100)
+		}
+	}
+
+	/**
+	 * Tenta recuperação automática para um JID específico
+	 */
+	async attemptAutomaticRecovery(
+		jid: string,
+		sessionResetCallback: () => Promise<void>
+	): Promise<boolean> {
+		if (!this.shouldAttemptRecovery(jid)) {
+			logger.warn({ jid }, 'Cannot attempt recovery - max retries exceeded')
+			return false
+		}
+
+		try {
+			logger.info({ jid }, 'Attempting automatic MAC error recovery')
+			await sessionResetCallback()
+
+			// Limpar alguns erros após recovery bem-sucedida
+			const history = this.errorHistory.get(jid) || []
+			if (history.length > 1) {
+				// Manter apenas o último erro como referência
+				this.errorHistory.set(jid, [history[history.length - 1]])
+			}
+
+			logger.info({ jid }, 'Automatic MAC error recovery completed successfully')
+			return true
+		} catch (error) {
+			logger.error({ jid, error }, 'Automatic MAC error recovery failed')
+			return false
 		}
 	}
 
