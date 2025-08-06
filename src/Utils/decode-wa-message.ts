@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { SignalRepository, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser } from '../WABinary'
+import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
@@ -111,8 +111,8 @@ export function decodeMessageNode(
 		remoteJid: chatId,
 		fromMe,
 		id: msgId,
-		senderLid: stanza?.attrs?.sender_lid || chatId,
-		senderPn: stanza?.attrs?.sender_pn || chatId,
+		senderLid: stanza?.attrs?.sender_lid || jidNormalizedUser(chatId),
+		senderPn: stanza?.attrs?.sender_pn || jidNormalizedUser(chatId),
 		participant,
 		participantPn: stanza?.attrs?.participant_pn,
 		participantLid: stanza?.attrs?.participant_lid
