@@ -21,6 +21,7 @@ const startSock = async () => {
 		},
 		generateHighQualityLinkPreview: true,
 		getMessage,
+		syncFullHistory: true,
 	})
 
 	// Pairing code for Web clients
@@ -113,9 +114,9 @@ const startSock = async () => {
 			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
 				if (syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
-					// logger.info('received on-demand history sync, messages=', messages)
+					logger.info('received on-demand history sync, messages=', messages)
 				}
-				// logger.info(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
+				logger.info(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
 			}
 
 			// received a new message

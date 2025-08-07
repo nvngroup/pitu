@@ -49,7 +49,7 @@ type BaileysBufferableEventEmitter = BaileysEventEmitter & {
 	 * @param force if true, will flush all data regardless of any pending buffers
 	 * @returns returns true if the flush actually happened, otherwise false
 	 */
-	flush(force?: boolean): boolean
+	flush(): boolean
 	/** is there an ongoing buffer */
 	isBuffering(): boolean
 }
@@ -64,7 +64,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	const historyCache = new Set<string>()
 
 	let data = makeBufferData()
-	let buffersInProgress = 0
+	let isBuffering = false
 
 	// take the generic event and fire it as a baileys event
 	ev.on('event', (map: BaileysEventData) => {
@@ -74,28 +74,23 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	})
 
 	function buffer() {
-		buffersInProgress += 1
+		if (!isBuffering) {
+			logger.info('Event buffer activated')
+			isBuffering = true
+		}
 	}
 
-	function flush(force = false) {
+	function flush() {
 		// no buffer going on
-		if(!buffersInProgress) {
+		if(!isBuffering) {
 			return false
 		}
 
-		if(!force) {
-			// reduce the number of buffers in progress
-			buffersInProgress -= 1
-			// if there are still some buffers going on
-			// then we don't flush now
-			if(buffersInProgress) {
-				return false
-			}
-		}
+		logger.info('Flushing event buffer')
+		isBuffering = false
 
 		const newData = makeBufferData()
 		const chatUpdates = Object.values(data.chatUpdates)
-		// gather the remaining conditional events so we re-queue them
 		let conditionalChatUpdatesLeft = 0
 		for(const update of chatUpdates) {
 			if(update.conditional) {
@@ -132,7 +127,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			}
 		},
 		emit<T extends BaileysEvent>(event: BaileysEvent, evData: BaileysEventMap[T]) {
-			if(buffersInProgress && BUFFERABLE_EVENT_SET.has(event)) {
+			if (isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
 				append(data, historyCache, event as BufferableEvent, evData, logger)
 				return true
 			}
@@ -140,7 +135,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			return ev.emit('event', { [event]: evData })
 		},
 		isBuffering() {
-			return buffersInProgress > 0
+			return isBuffering
 		},
 		buffer,
 		flush,
@@ -148,10 +143,9 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			return async (...args) => {
 				buffer()
 				try {
-					const result = await work(...args)
-					return result
+					return await work(...args)
 				} finally {
-					flush()
+					// Flushing is now controlled centrally by the state machine.
 				}
 			}
 		},
