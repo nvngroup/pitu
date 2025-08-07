@@ -111,11 +111,13 @@ export function decodeMessageNode(
 		remoteJid: chatId,
 		fromMe,
 		id: msgId,
-		senderLid: stanza?.attrs?.sender_lid || jidNormalizedUser(chatId),
-		senderPn: stanza?.attrs?.sender_pn || jidNormalizedUser(chatId),
+		senderPn: stanza?.attrs?.sender_pn ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_pn ?? jidNormalizedUser(participant)),
+		senderLid: stanza?.attrs?.sender_lid ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_lid ?? jidNormalizedUser(participant)),
 		participant,
 		participantPn: stanza?.attrs?.participant_pn,
-		participantLid: stanza?.attrs?.participant_lid
+		participantLid: stanza?.attrs?.participant_lid,
+		peerRecipientPn: stanza?.attrs?.peer_recipient_pn,
+		peerRecipientLid: stanza?.attrs?.peer_recipient_lid,
 	}
 
 	const fullMessage: waproto.IWebMessageInfo = {
@@ -199,8 +201,7 @@ export const decryptMessageNode = (
 						let msg: waproto.IMessage = waproto.Message.decode(e2eType !== 'plaintext' ? unpadRandomMax16(msgBuffer) : msgBuffer)
 						msg = msg.deviceSentMessage?.message || msg
 						if(msg.senderKeyDistributionMessage) {
-							//eslint-disable-next-line max-depth
-						    try {
+							try {
 								await repository.processSenderKeyDistributionMessage({
 									authorJid: author,
 									item: msg.senderKeyDistributionMessage
@@ -216,7 +217,6 @@ export const decryptMessageNode = (
 							fullMessage.message = msg
 						}
 					} catch(err) {
-						// Usar o gerenciador MAC para classificar o erro
 						const isMacError = macErrorManager.isMACError(err)
 						const isSessionError = isMacError ||
 											  err.message?.includes('InvalidMessageException') ||
