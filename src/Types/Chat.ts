@@ -96,7 +96,8 @@ export type ChatModification =
         lastMessages: LastMessageList
     }
     | { delete: true, lastMessages: LastMessageList }
-    | { contact: ContactAction | null }
+    | { contact: waproto.SyncActionValue.IContactAction | null }
+    | { disableLinkPreviews: waproto.SyncActionValue.IPrivacySettingDisableLinkPreviewsAction }
     // Label
     | { addLabel: LabelActionBody }
     | { removeLabel: LabelActionBody }
