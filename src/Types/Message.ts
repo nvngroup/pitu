@@ -15,10 +15,12 @@ export type WAMessageContent = waproto.IMessage
 export type WAContactMessage = waproto.Message.IContactMessage
 export type WAContactsArrayMessage = waproto.Message.IContactsArrayMessage
 export type WAMessageKey = waproto.IMessageKey & {
-    senderLid?: string
     senderPn?: string
-    participantLid?: string
+    senderLid?: string
     participantPn?: string
+    participantLid?: string
+    peerRecipientPn?: string
+    peerRecipientLid?: string
 }
 export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo
@@ -144,6 +146,19 @@ export type PollMessageOptions = {
     toAnnouncementGroup?: boolean
 }
 
+export type EventMessageOptions = {
+    name: string
+    description?: string
+    startDate: Date
+    endDate?: Date
+    location?: WALocationMessage
+    call?: 'audio' | 'video'
+    isCancelled?: boolean
+    isScheduleCall?: boolean
+    extraGuestsAllowed?: boolean
+    messageSecret?: Uint8Array<ArrayBufferLike>
+}
+
 type SharePhoneNumber = {
     sharePhoneNumber: boolean
 }
@@ -164,14 +179,11 @@ export type AnyMediaMessageContent = (
         caption?: string
         gifPlayback?: boolean
         jpegThumbnail?: string
-        /** if set to true, will send as a `video note` */
         ptv?: boolean
     } & Mentionable & Contextable & Buttonable & Templatable & WithDimensions)
     | {
         audio: WAMediaUpload
-        /** if set to true, will send as a `voice note` */
         ptt?: boolean
-        /** optionally tell the duration of the audio */
         seconds?: number
     }
     | ({
@@ -205,10 +217,10 @@ export type WASendableProduct = Omit<waproto.Message.ProductMessage.IProductSnap
 
 export type AnyRegularMessageContent = (
     ({
-	    text: string
+        text: string
         linkPreview?: WAUrlInfo | null
     }
-    & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
+        & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         text?: string
@@ -249,6 +261,9 @@ export type AnyRegularMessageContent = (
         body?: string
         footer?: string
     } | SharePhoneNumber | RequestPhoneNumber
+    | {
+        event: EventMessageOptions
+    }
 ) & ViewOnce
 
 export type AnyMessageContent = AnyRegularMessageContent | {
@@ -324,6 +339,7 @@ export type MediaGenerationOptions = {
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
 	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
     getProfilePicUrl?: (jid: string, type: 'image' | 'preview') => Promise<string | undefined>
+    getCallLink?: (type: 'audio' | 'video', event?: { startTime: number }) => Promise<string | undefined>
 }
 export type MessageGenerationOptions = MessageContentGenerationOptions & MessageGenerationOptionsFromContent
 

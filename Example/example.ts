@@ -584,14 +584,26 @@ const startSock = async () => {
 							}
 
 							if (text === "!resyncapp") {
-								// "critical_block" | "critical_unblock_low" | "regular_high" | "regular_low" | "regular"
-								// resyncAppState
 								await sock.readMessages([msg.key]);
 								try {
 									await sock.resyncAppState(["critical_block", "critical_unblock_low", "regular_high", "regular_low", "regular"], true);
 								} catch (error) {
 									console.error('Error resyncing app state:', error);
 								}
+							}
+
+							if (text === "!event") {
+								await sock.readMessages([msg.key]);
+								await sendMessageWTyping({
+									event: {
+										name: "Live Coding Baileys",
+										description: "Evento de demonstração do recurso de eventos do Baileys.",
+										startDate: new Date(Date.now() + 3600000),
+										endDate: new Date(Date.now() + 7200000),
+										extraGuestsAllowed: true,
+										isScheduleCall: false
+									}
+								}, msg.key.remoteJid!);
 							}
 
 							// HELP - LISTA TODOS OS COMANDOS
@@ -617,6 +629,7 @@ const startSock = async () => {
 📍 *LOCALIZAÇÃO:*
 !location - Localização
 ~!livelocation - Localização ao vivo~
+!event - Evento
 
 👤 *CONTATO:*
 !contact - Compartilhar contato
@@ -701,7 +714,7 @@ const startSock = async () => {
 			*/
 
 			if(events['chats.update']) {
-				logger.info(events['chats.update'])
+				// logger.info(events['chats.update'])
 			}
 
 			if (events['contacts.upsert']) {
@@ -713,7 +726,7 @@ const startSock = async () => {
 
 			if (events['contacts.update']) {
 				for (const contact of events['contacts.update']) {
-					logger.info(`contact updated ${JSON.stringify(contact)}`)
+					// logger.info(`contact updated ${JSON.stringify(contact)}`)
 				}
 			}
 

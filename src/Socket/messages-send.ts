@@ -610,6 +610,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return 'poll'
 		}
 
+		if (message.eventMessage) {
+			return 'event'
+		}
+
 		return 'text'
 	}
 
@@ -817,6 +821,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						),
 						//TODO: CACHE
 						getProfilePicUrl: (jid: string) => sock.profilePictureUrl(jid, 'preview', 30000),
+						getCallLink: sock.createCallLink,
 						upload: waUploadToServer,
 						mediaCache: config.mediaCache,
 						options: config.options,
@@ -824,6 +829,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						...options,
 					}
 				)
+				const isEventMsg = 'event' in content && !!content.event
 				const isDeleteMsg = 'delete' in content && !!content.delete
 				const isEditMsg = 'edit' in content && !!content.edit
 				const isPinMsg = 'pin' in content && !!content.pin
@@ -848,6 +854,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						attrs: {
 							polltype: 'creation'
 						},
+					} as BinaryNode)
+				} else if (isEventMsg) {
+					additionalNodes.push({
+						tag: 'meta',
+						attrs: {
+							event_type: 'creation'
+						}
 					} as BinaryNode)
 				}
 
