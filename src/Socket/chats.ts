@@ -36,8 +36,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	let privacySettings: { [_: string]: string } | undefined
 	let syncState: SyncState = SyncState.Connecting
-	let needToFlushWithAppStateSync = false
-	let pendingAppStateSync = false
 	/** this mutex ensures that the notifications (receipts, messages etc.) are processed in order */
 	const processingMutex = makeMutex()
 
@@ -1049,7 +1047,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 	})
 
-	ev.on('connection.update', ({ connection, receivedPendingNotifications }) => {
+	ev.on('connection.update', ({ connection }) => {
 		if(connection === 'open') {
 			if(fireInitQueries) {
 				executeInitQueries()
@@ -1064,7 +1062,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				)
 		}
 
-		if (!receivedPendingNotifications || syncState !== SyncState.Connecting) {
+		if (syncState !== SyncState.Connecting) {
 			return
 		}
 
