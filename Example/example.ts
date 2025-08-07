@@ -606,6 +606,36 @@ const startSock = async () => {
 								}, msg.key.remoteJid!);
 							}
 
+							if (text === "!eventaudio") {
+								await sock.readMessages([msg.key]);
+								await sendMessageWTyping({
+									event: {
+										name: "Live Coding Baileys",
+										description: "Evento de demonstração do recurso de eventos do Baileys.",
+										call: "audio",
+										startDate: new Date(Date.now() + 3600000),
+										endDate: new Date(Date.now() + 7200000),
+										extraGuestsAllowed: true,
+										isScheduleCall: false
+									}
+								}, msg.key.remoteJid!);
+							}
+
+							if (text === "!eventvideo") {
+								await sock.readMessages([msg.key]);
+								await sendMessageWTyping({
+									event: {
+										name: "Live Coding Baileys",
+										description: "Evento de demonstração do recurso de eventos do Baileys.",
+										call: "video",
+										startDate: new Date(Date.now() + 3600000),
+										endDate: new Date(Date.now() + 7200000),
+										extraGuestsAllowed: true,
+										isScheduleCall: false
+									}
+								}, msg.key.remoteJid!);
+							}
+
 							// HELP - LISTA TODOS OS COMANDOS
 							if (text === "!help" || text === "!comandos") {
 								await sock.readMessages([msg.key]);
@@ -630,6 +660,8 @@ const startSock = async () => {
 !location - Localização
 ~!livelocation - Localização ao vivo~
 !event - Evento
+!eventaudio -	Evento com áudio
+!eventvideo - Evento com áudio/vídeo
 
 👤 *CONTATO:*
 !contact - Compartilhar contato
