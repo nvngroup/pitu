@@ -6,9 +6,9 @@ import { makeChatsSocket } from './chats'
 
 export const makeGroupsSocket = (config: SocketConfig) => {
 	const sock = makeChatsSocket(config)
-	const { authState, ev, query, upsertMessage } = sock
+	const { authState, ev, query, queryEnhanced, upsertMessage } = sock
 
-	const groupQuery = async (jid: string, type: 'get' | 'set', content: BinaryNode[]) => (
+	const groupQuery = async (jid: string, type: 'get' | 'set', content: BinaryNode[], timeoutMs?: number) => (
 		query({
 			tag: 'iq',
 			attrs: {
@@ -17,16 +17,51 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 				to: jid,
 			},
 			content
-		})
+		}, timeoutMs)
 	)
 
-	const groupMetadata = async (jid: string) => {
-		const result = await groupQuery(
+	const groupQueryEnhanced = async (jid: string, type: 'get' | 'set', content: BinaryNode[], timeoutMs?: number) => (
+		queryEnhanced({
+			tag: 'iq',
+			attrs: {
+				type,
+				xmlns: 'w:g2',
+				to: jid,
+			},
+			content
+		}, 'group-metadata', timeoutMs)
+	)
+
+	const groupMetadata = async (jid: string, timeoutMs?: number) => {
+		const result = await groupQueryEnhanced(
 			jid,
 			'get',
-			[ { tag: 'query', attrs: { request: 'interactive' } } ]
+			[ { tag: 'query', attrs: { request: 'interactive' } } ],
+			timeoutMs
 		)
 		return extractGroupMetadata(result)
+	}
+
+	const groupMetadataWithRetry = async (jid: string, maxRetries: number = 3, timeoutMs?: number) => {
+		let lastError: Error | undefined
+
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				const currentTimeout = timeoutMs || (attempt === 1 ? undefined : 60_000)
+				return await groupMetadata(jid, currentTimeout)
+			} catch (error) {
+				lastError = error as Error
+
+				if (attempt === maxRetries) {
+					throw lastError
+				}
+
+				const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+				await new Promise(resolve => setTimeout(resolve, delay))
+			}
+		}
+
+		throw lastError
 	}
 
 
@@ -81,6 +116,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 	return {
 		...sock,
 		groupMetadata,
+		groupMetadataWithRetry,
 		groupCreate: async (subject: string, participants: string[]) => {
 			const key = generateMessageIDV2()
 			const result = await groupQuery(

@@ -32,6 +32,8 @@ import {
 	makeNoiseHandler,
 	printQRIfNecessaryListener,
 	promiseTimeout,
+	promiseTimeoutEnhanced,
+	getAdaptiveTimeout,
 } from '../Utils'
 import {
 	assertNodeErrorFree,
@@ -205,6 +207,40 @@ export const makeSocket = (config: SocketConfig) => {
 		}
 	}
 
+	/**
+	 * Enhanced wait for message with adaptive timeouts
+	 * @param msgId the message tag to await
+	 * @param operationType the type of operation for adaptive timeout
+	 * @param customTimeoutMs custom timeout, overrides adaptive timeout
+	 */
+	const waitForMessageEnhanced = async<T>(
+		msgId: string,
+		operationType: 'group-metadata' | 'send-message' | 'query' | 'default' = 'default',
+		customTimeoutMs?: number
+	) => {
+		let onRecv: (json) => void
+		let onErr: (err) => void
+		try {
+			return await promiseTimeoutEnhanced<T>(operationType,
+				(resolve, reject) => {
+					onRecv = resolve
+					onErr = err => {
+						reject(err || new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed }))
+					}
+
+					ws.on(`TAG:${msgId}`, onRecv)
+					ws.on('close', onErr)
+					ws.off('error', onErr)
+				},
+				customTimeoutMs
+			)
+		} finally {
+			ws.off(`TAG:${msgId}`, onRecv!)
+			ws.off('close', onErr!)
+			ws.off('error', onErr!)
+		}
+	}
+
 	/** send a query, and wait for its response. auto-generates message ID if not provided */
 	const query = async (node: BinaryNode, timeoutMs?: number) => {
 		if(!node.attrs.id) {
@@ -213,6 +249,29 @@ export const makeSocket = (config: SocketConfig) => {
 
 		const msgId = node.attrs.id
 		const wait = waitForMessage(msgId, timeoutMs)
+
+		await sendNode(node)
+
+		const result = await (wait as Promise<BinaryNode>)
+		if('tag' in result) {
+			assertNodeErrorFree(result)
+		}
+
+		return result
+	}
+
+	/** enhanced query with adaptive timeouts for better reliability */
+	const queryEnhanced = async (
+		node: BinaryNode,
+		operationType: 'group-metadata' | 'send-message' | 'query' | 'default' = 'query',
+		customTimeoutMs?: number
+	) => {
+		if(!node.attrs.id) {
+			node.attrs.id = generateMessageTag()
+		}
+
+		const msgId = node.attrs.id
+		const wait = waitForMessageEnhanced(msgId, operationType, customTimeoutMs)
 
 		await sendNode(node)
 
@@ -832,7 +891,9 @@ export const makeSocket = (config: SocketConfig) => {
 		},
 		generateMessageTag,
 		query,
+		queryEnhanced,
 		waitForMessage,
+		waitForMessageEnhanced,
 		waitForSocketOpen,
 		sendRawMessage,
 		sendNode,

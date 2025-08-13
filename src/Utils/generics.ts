@@ -181,6 +181,56 @@ export async function promiseTimeout<T>(ms: number | undefined, promise: (resolv
 	return p as Promise<T>
 }
 
+/**
+ * Adaptive timeout configuration for different operation types
+ */
+export const getAdaptiveTimeout = (operationType: 'group-metadata' | 'send-message' | 'query' | 'default', defaultTimeout?: number): number => {
+	const timeouts = {
+		'group-metadata': 90_000,  // 90 seconds for group metadata operations
+		'send-message': 60_000,    // 60 seconds for sending messages
+		'query': 45_000,           // 45 seconds for general queries
+		'default': 120_000         // 2 minutes default
+	}
+
+	return defaultTimeout || timeouts[operationType] || timeouts.default
+}
+
+/**
+ * Enhanced promise timeout with adaptive timeouts and better error reporting
+ */
+export async function promiseTimeoutEnhanced<T>(
+	operationType: 'group-metadata' | 'send-message' | 'query' | 'default',
+	promise: (resolve: (v: T) => void, reject: (error) => void) => void,
+	customTimeoutMs?: number
+) {
+	const timeoutMs = getAdaptiveTimeout(operationType, customTimeoutMs)
+
+	if(!timeoutMs) {
+		return new Promise(promise)
+	}
+
+	const stack = new Error().stack
+	const { delay, cancel } = delayCancellable(timeoutMs)
+	const p = new Promise<T>((resolve, reject) => {
+		delay
+			.then(() => reject(
+				new Boom(`Operation '${operationType}' timed out after ${timeoutMs}ms`, {
+					statusCode: DisconnectReason.timedOut,
+					data: {
+						stack,
+						operationType,
+						timeoutMs
+					}
+				})
+			))
+			.catch(err => reject(err))
+
+		promise(resolve, reject)
+	})
+		.finally(cancel)
+	return p
+}
+
 // inspired from whatsmeow code
 // https://github.com/tulir/whatsmeow/blob/64bc969fbe78d31ae0dd443b8d4c80a5d026d07a/send.go#L42
 export const generateMessageIDV2 = (userId?: string): string => {

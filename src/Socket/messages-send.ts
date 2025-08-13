@@ -30,6 +30,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		fetchPrivacySettings,
 		sendNode,
 		groupMetadata,
+		groupMetadataWithRetry,
 		groupToggleEphemeral,
 	} = sock
 
@@ -399,7 +400,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							if(groupData && Array.isArray(groupData?.participants)) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
 							} else if(!isStatus) {
-								groupData = await groupMetadata(jid)
+								try {
+									// Try with retry mechanism for better reliability
+									groupData = await groupMetadataWithRetry(jid, 3, 300_000)
+								} catch(error) {
+									logger.warn({ jid, error }, 'failed to get group metadata with retry, falling back to regular call')
+									// Fallback to regular call
+									groupData = await groupMetadata(jid)
+								}
 							}
 
 							return groupData
