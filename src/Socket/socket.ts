@@ -24,7 +24,6 @@ import {
 	generateLoginNode,
 	generateMdTagPrefix,
 	generateRegistrationNode,
-	getAdaptiveTimeout,
 	getCodeFromWSError,
 	getErrorCodeFromStreamError,
 	getNextPreKeysNode,

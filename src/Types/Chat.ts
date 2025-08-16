@@ -1,6 +1,5 @@
 import type { waproto } from '../../WAProto'
 import type { AccountSettings } from './Auth'
-import type { ContactAction } from './Contact'
 import type { BufferedEventData } from './Events'
 import type { LabelActionBody } from './Label'
 import type { ChatLabelAssociationActionBody } from './LabelAssociation'
