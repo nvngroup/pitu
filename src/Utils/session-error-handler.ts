@@ -1,4 +1,3 @@
-import { Boom } from '@hapi/boom'
 import logger from './logger'
 
 export interface SessionErrorInfo {

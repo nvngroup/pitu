@@ -64,10 +64,7 @@ export default defineConfig([globalIgnores([
    ignoreRestArgs: true,
   }],
   "@typescript-eslint/no-unused-vars": ["error"],
-  camelcase: ["error", {
-   ignoreGlobals: true,
-   ignoreImports: true,
-  }],
+  camelcase: ["off"],
   "no-unneeded-ternary": ["error"],
   "no-restricted-syntax": ["error", {
    selector: "TSEnumDeclaration",
