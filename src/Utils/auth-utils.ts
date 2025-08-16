@@ -96,7 +96,7 @@ export const addTransactionCapability = (
 	let transactionsInProgress = 0
 
 	return {
-		get: async (type, ids) => {
+		get: async(type, ids) => {
 			if(isInTransaction()) {
 				const dict = transactionCache[type]
 				const idsRequiringFetch = dict

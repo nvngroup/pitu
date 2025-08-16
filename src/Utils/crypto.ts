@@ -73,7 +73,7 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 		decipher.setAuthTag(tag)
 
 		return Buffer.concat([decipher.update(enc), decipher.final()])
-	} catch (error) {
+	} catch(error) {
 		logger.error({
 			error: error instanceof Error ? error.message : String(error),
 			ciphertextLength: ciphertext.length,

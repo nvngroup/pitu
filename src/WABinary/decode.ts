@@ -6,7 +6,7 @@ import type { BinaryNode, BinaryNodeCodingOptions } from './types'
 
 const inflatePromise = promisify(inflate)
 
-export const decompressingIfRequired = async (buffer: Buffer) => {
+export const decompressingIfRequired = async(buffer: Buffer) => {
 	if(buffer.length === 0) {
 		throw new Error('Buffer is empty, cannot decompress')
 	}
@@ -266,7 +266,7 @@ export const decodeDecompressedBinaryNode = (
 	}
 }
 
-export const decodeBinaryNode = async (buff: Buffer): Promise<BinaryNode> => {
+export const decodeBinaryNode = async(buff: Buffer): Promise<BinaryNode> => {
 	// Validate buffer before processing
 	if(!buff || buff.length === 0) {
 		throw new Error('Invalid buffer: Buffer is null or empty')

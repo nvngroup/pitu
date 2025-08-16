@@ -1,4 +1,4 @@
- 
+
 export interface Label {
     /** Label uniq ID */
     id: string

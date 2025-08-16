@@ -1,4 +1,4 @@
- 
+
 /** Association type */
 export enum LabelAssociationType {
   Chat = 'label_jid',

@@ -19,17 +19,18 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			try {
 				return cipher.decrypt(msg)
 			} catch(error) {
-				if (macErrorManager.isMACError(error)) {
+				if(macErrorManager.isMACError(error)) {
 					// Handler específico para erros MAC em grupos
 					handleMACError(
 						`${group}:${authorJid}`,
 						error,
-						async () => {
+						async() => {
 							const keyId = senderName.toString()
 							await auth.keys.set({ 'sender-key': { [keyId]: null } })
 						}
 					)
 				}
+
 				throw error
 			}
 		},
@@ -67,16 +68,17 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					throw new Error(`Unknown message type: ${type}`)
 				}
 			} catch(error) {
-				if (macErrorManager.isMACError(error)) {
+				if(macErrorManager.isMACError(error)) {
 					// Handler específico para erros MAC individuais
 					await handleMACError(
 						jid,
 						error,
-						async () => {
+						async() => {
 							await auth.keys.set({ 'session': { [addr.toString()]: null } })
 						}
 					)
 				}
+
 				throw error
 			}
 
@@ -130,19 +132,19 @@ const jidToSignalSenderKeyName = (group: string, user: string): SenderKeyName =>
 
 function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Record<string, any> {
 	return {
-		loadSession: async (id: string) => {
+		loadSession: async(id: string) => {
 			const { [id]: sess } = await keys.get('session', [id])
 			if(sess) {
 				return libsignal.SessionRecord.deserialize(sess)
 			}
 		},
-		storeSession: async (id: string, session: libsignal.SessionRecord) => {
+		storeSession: async(id: string, session: libsignal.SessionRecord) => {
 			await keys.set({ 'session': { [id]: session.serialize() } })
 		},
 		isTrustedIdentity: () => {
 			return true
 		},
-		loadPreKey: async (id: number | string) => {
+		loadPreKey: async(id: number | string) => {
 			const keyId: string = id.toString()
 			const { [keyId]: key } = await keys.get('pre-key', [keyId])
 			if(key) {
@@ -160,7 +162,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 				pubKey: Buffer.from(key.keyPair.public)
 			}
 		},
-		loadSenderKey: async (senderKeyName: SenderKeyName) => {
+		loadSenderKey: async(senderKeyName: SenderKeyName) => {
 			const keyId: string = senderKeyName.toString()
 			const { [keyId]: key } = await keys.get('sender-key', [keyId])
 			if(key) {
@@ -169,7 +171,7 @@ function signalStorage({ creds, keys }: SignalAuthState): SenderKeyStore & Recor
 
 			return new SenderKeyRecord()
 		},
-		storeSenderKey: async (senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
+		storeSenderKey: async(senderKeyName: SenderKeyName, key: SenderKeyRecord) => {
 			const keyId: string = senderKeyName.toString()
 			const serialized: string = JSON.stringify(key.serialize())
 			await keys.set({

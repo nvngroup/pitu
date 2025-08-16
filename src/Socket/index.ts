@@ -9,7 +9,7 @@ const makeWASocket = (config: UserFacingSocketConfig) => {
 		...config
 	}
 
-	if (config.shouldSyncHistoryMessage === undefined) {
+	if(config.shouldSyncHistoryMessage === undefined) {
 		newConfig.shouldSyncHistoryMessage = () => !!newConfig.syncFullHistory
 	}
 

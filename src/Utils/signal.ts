@@ -17,7 +17,7 @@ export const createSignalIdentity = (
 	}
 }
 
-export const getPreKeys = async ({ get }: SignalKeyStore, min: number, limit: number) => {
+export const getPreKeys = async({ get }: SignalKeyStore, min: number, limit: number) => {
 	const idList: string[] = []
 	for(let id = min; id < limit;id++) {
 		idList.push(id.toString())
@@ -67,7 +67,7 @@ export const xmppPreKey = (pair: KeyPair, id: number): BinaryNode => (
 	}
 )
 
-export const parseAndInjectE2ESessions = async (
+export const parseAndInjectE2ESessions = async(
 	node: BinaryNode,
 	repository: SignalRepository
 ) => {
@@ -145,7 +145,7 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
  * get the next N keys for upload or processing
  * @param count number of pre-keys to get or generate
  */
-export const getNextPreKeys = async ({ creds, keys }: AuthenticationState, count: number) => {
+export const getNextPreKeys = async({ creds, keys }: AuthenticationState, count: number) => {
 	const { newPreKeys, lastPreKeyId, preKeysRange } = generateOrGetPreKeys(creds, count)
 
 	const update: Partial<AuthenticationCreds> = {
@@ -160,7 +160,7 @@ export const getNextPreKeys = async ({ creds, keys }: AuthenticationState, count
 	return { update, preKeys }
 }
 
-export const getNextPreKeysNode = async (state: AuthenticationState, count: number) => {
+export const getNextPreKeysNode = async(state: AuthenticationState, count: number) => {
 	const { creds } = state
 	const { update, preKeys } = await getNextPreKeys(state, count)
 

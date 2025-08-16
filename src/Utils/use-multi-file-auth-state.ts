@@ -21,7 +21,7 @@ const fileLock = new AsyncLock({ maxPending: Infinity })
  * Again, I wouldn't endorse this for any production level use other than perhaps a bot.
  * Would recommend writing an auth state for use with a proper SQL or No-SQL DB
  * */
-export const useMultiFileAuthState = async (folder: string): Promise<{ state: AuthenticationState, saveCreds: () => Promise<void> }> => {
+export const useMultiFileAuthState = async(folder: string): Promise<{ state: AuthenticationState, saveCreds: () => Promise<void> }> => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const writeData = (data: any, file: string) => {
 		const filePath = join(folder, fixFileName(file)!)
@@ -31,7 +31,7 @@ export const useMultiFileAuthState = async (folder: string): Promise<{ state: Au
 		)
 	}
 
-	const readData = async (file: string) => {
+	const readData = async(file: string) => {
 		try {
 			const filePath = join(folder, fixFileName(file)!)
 			const data = await fileLock.acquire(
@@ -49,7 +49,7 @@ export const useMultiFileAuthState = async (folder: string): Promise<{ state: Au
 		}
 	}
 
-	const removeData = async (file: string) => {
+	const removeData = async(file: string) => {
 		try {
 			const filePath = join(folder, fixFileName(file)!)
 			await fileLock.acquire(
@@ -78,7 +78,7 @@ export const useMultiFileAuthState = async (folder: string): Promise<{ state: Au
 		state: {
 			creds,
 			keys: {
-				get: async (type, ids) => {
+				get: async(type, ids) => {
 					const data: { [_: string]: SignalDataTypeMap[typeof type] } = { }
 					await Promise.all(
 						ids.map(
@@ -95,7 +95,7 @@ export const useMultiFileAuthState = async (folder: string): Promise<{ state: Au
 
 					return data
 				},
-				set: async (data) => {
+				set: async(data) => {
 					const tasks: Promise<void>[] = []
 					for(const category in data) {
 						for(const id in data[category]) {

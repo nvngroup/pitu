@@ -7,7 +7,7 @@ import { extractImageThumb, getHttpStream } from './messages-media'
 const THUMBNAIL_WIDTH_PX = 192
 
 /** Fetches an image and generates a thumbnail for it */
-const getCompressedJpegThumbnail = async (
+const getCompressedJpegThumbnail = async(
 	url: string,
 	{ thumbnailWidth, fetchOpts }: URLGenerationOptions
 ) => {
@@ -34,7 +34,7 @@ export type URLGenerationOptions = {
  * @param text first matched URL in text
  * @returns the URL info required to generate link preview
  */
-export const getUrlInfo = async (
+export const getUrlInfo = async(
 	text: string,
 	opts: URLGenerationOptions = {
 		thumbnailWidth: THUMBNAIL_WIDTH_PX,

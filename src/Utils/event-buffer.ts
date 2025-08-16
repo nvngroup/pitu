@@ -74,7 +74,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	})
 
 	function buffer() {
-		if (!isBuffering) {
+		if(!isBuffering) {
 			logger.info('Event buffer activated')
 			isBuffering = true
 		}
@@ -127,7 +127,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			}
 		},
 		emit<T extends BaileysEvent>(event: BaileysEvent, evData: BaileysEventMap[T]) {
-			if (isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
+			if(isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
 				append(data, historyCache, event as BufferableEvent, evData, logger)
 				return true
 			}
@@ -140,7 +140,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 		buffer,
 		flush,
 		createBufferedFunction(work) {
-			return async (...args) => {
+			return async(...args) => {
 				buffer()
 				try {
 					return await work(...args)

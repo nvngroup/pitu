@@ -61,12 +61,12 @@ export const makeNoiseHandler = ({
 		return result
 	}
 
-	const localHKDF = async (data: Uint8Array) => {
+	const localHKDF = async(data: Uint8Array) => {
 		const key = await hkdf(Buffer.from(data), 64, { salt, info: '' })
 		return [key.slice(0, 32), key.slice(32)]
 	}
 
-	const mixIntoKey = async (data: Uint8Array) => {
+	const mixIntoKey = async(data: Uint8Array) => {
 		const [write, read] = await localHKDF(data)
 		salt = write
 		encKey = read
@@ -75,7 +75,7 @@ export const makeNoiseHandler = ({
 		writeCounter = 0
 	}
 
-	const finishInit = async () => {
+	const finishInit = async() => {
 		const [write, read] = await localHKDF(new Uint8Array(0))
 		encKey = write
 		decKey = read
@@ -106,7 +106,7 @@ export const makeNoiseHandler = ({
 		authenticate,
 		mixIntoKey,
 		finishInit,
-		processHandshake: async ({ serverHello }: waproto.HandshakeMessage, noiseKey: KeyPair) => {
+		processHandshake: async({ serverHello }: waproto.HandshakeMessage, noiseKey: KeyPair) => {
 			authenticate(serverHello!.ephemeral!)
 			await mixIntoKey(Curve.sharedKey(privateKey, serverHello!.ephemeral!))
 
@@ -161,7 +161,7 @@ export const makeNoiseHandler = ({
 
 			return frame
 		},
-		decodeFrame: async (newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
+		decodeFrame: async(newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
 			// the binary protocol uses its own framing mechanism
 			// on top of the WS frames
 			// so we get this data and separate out the frames

@@ -1,4 +1,4 @@
-import logger from "../../Utils/logger"
+import logger from '../../Utils/logger'
 
 interface QueueJob<T> {
   awaitable: () => Promise<T>

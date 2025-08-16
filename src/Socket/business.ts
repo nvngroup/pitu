@@ -12,7 +12,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		waUploadToServer
 	} = sock
 
-	const getCatalog = async ({ jid, limit, cursor }: GetCatalogOptions) => {
+	const getCatalog = async({ jid, limit, cursor }: GetCatalogOptions) => {
 		jid = jid || authState.creds.me?.id
 		jid = jidNormalizedUser(jid)
 
@@ -63,7 +63,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseCatalogNode(result)
 	}
 
-	const getCollections = async (jid?: string, limit = 51) => {
+	const getCollections = async(jid?: string, limit = 51) => {
 		jid = jid || authState.creds.me?.id
 		jid = jidNormalizedUser(jid)
 		const result = await query({
@@ -109,7 +109,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseCollectionsNode(result)
 	}
 
-	const getOrderDetails = async (orderId: string, tokenBase64: string) => {
+	const getOrderDetails = async(orderId: string, tokenBase64: string) => {
 		const result = await query({
 			tag: 'iq',
 			attrs: {
@@ -155,7 +155,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseOrderDetailsNode(result)
 	}
 
-	const productUpdate = async (productId: string, update: ProductUpdate) => {
+	const productUpdate = async(productId: string, update: ProductUpdate) => {
 		update = await uploadingNecessaryImagesOfProduct(update, waUploadToServer)
 		const editNode = toProductNode(productId, update)
 
@@ -193,7 +193,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseProductNode(productNode!)
 	}
 
-	const productCreate = async (create: ProductCreate) => {
+	const productCreate = async(create: ProductCreate) => {
 		// ensure isHidden is defined
 		create.isHidden = !!create.isHidden
 		create = await uploadingNecessaryImagesOfProduct(create, waUploadToServer)
@@ -233,7 +233,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseProductNode(productNode!)
 	}
 
-	const productDelete = async (productIds: string[]) => {
+	const productDelete = async(productIds: string[]) => {
 		const result = await query({
 			tag: 'iq',
 			attrs: {

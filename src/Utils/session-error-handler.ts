@@ -21,8 +21,8 @@ export function detectSessionError(error: Error): SessionErrorInfo | null {
 		key_missing: ['no key', 'key not found', 'missing key', 'key used already']
 	}
 
-	for (const [type, patternList] of Object.entries(patterns)) {
-		if (patternList.some(pattern => errorMsg.includes(pattern))) {
+	for(const [type, patternList] of Object.entries(patterns)) {
+		if(patternList.some(pattern => errorMsg.includes(pattern))) {
 			return {
 				jid: '', // será preenchido pelo caller
 				errorType: type as SessionErrorInfo['errorType'],
@@ -49,7 +49,7 @@ export class SessionRecoveryStrategy {
 	recordError(jid: string, errorInfo: SessionErrorInfo) {
 		errorInfo.jid = jid
 
-		if (!this.errorHistory.has(jid)) {
+		if(!this.errorHistory.has(jid)) {
 			this.errorHistory.set(jid, [])
 		}
 
@@ -57,7 +57,7 @@ export class SessionRecoveryStrategy {
 		errors.push(errorInfo)
 
 		// Mantém apenas os últimos 10 erros
-		if (errors.length > 10) {
+		if(errors.length > 10) {
 			errors.splice(0, errors.length - 10)
 		}
 
@@ -92,10 +92,10 @@ export class SessionRecoveryStrategy {
 	cleanup() {
 		const cleanupThreshold = Date.now() - 3600000 // 1 hora
 
-		for (const [jid, errors] of this.errorHistory.entries()) {
+		for(const [jid, errors] of this.errorHistory.entries()) {
 			const recentErrors = errors.filter(error => error.timestamp > cleanupThreshold)
 
-			if (recentErrors.length === 0) {
+			if(recentErrors.length === 0) {
 				this.errorHistory.delete(jid)
 			} else {
 				this.errorHistory.set(jid, recentErrors)
@@ -111,9 +111,10 @@ export class SessionRecoveryStrategy {
 
 		switch (errorType) {
 		case 'bad_mac':
-			if (recentErrors > 2) {
+			if(recentErrors > 2) {
 				return 'Consider full session reset - persistent MAC errors detected'
 			}
+
 			return 'Session key corruption detected - attempting automatic recovery'
 
 		case 'session_corrupt':

@@ -39,8 +39,7 @@ export class MACErrorManager {
 			'verifymac' // Para capturar erros do libsignal
 		]
 
-		return macPatterns.some(pattern =>
-			errorMsg.includes(pattern) || stackTrace.includes(pattern)
+		return macPatterns.some(pattern => errorMsg.includes(pattern) || stackTrace.includes(pattern)
 		)
 	}
 
@@ -56,9 +55,10 @@ export class MACErrorManager {
 			attemptCount: this.getAttemptCount(jid) + 1
 		}
 
-		if (!this.errorHistory.has(jid)) {
+		if(!this.errorHistory.has(jid)) {
 			this.errorHistory.set(jid, [])
 		}
+
 		this.errorHistory.get(jid)!.push(errorInfo)
 
 		logger.warn({
@@ -90,15 +90,15 @@ export class MACErrorManager {
 		const attemptCount = this.getAttemptCount(jid)
 		const recommendations: string[] = []
 
-		if (attemptCount === 1) {
+		if(attemptCount === 1) {
 			recommendations.push('Clear corrupted session data')
 			recommendations.push('Wait for new key exchange')
 			recommendations.push('Message will be retried automatically')
-		} else if (attemptCount === 2) {
+		} else if(attemptCount === 2) {
 			recommendations.push('Force session reset')
 			recommendations.push('Restart handshake process')
 			recommendations.push('Check network connectivity')
-		} else if (attemptCount >= 3) {
+		} else if(attemptCount >= 3) {
 			recommendations.push('Persistent MAC error detected')
 			recommendations.push('Manual session intervention required')
 			recommendations.push('Consider full authentication reset')
@@ -120,7 +120,7 @@ export class MACErrorManager {
 	 * Obtém estatísticas de erro
 	 */
 	getErrorStats(jid?: string): any {
-		if (jid) {
+		if(jid) {
 			const history = this.errorHistory.get(jid) || []
 			const recentErrors = history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod)
 			return {
@@ -162,7 +162,7 @@ export class MACErrorManager {
 		jid: string,
 		sessionResetCallback: () => Promise<void>
 	): Promise<boolean> {
-		if (!this.shouldAttemptRecovery(jid)) {
+		if(!this.shouldAttemptRecovery(jid)) {
 			logger.warn({ jid }, 'Cannot attempt recovery - max retries exceeded')
 			return false
 		}
@@ -173,14 +173,14 @@ export class MACErrorManager {
 
 			// Limpar alguns erros após recovery bem-sucedida
 			const history = this.errorHistory.get(jid) || []
-			if (history.length > 1) {
+			if(history.length > 1) {
 				// Manter apenas o último erro como referência
 				this.errorHistory.set(jid, [history[history.length - 1]])
 			}
 
 			logger.info({ jid }, 'Automatic MAC error recovery completed successfully')
 			return true
-		} catch (error) {
+		} catch(error) {
 			logger.error({ jid, error }, 'Automatic MAC error recovery failed')
 			return false
 		}
@@ -189,9 +189,17 @@ export class MACErrorManager {
 	private categorizeError(error: Error): MACErrorInfo['errorType'] {
 		const errorMsg = error.message?.toLowerCase() || ''
 
-		if (errorMsg.includes('bad mac')) return 'bad_mac'
-		if (errorMsg.includes('invalid mac')) return 'invalid_mac'
-		if (errorMsg.includes('verification failed')) return 'mac_verification_failed'
+		if(errorMsg.includes('bad mac')) {
+			return 'bad_mac'
+		}
+
+		if(errorMsg.includes('invalid mac')) {
+			return 'invalid_mac'
+		}
+
+		if(errorMsg.includes('verification failed')) {
+			return 'mac_verification_failed'
+		}
 
 		return 'bad_mac' // default
 	}
@@ -209,15 +217,15 @@ export class MACErrorManager {
 
 		this.errorHistory.forEach((history, jid) => {
 			const filtered = history.filter(err => err.timestamp > cutoff)
-			if (filtered.length === 0) {
+			if(filtered.length === 0) {
 				this.errorHistory.delete(jid)
 				cleaned++
-			} else if (filtered.length < history.length) {
+			} else if(filtered.length < history.length) {
 				this.errorHistory.set(jid, filtered)
 			}
 		})
 
-		if (cleaned > 0) {
+		if(cleaned > 0) {
 			logger.debug({ cleaned }, 'Cleaned up old MAC error history')
 		}
 	}
@@ -236,7 +244,7 @@ export async function handleMACError(
 ): Promise<never> {
 	const errorInfo = macErrorManager.recordMACError(jid, error)
 
-	if (macErrorManager.shouldAttemptRecovery(jid)) {
+	if(macErrorManager.shouldAttemptRecovery(jid)) {
 		logger.info({
 			jid,
 			attemptCount: errorInfo.attemptCount,
@@ -246,7 +254,7 @@ export async function handleMACError(
 		try {
 			await sessionCleanupFn()
 			logger.info({ jid }, 'Session cleanup completed for MAC error recovery')
-		} catch (cleanupError) {
+		} catch(cleanupError) {
 			logger.error({ jid, cleanupError }, 'Failed to cleanup session during MAC error recovery')
 		}
 	}

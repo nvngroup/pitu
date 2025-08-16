@@ -24,6 +24,7 @@ import {
 	generateLoginNode,
 	generateMdTagPrefix,
 	generateRegistrationNode,
+	getAdaptiveTimeout,
 	getCodeFromWSError,
 	getErrorCodeFromStreamError,
 	getNextPreKeysNode,
@@ -33,7 +34,6 @@ import {
 	printQRIfNecessaryListener,
 	promiseTimeout,
 	promiseTimeoutEnhanced,
-	getAdaptiveTimeout,
 } from '../Utils'
 import {
 	assertNodeErrorFree,
@@ -111,7 +111,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	const sendPromise = promisify(ws.send)
 	/** send a raw buffer */
-	const sendRawMessage = async (data: Uint8Array | Buffer) => {
+	const sendRawMessage = async(data: Uint8Array | Buffer) => {
 		if(!ws.isOpen) {
 			throw new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed })
 		}
@@ -119,7 +119,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const bytes = noise.encodeFrame(data)
 		await promiseTimeout<void>(
 			connectTimeoutMs,
-			async (resolve, reject) => {
+			async(resolve, reject) => {
 				try {
 					await sendPromise.call(ws, bytes)
 					resolve()
@@ -242,7 +242,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	/** send a query, and wait for its response. auto-generates message ID if not provided */
-	const query = async (node: BinaryNode, timeoutMs?: number) => {
+	const query = async(node: BinaryNode, timeoutMs?: number) => {
 		if(!node.attrs.id) {
 			node.attrs.id = generateMessageTag()
 		}
@@ -261,7 +261,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	/** enhanced query with adaptive timeouts for better reliability */
-	const queryEnhanced = async (
+	const queryEnhanced = async(
 		node: BinaryNode,
 		operationType: 'group-metadata' | 'send-message' | 'query' | 'default' = 'query',
 		customTimeoutMs?: number
@@ -284,7 +284,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	/** connection handshake */
-	const validateConnection = async () => {
+	const validateConnection = async() => {
 		let helloMsg: waproto.IHandshakeMessage = {
 			clientHello: { ephemeral: ephemeralKeyPair.public }
 		}
@@ -325,7 +325,7 @@ export const makeSocket = (config: SocketConfig) => {
 		startKeepAliveRequest()
 	}
 
-	const getAvailablePreKeysOnServer = async () => {
+	const getAvailablePreKeysOnServer = async() => {
 		const result = await query({
 			tag: 'iq',
 			attrs: {
@@ -346,24 +346,24 @@ export const makeSocket = (config: SocketConfig) => {
 	let uploadPreKeysPromise: Promise<void> | null = null
 	let lastUploadTime = 0
 
-	const uploadPreKeys = async (count = INITIAL_PREKEY_COUNT, retryCount = 0) => {
-		if (retryCount === 0) {
+	const uploadPreKeys = async(count = INITIAL_PREKEY_COUNT, retryCount = 0) => {
+		if(retryCount === 0) {
 			const timeSinceLastUpload = Date.now() - lastUploadTime
-			if (timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
+			if(timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
 				logger.debug(`Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
 				return
 			}
 		}
 
-		if (uploadPreKeysPromise) {
+		if(uploadPreKeysPromise) {
 			logger.debug('Pre-key upload already in progress, waiting for completion')
 			return uploadPreKeysPromise
 		}
 
-		const uploadLogic = async () => {
+		const uploadLogic = async() => {
 			logger.info({ count, retryCount }, 'uploading pre-keys')
 
-			const node = await keys.transaction(async () => {
+			const node = await keys.transaction(async() => {
 				logger.debug({ requestedCount: count }, 'generating pre-keys with requested count')
 				const { update, node } = await getNextPreKeysNode({ creds, keys }, count)
 				ev.emit('creds.update', update)
@@ -374,10 +374,10 @@ export const makeSocket = (config: SocketConfig) => {
 				await query(node)
 				logger.info({ count }, 'uploaded pre-keys successfully')
 				lastUploadTime = Date.now()
-			} catch (uploadError) {
+			} catch(uploadError) {
 				logger.error({ uploadError, count }, 'Failed to upload pre-keys to server')
 
-				if (retryCount < 3) {
+				if(retryCount < 3) {
 					const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
 					logger.info(`Retrying pre-key upload in ${backoffDelay}ms`)
 					await new Promise(resolve => setTimeout(resolve, backoffDelay))
@@ -390,8 +390,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 		uploadPreKeysPromise = Promise.race([
 			uploadLogic(),
-			new Promise<void>((_, reject) =>
-				setTimeout(() => reject(new Boom('Pre-key upload timeout', { statusCode: 408 })), UPLOAD_TIMEOUT)
+			new Promise<void>((_, reject) => setTimeout(() => reject(new Boom('Pre-key upload timeout', { statusCode: 408 })), UPLOAD_TIMEOUT)
 			)
 		])
 
@@ -402,9 +401,9 @@ export const makeSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const verifyCurrentPreKeyExists = async () => {
+	const verifyCurrentPreKeyExists = async() => {
 		const currentPreKeyId = creds.nextPreKeyId - 1
-		if (currentPreKeyId <= 0) {
+		if(currentPreKeyId <= 0) {
 			return { exists: false, currentPreKeyId: 0 }
 		}
 
@@ -414,7 +413,7 @@ export const makeSocket = (config: SocketConfig) => {
 		return { exists, currentPreKeyId }
 	}
 
-	const uploadPreKeysToServerIfRequired = async () => {
+	const uploadPreKeysToServerIfRequired = async() => {
 		try {
 			const preKeyCount = await getAvailablePreKeysOnServer()
 			const { exists: currentPreKeyExists, currentPreKeyId } = await verifyCurrentPreKeyExists()
@@ -427,17 +426,22 @@ export const makeSocket = (config: SocketConfig) => {
 
 			const shouldUpload = lowServerCount || missingCurrentPreKey
 
-			if (shouldUpload) {
+			if(shouldUpload) {
 				const reasons: string[] = []
-				if (lowServerCount) reasons.push(`server count low (${preKeyCount})`)
-				if (missingCurrentPreKey) reasons.push(`current prekey ${currentPreKeyId} missing from storage`)
+				if(lowServerCount) {
+					reasons.push(`server count low (${preKeyCount})`)
+				}
+
+				if(missingCurrentPreKey) {
+					reasons.push(`current prekey ${currentPreKeyId} missing from storage`)
+				}
 
 				logger.info(`Uploading PreKeys due to: ${reasons.join(', ')}`)
 				await uploadPreKeys()
 			} else {
 				logger.info(`PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
 			}
-		} catch (error) {
+		} catch(error) {
 			logger.error({ error }, 'Failed to check/upload pre-keys during initialization')
 		}
 	}
@@ -517,7 +521,7 @@ export const makeSocket = (config: SocketConfig) => {
 		ev.removeAllListeners('connection.update')
 	}
 
-	const waitForSocketOpen = async () => {
+	const waitForSocketOpen = async() => {
 		if(ws.isOpen) {
 			return
 		}
@@ -593,7 +597,7 @@ export const makeSocket = (config: SocketConfig) => {
 	)
 
 	/** logout & invalidate connection */
-	const logout = async (msg?: string) => {
+	const logout = async(msg?: string) => {
 		const jid = authState.creds.me?.id
 		if(jid) {
 			await sendNode({
@@ -619,7 +623,7 @@ export const makeSocket = (config: SocketConfig) => {
 		end(new Boom(msg || 'Intentional Logout', { statusCode: DisconnectReason.loggedOut }))
 	}
 
-	const requestPairingCode = async (phoneNumber: string, customPairingCode?: string): Promise<string> => {
+	const requestPairingCode = async(phoneNumber: string, customPairingCode?: string): Promise<string> => {
 		const pairingCode = customPairingCode ?? bytesToCrockford(randomBytes(5))
 
 		if(customPairingCode && customPairingCode?.length !== 8) {
@@ -710,7 +714,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	ws.on('message', onMessageReceived)
 
-	ws.on('open', async () => {
+	ws.on('open', async() => {
 		try {
 			await validateConnection()
 		} catch(err) {
@@ -723,7 +727,7 @@ export const makeSocket = (config: SocketConfig) => {
 	// the server terminated the connection
 	ws.on('CB:xmlstreamend', () => end(new Boom('Connection Terminated by Server', { statusCode: DisconnectReason.connectionClosed })))
 	// QR gen
-	ws.on('CB:iq,type:set,pair-device', async (stanza: BinaryNode) => {
+	ws.on('CB:iq,type:set,pair-device', async(stanza: BinaryNode) => {
 		const iq: BinaryNode = {
 			tag: 'iq',
 			attrs: {
@@ -765,7 +769,7 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 	// device paired for the first time
 	// if device pairs successfully, the server asks to restart the connection
-	ws.on('CB:iq,,pair-success', async (stanza: BinaryNode) => {
+	ws.on('CB:iq,,pair-success', async(stanza: BinaryNode) => {
 		logger.debug('pair success recv')
 		try {
 			const { reply, creds: updatedCreds } = configureSuccessfulPairing(stanza, creds)
@@ -785,7 +789,7 @@ export const makeSocket = (config: SocketConfig) => {
 		}
 	})
 	// login complete
-	ws.on('CB:success', async (node: BinaryNode) => {
+	ws.on('CB:success', async(node: BinaryNode) => {
 		await uploadPreKeysToServerIfRequired()
 		await sendPassiveIq('active')
 
