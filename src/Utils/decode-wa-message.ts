@@ -108,7 +108,7 @@ export function decodeMessageNode(
 	const pushname = stanza?.attrs?.notify
 
 	const key: WAMessageKey = {
-		remoteJid: chatId,
+		remoteJid: jidNormalizedUser(stanza?.attrs?.sender_pn) ?? jidNormalizedUser(chatId),
 		fromMe,
 		id: msgId,
 		senderPn: stanza?.attrs?.sender_pn ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_pn ?? jidNormalizedUser(participant)),
