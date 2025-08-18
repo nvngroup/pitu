@@ -6,8 +6,8 @@ import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
 
-const getDecryptionJid = async (sender: string, repository: SignalRepository): Promise<string> => {
-	if (!sender.includes('@s.whatsapp.net')) {
+const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
+	if(!sender.includes('@s.whatsapp.net')) {
 		return sender
 	}
 
@@ -15,7 +15,7 @@ const getDecryptionJid = async (sender: string, repository: SignalRepository): P
 	const normalizedSender = jidNormalizedUser(sender)
 	const lidForPN = await lidMapping.getLIDForPN(normalizedSender)
 
-	if (lidForPN?.includes('@lid')) {
+	if(lidForPN?.includes('@lid')) {
 		const senderDecoded = jidDecode(sender)
 		const deviceId = senderDecoded?.device || 0
 		return jidEncode(jidDecode(lidForPN)!.user, 'lid', deviceId)
@@ -24,7 +24,7 @@ const getDecryptionJid = async (sender: string, repository: SignalRepository): P
 	return sender
 }
 
-const storeMappingFromEnvelope = async (
+const storeMappingFromEnvelope = async(
 	stanza: BinaryNode,
 	sender: string,
 	decryptionJid: string,
@@ -33,11 +33,11 @@ const storeMappingFromEnvelope = async (
 ): Promise<void> => {
 	const { senderAlt } = extractAddressingContext(stanza)
 
-	if (senderAlt && isLidUser(senderAlt) && isJidUser(sender) && decryptionJid === sender) {
+	if(senderAlt && isLidUser(senderAlt) && isJidUser(sender) && decryptionJid === sender) {
 		try {
 			await repository.storeLIDPNMapping(senderAlt, sender)
 			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
-		} catch (error) {
+		} catch(error) {
 			logger.warn({ sender, senderAlt, error }, 'Failed to store LID mapping')
 		}
 	}
@@ -69,7 +69,7 @@ export const extractAddressingContext = (stanza: BinaryNode) => {
 	let senderAlt: string | undefined
 	let recipientAlt: string | undefined
 
-	if (addressingMode === 'lid') {
+	if(addressingMode === 'lid') {
 		// Message is LID-addressed: sender is LID, extract corresponding PN
 		senderAlt = stanza.attrs.participant_pn || stanza.attrs.sender_pn
 		recipientAlt = stanza.attrs.recipient_pn
@@ -251,7 +251,7 @@ export const decryptMessageNode = (
 								ciphertext: content
 							})
 
-								await storeMappingFromEnvelope(stanza, user, decryptionJid, repository, logger)
+							await storeMappingFromEnvelope(stanza, user, decryptionJid, repository, logger)
 							break
 						case 'plaintext':
 							msgBuffer = content

@@ -799,9 +799,9 @@ export const makeSocket = (config: SocketConfig) => {
 
 		ev.emit('connection.update', { connection: 'open' })
 
-		if (node.attrs.lid && authState.creds.me?.id) {
+		if(node.attrs.lid && authState.creds.me?.id) {
 			const myLID = node.attrs.lid
-			process.nextTick(async () => {
+			process.nextTick(async() => {
 				try {
 					const myPN = authState.creds.me!.id
 
@@ -812,7 +812,7 @@ export const makeSocket = (config: SocketConfig) => {
 					await signalRepository.migrateSession(myPN, myLID)
 
 					logger.info({ myPN, myLID }, 'Own LID session created successfully')
-				} catch (error) {
+				} catch(error) {
 					logger.error({ error, lid: myLID }, 'Failed to create own LID session')
 				}
 			})
