@@ -1,4 +1,5 @@
 export * from './auth-utils'
+export * from './bad-mac-recovery'
 export * from './baileys-event-stream'
 export * from './chat-utils'
 export * from './crypto'

@@ -3,6 +3,7 @@ import * as libsignal from 'libsignal'
 import type { SignalAuthState, SignalKeyStoreWithTransaction } from '../Types'
 import { SignalRepository } from '../Types/Signal'
 import { generateSignalPubKey } from '../Utils'
+import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
 import { jidDecode } from '../WABinary'
@@ -28,8 +29,9 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			try {
 				return cipher.decrypt(msg)
 			} catch(error) {
-				if(macErrorManager.isMACError(error)) {
-					// Handler específico para erros MAC em grupos
+				if(badMACRecovery.isBadMACError(error)) {
+					handleBadMACError(group, error, auth, repository, authorJid)
+				} else if(macErrorManager.isMACError(error)) {
 					handleMACError(
 						`${group}:${authorJid}`,
 						error,
@@ -77,8 +79,9 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					throw new Error(`Unknown message type: ${type}`)
 				}
 			} catch(error) {
-				if(macErrorManager.isMACError(error)) {
-					// Handler específico para erros MAC individuais
+				if(badMACRecovery.isBadMACError(error)) {
+					await handleBadMACError(jid, error, auth, repository)
+				} else if(macErrorManager.isMACError(error)) {
 					await handleMACError(
 						jid,
 						error,
