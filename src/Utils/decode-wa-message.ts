@@ -86,10 +86,260 @@ export const extractAddressingContext = (stanza: BinaryNode) => {
 	}
 }
 
-/**
+const processMessageContent = async(
+	item: BinaryNode,
+	fullMessage: waproto.IWebMessageInfo,
+	sender: string,
+	author: string,
+	repository: SignalRepository,
+	logger: ILogger
+): Promise<{ processed: boolean }> => {
+	const { tag, attrs, content } = item
+
+	if(tag === 'verified_name' && content instanceof Uint8Array) {
+		const cert = waproto.VerifiedNameCertificate.decode(content)
+		const details = waproto.VerifiedNameCertificate.Details.decode(cert.details!)
+		fullMessage.verifiedBizName = details.verifiedName
+		return { processed: false }
+	}
+
+	if(tag !== 'enc' && tag !== 'plaintext') {
+		return { processed: false }
+	}
+
+	if(!(content instanceof Uint8Array)) {
+		return { processed: false }
+	}
+
+	try {
+		const msgBuffer = await decryptMessageContent(tag, attrs, content, sender, author, repository)
+		await processDecryptedMessage(msgBuffer, tag, attrs, fullMessage, author, repository, logger)
+		return { processed: true }
+	} catch(err) {
+		const jid = fullMessage.key?.remoteJid || 'unknown'
+		await handleDecryptionError(err, fullMessage, author, jid, tag, attrs, repository, logger)
+		return { processed: true }
+	}
+}
+
+const decryptMessageContent = async(
+	tag: string,
+	attrs: { type?: string },
+	content: Uint8Array,
+	sender: string,
+	author: string,
+	repository: SignalRepository
+): Promise<Uint8Array> => {
+	const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
+
+	switch (e2eType) {
+	case 'skmsg':
+		return await repository.decryptGroupMessage({
+			group: sender,
+			authorJid: author,
+			msg: content
+		})
+	case 'pkmsg':
+	case 'msg':
+		const user = isJidUser(sender) ? sender : author
+		const decryptionJid = await getDecryptionJid(user, repository)
+		return await repository.decryptMessage({
+			jid: decryptionJid,
+			type: e2eType,
+			ciphertext: content
+		})
+	case 'plaintext':
+		return content
+	default:
+		throw new Error(`Unknown e2e type: ${e2eType}`)
+	}
+}
+
+const processDecryptedMessage = async(
+	msgBuffer: Uint8Array,
+	tag: string,
+	attrs: { type?: string },
+	fullMessage: waproto.IWebMessageInfo,
+	author: string,
+	repository: SignalRepository,
+	logger: ILogger
+) => {
+	const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
+	let msg: waproto.IMessage = waproto.Message.decode(e2eType !== 'plaintext' ? unpadRandomMax16(msgBuffer) : msgBuffer)
+	msg = msg.deviceSentMessage?.message || msg
+
+	if(msg.senderKeyDistributionMessage) {
+		try {
+			await repository.processSenderKeyDistributionMessage({
+				authorJid: author,
+				item: msg.senderKeyDistributionMessage
+			})
+		} catch(err) {
+			logger.error({ key: fullMessage.key, err }, 'failed to decrypt message')
+		}
+	}
+
+	if(fullMessage.message) {
+		Object.assign(fullMessage.message, msg)
+	} else {
+		fullMessage.message = msg
+	}
+}
+
+export const handleDecryptionError = async(
+	err: Error,
+	fullMessage: waproto.IWebMessageInfo,
+	author: string,
+	jid: string,
+	tag: string,
+	attrs: { type?: string },
+	repository: SignalRepository,
+	logger: ILogger
+) => {
+	const isMacError = macErrorManager.isMACError(err)
+	const isSessionError = isMacError ||
+						  err.message?.includes('InvalidMessageException') ||
+						  err.message?.includes('session') ||
+						  err.message?.includes('Bad MAC')
+
+	const isGroupMessage = tag === 'enc' && attrs.type === 'skmsg'
+
+	if(isMacError) {
+		// Registrar o erro MAC
+		macErrorManager.recordMACError(jid, err)
+		const stats = macErrorManager.getErrorStats(jid)
+		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
+
+		logger.warn({
+			key: fullMessage.key,
+			sender: jid,
+			author: isGroupMessage ? author : undefined,
+			messageType: attrs.type || tag,
+			error: err.message,
+			errorStats: stats,
+			canRetry,
+			recommendations: macErrorManager.getRecoveryRecommendations(jid)
+		}, 'MAC verification error during message decryption')
+
+		// Para erros MAC persistentes, marcar mensagem como não decifrável
+		if(!canRetry) {
+			logger.error({
+				key: fullMessage.key,
+				sender: jid,
+				author: isGroupMessage ? author : undefined,
+				error: 'Persistent MAC errors - session requires manual intervention'
+			}, 'Maximum MAC error retries exceeded')
+		} else {
+			// Tentar recuperação automática em background
+			await attemptMACRecovery(jid, author, isGroupMessage, repository, fullMessage.key, logger)
+		}
+	} else if(isSessionError) {
+		logger.warn({
+			key: fullMessage.key,
+			sender: jid,
+			author: isGroupMessage ? author : undefined,
+			messageType: attrs.type || tag,
+			error: err.message,
+			recommendation: 'Session may need to be reset'
+		}, 'Session decryption error - possible key corruption')
+	} else {
+		logger.error(
+			{ key: fullMessage.key, err },
+			'failed to decrypt message'
+		)
+	}
+
+	fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
+
+	// Mensagem de erro mais informativa baseada no tipo
+	if(isMacError) {
+		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
+		fullMessage.messageStubParameters = [
+			canRetry
+				? 'MAC verification failed - attempting recovery'
+				: 'MAC verification failed - session needs reset'
+		]
+	} else if(isSessionError) {
+		fullMessage.messageStubParameters = ['Session key error - message corrupted']
+	} else {
+		fullMessage.messageStubParameters = [err.message || 'Unknown decryption error']
+	}
+}
+
+const attemptMACRecovery = async(
+	jid: string,
+	author: string,
+	isGroupMessage: boolean,
+	repository: SignalRepository,
+	key: WAMessageKey,
+	logger: ILogger
+) => {
+	try {
+		const recoverySuccess = await macErrorManager.attemptAutomaticRecovery(
+			jid,
+			() => performSessionCleanup(jid, author, isGroupMessage, repository, logger)
+		)
+
+		if(recoverySuccess) {
+			logger.info({
+				key,
+				sender: jid,
+				author: isGroupMessage ? author : undefined
+			}, 'MAC error recovery completed - session will be re-established')
+		}
+	} catch(recoveryError) {
+		logger.error({
+			key,
+			sender: jid,
+			recoveryError
+		}, 'Failed to perform automatic MAC error recovery')
+	}
+}
+
+const performSessionCleanup = async(
+	jid: string,
+	author: string,
+	isGroupMessage: boolean,
+	repository: SignalRepository,
+	logger: ILogger
+) => {
+	if(isGroupMessage) {
+		await cleanupGroupSenderKey(jid, author, repository, logger)
+	} else {
+		await repository.deleteSession(jid)
+		logger.debug({ jid }, 'Cleared corrupted session for MAC recovery')
+	}
+}
+
+const cleanupGroupSenderKey = async(
+	jid: string,
+	author: string,
+	repository: SignalRepository,
+	logger: ILogger
+) => {
+	const { SenderKeyName } = await import('../Signal/Group/sender-key-name')
+	const { jidDecode } = await import('../WABinary')
+
+	const decoded = jidDecode(author)
+	if(!decoded) {
+		return
+	}
+
+	const sender = {
+		id: decoded.user,
+		deviceId: decoded.device || 0,
+		toString: () => `${decoded.user}.${decoded.device || 0}`
+	}
+	const senderKeyName = new SenderKeyName(jid, sender)
+	const keyId = senderKeyName.toString()
+
+	await repository.deleteSession(`${jid}:${author}`)
+	logger.debug({ jid, author, keyId }, 'Cleared corrupted sender key for MAC recovery')
+}/**
  * Decode the received node as a message.
  * @note this will only parse the message, not decrypt it
  */
+
 export function decodeMessageNode(
 	stanza: BinaryNode,
 	meId: string,
@@ -167,7 +417,7 @@ export function decodeMessageNode(
 	const pushname = stanza?.attrs?.notify
 
 	const key: WAMessageKey = {
-		remoteJid: jidNormalizedUser(stanza?.attrs?.sender_pn) ?? jidNormalizedUser(chatId),
+		remoteJid: chatId,
 		fromMe,
 		id: msgId,
 		senderPn: stanza?.attrs?.sender_pn ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_pn ?? jidNormalizedUser(participant)),
@@ -212,133 +462,10 @@ export const decryptMessageNode = (
 		async decrypt() {
 			let decryptables = 0
 			if(Array.isArray(stanza.content)) {
-				for(const { tag, attrs, content } of stanza.content) {
-					if(tag === 'verified_name' && content instanceof Uint8Array) {
-						const cert = waproto.VerifiedNameCertificate.decode(content)
-						const details = waproto.VerifiedNameCertificate.Details.decode(cert.details!)
-						fullMessage.verifiedBizName = details.verifiedName
-					}
-
-					if(tag !== 'enc' && tag !== 'plaintext') {
-						continue
-					}
-
-					if(!(content instanceof Uint8Array)) {
-						continue
-					}
-
-					decryptables += 1
-
-					let msgBuffer: Uint8Array
-
-					try {
-						const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
-						switch (e2eType) {
-						case 'skmsg':
-							msgBuffer = await repository.decryptGroupMessage({
-								group: sender,
-								authorJid: author,
-								msg: content
-							})
-							break
-						case 'pkmsg':
-						case 'msg':
-							const user = isJidUser(sender) ? sender : author
-							const decryptionJid = await getDecryptionJid(user, repository)
-							msgBuffer = await repository.decryptMessage({
-								jid: decryptionJid,
-								type: e2eType,
-								ciphertext: content
-							})
-
-							await storeMappingFromEnvelope(stanza, user, decryptionJid, repository, logger)
-							break
-						case 'plaintext':
-							msgBuffer = content
-							break
-						default:
-							throw new Error(`Unknown e2e type: ${e2eType}`)
-						}
-
-						let msg: waproto.IMessage = waproto.Message.decode(e2eType !== 'plaintext' ? unpadRandomMax16(msgBuffer) : msgBuffer)
-						msg = msg.deviceSentMessage?.message || msg
-						if(msg.senderKeyDistributionMessage) {
-							try {
-								await repository.processSenderKeyDistributionMessage({
-									authorJid: author,
-									item: msg.senderKeyDistributionMessage
-								})
-							} catch(err) {
-								logger.error({ key: fullMessage.key, err }, 'failed to decrypt message')
-						        }
-						}
-
-						if(fullMessage.message) {
-							Object.assign(fullMessage.message, msg)
-						} else {
-							fullMessage.message = msg
-						}
-					} catch(err) {
-						const isMacError = macErrorManager.isMACError(err)
-						const isSessionError = isMacError ||
-											  err.message?.includes('InvalidMessageException') ||
-											  err.message?.includes('session') ||
-											  err.message?.includes('Bad MAC')
-
-						const jid = fullMessage.key?.remoteJid || 'unknown'
-
-						if(isMacError) {
-							// Registrar o erro MAC
-							macErrorManager.recordMACError(jid, err)
-							const stats = macErrorManager.getErrorStats(jid)
-							const canRetry = macErrorManager.shouldAttemptRecovery(jid)
-
-							logger.warn({
-								key: fullMessage.key,
-								sender: jid,
-								error: err.message,
-								errorStats: stats,
-								canRetry,
-								recommendations: macErrorManager.getRecoveryRecommendations(jid)
-							}, 'MAC verification error during message decryption')
-
-							// Para erros MAC persistentes, marcar mensagem como não decifrável
-							if(!canRetry) {
-								logger.error({
-									key: fullMessage.key,
-									sender: jid,
-									error: 'Persistent MAC errors - session requires manual intervention'
-								}, 'Maximum MAC error retries exceeded')
-							}
-						} else if(isSessionError) {
-							logger.warn({
-								key: fullMessage.key,
-								sender: jid,
-								error: err.message,
-								recommendation: 'Session may need to be reset'
-							}, 'Session decryption error - possible key corruption')
-						} else {
-							logger.error(
-								{ key: fullMessage.key, err },
-								'failed to decrypt message'
-							)
-						}
-
-						fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
-
-						// Mensagem de erro mais informativa baseada no tipo
-						if(isMacError) {
-							const canRetry = macErrorManager.shouldAttemptRecovery(jid)
-							fullMessage.messageStubParameters = [
-								canRetry
-									? 'MAC verification failed - attempting recovery'
-									: 'MAC verification failed - session needs reset'
-							]
-						} else if(isSessionError) {
-							fullMessage.messageStubParameters = ['Session key error - message corrupted']
-						} else {
-							fullMessage.messageStubParameters = [err.message || 'Unknown decryption error']
-						}
+				for(const item of stanza.content) {
+					const result = await processMessageContent(item, fullMessage, sender, author, repository, logger)
+					if(result.processed) {
+						decryptables += 1
 					}
 				}
 			}
