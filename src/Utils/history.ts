@@ -23,7 +23,8 @@ export const downloadHistory = async(
 	let buffer = Buffer.concat(bufferArray)
 
 	// decompress buffer
-	buffer = await inflatePromise(buffer)
+	const decompressed = await inflatePromise(buffer)
+	buffer = Buffer.from(decompressed)
 
 	const syncData = waproto.HistorySync.decode(buffer)
 	return syncData

@@ -114,7 +114,7 @@ const startSock = async () => {
 			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
 				if (syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
-					logger.info('received on-demand history sync, messages=', messages)
+					logger.info(`received on-demand history sync, messages= ${messages}`)
 				}
 				logger.info(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
 			}
@@ -199,7 +199,7 @@ const startSock = async () => {
 							if (text === "!video") {
 								await sock.readMessages([msg.key]);
 								await sendMessageWTyping({
-									video: { url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4' },
+									video: { url: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4' },
 									caption: 'Este é um vídeo de exemplo!'
 								}, msg.key.remoteJid!);
 							}
