@@ -75,7 +75,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 
 	function buffer() {
 		if(!isBuffering) {
-			logger.info('Event buffer activated')
+			logger.trace('Event buffer activated')
 			isBuffering = true
 		}
 	}
@@ -86,7 +86,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			return false
 		}
 
-		logger.info('Flushing event buffer')
+		logger.trace('Flushing event buffer')
 		isBuffering = false
 
 		const newData = makeBufferData()
