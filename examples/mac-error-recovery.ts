@@ -1,12 +1,12 @@
 /**
  * Exemplo de como tratar erros MAC/Bad MAC no Baileys
- * 
+ *
  * Este exemplo mostra como o sistema de recuperação automática
  * funciona quando erros MAC são encontrados durante a descriptografia de mensagens.
  */
 
-import makeWASocket, { 
-	useMultiFileAuthState, 
+import makeWASocket, {
+	useMultiFileAuthState,
 	DisconnectReason
 } from '../src'
 import { Boom } from '@hapi/boom'
@@ -14,7 +14,7 @@ import { Boom } from '@hapi/boom'
 async function connectToWhatsApp() {
 	// Configurar autenticação
 	const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
-	
+
 	// Criar socket com configurações que ajudam na recuperação de MAC
 	const sock = makeWASocket({
 		auth: state,
@@ -38,7 +38,7 @@ async function connectToWhatsApp() {
 		if(connection === 'close') {
 			const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
 			console.log('connection closed due to ', lastDisconnect?.error, ', reconnecting ', shouldReconnect)
-			
+
 			if(shouldReconnect) {
 				connectToWhatsApp()
 			}
@@ -57,12 +57,12 @@ async function connectToWhatsApp() {
 			// O sistema de recuperação MAC funcionará automaticamente
 			// se houver problemas de descriptografia
 			try {
-				await sock.sendMessage(msg.key.remoteJid!, { 
-					text: 'Mensagem recebida!' 
+				await sock.sendMessage(msg.key.remoteJid!, {
+					text: 'Mensagem recebida!'
 				})
 			} catch(error) {
 				console.error('Erro ao enviar mensagem:', error)
-				
+
 				// Verificar se é um erro relacionado a MAC
 				if(error.message?.includes('Bad MAC') || error.message?.includes('MAC verification failed')) {
 					console.log('Erro MAC detectado - sistema de recuperação está trabalhando...')
@@ -116,15 +116,15 @@ function setupMACErrorMonitoring() {
 async function manualSessionCleanup(jid: string) {
 	try {
 		const { state } = await useMultiFileAuthState('auth_info_baileys')
-		
+
 		// Limpar sessão específica
 		await state.keys.set({
 			session: { [jid]: null }
 		})
-		
+
 		console.log(`✅ Sessão limpa para ${jid}`)
 		console.log('⚠️  Será necessário reestabelecer a sessão com este contato')
-		
+
 	} catch(error) {
 		console.error('Erro ao limpar sessão:', error)
 	}
@@ -139,16 +139,16 @@ function getRecommendedConfig() {
 		// Configurações de rede estáveis
 		connectTimeoutMs: 60000,
 		defaultQueryTimeoutMs: 0,
-		
+
 		// Configurações para reduzir conflitos
 		syncFullHistory: false,
-		
+
 		// Configurar cache de chaves
 		keysCacheSize: 1000,
-		
+
 		// Log detalhado para debug
 		logger: console,
-		
+
 		// Configurações de retry
 		retryRequestDelayMs: 250,
 		maxMsgRetryCount: 5,
@@ -159,10 +159,10 @@ function getRecommendedConfig() {
 if(require.main === module) {
 	console.log('🚀 Iniciando exemplo de recuperação MAC...')
 	console.log('📊 Configurando monitoramento de estatísticas...')
-	
+
 	setupMACErrorMonitoring()
 	connectToWhatsApp()
-	
+
 	console.log('\n📋 Comandos úteis:')
 	console.log('- Para limpar sessão manualmente: manualSessionCleanup("jid@s.whatsapp.net")')
 	console.log('- Para verificar configurações recomendadas: getRecommendedConfig()')
