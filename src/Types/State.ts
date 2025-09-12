@@ -1,27 +1,13 @@
-import { Boom } from '@hapi/boom'
-import type { Contact } from './Contact'
-
-export enum SyncState {
-	/** The socket is connecting, but we haven't received pending notifications yet. */
-	Connecting,
-	/** Pending notifications received. Buffering events until we decide whether to sync or not. */
-	AwaitingInitialSync,
-	/** The initial app state sync (history, etc.) is in progress. Buffering continues. */
-	Syncing,
-	/** Initial sync is complete, or was skipped. The socket is fully operational and events are processed in real-time. */
-	Online
-}
+import { Contact } from './Contact'
 
 export type WAConnectionState = 'open' | 'connecting' | 'close'
 
 export type ConnectionState = {
 	/** connection is now open, connecting or closed */
 	connection: WAConnectionState
-
 	/** the error that caused the connection to close */
 	lastDisconnect?: {
-		// TODO: refactor and gain independence from Boom
-		error: Boom | Error | undefined
+		error: Error | undefined
 		date: Date
 	}
 	/** is this a new login */

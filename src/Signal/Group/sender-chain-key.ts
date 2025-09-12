@@ -1,4 +1,3 @@
-/* @ts-ignore */
 import { calculateMAC } from 'libsignal/src/crypto'
 import { SenderMessageKey } from './sender-message-key'
 

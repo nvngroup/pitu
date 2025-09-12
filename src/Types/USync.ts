@@ -1,4 +1,4 @@
-import type { BinaryNode } from '../WABinary'
+import { BinaryNode } from '../WABinary'
 import { USyncUser } from '../WAUSync'
 
 /**

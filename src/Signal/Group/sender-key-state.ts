@@ -37,11 +37,7 @@ export class SenderKeyState {
 		senderKeyStateStructure?: SenderKeyStateStructure | null
 	) {
 		if (senderKeyStateStructure) {
-			if (!Array.isArray(senderKeyStateStructure.senderMessageKeys)) {
-				this.senderKeyStateStructure = { ...senderKeyStateStructure, senderMessageKeys: [] }
-			} else {
-				this.senderKeyStateStructure = senderKeyStateStructure
-			}
+			this.senderKeyStateStructure = senderKeyStateStructure
 		} else {
 			if (signatureKeyPair) {
 				signatureKeyPublic = signatureKeyPair.public
@@ -139,7 +135,7 @@ export class SenderKeyState {
 		const index = this.senderKeyStateStructure.senderMessageKeys.findIndex(key => key.iteration === iteration)
 
 		if (index !== -1) {
-			const messageKey = this.senderKeyStateStructure.senderMessageKeys[index]!
+			const messageKey = this.senderKeyStateStructure.senderMessageKeys[index]
 			this.senderKeyStateStructure.senderMessageKeys.splice(index, 1)
 			return new SenderMessageKey(messageKey.iteration, messageKey.seed)
 		}

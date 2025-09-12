@@ -1,11 +1,10 @@
 import { Boom } from '@hapi/boom'
-import { proto } from '../../WAProto/index.js'
+import { proto } from '../../WAProto'
 import { NOISE_MODE, WA_CERT_DETAILS } from '../Defaults'
-import type { KeyPair } from '../Types'
-import type { BinaryNode } from '../WABinary'
-import { decodeBinaryNode } from '../WABinary'
+import { KeyPair } from '../Types'
+import { BinaryNode, decodeBinaryNode } from '../WABinary'
 import { aesDecryptGCM, aesEncryptGCM, Curve, hkdf, sha256 } from './crypto'
-import type { ILogger } from './logger'
+import { ILogger } from './logger'
 
 const generateIV = (counter: number) => {
 	const iv = new ArrayBuffer(12)
@@ -65,17 +64,17 @@ export const makeNoiseHandler = ({
 
 	const mixIntoKey = async (data: Uint8Array) => {
 		const [write, read] = await localHKDF(data)
-		salt = write!
-		encKey = read!
-		decKey = read!
+		salt = write
+		encKey = read
+		decKey = read
 		readCounter = 0
 		writeCounter = 0
 	}
 
 	const finishInit = async () => {
 		const [write, read] = await localHKDF(new Uint8Array(0))
-		encKey = write!
-		decKey = read!
+		encKey = write
+		decKey = read
 		hash = Buffer.from([])
 		readCounter = 0
 		writeCounter = 0

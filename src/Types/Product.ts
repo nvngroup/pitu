@@ -1,4 +1,4 @@
-import type { WAMediaUpload } from './Message'
+import { WAMediaUpload } from './Message'
 
 export type CatalogResult = {
 	data: {

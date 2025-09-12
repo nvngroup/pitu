@@ -1,57 +1,24 @@
 import { Boom } from '@hapi/boom'
-import { proto } from '../../WAProto/index.js'
-import type { SignalRepository, WAMessage, WAMessageKey } from '../Types'
+import { proto } from '../../WAProto'
+import { SignalRepository, WAMessageKey } from '../Types'
 import {
 	areJidsSameUser,
-	type BinaryNode,
+	BinaryNode,
 	isJidBroadcast,
 	isJidGroup,
-	isJidMetaAI,
+	isJidMetaIa,
 	isJidNewsletter,
 	isJidStatusBroadcast,
+	isJidUser,
 	isLidUser,
-	isPnUser,
-	transferDevice
+	jidDecode,
+	jidNormalizedUser
 } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
-import type { ILogger } from './logger'
-
-const getDecryptionJid = async (sender: string, repository: SignalRepository): Promise<string> => {
-	if (!sender.includes('@s.whatsapp.net')) {
-		return sender
-	}
-
-	return (await repository.getLIDMappingStore().getLIDForPN(sender))!
-}
-
-const storeMappingFromEnvelope = async (
-	stanza: BinaryNode,
-	sender: string,
-	decryptionJid: string,
-	repository: SignalRepository,
-	logger: ILogger
-): Promise<void> => {
-	const { senderAlt } = extractAddressingContext(stanza)
-
-	if (senderAlt && isLidUser(senderAlt) && isPnUser(sender) && decryptionJid === sender) {
-		try {
-			await repository.storeLIDPNMapping(senderAlt, sender)
-			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
-		} catch (error) {
-			logger.warn({ sender, senderAlt, error }, 'Failed to store LID mapping')
-		}
-	}
-}
+import { ILogger } from './logger'
 
 export const NO_MESSAGE_FOUND_ERROR_TEXT = 'Message absent from node'
 export const MISSING_KEYS_ERROR_TEXT = 'Key used already or never filled'
-
-// Retry configuration for failed decryption
-export const DECRYPTION_RETRY_CONFIG = {
-	maxRetries: 3,
-	baseDelayMs: 100,
-	sessionRecordErrors: ['No session record', 'SessionError: No session record']
-}
 
 export const NACK_REASONS = {
 	ParsingError: 487,
@@ -78,37 +45,6 @@ type MessageType =
 	| 'other_status'
 	| 'newsletter'
 
-export const extractAddressingContext = (stanza: BinaryNode) => {
-	const addressingMode = stanza.attrs.addressing_mode || 'pn'
-	let senderAlt: string | undefined
-	let recipientAlt: string | undefined
-
-	const sender = stanza.attrs.participant || stanza.attrs.from
-
-	if (addressingMode === 'lid') {
-		// Message is LID-addressed: sender is LID, extract corresponding PN
-		// without device data
-		senderAlt = stanza.attrs.participant_pn || stanza.attrs.sender_pn || stanza.attrs.peer_recipient_pn
-		recipientAlt = stanza.attrs.recipient_pn
-		// with device data
-		if (sender && senderAlt) senderAlt = transferDevice(sender, senderAlt)
-	} else {
-		// Message is PN-addressed: sender is PN, extract corresponding LID
-		// without device data
-		senderAlt = stanza.attrs.participant_lid || stanza.attrs.sender_lid || stanza.attrs.peer_recipient_lid
-		recipientAlt = stanza.attrs.recipient_lid
-
-		//with device data
-		if (sender && senderAlt) senderAlt = transferDevice(sender, senderAlt)
-	}
-
-	return {
-		addressingMode,
-		senderAlt,
-		recipientAlt
-	}
-}
-
 /**
  * Decode the received node as a message.
  * @note this will only parse the message, not decrypt it
@@ -121,72 +57,112 @@ export function decodeMessageNode(stanza: BinaryNode, meId: string, meLid: strin
 	const msgId = stanza.attrs.id
 	const from = stanza.attrs.from
 	const participant: string | undefined = stanza.attrs.participant
-	const recipient: string | undefined = stanza.attrs.recipient
-
-	const addressingContext = extractAddressingContext(stanza)
-
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
 	const isMeLid = (jid: string) => areJidsSameUser(jid, meLid)
+	const participant_lid: string | undefined = stanza.attrs.participant_lid
+	const participant_pn: string | undefined = stanza?.attrs?.participant_pn
+	const sender_lid: string | undefined = stanza.attrs.sender_lid
+	const recipient: string | undefined = stanza.attrs.recipient
+	const sender_pn: string | undefined = stanza?.attrs?.sender_pn
+	const peer_recipient_pn: string | undefined = stanza?.attrs?.peer_recipient_pn
+	const fromMe = (isLidUser(from) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
 
-	if (isPnUser(from) || isLidUser(from)) {
-		if (recipient && !isJidMetaAI(recipient)) {
-			if (!isMe(from!) && !isMeLid(from!)) {
-				throw new Boom('receipient present, but msg not from me', { data: stanza })
+		if (isJidUser(from) || isLidUser(from)) {
+		if (recipient && !isJidMetaIa(recipient)) {
+			if (!isMe(from) && !isMeLid(from)) {
+			throw new Boom('recipient present, but msg not from me', { data: stanza });
 			}
-
-			chatId = recipient
+			chatId = recipient;
 		} else {
-			chatId = from!
+			chatId = from || sender_lid;
 		}
 
-		msgType = 'chat'
-		author = from!
-	} else if (isJidGroup(from)) {
+		msgType = 'chat';
+
+		const deviceOrigem = jidDecode(from)?.device;
+
+		if (fromMe) {
+			const userDestino = jidDecode(jidNormalizedUser(meLid))?.user;
+			author = deviceOrigem
+			? `${userDestino}:${deviceOrigem}@lid`
+			: `${userDestino}@lid`;
+		} else {
+			if (!sender_lid) {
+			author = from;
+			} else {
+			const userDestino = jidDecode(sender_lid)?.user;
+
+			author = deviceOrigem
+				? `${userDestino}:${deviceOrigem}@lid`
+				: `${userDestino}@lid`;
+			}
+		}
+		}
+ else if (isJidGroup(from)) {
 		if (!participant) {
 			throw new Boom('No participant in group message')
 		}
 
 		msgType = 'group'
-		author = participant
-		chatId = from!
+		chatId = from || sender_lid
+		const deviceOrigem = jidDecode(participant)?.device;
+		if (fromMe) {
+			const userDestino = jidDecode(jidNormalizedUser(meLid))?.user;
+			author = deviceOrigem
+			? `${userDestino}:${deviceOrigem}@lid`
+			: `${userDestino}@lid`;
+		} else {
+			if (!participant_lid) {
+			author = participant;
+			} else {
+			const userDestino = jidDecode(participant_lid)?.user;
+			author = deviceOrigem
+				? `${userDestino}:${deviceOrigem}@lid`
+				: `${userDestino}@lid`;
+			}
+		}
+
 	} else if (isJidBroadcast(from)) {
-		if (!participant) {
+		if (!participant && participant_lid) {
 			throw new Boom('No participant in group message')
 		}
 
 		const isParticipantMe = isMe(participant)
-		if (isJidStatusBroadcast(from!)) {
+		if (isJidStatusBroadcast(from)) {
 			msgType = isParticipantMe ? 'direct_peer_status' : 'other_status'
 		} else {
 			msgType = isParticipantMe ? 'peer_broadcast' : 'other_broadcast'
 		}
 
-		chatId = from!
-		author = participant
+		chatId = from
+		author = participant_lid || participant	 		
+	
 	} else if (isJidNewsletter(from)) {
 		msgType = 'newsletter'
-		chatId = from!
-		author = from!
+		chatId = from
+		author = from
 	} else {
 		throw new Boom('Unknown message type', { data: stanza })
 	}
 
-	const fromMe = (isLidUser(from) ? isMeLid : isMe)((stanza.attrs.participant || stanza.attrs.from)!)
+	
 	const pushname = stanza?.attrs?.notify
 
 	const key: WAMessageKey = {
 		remoteJid: chatId,
-		remoteJidAlt: !isJidGroup(chatId) ? addressingContext.senderAlt : undefined,
 		fromMe,
 		id: msgId,
-		participant,
-		participantAlt: isJidGroup(chatId) ? addressingContext.senderAlt : undefined,
-		...(msgType === 'newsletter' && stanza.attrs.server_id ? { server_id: stanza.attrs.server_id } : {})
-	}
+		...(sender_lid && { sender_lid }),
+		...(participant && { participant }),
+		...(participant_pn && { participant_pn }),
+		...(participant_lid && { participant_lid }),
+		...(sender_pn && { sender_pn }),
+		...(peer_recipient_pn && { peer_recipient_pn }),
+	};
 
-	const fullMessage: WAMessage = {
+	const fullMessage: proto.IWebMessageInfo = {
 		key,
-		messageTimestamp: +stanza.attrs.t!,
+		messageTimestamp: +stanza.attrs.t,
 		pushName: pushname,
 		broadcast: isJidBroadcast(from)
 	}
@@ -220,12 +196,8 @@ export const decryptMessageNode = (
 				for (const { tag, attrs, content } of stanza.content) {
 					if (tag === 'verified_name' && content instanceof Uint8Array) {
 						const cert = proto.VerifiedNameCertificate.decode(content)
-						const details = proto.VerifiedNameCertificate.Details.decode(cert.details)
+						const details = proto.VerifiedNameCertificate.Details.decode(cert.details!)
 						fullMessage.verifiedBizName = details.verifiedName
-					}
-
-					if (tag === 'unavailable' && attrs.type === 'view_once') {
-						fullMessage.key.isViewOnce = true // TODO: remove from here and add a STUB TYPE
 					}
 
 					if (tag !== 'enc' && tag !== 'plaintext') {
@@ -240,15 +212,8 @@ export const decryptMessageNode = (
 
 					let msgBuffer: Uint8Array
 
-					const user = isPnUser(sender) ? sender : author // TODO: flaky logic
-					const decryptionJid = await getDecryptionJid(user, repository)
-					if (tag !== 'plaintext') {
-						await storeMappingFromEnvelope(stanza, user, decryptionJid, repository, logger)
-					}
-
 					try {
 						const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
-
 						switch (e2eType) {
 							case 'skmsg':
 								msgBuffer = await repository.decryptGroupMessage({
@@ -259,8 +224,9 @@ export const decryptMessageNode = (
 								break
 							case 'pkmsg':
 							case 'msg':
+								const user = isJidUser(sender) ? sender : author
 								msgBuffer = await repository.decryptMessage({
-									jid: decryptionJid,
+									jid: user,
 									type: e2eType,
 									ciphertext: content
 								})
@@ -284,7 +250,7 @@ export const decryptMessageNode = (
 									item: msg.senderKeyDistributionMessage
 								})
 							} catch (err) {
-								logger.error({ key: fullMessage.key, err }, 'failed to process sender key distribution message')
+								logger.error({ key: fullMessage.key, err }, 'failed to decrypt message')
 							}
 						}
 
@@ -293,18 +259,8 @@ export const decryptMessageNode = (
 						} else {
 							fullMessage.message = msg
 						}
-					} catch (err: any) {
-						const errorContext = {
-							key: fullMessage.key,
-							err,
-							messageType: tag === 'plaintext' ? 'plaintext' : attrs.type,
-							sender,
-							author,
-							isSessionRecordError: isSessionRecordError(err)
-						}
-
-						logger.error(errorContext, 'failed to decrypt message')
-
+					} catch (err) {
+						logger.error({ key: fullMessage.key, err }, 'failed to decrypt message')
 						fullMessage.messageStubType = proto.WebMessageInfo.StubType.CIPHERTEXT
 						fullMessage.messageStubParameters = [err.message]
 					}
@@ -318,12 +274,4 @@ export const decryptMessageNode = (
 			}
 		}
 	}
-}
-
-/**
- * Utility function to check if an error is related to missing session record
- */
-function isSessionRecordError(error: any): boolean {
-	const errorMessage = error?.message || error?.toString() || ''
-	return DECRYPTION_RETRY_CONFIG.sessionRecordErrors.some(errorPattern => errorMessage.includes(errorPattern))
 }

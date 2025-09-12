@@ -3,7 +3,7 @@ import { createHash } from 'crypto'
 import { createWriteStream, promises as fs } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import type {
+import {
 	CatalogCollection,
 	CatalogStatus,
 	OrderDetails,
@@ -14,7 +14,7 @@ import type {
 	WAMediaUpload,
 	WAMediaUploadFunction
 } from '../Types'
-import { type BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString } from '../WABinary'
+import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString } from '../WABinary'
 import { generateMessageIDV2 } from './generics'
 import { getStream, getUrlFromDirectPath } from './messages-media'
 

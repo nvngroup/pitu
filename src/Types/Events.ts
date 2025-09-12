@@ -1,16 +1,15 @@
 import type { Boom } from '@hapi/boom'
-import { proto } from '../../WAProto/index.js'
-import type { AuthenticationCreds } from './Auth'
-import type { WACallEvent } from './Call'
-import type { Chat, ChatUpdate, PresenceData } from './Chat'
-import type { Contact } from './Contact'
-import type { GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod } from './GroupMetadata'
-import type { Label } from './Label'
-import type { LabelAssociation } from './LabelAssociation'
-import type { MessageUpsertType, MessageUserReceiptUpdate, WAMessage, WAMessageKey, WAMessageUpdate } from './Message'
-import type { ConnectionState } from './State'
+import { proto } from '../../WAProto'
+import { AuthenticationCreds } from './Auth'
+import { WACallEvent } from './Call'
+import { Chat, ChatUpdate, PresenceData } from './Chat'
+import { Contact } from './Contact'
+import { GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod } from './GroupMetadata'
+import { Label } from './Label'
+import { LabelAssociation } from './LabelAssociation'
+import { MessageUpsertType, MessageUserReceiptUpdate, WAMessage, WAMessageKey, WAMessageUpdate } from './Message'
+import { ConnectionState } from './State'
 
-// TODO: refactor this mess
 export type BaileysEventMap = {
 	/** connection state has been updated -- WS closed, opened, connecting etc. */
 	'connection.update': Partial<ConnectionState>
@@ -30,7 +29,7 @@ export type BaileysEventMap = {
 	'chats.upsert': Chat[]
 	/** update the given chats */
 	'chats.update': ChatUpdate[]
-	'lid-mapping.update': { lid: string; pn: string }
+	'chats.phoneNumberShare': { lid: string; jid: string }
 	/** delete chats with given ID */
 	'chats.delete': string[]
 	/** presence of contact in a chat updated */

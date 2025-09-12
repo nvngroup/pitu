@@ -1,4 +1,4 @@
-import type { proto } from '../../WAProto/index.js'
+import type { proto } from '../../WAProto'
 import type { Contact } from './Contact'
 import type { MinimalMessage } from './Message'
 
@@ -72,7 +72,6 @@ export type SignalDataTypeMap = {
 	'sender-key-memory': { [jid: string]: boolean }
 	'app-state-sync-key': proto.Message.IAppStateSyncKeyData
 	'app-state-sync-version': LTHashState
-	'lid-mapping': string
 }
 
 export type SignalDataSet = { [T in keyof SignalDataTypeMap]?: { [id: string]: SignalDataTypeMap[T] | null } }
@@ -88,7 +87,7 @@ export type SignalKeyStore = {
 
 export type SignalKeyStoreWithTransaction = SignalKeyStore & {
 	isInTransaction: () => boolean
-	transaction<T>(exec: () => Promise<T>, key: string): Promise<T>
+	transaction<T>(exec: () => Promise<T>): Promise<T>
 }
 
 export type TransactionCapabilityOptions = {

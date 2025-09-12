@@ -1,5 +1,4 @@
-import type { Contact } from './Contact'
-import type { WAMessageAddressingMode } from './Message'
+import { Contact } from './Contact'
 
 export type GroupParticipant = Contact & {
 	isAdmin?: boolean
@@ -15,22 +14,21 @@ export type RequestJoinMethod = 'invite_link' | 'linked_group_join' | 'non_admin
 
 export interface GroupMetadata {
 	id: string
-	notify?: string
 	/** group uses 'lid' or 'pn' to send messages */
-	addressingMode?: WAMessageAddressingMode
+	addressingMode: 'pn' | 'lid'
 	owner: string | undefined
-	ownerPn?: string | undefined
-	owner_country_code?: string | undefined
+	ownerJid?: string | undefined
+	owner_country_code: string
 	subject: string
 	/** group subject owner */
 	subjectOwner?: string
-	subjectOwnerPn?: string
+	subjectOwnerJid?: string
 	/** group subject modification date */
 	subjectTime?: number
 	creation?: number
 	desc?: string
 	descOwner?: string
-	descOwnerPn?: string
+	descOwnerJid?: string
 	descId?: string
 	descTime?: number
 	/** if this group is part of a community, it returns the jid of the community to which it belongs */
