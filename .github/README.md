@@ -1,52 +1,25 @@
 <h1><img alt="Baileys logo" src="https://raw.githubusercontent.com/WhiskeySockets/Baileys/refs/heads/master/Media/logo.png" height="75"/></h1>
 
+<b>Requisitos para o funcionamento correto deste repositório:</b>
 
-> [!CAUTION]
-> NOTICE OF BREAKING CHANGE.
-> 
-> As of 6.8.0, multiple breaking changes were introduced into the library.
-> 
-> Please check out https://whiskey.so/migrate-latest for more information.
-
-Baileys is a WebSockets-based TypeScript library for interacting with the WhatsApp Web API.
-
-Join the WhiskeySockets community via the link: https://whiskey.so/discord
-
-
-> [!IMPORTANT]
-> I made a survey for users of the project to ask questions, and provide Baileys valuable insights regarding its users. I will be publishing the results of this form (after filtering) as well so we can study and understand where we need to work.
-> 
-> The survey is anonymous and requires no personal info at all. You are required to sign-in with Google to keep responses to one person. You are able to edit your response after you submit. The deadline for this form is September 30, 2025.
-> 
-> I encourage you to put the effort, all it takes is 5-10 minutes and you get to ask me any questions you have.
-> 
-> \- Rajeh (purpshell)
-> 
-> Fill in the survey via the link: https://whiskey.so/survey
+<ul> <li>Efetuar novamente a leitura do <b>QR Code</b> para autenticação</li> <li><b>Não utilizar</b> <code>makeCacheableSignalKeyStore</code> na configuração do socket</li> <li>Garantir que a função <code>getMessage</code> esteja implementada e funcionando corretamente</li> </ul>
 
 
 
+# Usage
+A new guide has been posted at https://baileys.wiki. The old guide can be accessed on [NPM](https://npmjs.com/package/baileys).
 
-# Usage & Guide
+# Contribua
+Se este repositório te ajudou de alguma forma, faça sua retribuioção e ajude a manter atualizado:
+pix/support: (64) 99213-4371
 
-> [!IMPORTANT]
-> The new guide is a work in progress. Expect missing pages/content. [Report missing or incorrect content.](https://github.com/WhiskeySockets/baileys.wiki-site/issues/new)
-> 
-> **You can still access the old guide here:** [README.md](https://github.com/WhiskeySockets/Baileys/tree/master/README.md), or the [NPM homepage](https://npmjs.com/package/baileys).
-
-The new guide is posted at https://baileys.wiki .
-
-# Sponsor
-> [!TIP]
-> If you'd like to financially support this project, you can do so by supporting the current maintainer [here](https://purpshell.dev/sponsor).
 
 # Disclaimer
-> [!CAUTION]
-> This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with WhatsApp or any of its subsidiaries or its affiliates.
-> The official WhatsApp website can be found at whatsapp.com. "WhatsApp" as well as related names, marks, emblems and images are registered trademarks of their respective owners.
->
-> The maintainers of Baileys do not in any way condone the use of this application in practices that violate the Terms of Service of WhatsApp. The maintainers of this application call upon the personal responsibility of its users to use this application in a fair way, as it is intended to be used.
-> Use at your own discretion. Do not spam people with this. We discourage any stalkerware, bulk or automated messaging usage.
+This project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with WhatsApp or any of its subsidiaries or its affiliates.
+The official WhatsApp website can be found at whatsapp.com. "WhatsApp" as well as related names, marks, emblems and images are registered trademarks of their respective owners.
+
+The maintainers of Baileys do not in any way condone the use of this application in practices that violate the Terms of Service of WhatsApp. The maintainers of this application call upon the personal responsibility of its users to use this application in a fair way, as it is intended to be used.
+Use at your own discretion. Do not spam people with this. We discourage any stalkerware, bulk or automated messaging usage.
 
 # License
 Copyright (c) 2025 Rajeh Taher/WhiskeySockets

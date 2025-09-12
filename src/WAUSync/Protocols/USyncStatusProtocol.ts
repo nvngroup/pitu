@@ -1,5 +1,5 @@
-import type { USyncQueryProtocol } from '../../Types/USync'
-import { assertNodeErrorFree, type BinaryNode } from '../../WABinary'
+import { USyncQueryProtocol } from '../../Types/USync'
+import { assertNodeErrorFree, BinaryNode } from '../../WABinary'
 
 export type StatusData = {
 	status?: string | null
@@ -26,7 +26,7 @@ export class USyncStatusProtocol implements USyncQueryProtocol {
 			let status: string | null = node?.content?.toString() ?? null
 			const setAt = new Date(+(node?.attrs.t || 0) * 1000)
 			if (!status) {
-				if (node.attrs?.code && +node.attrs.code === 401) {
+				if (+node.attrs?.code === 401) {
 					status = ''
 				} else {
 					status = null

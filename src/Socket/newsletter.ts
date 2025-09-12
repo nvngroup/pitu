@@ -1,9 +1,8 @@
-import type { NewsletterCreateResponse, SocketConfig, WAMediaUpload } from '../Types'
-import type { NewsletterMetadata, NewsletterUpdate } from '../Types'
-import { QueryIds, XWAPaths } from '../Types'
+import type { NewsletterCreateResponse, WAMediaUpload } from '../Types'
+import { NewsletterMetadata, NewsletterUpdate, QueryIds, XWAPaths } from '../Types'
 import { generateProfilePicture } from '../Utils/messages-media'
 import { getBinaryNodeChild } from '../WABinary'
-import { makeGroupsSocket } from './groups'
+import { GroupsSocket } from './groups'
 import { executeWMexQuery as genericExecuteWMexQuery } from './mex'
 
 const parseNewsletterCreateResponse = (response: NewsletterCreateResponse): NewsletterMetadata => {
@@ -41,8 +40,7 @@ const parseNewsletterMetadata = (result: unknown): NewsletterMetadata | null => 
 	return null
 }
 
-export const makeNewsletterSocket = (config: SocketConfig) => {
-	const sock = makeGroupsSocket(config)
+export const makeNewsletterSocket = (sock: GroupsSocket) => {
 	const { query, generateMessageTag } = sock
 
 	const executeWMexQuery = <T>(variables: Record<string, unknown>, queryId: string, dataPath: string): Promise<T> => {

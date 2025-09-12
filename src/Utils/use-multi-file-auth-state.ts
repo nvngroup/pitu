@@ -1,8 +1,8 @@
 import { Mutex } from 'async-mutex'
 import { mkdir, readFile, stat, unlink, writeFile } from 'fs/promises'
 import { join } from 'path'
-import { proto } from '../../WAProto/index.js'
-import type { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from '../Types'
+import { proto } from '../../WAProto'
+import { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from '../Types'
 import { initAuthCreds } from './auth-utils'
 import { BufferJSON } from './generics'
 
@@ -106,7 +106,7 @@ export const useMultiFileAuthState = async (
 						ids.map(async id => {
 							let value = await readData(`${type}-${id}.json`)
 							if (type === 'app-state-sync-key' && value) {
-								value = proto.Message.AppStateSyncKeyData.create(value)
+								value = proto.Message.AppStateSyncKeyData.fromObject(value)
 							}
 
 							data[id] = value
@@ -118,8 +118,8 @@ export const useMultiFileAuthState = async (
 				set: async data => {
 					const tasks: Promise<void>[] = []
 					for (const category in data) {
-						for (const id in data[category as keyof SignalDataTypeMap]) {
-							const value = data[category as keyof SignalDataTypeMap]![id]
+						for (const id in data[category]) {
+							const value = data[category][id]
 							const file = `${category}-${id}.json`
 							tasks.push(value ? writeData(value, file) : removeData(file))
 						}

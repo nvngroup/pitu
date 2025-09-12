@@ -11,8 +11,8 @@ export * from './Call'
 export * from './Signal'
 export * from './Newsletter'
 
-import type { AuthenticationState } from './Auth'
-import type { SocketConfig } from './Socket'
+import { AuthenticationState } from './Auth'
+import { SocketConfig } from './Socket'
 
 export type UserFacingSocketConfig = Partial<SocketConfig> & { auth: AuthenticationState }
 
