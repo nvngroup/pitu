@@ -44,7 +44,7 @@ O Baileys se conecta diretamente ao WhatsApp Web via WebSocket, simulando um nav
 ### ❓ Como salvar a sessão para não precisar escanear sempre?
 
 ```typescript
-import { useMultiFileAuthState } from '@brunocgc/baileys'
+import { useMultiFileAuthState } from '@nvngroup/pitu'
 
 // Salva automaticamente em uma pasta
 const { state, saveCreds } = await useMultiFileAuthState('minha-sessao')
@@ -118,7 +118,7 @@ await sock.sendMessage(jid, {
 ### ❓ Como baixar mídia recebida?
 
 ```typescript
-import { downloadMediaMessage } from '@brunocgc/baileys'
+import { downloadMediaMessage } from '@nvngroup/pitu'
 
 const buffer = await downloadMediaMessage(
     message,
@@ -201,7 +201,7 @@ messageQueue.add(() => sock.sendMessage(jid, { text: 'Olá!' }))
 ### ❓ Como persistir mensagens e conversas?
 
 ```typescript
-import { makeInMemoryStore } from '@brunocgc/baileys'
+import { makeInMemoryStore } from '@nvngroup/pitu'
 
 // Criar store
 const store = makeInMemoryStore({})
@@ -271,17 +271,17 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 
 **Para TypeScript**:
 ```typescript
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@nvngroup/pitu'
 ```
 
 **Para JavaScript (CommonJS)**:
 ```javascript
-const { default: makeWASocket } = require('@brunocgc/baileys')
+const { default: makeWASocket } = require('@nvngroup/pitu')
 ```
 
 **Para JavaScript (ES Modules)**:
 ```javascript
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@nvngroup/pitu'
 ```
 
 ### ❓ Erro ao enviar mídia?

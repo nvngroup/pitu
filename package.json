@@ -94,9 +94,6 @@
       "optional": true
     }
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "packageManager": "yarn@1.22.22",
   "engines": {
     "node": ">=20.0.0"

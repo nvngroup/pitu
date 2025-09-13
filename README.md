@@ -28,14 +28,14 @@ O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso inde
 
 **Instalação:**
 ```bash
-npm install @brunocgc/baileys
+npm install @nvngroup/pitu
 # ou
-yarn add @brunocgc/baileys
+yarn add @nvngroup/pitu
 ```
 
 **Uso Básico:**
 ```typescript
-import makeWASocket from '@brunocgc/baileys'
+import makeWASocket from '@nvngroup/pitu'
 // Veja DOCUMENTATION.md para configuração completa
 ```
 
@@ -79,7 +79,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 ## 🔗 Links
 
 - **GitHub:** https://github.com/nvngroup/Baileys
-- **NPM:** https://www.npmjs.com/package/@brunocgc/baileys
+- **NPM:** https://www.npmjs.com/package/@nvngroup/pitu
 - **Site:** https://www.nvngroup.com.br
 
 ---

@@ -10,7 +10,7 @@ import makeWASocket, {
     useMultiFileAuthState,
     makeInMemoryStore,
     downloadMediaMessage
-} from '@brunocgc/baileys'
+} from '@nvngroup/pitu'
 import { Boom } from '@hapi/boom'
 import pino from 'pino'
 import fs from 'fs'
@@ -859,7 +859,7 @@ class ReminderBot {
 
 ```bash
 # Install dependencies
-npm install @brunocgc/baileys @hapi/boom pino node-cache
+npm install @nvngroup/pitu @hapi/boom pino node-cache
 
 # Create folder structure
 mkdir customer-service-bot

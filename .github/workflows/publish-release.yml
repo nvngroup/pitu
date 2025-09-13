@@ -27,8 +27,9 @@ on:
 permissions: write-all
 
 jobs:
-  publish-release:
+  publish-npmjs:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,13 +39,13 @@ jobs:
       - name: Fetching tags
         run: git fetch --tags -f || true
 
-      - name: Setup Node
+      - name: Setup Node for npmjs
         uses: actions/setup-node@v3.6.0
         with:
           node-version: 20.x
-          registry-url: "https://npm.pkg.github.com"
+          registry-url: "https://registry.npmjs.org"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -61,15 +62,150 @@ jobs:
       - name: Install Dependencies
         run: yarn
         env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Make Package
+        run: npm pack
+
+      - name: Rename Pack for npmjs
+        run: mv *.tgz nvngroup-baileys-npmjs.tgz
+
+      - name: Publish to npmjs
+        continue-on-error: true
+        run: npm publish nvngroup-baileys-npmjs.tgz --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-github-packages:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetching tags
+        run: git fetch --tags -f || true
+
+      - name: Setup Node for GitHub Packages
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: 20.x
+          registry-url: "https://npm.pkg.github.com"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path-github
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache-github
+        with:
+          path: ${{ steps.yarn-cache-dir-path-github.outputs.dir }}
+          key: ${{ runner.os }}-yarn-github-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-github-
+
+      - name: Install Dependencies
+        run: yarn
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Make Package
         run: npm pack
 
-      - name: Rename Pack
-        run: mv *.tgz nvngroup-baileys.tgz
+      - name: Rename Pack for GitHub
+        run: mv *.tgz nvngroup-baileys-github.tgz
 
       - name: Publish to GitHub Packages
-        run: npm publish nvngroup-baileys.tgz --access public
+        continue-on-error: true
+        run: npm publish nvngroup-baileys-github.tgz --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-github-release:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "package_version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="Initial release"
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD)
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Setup Node
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: 20.x
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build package
+        run: |
+          npm pack
+          ls -la *.tgz
+
+      - name: Create GitHub Release
+        continue-on-error: true
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            ## 🚀 Release ${{ steps.get_version.outputs.package_version }}
+
+            ### 📦 Installation
+            ```bash
+            # From npmjs
+            npm install @nvngroup/pitu@${{ steps.get_version.outputs.package_version }}
+
+            # From GitHub Packages
+            npm install @nvngroup/baileys@${{ steps.get_version.outputs.package_version }} --registry=https://npm.pkg.github.com
+            ```
+
+            ### 📝 Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ### 🔗 Links
+            - **NPM Package**: https://www.npmjs.com/package/@nvngroup/pitu
+            - **GitHub Packages**: https://github.com/nvngroup/Baileys/packages
+            - **Documentation**: https://github.com/nvngroup/Baileys/blob/main/DOCUMENTATION.md
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        continue-on-error: true
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./brunocgc-baileys-${{ steps.get_version.outputs.package_version }}.tgz
+          asset_name: brunocgc-baileys-${{ steps.get_version.outputs.package_version }}.tgz
+          asset_content_type: application/gzip
