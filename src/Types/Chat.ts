@@ -81,6 +81,7 @@ export type ChatModification =
     }
     | {
         clear: boolean
+        lastMessages: LastMessageList
     } | {
         deleteForMe: { deleteMedia: boolean, key: WAMessageKey, timestamp: number }
     }

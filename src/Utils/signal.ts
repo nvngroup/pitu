@@ -6,6 +6,7 @@ import { assertNodeErrorFree, BinaryNode, getBinaryNodeChild, getBinaryNodeChild
 import { DeviceListData, ParsedDeviceInfo, USyncQueryResultList } from '../WAUSync'
 import { Curve, generateSignalPubKey } from './crypto'
 import { encodeBigEndian } from './generics'
+import { convertlidDevice } from './messages'
 
 export const createSignalIdentity = (
 	wid: string,
@@ -69,7 +70,10 @@ export const xmppPreKey = (pair: KeyPair, id: number): BinaryNode => (
 
 export const parseAndInjectE2ESessions = async(
 	node: BinaryNode,
-	repository: SignalRepository
+	repository: SignalRepository,
+	lid?: string | null | undefined,
+	meid?: string,
+	melid?: string
 ) => {
 	const extractKey = (key: BinaryNode) => (
 		key ? ({
@@ -99,9 +103,10 @@ export const parseAndInjectE2ESessions = async(
 					const identity = getBinaryNodeChildBuffer(node, 'identity')!
 					const jid = node.attrs.jid
 					const registrationId = getBinaryNodeChildUInt(node, 'registration', 4)
+					const newlid = convertlidDevice(jid, lid, meid, melid)
 
 					await repository.injectE2ESession({
-						jid,
+						jid: newlid,
 						session: {
 							registrationId: registrationId!,
 							identityKey: generateSignalPubKey(identity),

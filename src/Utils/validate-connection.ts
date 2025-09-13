@@ -129,9 +129,11 @@ export const configureSuccessfulPairing = (
 	const bizName = businessNode?.attrs.name
 	const jid = deviceNode.attrs.jid
 
-	const { details, hmac } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
-	// check HMAC matches
-	const advSign = hmacSign(details!, Buffer.from(advSecretKey, 'base64'))
+	const { details, hmac, accountType } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
+	const isHostedAccount = accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED
+
+	const hmacPrefix = isHostedAccount ? Buffer.from([6, 5]) : Buffer.alloc(0)
+	const advSign = hmacSign(Buffer.concat([hmacPrefix, details!]), Buffer.from(advSecretKey, 'base64'))
 	if(Buffer.compare(hmac!, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
@@ -145,7 +147,8 @@ export const configureSuccessfulPairing = (
 	}
 
 	// sign the details with our identity key
-	const deviceMsg = Buffer.concat([ Buffer.from([6, 1]), deviceDetails!, signedIdentityKey.public, accountSignatureKey! ])
+	const devicePrefix = isHostedAccount ? Buffer.from([6, 6]) : Buffer.from([6, 1])
+	const deviceMsg = Buffer.concat([devicePrefix, deviceDetails!, signedIdentityKey.public, accountSignatureKey!])
 	account.deviceSignature = Curve.sign(signedIdentityKey.private, deviceMsg)
 
 	const identity = createSignalIdentity(jid, accountSignatureKey!)

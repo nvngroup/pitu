@@ -62,7 +62,7 @@ export const getKeyAuthor = (
 
 export const writeRandomPadMax16 = (msg: Uint8Array) => {
 	const pad = randomBytes(1)
-	const padLength = (pad[0]! & 0x0f) + 1
+	const padLength = (pad[0] & 0x0f) + 1
 	return Buffer.concat([msg, Buffer.alloc(padLength, padLength)])
 }
 
@@ -509,4 +509,8 @@ export function bytesToCrockford(buffer: Buffer): string {
 	}
 
 	return crockford.join('')
+}
+
+export function encodeNewsletterMessage(message: waproto.IMessage): Uint8Array {
+	return waproto.Message.encode(message).finish()
 }

@@ -24,6 +24,7 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
+/*
 const storeMappingFromEnvelope = async(
 	stanza: BinaryNode,
 	sender: string,
@@ -42,6 +43,7 @@ const storeMappingFromEnvelope = async(
 		}
 	}
 }
+*/
 
 export const NO_MESSAGE_FOUND_ERROR_TEXT = 'Message absent from node'
 export const MISSING_KEYS_ERROR_TEXT = 'Key used already or never filled'
@@ -352,6 +354,7 @@ export function decodeMessageNode(
 	const msgId = stanza.attrs.id
 	const from = stanza.attrs.from
 	const participant: string | undefined = stanza.attrs.participant
+	const participant_lid: string | undefined = stanza.attrs.participant_lid
 	const recipient: string | undefined = stanza.attrs.recipient
 
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
@@ -404,7 +407,7 @@ export function decodeMessageNode(
 		}
 
 		chatId = from
-		author = participant
+		author = participant_lid || participant
 	} else if(isJidNewsletter(from)) {
 		msgType = 'newsletter'
 		chatId = from

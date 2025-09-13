@@ -294,7 +294,8 @@ export type MessageRelayOptions = MinimalRelayOptions & {
     /** should we use the devices cache, or fetch afresh from the server; default assumed to be "true" */
     useUserDevicesCache?: boolean
     /** jid list of participants for status@broadcast */
-    statusJidList?: string[]
+    statusJidList?: string[],
+    isretry?: boolean
 }
 
 export type MiscMessageGenerationOptions = MinimalRelayOptions & {
@@ -335,6 +336,7 @@ export type MediaGenerationOptions = {
     backgroundColor?: string
 
     font?: number
+    jid?: string
 }
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
 	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
