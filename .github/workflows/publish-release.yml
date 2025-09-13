@@ -186,7 +186,7 @@ jobs:
             npm install @nvngroup/pitu@${{ steps.get_version.outputs.package_version }}
 
             # From GitHub Packages
-            npm install @nvngroup/baileys@${{ steps.get_version.outputs.package_version }} --registry=https://npm.pkg.github.com
+            npm install @nvngroup/pitu@${{ steps.get_version.outputs.package_version }} --registry=https://npm.pkg.github.com
             ```
 
             ### 📝 Changes
@@ -194,8 +194,8 @@ jobs:
 
             ### 🔗 Links
             - **NPM Package**: https://www.npmjs.com/package/@nvngroup/pitu
-            - **GitHub Packages**: https://github.com/nvngroup/Baileys/packages
-            - **Documentation**: https://github.com/nvngroup/Baileys/blob/main/DOCUMENTATION.md
+            - **GitHub Packages**: https://github.com/nvngroup/pitu/packages
+            - **Documentation**: https://github.com/nvngroup/pitu/blob/main/DOCUMENTATION.md
           draft: false
           prerelease: false
 
