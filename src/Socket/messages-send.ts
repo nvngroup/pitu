@@ -608,8 +608,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				if ((isJidGroup(jid) || isJidUser(jid)) || isLidUser(jid) && (
 					contentType === 'interactiveMessage' ||
-					contentType === 'buttonsMessage' ||
-					contentType === 'listMessage'
+					contentType === 'buttonsMessage'
 				)) {
 					const bizNode: BinaryNode = { tag: 'biz', attrs: {} }
 
