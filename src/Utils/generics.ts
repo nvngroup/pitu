@@ -62,12 +62,8 @@ export const getKeyAuthor = (
 
 export const writeRandomPadMax16 = (msg: Uint8Array) => {
 	const pad = randomBytes(1)
-	pad[0] &= 0xf
-	if(!pad[0]) {
-		pad[0] = 0xf
-	}
-
-	return Buffer.concat([msg, Buffer.alloc(pad[0], pad[0])])
+	const padLength = (pad[0]! & 0x0f) + 1
+	return Buffer.concat([msg, Buffer.alloc(padLength, padLength)])
 }
 
 export const unpadRandomMax16 = (e: Uint8Array | Buffer) => {
