@@ -52,8 +52,9 @@ jobs:
           git config --local user.name "GitHub Action"
           git add README.md README-en.md
           if ! git diff --staged --quiet; then
+            git checkout dev
             git commit -m "docs: update version badges to $(node -p "require('./package.json').version")"
-            git push
+            git push origin dev
           else
             echo "No changes to commit"
           fi
