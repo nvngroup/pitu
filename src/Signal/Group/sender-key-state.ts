@@ -97,8 +97,12 @@ export class SenderKeyState {
 		const publicKey = this.senderKeyStateStructure.senderSigningKey.public
 		if(publicKey instanceof Buffer) {
 			return publicKey
+		} else if (publicKey instanceof Uint8Array) {
+			return Buffer.from(publicKey)
 		} else if(typeof publicKey === 'string') {
 			return Buffer.from(publicKey, 'base64')
+		} else if (publicKey && typeof publicKey === 'object') {
+			return Buffer.from(Object.values(publicKey)) // temp fix // inspired by @MartinSchere 's #1741
 		}
 
 		return Buffer.from(publicKey || [])
@@ -112,6 +116,10 @@ export class SenderKeyState {
 
 		if(privateKey instanceof Buffer) {
 			return privateKey
+		} else if (privateKey instanceof Uint8Array) {
+			return Buffer.from(privateKey)
+		} else if (privateKey && typeof privateKey === 'object') {
+			return Buffer.from(Object.values(privateKey)) // temp fix // inspired by @MartinSchere 's #1741
 		} else if(typeof privateKey === 'string') {
 			return Buffer.from(privateKey, 'base64')
 		}
