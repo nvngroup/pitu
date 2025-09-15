@@ -30,7 +30,8 @@
     "preinstall": "node ./engine-requirements.js",
     "release": "release-it",
     "test": "jest",
-    "update:package": "npx npm-check-updates"
+    "update:package": "npx npm-check-updates",
+    "update:version-badges": "node scripts/update-version-badges.js"
   },
   "dependencies": {
     "@cacheable/node-cache": "^1.7.0",

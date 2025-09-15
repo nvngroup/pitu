@@ -27,9 +27,42 @@ on:
 permissions: write-all
 
 jobs:
+  update-version-badges:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: 20.x
+
+      - name: Update version badges
+        run: |
+          npm run update:version-badges
+          
+      - name: Commit badge updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md README-en.md
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: update version badges to $(node -p "require('./package.json').version")"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
   publish-npmjs:
     runs-on: ubuntu-latest
     continue-on-error: true
+    needs: [update-version-badges]
+    if: always()
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -79,6 +112,8 @@ jobs:
   publish-github-packages:
     runs-on: ubuntu-latest
     continue-on-error: true
+    needs: [update-version-badges]
+    if: always()
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -128,6 +163,8 @@ jobs:
   create-github-release:
     runs-on: ubuntu-latest
     continue-on-error: true
+    needs: [update-version-badges]
+    if: always()
     steps:
       - name: Checkout
         uses: actions/checkout@v3
