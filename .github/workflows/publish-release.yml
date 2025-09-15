@@ -45,7 +45,7 @@ jobs:
       - name: Update version badges
         run: |
           npm run update:version-badges
-          
+
       - name: Commit badge updates
         run: |
           git config --local user.email "action@github.com"
