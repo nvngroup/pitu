@@ -50,9 +50,9 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          git checkout dev
           git add README.md README-en.md
           if ! git diff --staged --quiet; then
-            git checkout dev
             git commit -m "docs: update version badges to $(node -p "require('./package.json').version")"
             git push origin dev
           else
