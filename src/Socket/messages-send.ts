@@ -188,7 +188,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			.withDeviceProtocol()
 
 		for(const jid of toFetch) {
-			query.withUser(new USyncUser().withId(jid))
+			query.withUser(new USyncUser().withId(jid)) // todo: investigate - the idea here is that <user> should have an inline lid field with the lid being the pn equivalent
 		}
 
 		const result = await sock.executeUSyncQuery(query)
@@ -374,7 +374,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 			}
 
-			const { user, device } = jidDecode(participant.jid)!
+			const { user, device } = jidDecode(participant.jid)! // rajeh: how does this even make sense TODO check out
 			devices.push({ user, device })
 		}
 
@@ -390,13 +390,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				if(normalizeMessageContent(message)?.pinInChatMessage) {
-					extraAttrs['decrypt-fail'] = 'hide'
+					extraAttrs['decrypt-fail'] = 'hide' // todo: expand for reactions and other types
 				}
 
 				if(isGroup || isStatus) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async() => {
-							let groupData = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
+							let groupData = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // todo: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
 							if(groupData && Array.isArray(groupData?.participants)) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
 							} else if(!isStatus) {
@@ -414,7 +414,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						})(),
 						(async() => {
 							if(!participant && !isStatus) {
-								const result = await authState.keys.get('sender-key-memory', [jid])
+								const result = await authState.keys.get('sender-key-memory', [jid]) // TODO: check out what if the sender key memory doesn't include the LID stuff now?
 								return result[jid] || { }
 							}
 

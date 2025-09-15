@@ -7,6 +7,7 @@ import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 import { ILogger } from './logger'
+import { sha256 } from './crypto'
 
 const PLATFORM_MAP = {
 	'aix': 'AIX',
@@ -78,6 +79,13 @@ export const unpadRandomMax16 = (e: Uint8Array | Buffer) => {
 	}
 
 	return new Uint8Array(t.buffer, t.byteOffset, t.length - r)
+}
+
+// code is inspired by whatsmeow
+export const generateParticipantHashV2 = (participants: string[]): string => {
+	participants.sort()
+	const sha256Hash = sha256(Buffer.from(participants.join(''))).toString('base64')
+	return '2:' + sha256Hash.slice(0, 6)
 }
 
 export const encodeWAMessage = (message: waproto.IMessage) => (
