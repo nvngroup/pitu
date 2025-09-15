@@ -13,7 +13,7 @@ export interface BadMACError {
 }
 
 /**
- * Gerenciador específico para erros "Bad MAC" do libsignal
+ * Specific handler for libsignal "Bad MAC" errors
  */
 export class BadMACRecoveryManager {
 	private errorHistory = new Map<string, BadMACError[]>()
@@ -22,7 +22,7 @@ export class BadMACRecoveryManager {
 	private cooldownPeriod = 60000
 
 	/**
-	 * Detecta se um erro é especificamente "Bad MAC" do libsignal
+	 * Detects if an error is specifically libsignal's "Bad MAC"
 	 */
 	isBadMACError(error: Error): boolean {
 		const msg = error.message?.toLowerCase() || ''
@@ -37,7 +37,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Registra um erro Bad MAC
+	 * Logs a Bad MAC error
 	 */
 	recordBadMACError(jid: string, error: Error, type: '1:1' | 'group', authorJid?: string): BadMACError {
 		const normalizedJid = jidNormalizedUser(jid)
@@ -73,7 +73,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Verifica se deve tentar recuperação automática
+	 * Checks if automatic recovery should be attempted
 	 */
 	shouldAttemptRecovery(jid: string, authorJid?: string): boolean {
 		const normalizedJid = jidNormalizedUser(jid)
@@ -94,7 +94,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Executa recuperação automática para erro Bad MAC
+	 * Executes automatic recovery for Bad MAC error
 	 */
 	async attemptRecovery(
 		jid: string,
@@ -148,7 +148,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Recupera sessão 1:1 removendo dados corrompidos
+	 * Recovers 1:1 session by removing corrupted data
 	 */
 	private async recover1to1Session(jid: string, authState: SignalAuthState, repository: SignalRepository): Promise<void> {
 		if(jid.includes('@s.whatsapp.net')) {
@@ -180,7 +180,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Recupera sender key de grupo removendo dados corrompidos
+	 * Recovers group sender key by removing corrupted data
 	 */
 	private async recoverGroupSenderKey(groupJid: string, authorJid: string, authState: SignalAuthState): Promise<void> {
 		const { SenderKeyName } = await import('../Signal/Group/sender-key-name')
@@ -208,7 +208,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Limpa histórico antigo de erros
+	 * Clears old error history
 	 */
 	cleanup(): void {
 		const cutoff = Date.now() - (this.cooldownPeriod * 10)
@@ -232,7 +232,7 @@ export class BadMACRecoveryManager {
 	}
 
 	/**
-	 * Obtém estatísticas de erros Bad MAC
+	 * Get Bad MAC error statistics
 	 */
 	getStats(jid?: string, authorJid?: string): Record<string, any> {
 		if(jid) {
@@ -275,16 +275,14 @@ export class BadMACRecoveryManager {
 	}
 }
 
-// Instância global
 export const badMACRecovery = new BadMACRecoveryManager()
 
-// Cleanup automático
 setInterval(() => {
 	badMACRecovery.cleanup()
 }, 300000)
 
 /**
- * Função utilitária para lidar com erros Bad MAC de forma automática
+ * Utility function to automatically handle Bad MAC errors
  */
 export async function handleBadMACError(
 	jid: string,
