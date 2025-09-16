@@ -97,7 +97,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			return result
 		},
 		async encryptMessage({ jid, data }) {
-			// LID SINGLE SOURCE OF TRUTH: Always prefer LID when available
+		// LID SINGLE SOURCE OF TRUTH: Always prefer LID when available
 			let encryptionJid = jid
 
 			// Check for LID mapping and use it if session exists
@@ -108,7 +108,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					const { [lidAddr.toString()]: lidSession } = await auth.keys.get('session', [lidAddr.toString()])
 
 					if(lidSession) {
-						// LID session exists, use it
+					// LID session exists, use it
 						encryptionJid = lidForPN
 					} else {
 						// Try to migrate if PN session exists
@@ -116,7 +116,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 						const { [pnAddr.toString()]: pnSession } = await auth.keys.get('session', [pnAddr.toString()])
 
 						if(pnSession) {
-							// Migrate PN to LID
+						// Migrate PN to LID
 							await repository.migrateSession(jid, lidForPN)
 							encryptionJid = lidForPN
 						}
@@ -211,7 +211,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const deviceId = fromDecoded.device || 0
 			const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
-			// Check if recently migrated (5 min window)
 			if(recentMigrations.has(migrationKey)) {
 				return
 			}
@@ -225,7 +224,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			}
 
 			return (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
-				// Store mapping
+			// Store mapping
 				await lidMapping.storeLIDPNMapping(toJid, fromJid)
 
 				// Load and copy session
@@ -233,7 +232,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const fromSession = await storage.loadSession(fromAddr.toString())
 
 				if(fromSession?.haveOpenSession()) {
-					// Deep copy session to prevent reference issues
+				// Deep copy session to prevent reference issues
 					const sessionBytes = fromSession.serialize()
 					const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
 
