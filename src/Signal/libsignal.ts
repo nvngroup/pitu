@@ -7,10 +7,9 @@ import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
 import { jidDecode } from '../WABinary'
-import type { SenderKeyStore } from './Group/group_cipher'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
-import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage } from './Group'
+import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
 
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {

@@ -1,4 +1,5 @@
 import logger from '../../Utils/logger'
+import { GROUP_CONSTANTS } from './types'
 
 interface QueueJob<T> {
   awaitable: () => Promise<T>
@@ -7,13 +8,12 @@ interface QueueJob<T> {
 }
 
 const _queueAsyncBuckets = new Map<string | number, Array<QueueJob<any>>>()
-const _gcLimit = 10000
 
 async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => void): Promise<void> {
-	let offt = 0
-	while(_gcLimit <= 10000) {
-		const limit = Math.min(queue.length, _gcLimit)
-		for(let i = offt; i < limit; i++) {
+	let offset = 0
+	while(offset < queue.length) {
+		const limit = Math.min(queue.length, offset + GROUP_CONSTANTS.QUEUE_GC_LIMIT)
+		for(let i = offset; i < limit; i++) {
 			const job = queue[i]
 			try {
 				job.resolve(await job.awaitable())
@@ -23,12 +23,8 @@ async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => v
 		}
 
 		if(limit < queue.length) {
-			if(limit >= _gcLimit) {
-				queue.splice(0, limit)
-				offt = 0
-			} else {
-				offt = limit
-			}
+			queue.splice(0, limit)
+			offset = 0
 		} else {
 			break
 		}
@@ -38,7 +34,6 @@ async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => v
 }
 
 export default function queueJob<T>(bucket: string | number, awaitable: () => Promise<T>): Promise<T> {
-	// Skip name assignment since it's readonly in strict mode
 	if(typeof bucket !== 'string') {
 		logger.warn(`Unhandled bucket type (for naming): ${typeof bucket} ${bucket}`)
 	}

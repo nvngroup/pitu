@@ -6,11 +6,7 @@ import { SenderKeyName } from './sender-key-name'
 import { SenderKeyRecord } from './sender-key-record'
 import { SenderKeyState } from './sender-key-state'
 import { SenderMessageKey } from './sender-message-key'
-
-export interface SenderKeyStore {
-  loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
-  storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord): Promise<void>
-}
+import { GROUP_CONSTANTS, SenderKeyStore } from './types'
 
 export class GroupCipher {
 	private readonly senderKeyStore: SenderKeyStore
@@ -26,15 +22,19 @@ export class GroupCipher {
 	}
 
 	public async encrypt(paddedPlaintext: Uint8Array | string): Promise<Uint8Array> {
+		if(!paddedPlaintext || (typeof paddedPlaintext === 'string' && paddedPlaintext.length === 0)) {
+			throw new Error('Cannot encrypt empty or null plaintext')
+		}
+
 		return await this.queueJob(async() => {
 			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if(!record) {
-				throw new Error('No SenderKeyRecord found for encryption')
+				throw new Error(`No SenderKeyRecord found for encryption: ${this.senderKeyName.toString()}`)
 			}
 
 			const senderKeyState: SenderKeyState = record.getSenderKeyState()!
 			if(!senderKeyState) {
-				throw new Error('No session to encrypt message')
+				throw new Error(`No session available to encrypt message for: ${this.senderKeyName.toString()}`)
 			}
 
 			const iteration: number = senderKeyState.getSenderChainKey().getIteration()
@@ -55,16 +55,20 @@ export class GroupCipher {
 	}
 
 	public async decrypt(senderKeyMessageBytes: Uint8Array): Promise<Uint8Array> {
+		if(!senderKeyMessageBytes || senderKeyMessageBytes.length === 0) {
+			throw new Error('Cannot decrypt empty or null message bytes')
+		}
+
 		return await this.queueJob(async() => {
 			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if(!record) {
-				throw new Error('No SenderKeyRecord found for decryption')
+				throw new Error(`No SenderKeyRecord found for decryption: ${this.senderKeyName.toString()}`)
 			}
 
 			const senderKeyMessage = new SenderKeyMessage(null, null, null, null, senderKeyMessageBytes)
 			const senderKeyState: SenderKeyState = record.getSenderKeyState(senderKeyMessage.getKeyId())!
 			if(!senderKeyState) {
-				throw new Error('No session found to decrypt message')
+				throw new Error(`No session found to decrypt message with key ID ${senderKeyMessage.getKeyId()} for: ${this.senderKeyName.toString()}`)
 			}
 
 			senderKeyMessage.verifySignature(senderKeyState.getSigningKeyPublic())
@@ -96,8 +100,8 @@ export class GroupCipher {
 			throw new Error(`Received message with old counter: ${senderChainKey.getIteration()}, ${iteration}`)
 		}
 
-		if(iteration - senderChainKey.getIteration() > 2000) {
-			throw new Error('Over 2000 messages into the future!')
+		if(iteration - senderChainKey.getIteration() > GROUP_CONSTANTS.MAX_FUTURE_MESSAGES) {
+			throw new Error(`Over ${GROUP_CONSTANTS.MAX_FUTURE_MESSAGES} messages into the future!`)
 		}
 
 		while(senderChainKey.getIteration() < iteration) {

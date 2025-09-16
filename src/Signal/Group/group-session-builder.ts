@@ -1,13 +1,8 @@
 import * as keyhelper from './keyhelper'
 import { SenderKeyDistributionMessage } from './sender-key-distribution-message'
 import { SenderKeyName } from './sender-key-name'
-import { SenderKeyRecord } from './sender-key-record'
 import { SenderKeyState } from './sender-key-state'
-
-interface SenderKeyStore {
-  loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
-  storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord): Promise<void>
-}
+import { SenderKeyStore } from './types'
 
 export class GroupSessionBuilder {
 	private readonly senderKeyStore: SenderKeyStore

@@ -1,5 +1,6 @@
 import { BufferJSON } from '../../Utils/generics'
 import { SenderKeyState } from './sender-key-state'
+import { GROUP_CONSTANTS } from './types'
 
 export interface SenderKeyStateStructure {
   senderKeyId: number
@@ -18,7 +19,7 @@ export interface SenderKeyStateStructure {
 }
 
 export class SenderKeyRecord {
-	private readonly MAX_STATES = 5
+	private readonly MAX_STATES = GROUP_CONSTANTS.MAX_SENDER_KEY_STATES
 	private readonly senderKeyStates: SenderKeyState[] = []
 
 	constructor(serialized?: SenderKeyStateStructure[]) {
