@@ -78,16 +78,16 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 		return data
 	}
 
-	async function parseGroupResult(node: BinaryNode) {
-		logger.info({ node }, 'parseGroupResult')
-		const groupNode = getBinaryNodeChild(node, 'group')
-		if(groupNode) {
+	async function parseCommunityResult(node: BinaryNode) {
+		logger.info({ node }, 'parseCommunityResult')
+		const communityNode = getBinaryNodeChild(node, 'community')
+		if(communityNode) {
 			try {
-				logger.info({ groupNode }, 'groupNode')
-				const metadata = await sock.groupMetadata(`${groupNode.attrs.id}@g.us`)
+				logger.info({ communityNode }, 'communityNode')
+				const metadata = await communityMetadata(`${communityNode.attrs.id}@g.us`)
 				return metadata ? metadata : Optional.empty()
 			} catch(error) {
-				logger.error('Error parsing group metadata:', error)
+				logger.error('Error parsing community metadata:', error)
 				return Optional.empty()
 			}
 		}
@@ -148,7 +148,7 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 				}
 			])
 
-			return await parseGroupResult(result)
+			return await parseCommunityResult(result)
 		},
 		communityLeave: async(id: string) => {
 			await communityQuery('@g.us', 'set', [
