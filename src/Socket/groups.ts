@@ -126,7 +126,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			if(groupNode) {
 				try {
 					logger.info({ groupNode }, 'groupNode')
-					const metadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
+					const metadata: GroupMetadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
 					return metadata ? metadata : Optional.empty()
 				} catch(error) {
 					logger.error('Error parsing group metadata:', error)
