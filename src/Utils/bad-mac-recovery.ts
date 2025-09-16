@@ -30,9 +30,14 @@ export class BadMACRecoveryManager {
 
 		return (
 			msg.includes('bad mac') ||
+			msg.includes('bac mac') || // Adicionado para capturar typos no erro
 			msg.includes('mac error') ||
+			msg.includes('authentication failed') ||
+			msg.includes('mac verification failed') ||
 			(stack.includes('verifymac') && stack.includes('crypto.js')) ||
-			(stack.includes('session_cipher.js') && msg.includes('mac'))
+			(stack.includes('session_cipher.js') && (msg.includes('mac') || msg.includes('auth'))) ||
+			stack.includes('doDecryptWhisperMessage') ||
+			stack.includes('decryptWithSessions')
 		)
 	}
 
@@ -166,7 +171,11 @@ export class BadMACRecoveryManager {
 					}
 				})
 
-				logger.debug({ jid, lidForPN }, 'Reset both PN and LID sessions for Bad MAC recovery')
+				await authState.keys.set({
+					'pre-key': {}
+				})
+
+				logger.debug({ jid, lidForPN }, 'Reset both PN and LID sessions for Bad MAC recovery with pre-key cleanup')
 				return
 			}
 		}
@@ -176,7 +185,11 @@ export class BadMACRecoveryManager {
 			session: { [addr]: null }
 		})
 
-		logger.debug({ jid }, 'Reset session for Bad MAC recovery')
+		await authState.keys.set({
+			'pre-key': {}
+		})
+
+		logger.debug({ jid }, 'Reset session for Bad MAC recovery with pre-key cleanup')
 	}
 
 	/**

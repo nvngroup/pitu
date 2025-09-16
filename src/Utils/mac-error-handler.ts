@@ -32,14 +32,22 @@ export class MACErrorManager {
 
 		const macPatterns = [
 			'bad mac',
+			'bac mac', // Adicionado para capturar typos no erro
 			'invalid mac',
 			'mac verification failed',
 			'mac error',
 			'authentication failed',
-			'verifymac' // Para capturar erros do libsignal
+			'verifymac', // Para capturar erros do libsignal
+			'doDecryptWhisperMessage',
+			'decryptWithSessions'
 		]
 
-		return macPatterns.some(pattern => errorMsg.includes(pattern) || stackTrace.includes(pattern)
+		return macPatterns.some(pattern =>
+			errorMsg.includes(pattern) || stackTrace.includes(pattern)
+		) || (
+			// Detectar erros específicos de session_cipher.js
+			stackTrace.includes('session_cipher.js') &&
+			(errorMsg.includes('mac') || errorMsg.includes('auth') || errorMsg.includes('decrypt'))
 		)
 	}
 

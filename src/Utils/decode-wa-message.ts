@@ -5,6 +5,7 @@ import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewslette
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
+import { sessionHealthMonitor } from './session-health-monitor'
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if(!sender.includes('@s.whatsapp.net')) {
@@ -207,7 +208,6 @@ export const handleDecryptionError = async(
 	const isGroupMessage = tag === 'enc' && attrs.type === 'skmsg'
 
 	if(isMacError) {
-		// Registrar o erro MAC
 		macErrorManager.recordMACError(jid, err)
 		const stats = macErrorManager.getErrorStats(jid)
 		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
