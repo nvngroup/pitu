@@ -8,7 +8,6 @@ Este documento contém exemplos práticos e casos de uso reais para o Baileys.
 import makeWASocket, {
     DisconnectReason,
     useMultiFileAuthState,
-    makeInMemoryStore,
     downloadMediaMessage
 } from '@nvngroup/pitu'
 import { Boom } from '@hapi/boom'
@@ -34,11 +33,6 @@ class AtendimentoBot {
     }
 
     private async initializeBot() {
-        // Configurar store
-        this.store = makeInMemoryStore({
-            logger: pino().child({ level: 'silent' })
-        })
-
         // Configurar autenticação
         const { state, saveCreds } = await useMultiFileAuthState('auth_atendimento')
 

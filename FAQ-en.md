@@ -198,28 +198,6 @@ const messageQueue = new MessageQueue()
 messageQueue.add(() => sock.sendMessage(jid, { text: 'Hello!' }))
 ```
 
-### ❓ How to persist messages and conversations?
-
-```typescript
-import { makeInMemoryStore } from '@nvngroup/pitu'
-
-// Create store
-const store = makeInMemoryStore({})
-
-// Connect to socket
-store.bind(sock.ev)
-
-// Save periodically
-setInterval(() => {
-    fs.writeFileSync('./store.json', JSON.stringify(store.toJSON()))
-}, 30000)
-
-// Load on startup
-if (fs.existsSync('./store.json')) {
-    store.fromJSON(JSON.parse(fs.readFileSync('./store.json', 'utf8')))
-}
-```
-
 ---
 
 ## 🐛 Common Issues

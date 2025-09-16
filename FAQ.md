@@ -198,28 +198,6 @@ const messageQueue = new MessageQueue()
 messageQueue.add(() => sock.sendMessage(jid, { text: 'Olá!' }))
 ```
 
-### ❓ Como persistir mensagens e conversas?
-
-```typescript
-import { makeInMemoryStore } from '@nvngroup/pitu'
-
-// Criar store
-const store = makeInMemoryStore({})
-
-// Conectar ao socket
-store.bind(sock.ev)
-
-// Salvar periodicamente
-setInterval(() => {
-    fs.writeFileSync('./store.json', JSON.stringify(store.toJSON()))
-}, 30000)
-
-// Carregar ao iniciar
-if (fs.existsSync('./store.json')) {
-    store.fromJSON(JSON.parse(fs.readFileSync('./store.json', 'utf8')))
-}
-```
-
 ---
 
 ## 🐛 Problemas Comuns
