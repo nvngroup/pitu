@@ -366,9 +366,7 @@ export const extractCommunityMetadata = (result: BinaryNode) => {
 		descTime = +descChild.attrs.t
 	}
 
-	const communityId = community.attrs.id?.includes('@')
-		? community.attrs.id
-		: jidEncode(community.attrs.id || '', 'g.us')
+	const communityId = community.attrs.id?.includes('@') ? community.attrs.id : jidEncode(community.attrs.id || '', 'g.us')
 	const eph = getBinaryNodeChild(community, 'ephemeral')?.attrs.expiration
 	const memberAddMode = getBinaryNodeChildString(community, 'member_add_mode') === 'all_member_add'
 	const metadata: GroupMetadata = {

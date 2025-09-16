@@ -1,7 +1,24 @@
-import { waproto } from '../../WAProto'
-import { GroupMetadata, GroupParticipant, ParticipantAction, SocketConfig, WAMessageKey, WAMessageStubType } from '../Types'
+import { waproto as proto } from '../../WAProto'
+import {
+	type GroupMetadata,
+	type GroupParticipant,
+	type ParticipantAction,
+	type SocketConfig,
+	type WAMessageKey,
+	WAMessageStubType
+} from '../Types'
 import { generateMessageIDV2, unixTimestampSeconds } from '../Utils'
-import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString, isJidUser, isLidUser, jidEncode, jidNormalizedUser } from '../WABinary'
+import logger from '../Utils/logger'
+import {
+	type BinaryNode,
+	getBinaryNodeChild,
+	getBinaryNodeChildren,
+	getBinaryNodeChildString,
+	isJidUser,
+	isLidUser,
+	jidEncode,
+	jidNormalizedUser
+} from '../WABinary'
 import { makeChatsSocket } from './chats'
 
 export const makeGroupsSocket = (config: SocketConfig) => {
@@ -103,6 +120,28 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		return data
 	}
 
+		async function parseGroupResult(node: BinaryNode) {
+			logger.info({ node }, 'parseGroupResult')
+			const groupNode = getBinaryNodeChild(node, 'group')
+			if(groupNode) {
+				try {
+					logger.info({ groupNode }, 'groupNode')
+					const metadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
+					return metadata ? metadata : Optional.empty()
+				} catch(error) {
+					logger.error('Error parsing group metadata:', error)
+					return Optional.empty()
+				}
+			}
+
+			return Optional.empty()
+		}
+
+		const Optional = {
+			empty: () => null,
+			of: (value: null) => (value !== null ? { value } : null)
+		}
+
 	sock.ws.on('CB:ib,,dirty', async(node: BinaryNode) => {
 		const { attrs } = getBinaryNodeChild(node, 'dirty')!
 		if(attrs.type !== 'groups') {
@@ -136,7 +175,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					}
 				]
 			)
-			return extractGroupMetadata(result)
+			return await parseGroupResult(result)
 		},
 		groupLeave: async(id: string) => {
 			await groupQuery(
@@ -285,7 +324,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		 * @param key the key of the invite message, or optionally only provide the jid of the person who sent the invite
 		 * @param inviteMessage the message to accept
 		 */
-		groupAcceptInviteV4: ev.createBufferedFunction(async(key: string | WAMessageKey, inviteMessage: waproto.Message.IGroupInviteMessage) => {
+		groupAcceptInviteV4: ev.createBufferedFunction(async (key: string | WAMessageKey, inviteMessage: proto.Message.IGroupInviteMessage) => {
 			key = typeof key === 'string' ? { remoteJid: key } : key
 			const results = await groupQuery(inviteMessage.groupJid!, 'set', [{
 				tag: 'accept',
@@ -300,7 +339,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			// update the invite message to be expired
 			if(key.id) {
 				// create new invite message that is expired
-				inviteMessage = waproto.Message.GroupInviteMessage.fromObject(inviteMessage)
+				inviteMessage = proto.Message.GroupInviteMessage.fromObject(inviteMessage)
 				inviteMessage.inviteExpiration = 0
 				inviteMessage.inviteCode = ''
 				ev.emit('messages.update', [
@@ -358,7 +397,6 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		groupFetchAllParticipating
 	}
 }
-
 
 export const extractGroupMetadata = (result: BinaryNode) => {
 	const group = getBinaryNodeChild(result, 'group')!
