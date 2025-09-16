@@ -5,7 +5,6 @@ import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewslette
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
-import { sessionHealthMonitor } from './session-health-monitor'
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if(!sender.includes('@s.whatsapp.net')) {
