@@ -13,7 +13,7 @@ export class USyncLIDProtocol implements USyncQueryProtocol {
 	}
 
 	getUserElement(user: USyncUser): BinaryNode | null {
-		if (user.lid) {
+		if(user.lid) {
 			return {
 				tag: 'lid',
 				attrs: { jid: user.lid }

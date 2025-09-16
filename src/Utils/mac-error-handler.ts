@@ -42,8 +42,7 @@ export class MACErrorManager {
 			'decryptWithSessions'
 		]
 
-		return macPatterns.some(pattern =>
-			errorMsg.includes(pattern) || stackTrace.includes(pattern)
+		return macPatterns.some(pattern => errorMsg.includes(pattern) || stackTrace.includes(pattern)
 		) || (
 			// Detectar erros específicos de session_cipher.js
 			stackTrace.includes('session_cipher.js') &&

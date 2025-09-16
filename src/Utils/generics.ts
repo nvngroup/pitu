@@ -6,8 +6,8 @@ import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
-import { ILogger } from './logger'
 import { sha256 } from './crypto'
+import { ILogger } from './logger'
 
 const PLATFORM_MAP = {
 	'aix': 'AIX',
