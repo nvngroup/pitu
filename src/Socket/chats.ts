@@ -1,8 +1,7 @@
-import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
-import { DEFAULT_CACHE_TTLS, PROCESSABLE_HISTORY_TYPES } from '../Defaults'
-import { ALL_WA_PATCH_NAMES, CacheStore, ChatModification, ChatMutation, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
+import { PROCESSABLE_HISTORY_TYPES } from '../Defaults'
+import { ALL_WA_PATCH_NAMES, ChatModification, ChatMutation, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
 import type { LabelActionBody } from '../Types/Label'
 import { SyncState } from '../Types/State'
 import { chatModificationToAppPatch, ChatMutationMap, decodePatches, decodeSyncdSnapshot, encodeSyncdPatch, extractSyncdPatches, generateProfilePicture, getHistoryMsg, newLTHashState, processSyncAction } from '../Utils'
@@ -10,6 +9,7 @@ import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncUser } from '../WAUSync'
+import { CacheManager } from './cache-manager'
 import { makeUSyncSocket } from './usync'
 
 const MAX_SYNC_ATTEMPTS = 2
@@ -42,19 +42,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	// Timeout for AwaitingInitialSync state
 	let awaitingSyncTimeout: NodeJS.Timeout | undefined
 
-	const placeholderResendCache = config.placeholderResendCache || (new NodeCache<number>({
-		stdTTL: DEFAULT_CACHE_TTLS.MSG_RETRY, // 1 hour
-		useClones: false
-	}) as CacheStore)
+	const placeholderResendCache = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
 	if(!config.placeholderResendCache) {
 		config.placeholderResendCache = placeholderResendCache
 	}
 
-	const onWhatsAppCache = config.onWhatsAppCache || (new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.ON_WHATSAPP, // 24 hour
-		useClones: false
-	}) as CacheStore)
+	const onWhatsAppCache = config.onWhatsAppCache || CacheManager.getInstance('ON_WHATSAPP')
 
 	if(!config.onWhatsAppCache) {
 		config.onWhatsAppCache = onWhatsAppCache

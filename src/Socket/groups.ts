@@ -120,27 +120,27 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		return data
 	}
 
-		async function parseGroupResult(node: BinaryNode) {
-			logger.info({ node }, 'parseGroupResult')
-			const groupNode = getBinaryNodeChild(node, 'group')
-			if(groupNode) {
-				try {
-					logger.info({ groupNode }, 'groupNode')
-					const metadata: GroupMetadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
-					return metadata ? metadata : Optional.empty()
-				} catch(error) {
-					logger.error('Error parsing group metadata:', error)
-					return Optional.empty()
-				}
+	async function parseGroupResult(node: BinaryNode) {
+		logger.info({ node }, 'parseGroupResult')
+		const groupNode = getBinaryNodeChild(node, 'group')
+		if(groupNode) {
+			try {
+				logger.info({ groupNode }, 'groupNode')
+				const metadata: GroupMetadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
+				return metadata ? metadata : Optional.empty()
+			} catch(error) {
+				logger.error('Error parsing group metadata:', error)
+				return Optional.empty()
 			}
-
-			return Optional.empty()
 		}
 
-		const Optional = {
-			empty: () => null,
-			of: (value: null) => (value !== null ? { value } : null)
-		}
+		return Optional.empty()
+	}
+
+	const Optional = {
+		empty: () => null,
+		of: (value: null) => (value !== null ? { value } : null)
+	}
 
 	sock.ws.on('CB:ib,,dirty', async(node: BinaryNode) => {
 		const { attrs } = getBinaryNodeChild(node, 'dirty')!
@@ -324,7 +324,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		 * @param key the key of the invite message, or optionally only provide the jid of the person who sent the invite
 		 * @param inviteMessage the message to accept
 		 */
-		groupAcceptInviteV4: ev.createBufferedFunction(async (key: string | WAMessageKey, inviteMessage: proto.Message.IGroupInviteMessage) => {
+		groupAcceptInviteV4: ev.createBufferedFunction(async(key: string | WAMessageKey, inviteMessage: proto.Message.IGroupInviteMessage) => {
 			key = typeof key === 'string' ? { remoteJid: key } : key
 			const results = await groupQuery(inviteMessage.groupJid!, 'set', [{
 				tag: 'accept',

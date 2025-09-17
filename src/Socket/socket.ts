@@ -344,60 +344,82 @@ export const makeSocket = (config: SocketConfig) => {
 	/** generates and uploads a set of pre-keys to the server */
 	let uploadPreKeysPromise: Promise<void> | null = null
 	let lastUploadTime = 0
+	let uploadDebounceTimer: NodeJS.Timeout | null = null
 
 	const uploadPreKeys = async(count = INITIAL_PREKEY_COUNT, retryCount = 0) => {
-		if(retryCount === 0) {
-			const timeSinceLastUpload = Date.now() - lastUploadTime
-			if(timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
-				logger.debug(`Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
-				return
-			}
+		// Debounce rapid upload requests
+		if(uploadDebounceTimer) {
+			clearTimeout(uploadDebounceTimer)
 		}
 
-		if(uploadPreKeysPromise) {
-			logger.debug('Pre-key upload already in progress, waiting for completion')
-			return uploadPreKeysPromise
-		}
-
-		const uploadLogic = async() => {
-			logger.info({ count, retryCount }, 'uploading pre-keys')
-
-			const node = await keys.transaction(async() => {
-				logger.debug({ requestedCount: count }, 'generating pre-keys with requested count')
-				const { update, node } = await getNextPreKeysNode({ creds, keys }, count)
-				ev.emit('creds.update', update)
-				return node
-			})
-
-			try {
-				await query(node)
-				logger.info({ count }, 'uploaded pre-keys successfully')
-				lastUploadTime = Date.now()
-			} catch(uploadError) {
-				logger.error({ uploadError, count }, 'Failed to upload pre-keys to server')
-
-				if(retryCount < 3) {
-					const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
-					logger.info(`Retrying pre-key upload in ${backoffDelay}ms`)
-					await new Promise(resolve => setTimeout(resolve, backoffDelay))
-					return uploadPreKeys(count, retryCount + 1)
+		return new Promise<void>((resolve, reject) => {
+			uploadDebounceTimer = setTimeout(async() => {
+				if(retryCount === 0) {
+					const timeSinceLastUpload = Date.now() - lastUploadTime
+					if(timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
+						logger.debug(`Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
+						resolve()
+						return
+					}
 				}
 
-				throw uploadError
-			}
-		}
+				if(uploadPreKeysPromise) {
+					logger.debug('Pre-key upload already in progress, waiting for completion')
+					try {
+						await uploadPreKeysPromise
+						resolve()
+					} catch(error) {
+						reject(error)
+					}
 
-		uploadPreKeysPromise = Promise.race([
-			uploadLogic(),
-			new Promise<void>((_, reject) => setTimeout(() => reject(new Boom('Pre-key upload timeout', { statusCode: 408 })), UPLOAD_TIMEOUT)
-			)
-		])
+					return
+				}
 
-		try {
-			await uploadPreKeysPromise
-		} finally {
-			uploadPreKeysPromise = null
-		}
+				const uploadLogic = async() => {
+					logger.info({ count, retryCount }, 'uploading pre-keys')
+
+					const node = await keys.transaction(async() => {
+						logger.debug({ requestedCount: count }, 'generating pre-keys with requested count')
+						const { update, node } = await getNextPreKeysNode({ creds, keys }, count)
+						ev.emit('creds.update', update)
+						return node
+					})
+
+					try {
+						await query(node)
+						logger.info({ count }, 'uploaded pre-keys successfully')
+						lastUploadTime = Date.now()
+					} catch(uploadError) {
+						logger.error({ uploadError, count }, 'Failed to upload pre-keys to server')
+
+						if(retryCount < 3) {
+							const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
+							logger.info(`Retrying pre-key upload in ${backoffDelay}ms`)
+							await new Promise(resolve => setTimeout(resolve, backoffDelay))
+							return uploadPreKeys(count, retryCount + 1)
+						}
+
+						throw uploadError
+					}
+				}
+
+				uploadPreKeysPromise = Promise.race([
+					uploadLogic(),
+					new Promise<void>((_, reject) => setTimeout(() => reject(new Boom('Pre-key upload timeout', { statusCode: 408 })), UPLOAD_TIMEOUT)
+					)
+				])
+
+				try {
+					await uploadPreKeysPromise
+					resolve()
+				} catch(error) {
+					reject(error)
+				} finally {
+					uploadPreKeysPromise = null
+					uploadDebounceTimer = null
+				}
+			}, 100) // 100ms debounce
+		})
 	}
 
 	const verifyCurrentPreKeyExists = async() => {
@@ -496,6 +518,7 @@ export const makeSocket = (config: SocketConfig) => {
 			error ? 'connection errored' : 'connection closed'
 		)
 
+		// Clear all timers and intervals
 		clearInterval(keepAliveReq)
 		clearTimeout(qrTimer)
 
@@ -545,8 +568,11 @@ export const makeSocket = (config: SocketConfig) => {
 			})
 	}
 
-	const startKeepAliveRequest = () => (
-		keepAliveReq = setInterval(() => {
+	const startKeepAliveRequest = () => {
+		let consecutiveFailures = 0
+		const MAX_FAILURES = 3
+
+		return (keepAliveReq = setInterval(() => {
 			if(!lastDateRecv) {
 				lastDateRecv = new Date()
 			}
@@ -572,14 +598,31 @@ export const makeSocket = (config: SocketConfig) => {
 						content: [{ tag: 'ping', attrs: {} }]
 					}
 				)
+					.then(() => {
+						consecutiveFailures = 0 // Reset on success
+					})
 					.catch(err => {
-						logger.error({ trace: err.stack }, 'error in sending keep alive')
+						consecutiveFailures++
+						logger.error({
+							trace: err.stack,
+							consecutiveFailures,
+							maxFailures: MAX_FAILURES
+						}, 'error in sending keep alive')
+
+						// Circuit breaker: if too many failures, end connection
+						if(consecutiveFailures >= MAX_FAILURES) {
+							logger.warn('Too many keep-alive failures, ending connection')
+							end(new Boom('Keep-alive failures exceeded threshold', {
+								statusCode: DisconnectReason.connectionLost
+							}))
+						}
 					})
 			} else {
 				logger.warn('keep alive called when WS not open')
 			}
-		}, keepAliveIntervalMs)
-	)
+		}, keepAliveIntervalMs))
+	}
+
 	/** i have no idea why this exists. pls enlighten me */
 	const sendPassiveIq = (tag: 'passive' | 'active') => (
 		query({

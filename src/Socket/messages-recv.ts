@@ -1,10 +1,9 @@
 
-import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
-import { DEFAULT_CACHE_TTLS, KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
-import { CacheStore, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
+import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
+import { MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,
 	aesEncryptGCM,
@@ -45,6 +44,7 @@ import {
 	jidNormalizedUser,
 	S_WHATSAPP_NET
 } from '../WABinary'
+import { CacheManager } from './cache-manager'
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
 
@@ -80,19 +80,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	/** this mutex ensures that each retryRequest will wait for the previous one to finish */
 	const retryMutex = makeMutex()
 
-	const msgRetryCache = config.msgRetryCounterCache || (new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.MSG_RETRY, // 1 hour
-		useClones: false
-	}) as CacheStore)
-	const callOfferCache = config.callOfferCache || (new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.CALL_OFFER, // 5 mins
-		useClones: false
-	}) as CacheStore)
+	const msgRetryCache = config.msgRetryCounterCache || CacheManager.getInstance('MSG_RETRY')
+	const callOfferCache = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
 
-	const placeholderResendCache = config.placeholderResendCache || (new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.MSG_RETRY, // 1 hour
-		useClones: false
-	}) as CacheStore)
+	const placeholderResendCache = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
 	let sendActiveReceipts = false
 
