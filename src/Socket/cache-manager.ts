@@ -51,7 +51,7 @@ export class CacheManager {
 					keys: nodeCache.keys?.() || [],
 					stats: nodeCache.getStats?.() || {}
 				}
-			} catch {
+			} catch{
 				stats[key] = { error: 'Unable to retrieve stats' }
 			}
 		})
