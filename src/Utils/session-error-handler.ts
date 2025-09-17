@@ -40,7 +40,6 @@ export function detectSessionError(error: Error): SessionErrorInfo | null {
 export class SessionRecoveryStrategy {
 	private errorHistory = new Map<string, SessionErrorInfo[]>()
 	private maxRetries = 3
-	private cooldownPeriod = 30000 // 30 segundos
 
 	/**
 	 * Registra um erro de sessão

@@ -34,7 +34,6 @@ export const getPlatformId = (browser: string) => {
 }
 
 export const BufferJSON = {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	replacer: (k, value: any) => {
 		if(Buffer.isBuffer(value) || value instanceof Uint8Array || value?.type === 'Buffer') {
 			return { type: 'Buffer', data: Buffer.from(value?.data || value).toString('base64') }
@@ -43,7 +42,6 @@ export const BufferJSON = {
 		return value
 	},
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	reviver: (_, value: any) => {
 		if(typeof value === 'object' && !!value && (value.buffer === true || value.type === 'Buffer')) {
 			const val = value.data || value.value
@@ -81,7 +79,6 @@ export const unpadRandomMax16 = (e: Uint8Array | Buffer) => {
 	return new Uint8Array(t.buffer, t.byteOffset, t.length - r)
 }
 
-// code is inspired by whatsmeow
 export const generateParticipantHashV2 = (participants: string[]): string => {
 	participants.sort()
 	const sha256Hash = sha256(Buffer.from(participants.join(''))).toString('base64')
