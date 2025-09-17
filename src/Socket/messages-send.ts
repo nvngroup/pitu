@@ -638,7 +638,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return msgId
 	}
 
-
 	const getMessageType = (message: waproto.IMessage) => {
 		if(message.pollCreationMessage || message.pollCreationMessageV2 || message.pollCreationMessageV3) {
 			return 'poll'
