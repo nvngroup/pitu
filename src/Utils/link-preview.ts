@@ -6,7 +6,6 @@ import { extractImageThumb, getHttpStream } from './messages-media'
 
 const THUMBNAIL_WIDTH_PX = 192
 
-/** Fetches an image and generates a thumbnail for it */
 const getCompressedJpegThumbnail = async(
 	url: string,
 	{ thumbnailWidth, fetchOpts }: URLGenerationOptions
@@ -19,7 +18,6 @@ const getCompressedJpegThumbnail = async(
 export type URLGenerationOptions = {
 	thumbnailWidth: number
 	fetchOpts: {
-		/** Timeout in ms */
 		timeout: number
 		proxyUrl?: string
 		headers?: AxiosRequestConfig<{}>['headers']
@@ -42,7 +40,6 @@ export const getUrlInfo = async(
 	},
 ): Promise<WAUrlInfo | undefined> => {
 	try {
-		// retries
 		const retries = 0
 		const maxRetry = 5
 

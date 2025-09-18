@@ -24,8 +24,8 @@ type EncryptMessageOpts = {
 }
 
 type EncryptMessageWithWireOpts = {
-	encryptionJid: string // JID used for session lookup (LID)
-	wireJid: string // JID used for envelope (PN)
+	encryptionJid: string
+	wireJid: string
 	data: Uint8Array
 }
 
@@ -69,7 +69,7 @@ export type SignalRepository = {
 	encryptMessageWithWire(opts: EncryptMessageWithWireOpts): Promise<{
 		type: 'pkmsg' | 'msg'
 		ciphertext: Uint8Array
-		wireJid: string // Return the wire JID for envelope
+		wireJid: string
 	}>
 	encryptGroupMessage(opts: EncryptGroupMessageOpts): Promise<{
 		senderKeyDistributionMessage: Uint8Array

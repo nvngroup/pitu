@@ -1,26 +1,17 @@
 
 export interface Label {
-    /** Label uniq ID */
     id: string
-    /** Label name */
     name: string
-    /** Label color ID */
     color: number
-    /** Is label has been deleted */
     deleted: boolean
-    /** WhatsApp has 5 predefined labels (New customer, New order & etc) */
     predefinedId?: string
 }
 
 export interface LabelActionBody {
     id: string
-    /** Label name */
     name?: string
-    /** Label color ID */
     color?: number
-    /** Is label has been deleted */
     deleted?: boolean
-    /** WhatsApp has 5 predefined labels (New customer, New order & etc) */
     predefinedId?: number
 }
 

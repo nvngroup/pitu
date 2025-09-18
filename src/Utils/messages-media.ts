@@ -72,8 +72,8 @@ export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: Medi
 		stream.destroy()
 		try {
 			await fs.unlink(filePath)
-		} catch{
-			//
+		} catch(error) {
+			logger.trace(error)
 		}
 
 		throw error
@@ -90,7 +90,6 @@ export async function getMediaKeys(buffer: Uint8Array | string | null | undefine
 		buffer = Buffer.from(buffer.replace('data:;base64,', ''), 'base64')
 	}
 
-	// expand using HKDF to 112 bytes, also pass in the relevant app info
 	const expandedMediaKey = await hkdf(buffer, 112, { info: hkdfInfoKey(mediaType) })
 	return {
 		iv: expandedMediaKey.slice(0, 16),
@@ -241,25 +240,22 @@ export async function getAudioWaveform(buffer: Buffer | string | Readable, logge
 
 		const audioBuffer = await decoder(audioData)
 
-		const rawData = audioBuffer.getChannelData(0) // We only need to work with one channel of data
-		const samples = 64 // Number of samples we want to have in our final data set
-		const blockSize = Math.floor(rawData.length / samples) // the number of samples in each subdivision
+		const rawData = audioBuffer.getChannelData(0)
+		const samples = 64
+		const blockSize = Math.floor(rawData.length / samples)
 		const filteredData: number[] = []
 		for(let i = 0; i < samples; i++) {
-			const blockStart = blockSize * i // the location of the first sample in the block
+			const blockStart = blockSize * i
 			let sum = 0
 			for(let j = 0; j < blockSize; j++) {
-				sum = sum + Math.abs(rawData[blockStart + j]) // find the sum of all the samples in the block
+				sum = sum + Math.abs(rawData[blockStart + j])
 			}
 
-			filteredData.push(sum / blockSize) // divide the sum by the block size to get the average
+			filteredData.push(sum / blockSize)
 		}
 
-		// This guarantees that the largest data point will be set to 1, and the rest of the data will scale proportionally.
 		const multiplier = Math.pow(Math.max(...filteredData), -1)
 		const normalizedData = filteredData.map((n) => n * multiplier)
-
-		// Generate waveform like WhatsApp
 		const waveform = new Uint8Array(
 			normalizedData.map((n) => Math.floor(100 * n))
 		)
@@ -269,7 +265,6 @@ export async function getAudioWaveform(buffer: Buffer | string | Readable, logge
 		logger?.error('Failed to generate waveform: ' + e)
 	}
 }
-
 
 export const toReadable = (buffer: Buffer) => {
 	const readable = new Readable({ read: () => { } })
@@ -453,7 +448,6 @@ export const encryptedStream = async(
 			fileLength
 		}
 	} catch(error) {
-		// destroy all streams with error
 		encFileWriteStream.destroy()
 		originalFileStream?.destroy?.()
 		aes.destroy()
@@ -663,7 +657,6 @@ export const getWAUploadToServer = (
 
 			const auth = encodeURIComponent(uploadInfo.auth)
 			const url = `https://${hostname}${MEDIA_PATH_MAP[mediaType]}/${fileEncSha256B64}?auth=${auth}&token=${fileEncSha256B64}`
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			let result: any
 			try {
 
@@ -758,8 +751,7 @@ export const encryptMediaRetryRequest = async(
 				attrs: {
 					jid: key.remoteJid!,
 					'from_me': (!!key.fromMe).toString(),
-					// @ts-ignore
-					participant: key.participant || undefined
+					participant: key?.participant
 				}
 			}
 		]

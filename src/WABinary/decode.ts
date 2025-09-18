@@ -13,7 +13,7 @@ export const decompressingIfRequired = async(buffer: Buffer) => {
 
 	if(2 & buffer.readUInt8()) {
 		buffer = await inflatePromise(buffer.slice(1))
-	} else { // nodes with no compression have a 0x00 prefix, we remove that
+	} else {
 		buffer = buffer.slice(1)
 	}
 
@@ -225,7 +225,6 @@ export const decodeDecompressedBinaryNode = (
 		throw new Error('invalid node')
 	}
 
-	// read the attributes in
 	const attributesLength = (listSize - 1) >> 1
 	for(let i = 0; i < attributesLength; i++) {
 		const key = readString(readByte())
@@ -267,14 +266,12 @@ export const decodeDecompressedBinaryNode = (
 }
 
 export const decodeBinaryNode = async(buff: Buffer): Promise<BinaryNode> => {
-	// Validate buffer before processing
 	if(!buff || buff.length === 0) {
 		throw new Error('Invalid buffer: Buffer is null or empty')
 	}
 
 	const decompBuff = await decompressingIfRequired(buff)
 
-	// Validate decompressed buffer
 	if(!decompBuff || decompBuff.length === 0) {
 		throw new Error('Invalid decompressed buffer: Buffer is null or empty')
 	}

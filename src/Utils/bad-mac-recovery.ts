@@ -30,7 +30,7 @@ export class BadMACRecoveryManager {
 
 		return (
 			msg.includes('bad mac') ||
-			msg.includes('bac mac') || // Adicionado para capturar typos no erro
+			msg.includes('bac mac') ||
 			msg.includes('mac error') ||
 			msg.includes('authentication failed') ||
 			msg.includes('mac verification failed') ||

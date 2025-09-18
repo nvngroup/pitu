@@ -20,10 +20,8 @@ export const enhancedDownloadEncryptedContent = async(
 	options: MediaDownloadOptions = {}
 ) => {
 	try {
-		// Primeiro tenta usar o método original
 		return await originalDownloadEncryptedContent(downloadUrl, keys, options)
 	} catch(error) {
-		// Se der erro, registra e tenta o método alternativo
 		logger.error('Error in original decryption, trying alternative method', error)
 
 		const response = await axios.get(downloadUrl, {

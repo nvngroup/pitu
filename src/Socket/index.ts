@@ -4,7 +4,6 @@ import { CacheManager } from './cache-manager'
 import { makeCommunitiesSocket } from './communities'
 import { QueryManager } from './query-manager'
 
-// export the last socket layer
 const makeWASocket = (config: UserFacingSocketConfig) => {
 	const newConfig = {
 		...DEFAULT_CONNECTION_CONFIG,

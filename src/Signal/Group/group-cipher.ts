@@ -117,7 +117,6 @@ export class GroupCipher {
 		try {
 			return decrypt(key, ciphertext, iv)
 		} catch(e) {
-			// Log detalhado do erro para debugging
 			logger.error({
 				error: e.message,
 				keyLength: key.length,
@@ -126,7 +125,6 @@ export class GroupCipher {
 				senderKeyName: this.senderKeyName.toString()
 			}, 'Group decryption failed - potential MAC error')
 
-			// Propaga o erro original para que o handler MAC possa processá-lo
 			throw e
 		}
 	}

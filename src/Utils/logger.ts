@@ -21,6 +21,3 @@ const transport = P.transport({
 })
 
 export default P(transport)
-
-
-// export default P({ timestamp: () => `,"time":"${new Date().toJSON()}"` })

@@ -46,8 +46,6 @@ export const readAndEmitEventStream = (filename: string, delayIntervalMs = 0) =>
 			input: fileStream,
 			crlfDelay: Infinity
 		})
-		// Note: we use the crlfDelay option to recognize all instances of CR LF
-		// ('\r\n') in input.txt as a single line break.
 		for await (const line of rl) {
 			if(line) {
 				const { event, data } = JSON.parse(line)

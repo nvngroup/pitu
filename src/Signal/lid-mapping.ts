@@ -2,7 +2,6 @@ import type { SignalKeyStoreWithTransaction } from '../Types'
 import logger from '../Utils/logger'
 import { isJidUser, isLidUser, jidDecode } from '../WABinary'
 
-// Constants for LID mapping operations
 const LID_MAPPING_CONSTANTS = {
 	STORAGE_KEY: 'lid-mapping' as const,
 	REVERSE_SUFFIX: '_reverse' as const,
@@ -11,7 +10,6 @@ const LID_MAPPING_CONSTANTS = {
 	WHATSAPP_DOMAIN: '@s.whatsapp.net' as const
 } as const
 
-// Types for better type safety
 export interface LIDMapping {
 	pnUser: string
 	lidUser: string
@@ -93,7 +91,6 @@ export class LIDMappingStore {
 	 */
 	async storeLIDPNMapping(lid: string, pn: string): Promise<LIDMappingResult> {
 		try {
-			// Validate input parameters
 			if(!lid?.trim() || !pn?.trim()) {
 				const error = 'LID and PN parameters cannot be empty'
 				logger.error(error)
@@ -231,12 +228,10 @@ export class LIDMappingStore {
 				return false
 			}
 
-			// Get current mapping to identify both keys
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [userIdentifier])
 			const mappedUser = stored[userIdentifier]
 
 			if(!mappedUser) {
-				// Try reverse lookup
 				const reverseKey = `${userIdentifier}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
 				const reverseStored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
 				const reverseMappedUser = reverseStored[reverseKey]
@@ -246,7 +241,6 @@ export class LIDMappingStore {
 					return false
 				}
 
-				// Remove both forward and reverse mappings
 				await this.keys.transaction(async() => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
@@ -256,7 +250,6 @@ export class LIDMappingStore {
 					})
 				})
 			} else {
-				// Remove both forward and reverse mappings
 				await this.keys.transaction(async() => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
@@ -294,7 +287,6 @@ export class LIDMappingStore {
 				return true
 			}
 
-			// Check reverse mapping
 			const reverseKey = `${userIdentifier}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
 			const reverseStored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
 			return !!reverseStored[reverseKey]
@@ -311,8 +303,6 @@ export class LIDMappingStore {
 	 */
 	async getMappingStats(): Promise<{ totalMappings: number; users: string[] }> {
 		try {
-			// This is a simplified implementation - in a real scenario,
-			// you'd need to iterate through all keys in the storage
 			logger.trace('Getting mapping statistics...')
 			return {
 				totalMappings: 0,

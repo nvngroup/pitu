@@ -23,7 +23,7 @@ export function makeCacheableSignalKeyStore(
 	_cache?: CacheStore
 ): SignalKeyStore {
 	const cache = _cache || new NodeCache({
-		stdTTL: DEFAULT_CACHE_TTLS.SIGNAL_STORE, // 15 minutes
+		stdTTL: DEFAULT_CACHE_TTLS.SIGNAL_STORE,
 		useClones: false,
 		deleteOnExpire: true,
 	})
@@ -87,8 +87,6 @@ export const addTransactionCapability = (
 	logger: ILogger,
 	{ maxCommitRetries, delayBetweenTriesMs }: TransactionCapabilityOptions
 ): SignalKeyStoreWithTransaction => {
-	// number of queries made to the DB during the transaction
-	// only there for logging purposes
 	let dbQueriesInTransaction = 0
 	let transactionCache: SignalDataSet = { }
 	let mutations: SignalDataSet = { }
@@ -102,7 +100,6 @@ export const addTransactionCapability = (
 				const idsRequiringFetch = dict
 					? ids.filter(item => typeof dict[item] === 'undefined')
 					: ids
-				// only fetch if there are any items to fetch
 				if(idsRequiringFetch.length) {
 					dbQueriesInTransaction += 1
 					const result = await state.get(type, idsRequiringFetch)
@@ -152,16 +149,12 @@ export const addTransactionCapability = (
 
 			try {
 				result = await work()
-				// commit if this is the outermost transaction
 				if(transactionsInProgress === 1) {
 					if(Object.keys(mutations).length) {
 						logger.trace('committing transaction')
-						// retry mechanism to ensure we've some recovery
-						// in case a transaction fails in the first attempt
 						let tries = maxCommitRetries
 						while(tries) {
 							tries -= 1
-							//eslint-disable-next-line max-depth
 							try {
 								await state.set(mutations)
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')

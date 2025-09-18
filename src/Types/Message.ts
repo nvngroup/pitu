@@ -8,7 +8,6 @@ import { BinaryNode } from '../WABinary'
 import type { GroupMetadata } from './GroupMetadata'
 import { CacheStore } from './Socket'
 
-// export the WAMessage Prototypes
 export { waproto as WAProto }
 export type WAMessage = waproto.IWebMessageInfo
 export type WAMessageContent = waproto.IMessage
@@ -32,7 +31,6 @@ import { ILogger } from '../Utils/logger'
 export type WAMediaPayloadURL = { url: URL | string }
 export type WAMediaPayloadStream = { stream: Readable }
 export type WAMediaUpload = Buffer | WAMediaPayloadStream | WAMediaPayloadURL
-/** Set of message types that are supported by the library */
 export type MessageType = keyof waproto.Message
 
 export type MessageWithContextInfo =
@@ -89,13 +87,10 @@ export interface WAUrlInfo {
     originalThumbnailUrl?: string
 }
 
-// types to generate WA messages
 type Mentionable = {
-    /** list of jids that are mentioned in the accompanying text */
     mentions?: string[]
 }
 type Contextable = {
-    /** add contextInfo to the message */
     contextInfo?: waproto.IContextInfo
 }
 type ViewOnce = {
@@ -103,12 +98,10 @@ type ViewOnce = {
 }
 
 type Buttonable = {
-    /** add buttons to the message  */
     buttons?: waproto.Message.ButtonsMessage.IButton[]
 }
 
 type Templatable = {
-    /** add buttons to the message (conflicts with normal buttons)*/
     templateButtons?: waproto.IHydratedTemplateButton[]
 
     footer?: string
@@ -119,16 +112,12 @@ type Editable = {
 }
 
 type Listable = {
-    /** Sections of the List */
     sections?: waproto.Message.ListMessage.ISection[]
 
-    /** Title of a List Message only */
     title?: string
 
-    /** Text of the bnutton on the list (required) */
     buttonText?: string
 
-    /** ListType of the List */
     listType?: waproto.Message.ListMessage.ListType
 }
 
@@ -141,7 +130,6 @@ export type PollMessageOptions = {
     name: string
     selectableCount?: number
     values: string[]
-    /** 32 byte message secret to encrypt poll selections */
     messageSecret?: Uint8Array
     toAnnouncementGroup?: boolean
 }
@@ -270,7 +258,6 @@ export type AnyMessageContent = AnyRegularMessageContent | {
 	forward: WAMessage
 	force?: boolean
 } | {
-    /** Delete your message or anyone's message in a group (admin required) */
 	delete: WAMessageKey
 } | {
 	disappearingMessagesInChat: boolean | number
@@ -279,41 +266,27 @@ export type AnyMessageContent = AnyRegularMessageContent | {
 export type GroupMetadataParticipants = Pick<GroupMetadata, 'participants'>
 
 type MinimalRelayOptions = {
-    /** override the message ID with a custom provided string */
     messageId?: string
-    /** should we use group metadata cache, or fetch afresh from the server; default assumed to be "true" */
     useCachedGroupMetadata?: boolean
 }
 
 export type MessageRelayOptions = MinimalRelayOptions & {
-    /** only send to a specific participant; used when a message decryption fails for a single user */
     participant?: { jid: string, count: number }
-    /** additional attributes to add to the WA binary node */
     additionalAttributes?: { [_: string]: string }
     additionalNodes?: BinaryNode[]
-    /** should we use the devices cache, or fetch afresh from the server; default assumed to be "true" */
     useUserDevicesCache?: boolean
-    /** jid list of participants for status@broadcast */
     statusJidList?: string[],
     isretry?: boolean
 }
 
 export type MiscMessageGenerationOptions = MinimalRelayOptions & {
-    /** optional, if you want to manually set the timestamp of the message */
 	timestamp?: Date
-    /** the message you want to quote */
 	quoted?: WAMessage
-    /** disappearing messages settings */
     ephemeralExpiration?: number | string
-    /** timeout for media upload to WA server */
     mediaUploadTimeoutMs?: number
-    /** jid list of participants for status@broadcast */
     statusJidList?: string[]
-    /** backgroundcolor for status */
     backgroundColor?: string
-    /** font type for status */
     font?: number
-    /** if it is broadcast */
     broadcast?: boolean
 }
 export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
@@ -326,7 +299,6 @@ export type MediaGenerationOptions = {
 	logger?: ILogger
     mediaTypeOverride?: MediaType
     upload: WAMediaUploadFunction
-    /** cache media so it does not have to be uploaded again */
     mediaCache?: CacheStore
 
     mediaUploadTimeoutMs?: number

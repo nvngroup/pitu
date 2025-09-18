@@ -43,7 +43,7 @@ const generateMac = (operation: waproto.SyncdMutation.SyncdOperation, data: Buff
 
 	const keyData = getKeyData()
 
-	const last = Buffer.alloc(8) // 8 bytes
+	const last = Buffer.alloc(8)
 	last.set([keyData.length], last.length - 1)
 
 	const total = Buffer.concat([keyData, data, last])
@@ -74,11 +74,9 @@ const makeLtHashGenerator = ({ indexValueMap, hash }: Pick<LTHashState, 'hash' |
 					throw new Boom('tried remove, but no previous op', { data: { indexMac, valueMac } })
 				}
 
-				// remove from index value mac, since this mutation is erased
 				delete indexValueMap[indexMacBase64]
 			} else {
 				addBuffs.push(new Uint8Array(valueMac).buffer)
-				// add this index into the history map
 				indexValueMap[indexMacBase64] = { valueMac }
 			}
 
@@ -143,14 +141,10 @@ export const encodeSyncdPatch = async(
 		version: apiVersion
 	})
 	const encoded = waproto.SyncActionData.encode(dataProto).finish()
-
 	const keyValue = await mutationKeys(key.keyData!)
-
 	const encValue = aesEncrypt(encoded, keyValue.valueEncryptionKey)
 	const valueMac = generateMac(operation, encValue, encKeyId, keyValue.valueMacKey)
 	const indexMac = hmacSign(indexBuffer, keyValue.indexKey)
-
-	// update LT hash
 	const generator = makeLtHashGenerator(state)
 	generator.mix({ indexMac, valueMac, operation })
 	Object.assign(state, await generator.finish())
@@ -193,15 +187,9 @@ export const decodeSyncdMutations = async(
 	validateMacs: boolean
 ) => {
 	const ltGenerator = makeLtHashGenerator(initialState)
-	// indexKey used to HMAC sign record.index.blob
-	// valueEncryptionKey used to AES-256-CBC encrypt record.value.blob[0:-32]
-	// the remaining record.value.blob[0:-32] is the mac, it the HMAC sign of key.keyId + decoded proto data + length of bytes in keyId
 	for(const msgMutation of msgMutations) {
-		// if it's a syncdmutation, get the operation property
-		// otherwise, if it's only a record -- it'll be a SET mutation
 		const operation = 'operation' in msgMutation ? msgMutation.operation : waproto.SyncdMutation.SyncdOperation.SET
 		const record = ('record' in msgMutation && !!msgMutation.record) ? msgMutation.record : msgMutation as waproto.ISyncdRecord
-
 		const key = await getKey(record.keyId!.id!)
 		const content = Buffer.from(record.value!.blob!)
 		const encContent = content.slice(0, -32)
@@ -465,7 +453,6 @@ export const decodePatches = async(
 			}
 		}
 
-		// clear memory used up by the mutations
 		syncd.mutations = []
 	}
 
@@ -573,7 +560,7 @@ export const chatModificationToAppPatch = (
 					messageRange: getMessageRange(mod.lastMessages)
 				}
 			},
-			index: ['clearChat', jid, '1' /*the option here is 0 when keep starred messages is enabled*/, '0'],
+			index: ['clearChat', jid, '1', '0'],
 			type: 'regular_high',
 			apiVersion: 6,
 			operation: OP.SET
@@ -789,28 +776,13 @@ export const processSyncAction = (
 			]
 		)
 	} else if(action?.archiveChatAction || type === 'archive' || type === 'unarchive') {
-		// okay so we've to do some annoying computation here
-		// when we're initially syncing the app state
-		// there are a few cases we need to handle
-		// 1. if the account unarchiveChats setting is true
-		//   a. if the chat is archived, and no further messages have been received -- simple, keep archived
-		//   b. if the chat was archived, and the user received messages from the other person afterwards
-		//		then the chat should be marked unarchved --
-		//		we compare the timestamp of latest message from the other person to determine this
-		// 2. if the account unarchiveChats setting is false -- then it doesn't matter,
-		//	it'll always take an app state action to mark in unarchived -- which we'll get anyway
 		const archiveAction = action?.archiveChatAction
 		const isArchived = archiveAction
 			? archiveAction.archived
 			: type === 'archive'
-		// // basically we don't need to fire an "archive" update if the chat is being marked unarchvied
-		// // this only applies for the initial sync
-		// if(isInitialSync && !isArchived) {
-		// 	isArchived = false
-		// }
 
 		const msgRange = !accountSettings?.unarchiveChats ? undefined : archiveAction?.messageRange
-		// logger?.debug({ chat: id, syncAction }, 'message range archive')
+		logger?.debug({ chat: id, syncAction }, 'message range archive')
 
 		ev.emit('chats.update', [{
 			id,
@@ -819,9 +791,6 @@ export const processSyncAction = (
 		}])
 	} else if(action?.markChatAsReadAction) {
 		const markReadAction = action.markChatAsReadAction
-		// basically we don't need to fire an "read" update if the chat is being marked as read
-		// because the chat is read by default
-		// this only applies for the initial sync
 		const isNullUpdate = isInitialSync && markReadAction.read
 
 		ev.emit('chats.update', [{

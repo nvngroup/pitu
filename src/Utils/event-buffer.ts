@@ -35,7 +35,6 @@ type BaileysEventData = Partial<BaileysEventMap>
 const BUFFERABLE_EVENT_SET = new Set<BaileysEvent>(BUFFERABLE_EVENT)
 
 type BaileysBufferableEventEmitter = BaileysEventEmitter & {
-	/** Use to process events in a batch */
 	process(handler: (events: BaileysEventData) => void | Promise<void>): (() => void)
 	/**
 	 * starts buffering events, call flush() to release them
@@ -50,7 +49,6 @@ type BaileysBufferableEventEmitter = BaileysEventEmitter & {
 	 * @returns returns true if the flush actually happened, otherwise false
 	 */
 	flush(): boolean
-	/** is there an ongoing buffer */
 	isBuffering(): boolean
 }
 
@@ -66,7 +64,6 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	let data = makeBufferData()
 	let isBuffering = false
 
-	// take the generic event and fire it as a baileys event
 	ev.on('event', (map: BaileysEventData) => {
 		for(const event in map) {
 			ev.emit(event, map[event])
@@ -81,7 +78,6 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	}
 
 	function flush() {
-		// no buffer going on
 		if(!isBuffering) {
 			return false
 		}
@@ -144,9 +140,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 				buffer()
 				try {
 					return await work(...args)
-				} finally {
-					// Flushing is now controlled centrally by the state machine.
-				}
+				} finally { }
 			}
 		},
 		on: (...args) => ev.on(...args),
@@ -182,7 +176,6 @@ function append<E extends BufferableEvent>(
 	data: BufferedEventData,
 	historyCache: Set<string>,
 	event: E,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	eventData: any,
 	logger: ILogger
 ) {
@@ -264,23 +257,17 @@ function append<E extends BufferableEvent>(
 			if(conditionMatches) {
 				delete update.conditional
 
-				// if there is an existing upsert, merge the update into it
 				const upsert = data.historySets.chats[chatId] || data.chatUpserts[chatId]
 				if(upsert) {
 					concatChats(upsert, update)
 				} else {
-					// merge the update into the existing update
 					const chatUpdate = data.chatUpdates[chatId] || { }
 					data.chatUpdates[chatId] = concatChats(chatUpdate, update)
 				}
 			} else if(conditionMatches === undefined) {
-				// condition yet to be fulfilled
 				data.chatUpdates[chatId] = update
 			}
-			// otherwise -- condition not met, update is invalid
 
-			// if the chat has been updated
-			// ignore any existing chat delete
 			if(data.chatDeletes.has(chatId)) {
 				data.chatDeletes.delete(chatId)
 			}
@@ -293,7 +280,6 @@ function append<E extends BufferableEvent>(
 				data.chatDeletes.add(chatId)
 			}
 
-			// remove any prior updates & upserts
 			if(data.chatUpdates[chatId]) {
 				delete data.chatUpdates[chatId]
 			}
@@ -337,12 +323,10 @@ function append<E extends BufferableEvent>(
 		const contactUpdates = eventData as BaileysEventMap['contacts.update']
 		for(const update of contactUpdates) {
 			const id = update.id!
-			// merge into prior upsert
 			const upsert = data.historySets.contacts[id] || data.contactUpserts[id]
 			if(upsert) {
 				Object.assign(upsert, update)
 			} else {
-				// merge into prior update
 				const contactUpdate = data.contactUpdates[id] || { }
 				data.contactUpdates[id] = Object.assign(contactUpdate, update)
 			}
@@ -391,9 +375,6 @@ function append<E extends BufferableEvent>(
 			const existing = data.historySets.messages[keyStr] || data.messageUpserts[keyStr]?.message
 			if(existing) {
 				Object.assign(existing, update)
-				// if the message was received & read by us
-				// the chat counter must have been incremented
-				// so we need to decrement it
 				if(update.status === WAMessageStatus.READ && !key.fromMe) {
 					decrementChatReadCounterIfMsgDidUnread(existing)
 				}
@@ -426,6 +407,7 @@ function append<E extends BufferableEvent>(
 			}
 		} else {
 			// TODO: add support
+			logger.trace({ eventData }, 'messages.delete with "all" not yet supported in event buffer')
 		}
 
 		break
@@ -493,8 +475,6 @@ function append<E extends BufferableEvent>(
 	}
 
 	function decrementChatReadCounterIfMsgDidUnread(message: WAMessage) {
-		// decrement chat unread counter
-		// if the message has already been marked read by us
 		const chatId = message.key.remoteJid!
 		const chat = data.chatUpdates[chatId] || data.chatUpserts[chatId]
 		if(
@@ -594,7 +574,7 @@ function consolidateEvents(data: BufferedEventData) {
 }
 
 function concatChats<C extends Partial<Chat>>(a: C, b: Partial<Chat>) {
-	if(b.unreadCount === null && // neutralize unread counter
+	if(b.unreadCount === null &&
 		a.unreadCount! < 0) {
 		a.unreadCount = undefined
 		b.unreadCount = undefined

@@ -15,11 +15,10 @@ export interface MACErrorInfo {
 export class MACErrorManager {
 	private errorHistory = new Map<string, MACErrorInfo[]>()
 	private maxRetries = 3
-	private cooldownPeriod = 60000 // 1 minuto
-	private cleanupInterval = 300000 // 5 minutos
+	private cooldownPeriod = 60000
+	private cleanupInterval = 300000
 
 	constructor() {
-		// Limpa histórico antigo periodicamente
 		setInterval(() => this.cleanupOldErrors(), this.cleanupInterval)
 	}
 
@@ -32,7 +31,7 @@ export class MACErrorManager {
 
 		const macPatterns = [
 			'bad mac',
-			'bac mac', // Adicionado para capturar typos no erro
+			'bac mac',
 			'invalid mac',
 			'mac verification failed',
 			'mac error',
@@ -44,7 +43,6 @@ export class MACErrorManager {
 
 		return macPatterns.some(pattern => errorMsg.includes(pattern) || stackTrace.includes(pattern)
 		) || (
-			// Detectar erros específicos de session_cipher.js
 			stackTrace.includes('session_cipher.js') &&
 			(errorMsg.includes('mac') || errorMsg.includes('auth') || errorMsg.includes('decrypt'))
 		)
@@ -134,12 +132,11 @@ export class MACErrorManager {
 				totalErrors: history.length,
 				recentErrors: recentErrors.length,
 				lastError: history[history.length - 1]?.timestamp || 0,
-				errorRate: recentErrors.length / Math.max(1, Math.ceil(this.cooldownPeriod / 60000)), // erros por minuto
+				errorRate: recentErrors.length / Math.max(1, Math.ceil(this.cooldownPeriod / 60000)),
 				needsIntervention: recentErrors.length >= this.maxRetries
 			}
 		}
 
-		// Estatísticas globais
 		let totalErrors = 0
 		let recentErrors = 0
 		let jidsWithIssues = 0
@@ -178,10 +175,8 @@ export class MACErrorManager {
 			logger.info({ jid }, 'Attempting automatic MAC error recovery')
 			await sessionResetCallback()
 
-			// Limpar alguns erros após recovery bem-sucedida
 			const history = this.errorHistory.get(jid) || []
 			if(history.length > 1) {
-				// Manter apenas o último erro como referência
 				this.errorHistory.set(jid, [history[history.length - 1]])
 			}
 
@@ -208,7 +203,7 @@ export class MACErrorManager {
 			return 'mac_verification_failed'
 		}
 
-		return 'bad_mac' // default
+		return 'bad_mac'
 	}
 
 	private getAttemptCount(jid: string): number {
@@ -219,7 +214,7 @@ export class MACErrorManager {
 	}
 
 	private cleanupOldErrors(): void {
-		const cutoff = Date.now() - (this.cooldownPeriod * 10) // 10x cooldown period
+		const cutoff = Date.now() - (this.cooldownPeriod * 10)
 		let cleaned = 0
 
 		this.errorHistory.forEach((history, jid) => {
@@ -238,7 +233,6 @@ export class MACErrorManager {
 	}
 }
 
-// Instância global do gerenciador
 export const macErrorManager = new MACErrorManager()
 
 /**
@@ -266,7 +260,6 @@ export async function handleMACError(
 		}
 	}
 
-	// Sempre relança o erro com informações adicionais
 	throw new Boom(
 		`MAC verification failed for ${jid}: ${error.message}`,
 		{

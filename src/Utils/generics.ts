@@ -253,7 +253,6 @@ export const generateMessageIDV2 = (userId?: string): string => {
 	return '3EB0' + hash.toString('hex').toUpperCase().substring(0, 18)
 }
 
-// generate a random ID to attach to a message
 export const generateMessageID = () => '3EB0' + randomBytes(18).toString('hex').toUpperCase()
 
 export function bindWaitForEvent<T extends keyof BaileysEventMap>(ev: BaileysEventEmitter, event: T) {
@@ -434,7 +433,6 @@ export const getCallStatusFromNode = ({ tag, attrs }: BinaryNode) => {
 		if(attrs.reason === 'timeout') {
 			status = 'timeout'
 		} else {
-			//fired when accepted/rejected/timeout/caller hangs up
 			status = 'terminate'
 		}
 
@@ -463,10 +461,9 @@ export const getCodeFromWSError = (error: Error) => {
 			statusCode = code
 		}
 	} else if(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(error as any)?.code?.startsWith('E')
 		|| error?.message?.includes('timed out')
-	) { // handle ETIMEOUT, ENOTFOUND etc
+	) {
 		statusCode = 408
 	}
 
@@ -481,7 +478,6 @@ export const isWABusinessPlatform = (platform: string) => {
 	return platform === 'smbi' || platform === 'smba'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function trimUndefined(obj: {[_: string]: any}) {
 	for(const key in obj) {
 		if(typeof obj[key] === 'undefined') {

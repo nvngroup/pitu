@@ -19,7 +19,7 @@ export class CacheManager {
 			const cache = new NodeCache({
 				stdTTL: customTTL || DEFAULT_CACHE_TTLS[type],
 				useClones: false,
-				checkperiod: Math.max(60, (customTTL || DEFAULT_CACHE_TTLS[type]) / 10), // Cleanup expired keys
+				checkperiod: Math.max(60, (customTTL || DEFAULT_CACHE_TTLS[type]) / 10),
 				maxKeys: this.getMaxKeysForType(type)
 			}) as CacheStore
 
@@ -45,7 +45,6 @@ export class CacheManager {
 
 		this.instances.forEach((cache, key) => {
 			try {
-				// Try to get stats if the cache implementation supports it
 				const nodeCache = cache as { keys?: () => string[]; getStats?: () => unknown }
 				stats[key] = {
 					keys: nodeCache.keys?.() || [],

@@ -30,13 +30,10 @@ const REAL_MSG_REQ_ME_STUB_TYPES = new Set([
 	WAMessageStubType.GROUP_PARTICIPANT_ADD
 ])
 
-/** Cleans a received message to further processing */
 export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => {
-	// ensure remoteJid and participant doesn't have device or agent in it
 	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid!)
 	message.key.participant = message.key.participant ? jidNormalizedUser(message.key.participant) : undefined
 	const content = normalizeMessageContent(message.message)
-	// if the message has a reaction, ensure fromMe & remoteJid are from our perspective
 	if(content?.reactionMessage) {
 		normaliseKey(content.reactionMessage.key!)
 	}
@@ -46,19 +43,11 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 	}
 
 	function normaliseKey(msgKey: waproto.IMessageKey) {
-		// if the reaction is from another user
-		// we've to correctly map the key to this user's perspective
 		if(!message.key.fromMe) {
-			// if the sender believed the message being reacted to is not from them
-			// we've to correct the key to be from them, or some other participant
 			msgKey.fromMe = !msgKey.fromMe
 				? areJidsSameUser(msgKey.participant || msgKey.remoteJid!, meId)
-				// if the message being reacted to, was from them
-				// fromMe automatically becomes false
 				: false
-			// set the remoteJid to being the same as the chat the message came from
 			msgKey.remoteJid = message.key.remoteJid
-			// set participant of the message
 			msgKey.participant = msgKey.participant || message.key.participant
 		}
 	}
@@ -102,13 +91,9 @@ export const getChatId = ({ remoteJid, participant, fromMe }: waproto.IMessageKe
 }
 
 type PollContext = {
-	/** normalised jid of the person that created the poll */
 	pollCreatorJid: string
-	/** ID of the poll creation message */
 	pollMsgId: string
-	/** poll creation message enc key */
 	pollEncKey: Uint8Array
-	/** jid of the person that voted */
 	voterJid: string
 }
 
@@ -171,7 +156,6 @@ const processMessage = async(
 	if(isRealMsg) {
 		chat.messages = [{ message }]
 		chat.conversationTimestamp = toNumber(message.messageTimestamp)
-		// only increment unread count if not CIPHERTEXT and from another person
 		if(shouldIncrementChatUnread(message)) {
 			chat.unreadCount = (chat.unreadCount || 0) + 1
 		}
@@ -179,8 +163,6 @@ const processMessage = async(
 
 	const content = normalizeMessageContent(message.message)
 
-	// unarchive chat if it's a real message, or someone reacted to our message
-	// and we've the unarchive chats setting on
 	if(
 		(isRealMsg || content?.reactionMessage?.key?.fromMe)
 		&& accountSettings?.unarchiveChats
@@ -284,10 +266,8 @@ const processMessage = async(
 				const { peerDataOperationResult } = response
 				for(const result of peerDataOperationResult!) {
 					const { placeholderMessageResendResponse: retryResponse } = result
-					//eslint-disable-next-line max-depth
 					if(retryResponse) {
 						const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
-						// wait till another upsert event is available, don't want it to be part of the PDO response message
 						setTimeout(() => {
 							ev.emit('messages.upsert', {
 								messages: [webMessageInfo],
@@ -304,7 +284,6 @@ const processMessage = async(
 				'messages.update',
 				[
 					{
-					  // flip the sender / fromMe properties because they're in the perspective of the sender
 						key: { ...message.key, id: protocolMsg.key?.id },
 						update: {
 							message: {
@@ -332,7 +311,6 @@ const processMessage = async(
 		}])
 	} else if(message.messageStubType) {
 		const jid = message.key?.remoteJid!
-		//let actor = whatsappID (message.participant)
 		let participants: string[]
 		const emitParticipantsUpdate = (action: ParticipantAction) => (
 			ev.emit('group-participants.update', { id: jid, author: message.participant!, participants, action })
@@ -356,7 +334,6 @@ const processMessage = async(
 		case WAMessageStubType.GROUP_PARTICIPANT_REMOVE:
 			participants = message.messageStubParameters || []
 			emitParticipantsUpdate('remove')
-			// mark the chat read only if you left the group
 			if(participantsIncludesMe()) {
 				chat.readOnly = true
 			}
@@ -420,7 +397,6 @@ const processMessage = async(
 
 	} else if(content?.pollUpdateMessage) {
 		const creationMsgKey = content.pollUpdateMessage.pollCreationMessageKey!
-		// we need to fetch the poll creation message to get the poll enc key
 		const pollMsg = await getMessage(creationMsgKey)
 		if(pollMsg) {
 			const meIdNormalised = jidNormalizedUser(meId)

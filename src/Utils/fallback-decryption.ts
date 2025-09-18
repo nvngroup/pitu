@@ -35,7 +35,6 @@ export const tryAlternativeDecryption = (
 		logger.error('First decryption attempt failed: ' + error.message)
 	}
 
-	// Tentativa 2: AES-256-CBC
 	try {
 		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
@@ -43,7 +42,6 @@ export const tryAlternativeDecryption = (
 		logger.error('Second decryption attempt failed: ' + error.message)
 	}
 
-	// Tentativa 3: AES-256-CTR
 	try {
 		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
@@ -51,7 +49,6 @@ export const tryAlternativeDecryption = (
 		logger.error('Third decryption attempt failed: ' + error.message)
 	}
 
-	// Se todas as tentativas falharem, retorna um buffer vazio
 	logger.error('All decryption attempts failed')
 	return Buffer.from([])
 }
@@ -76,7 +73,6 @@ export const createFallbackDecryptStream = (
 			try {
 				let data = Buffer.concat([remainingBytes, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)])
 
-				// Configura para blocos de 16 bytes
 				const AES_CHUNK_SIZE = 16
 				const decryptLength = Math.floor(data.length / AES_CHUNK_SIZE) * AES_CHUNK_SIZE
 				remainingBytes = data.slice(decryptLength)
@@ -118,7 +114,6 @@ export const createFallbackDecryptStream = (
 						this.push(aes.final())
 					} catch(error) {
 						logger.error({ error }, 'Error in final decryption')
-						// Ignora erro e continua
 					}
 				}
 

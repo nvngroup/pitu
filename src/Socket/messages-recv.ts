@@ -77,7 +77,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		getUSyncDevices,
 	} = sock
 
-	/** this mutex ensures that each retryRequest will wait for the previous one to finish */
 	const retryMutex = makeMutex()
 
 	const msgRetryCache = config.msgRetryCounterCache || CacheManager.getInstance('MSG_RETRY')
@@ -235,7 +234,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const { account, signedPreKey, signedIdentityKey: identityKey } = authState.creds
 
 		if(retryCount === 1) {
-			//request a resend via phone
 			const msgId = await requestPlaceholderResend(msgKey)
 			logger.debug(`sendRetryRequest: requested placeholder resend for message ${msgId}`)
 		}
@@ -320,8 +318,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const identityNode = getBinaryNodeChild(node, 'identity')
 			if(identityNode) {
 				logger.trace({ jid: from }, 'identity changed')
-				// not handling right now
-				// signal will override new identity anyway
 			} else {
 				logger.trace({ node }, 'unknown encrypt notification')
 			}
@@ -377,8 +373,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const participants = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
 			if(
 				participants.length === 1 &&
-					// if recv. "remove" message and sender removed themselves
-					// mark as left
 					areJidsSameUser(participants[0], participant) &&
 					child.tag === 'remove'
 			) {
@@ -639,9 +633,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const msgs = await Promise.all(ids.map(id => getMessage({ ...key, id })))
 		const remoteJid: string = key.remoteJid!
 		const participant: string = key.participant || remoteJid
-		// if it's the primary jid sending the request
-		// just re-send the message to everyone
-		// prevents the first message decryption failure
 		const sendToAll = !jidDecode(participant)?.device
 		await assertSessions([participant], true)
 
@@ -706,8 +697,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						if(
 							typeof status !== 'undefined' &&
 							(
-								// basically, we only want to know when a message from us has been delivered to/read by the other person
-								// or another device of ours has read some messages
 								status >= waproto.WebMessageInfo.Status.SERVER_ACK ||
 								!isNodeFromMe
 							)
@@ -738,7 +727,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						}
 
 						if(attrs.type === 'retry') {
-							// correctly set who is asking for the retry
 							key.participant = key.participant || attrs.from
 							const retryNode = getBinaryNodeChild(node, 'retry')
 							if(willSendMessageAgain(ids[0], key.participant)) {
@@ -858,7 +846,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				if(decoded.pnToLidMappings && decoded.pnToLidMappings.length > 0) {
 					for(const mapping of decoded.pnToLidMappings) {
 						const pn = `${mapping.pn}@s.whatsapp.net`
-						// Use latestLid if available, otherwise assignedLid (proper LID refresh)
 						const lidValue = mapping.latestLid || mapping.assignedLid
 						const lid = `${lidValue}@lid`
 
@@ -1072,13 +1059,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		const existingCall = callOfferCache.get<WACallEvent>(call.id)
 
-		// use existing call info to populate this event
 		if(existingCall) {
 			call.isVideo = existingCall.isVideo
 			call.isGroup = existingCall.isGroup
 		}
 
-		// delete data once call has ended
 		if(status === 'reject' || status === 'accept' || status === 'timeout' || status === 'terminate') {
 			callOfferCache.del(call.id)
 		}
@@ -1105,8 +1090,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		// 	}
 		// }
 
-		// error in acknowledgement,
-		// device could not display the message
 		if(attrs.error) {
 			logger.warn({ attrs }, 'received error in ack')
 			ev.emit(
@@ -1126,8 +1109,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	/// processes a node with the given function
-	/// and adds the task to the existing buffer if we're buffering events
 	const processNodeWithBuffer = async<T>(
 		node: BinaryNode,
 		identifier: string,
@@ -1207,7 +1188,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	// recv a message
 	ws.on('CB:message', (node: BinaryNode) => {
 		processNode('message', node, 'processing message', handleMessage)
 	})
@@ -1229,7 +1209,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	})
 
 	ev.on('call', ([ call ]) => {
-		// missed call + group call notification message generation
 		if(call.status === 'timeout' || (call.status === 'offer' && call.isGroup)) {
 			const msg: waproto.IWebMessageInfo = {
 				key: {

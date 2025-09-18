@@ -76,10 +76,8 @@ export const generateRegistrationNode = (
 	{ registrationId, signedPreKey, signedIdentityKey }: SignalCreds,
 	config: SocketConfig
 ) => {
-	// the app version needs to be md5 hashed
-	// and passed in
 	const appVersionBuf = createHash('md5')
-		.update(config.version.join('.')) // join as string
+		.update(config.version.join('.'))
 		.digest()
 
 	const companion: waproto.IDeviceProps = {
@@ -140,13 +138,11 @@ export const configureSuccessfulPairing = (
 
 	const account = waproto.ADVSignedDeviceIdentity.decode(details!)
 	const { accountSignatureKey, accountSignature, details: deviceDetails } = account
-	// verify the device signature matches
 	const accountMsg = Buffer.concat([ Buffer.from([6, 0]), deviceDetails!, signedIdentityKey.public ])
 	if(!Curve.verify(accountSignatureKey!, accountMsg, accountSignature!)) {
 		throw new Boom('Failed to verify account signature')
 	}
 
-	// sign the details with our identity key
 	const devicePrefix = isHostedAccount ? Buffer.from([6, 6]) : Buffer.from([6, 1])
 	const deviceMsg = Buffer.concat([devicePrefix, deviceDetails!, signedIdentityKey.public, accountSignatureKey!])
 	account.deviceSignature = Curve.sign(signedIdentityKey.private, deviceMsg)
@@ -199,8 +195,6 @@ export const encodeSignedDeviceIdentity = (
 	includeSignatureKey: boolean
 ) => {
 	account = { ...account }
-	// set to null if we are not to include the signature key
-	// or if we are including the signature key but it is empty
 	if(!includeSignatureKey || !account.accountSignatureKey?.length) {
 		account.accountSignatureKey = null
 	}

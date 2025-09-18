@@ -40,21 +40,14 @@ export const jidDecode = (jid: string | undefined): FullJid | undefined => {
 	}
 }
 
-/** is the jid a user */
 export const areJidsSameUser = (jid1: string | undefined, jid2: string | undefined) => (
 	jidDecode(jid1)?.user === jidDecode(jid2)?.user
 )
-/** is the jid a user */
 export const isJidUser = (jid: string | undefined) => (jid?.endsWith('@s.whatsapp.net'))
-/** is the jid a group */
 export const isLidUser = (jid: string | undefined) => (jid?.endsWith('@lid'))
-/** is the jid a broadcast */
 export const isJidBroadcast = (jid: string | undefined) => (jid?.endsWith('@broadcast'))
-/** is the jid a group */
 export const isJidGroup = (jid: string | undefined) => (jid?.endsWith('@g.us'))
-/** is the jid the status broadcast */
 export const isJidStatusBroadcast = (jid: string) => jid === 'status@broadcast'
-/** is the jid a newsletter */
 export const isJidNewsletter = (jid: string | undefined) => (jid?.endsWith('@newsletter'))
 
 export const jidNormalizedUser = (jid: string | undefined) => {

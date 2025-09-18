@@ -22,7 +22,6 @@ export const downloadHistory = async(
 
 	let buffer = Buffer.concat(bufferArray)
 
-	// decompress buffer
 	const decompressed = await inflatePromise(buffer)
 	buffer = Buffer.from(decompressed)
 
@@ -59,7 +58,6 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 				messages.push(message)
 
 				if(!chat.messages?.length) {
-					// keep only the most recent message in the chat array
 					chat.messages = [{ message }]
 				}
 

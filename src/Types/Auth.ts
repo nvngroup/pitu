@@ -11,7 +11,7 @@ export type SignedKeyPair = {
 }
 
 export type ProtocolAddress = {
-	name: string // jid
+	name: string
 	deviceId: number
 }
 export type SignalIdentity = {
@@ -34,9 +34,7 @@ export type SignalCreds = {
 }
 
 export type AccountSettings = {
-    /** unarchive chats when a new message is received */
     unarchiveChats: boolean
-    /** the default mode to start new conversations with */
     defaultDisappearingMode?: Pick<waproto.IConversation, 'ephemeralExpiration' | 'ephemeralSettingTimestamp'>
 }
 
@@ -56,7 +54,6 @@ export type AuthenticationCreds = SignalCreds & {
     platform?: string
 
     processedHistoryMessages: MinimalMessage[]
-    /** number of times history & app state has been synced */
     accountSyncCounter: number
     accountSettings: AccountSettings
     registered: boolean
@@ -82,7 +79,6 @@ type Awaitable<T> = T | Promise<T>
 export type SignalKeyStore = {
     get<T extends keyof SignalDataTypeMap>(type: T, ids: string[]): Awaitable<{ [id: string]: SignalDataTypeMap[T] }>
     set(data: SignalDataSet): Awaitable<void>
-    /** clear all the data in the store */
     clear?(): Awaitable<void>
 }
 

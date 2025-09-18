@@ -109,14 +109,14 @@ export const MIN_PREKEY_COUNT = 5
 
 export const INITIAL_PREKEY_COUNT = 30
 
-export const UPLOAD_TIMEOUT = 30000 // 30 seconds
-export const MIN_UPLOAD_INTERVAL = 5000 // 5 seconds minimum between uploads
+export const UPLOAD_TIMEOUT = 30000
+export const MIN_UPLOAD_INTERVAL = 5000
 
 export const DEFAULT_CACHE_TTLS = {
-	SIGNAL_STORE: 60 * 60, // 1 hour
-	MSG_RETRY: 60 * 60, // 1 hour
-	CALL_OFFER: 5 * 60, // 5 minutes
-	USER_DEVICES: 15 * 60, // 15 minutes
-	ON_WHATSAPP: 24 * 60 * 60, // 24 hours
-	PLACEHOLDER_RESEND: 60 * 60, // 1 hour
+	SIGNAL_STORE: 60 * 60,
+	MSG_RETRY: 60 * 60,
+	CALL_OFFER: 5 * 60,
+	USER_DEVICES: 15 * 60,
+	ON_WHATSAPP: 24 * 60 * 60,
+	PLACEHOLDER_RESEND: 60 * 60,
 }

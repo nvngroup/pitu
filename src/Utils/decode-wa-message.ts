@@ -72,11 +72,9 @@ export const extractAddressingContext = (stanza: BinaryNode) => {
 	let recipientAlt: string | undefined
 
 	if(addressingMode === 'lid') {
-		// Message is LID-addressed: sender is LID, extract corresponding PN
 		senderAlt = stanza.attrs.participant_pn || stanza.attrs.sender_pn
 		recipientAlt = stanza.attrs.recipient_pn
 	} else {
-		// Message is PN-addressed: sender is PN, extract corresponding LID
 		senderAlt = stanza.attrs.participant_lid || stanza.attrs.sender_lid
 		recipientAlt = stanza.attrs.recipient_lid
 	}
@@ -222,7 +220,6 @@ export const handleDecryptionError = async(
 			recommendations: macErrorManager.getRecoveryRecommendations(jid)
 		}, 'MAC verification error during message decryption')
 
-		// Para erros MAC persistentes, marcar mensagem como não decifrável
 		if(!canRetry) {
 			logger.error({
 				key: fullMessage.key,
@@ -231,7 +228,6 @@ export const handleDecryptionError = async(
 				error: 'Persistent MAC errors - session requires manual intervention'
 			}, 'Maximum MAC error retries exceeded')
 		} else {
-			// Tentar recuperação automática em background
 			await attemptMACRecovery(jid, author, isGroupMessage, repository, fullMessage.key, logger)
 		}
 	} else if(isSessionError) {
@@ -252,7 +248,6 @@ export const handleDecryptionError = async(
 
 	fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 
-	// Mensagem de erro mais informativa baseada no tipo
 	if(isMacError) {
 		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
 		fullMessage.messageStubParameters = [
@@ -336,11 +331,12 @@ const cleanupGroupSenderKey = async(
 
 	await repository.deleteSession(`${jid}:${author}`)
 	logger.debug({ jid, author, keyId }, 'Cleared corrupted sender key for MAC recovery')
-}/**
+}
+
+/**
  * Decode the received node as a message.
  * @note this will only parse the message, not decrypt it
  */
-
 export function decodeMessageNode(
 	stanza: BinaryNode,
 	meId: string,
@@ -353,7 +349,7 @@ export function decodeMessageNode(
 	const msgId = stanza.attrs.id
 	const from = stanza.attrs.from
 	const participant: string | undefined = stanza.attrs.participant
-	const participant_lid: string | undefined = stanza.attrs.participant_lid
+	const participantLid: string | undefined = stanza.attrs.participant_lid
 	const recipient: string | undefined = stanza.attrs.recipient
 
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
@@ -406,7 +402,7 @@ export function decodeMessageNode(
 		}
 
 		chatId = from
-		author = participant_lid || participant
+		author = participantLid || participant
 	} else if(isJidNewsletter(from)) {
 		msgType = 'newsletter'
 		chatId = from
@@ -472,7 +468,6 @@ export const decryptMessageNode = (
 				}
 			}
 
-			// if nothing was found to decrypt
 			if(!decryptables) {
 				fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 				fullMessage.messageStubParameters = [NO_MESSAGE_FOUND_ERROR_TEXT]

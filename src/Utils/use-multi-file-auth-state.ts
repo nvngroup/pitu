@@ -7,11 +7,6 @@ import { initAuthCreds } from './auth-utils'
 import { BufferJSON } from './generics'
 import logger from './logger'
 
-// We need to lock files due to the fact that we are using async functions to read and write files
-// https://github.com/WhiskeySockets/Baileys/issues/794
-// https://github.com/nodejs/node/issues/26338
-// Default pending is 1000, set it to infinity
-// https://github.com/rogierschouten/async-lock/issues/63
 const fileLock = new AsyncLock({ maxPending: Infinity })
 
 /**
@@ -22,7 +17,6 @@ const fileLock = new AsyncLock({ maxPending: Infinity })
  * Would recommend writing an auth state for use with a proper SQL or No-SQL DB
  * */
 export const useMultiFileAuthState = async(folder: string): Promise<{ state: AuthenticationState, saveCreds: () => Promise<void> }> => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const writeData = (data: any, file: string) => {
 		const filePath = join(folder, fixFileName(file)!)
 		return fileLock.acquire(

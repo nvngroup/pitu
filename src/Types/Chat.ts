@@ -6,7 +6,6 @@ import type { ChatLabelAssociationActionBody } from './LabelAssociation'
 import type { MessageLabelAssociationActionBody } from './LabelAssociation'
 import type { MinimalMessage, WAMessageKey } from './Message'
 
-/** privacy settings in WhatsApp Web */
 export type WAPrivacyValue = 'all' | 'contacts' | 'contact_blacklist' | 'none'
 
 export type WAPrivacyOnlineValue = 'all' | 'match_last_seen'
@@ -19,7 +18,6 @@ export type WAPrivacyCallValue = 'all' | 'known'
 
 export type WAPrivacyMessagesValue = 'all' | 'contacts'
 
-/** set of statuses visible to other people; see updatePresence() in WhatsAppWeb.Send */
 export type WAPresence = 'unavailable' | 'available' | 'composing' | 'recording' | 'paused'
 
 export const ALL_WA_PATCH_NAMES = ['critical_block', 'critical_unblock_low', 'regular_high', 'regular_low', 'regular'] as const
@@ -45,7 +43,6 @@ export type WAPatchCreate = {
 }
 
 export type Chat = waproto.IConversation & {
-    /** unix timestamp of when the last message was received in the chat */
     lastMessageRecvTimestamp?: number
 }
 
@@ -76,7 +73,6 @@ export type ChatModification =
     | { pushNameSetting: string }
     | { pin: boolean }
     | {
-        /** mute for duration, or provide timestamp of mute to remove*/
         mute: number | null
     }
     | {
@@ -109,9 +105,7 @@ export type ChatModification =
 
 export type InitialReceivedChatsState = {
     [jid: string]: {
-        /** the last message received from the other party */
         lastMsgRecvTimestamp?: number
-        /** the absolute last message in the chat */
         lastMsgTimestamp: number
     }
 }

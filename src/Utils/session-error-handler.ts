@@ -15,9 +15,9 @@ export function detectSessionError(error: Error): SessionErrorInfo | null {
 
 	// Padrões de erro conhecidos
 	const patterns = {
-		bad_mac: ['bad mac', 'mac verification failed', 'invalid mac'],
-		session_corrupt: ['session', 'no session', 'session corrupt'],
-		key_missing: ['no key', 'key not found', 'missing key', 'key used already']
+		badMac: ['bad mac', 'mac verification failed', 'invalid mac'],
+		sessionCorrupt: ['session', 'no session', 'session corrupt'],
+		keyMissing: ['no key', 'key not found', 'missing key', 'key used already']
 	}
 
 	for(const [type, patternList] of Object.entries(patterns)) {
@@ -147,10 +147,8 @@ export class SessionRecoveryStrategy {
 	}
 }
 
-// Instância global para rastreamento de erros
 export const sessionRecovery = new SessionRecoveryStrategy()
 
-// Cleanup automático a cada hora
 setInterval(() => {
 	sessionRecovery.cleanup()
 }, 3600000)

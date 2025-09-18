@@ -85,9 +85,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	/**
-     * generic send receipt function
-     * used for receipts of phone call, read, delivery etc.
-     * */
+			* generic send receipt function
+			* used for receipts of phone call, read, delivery etc.
+			* */
 	const sendReceipt = async(jid: string, participant: string | undefined, messageIds: string[], type: MessageReceiptType) => {
 		const node: BinaryNode = {
 			tag: 'receipt',
@@ -132,7 +132,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		await sendNode(node)
 	}
 
-	/** Correctly bulk send receipts to multiple chats, participants */
 	const sendReceipts = async(keys: WAMessageKey[], type: MessageReceiptType) => {
 		const recps = aggregateMessageKeysNotFromMe(keys)
 		for(const { jid, participant, messageIds } of recps) {
@@ -140,15 +139,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 	}
 
-	/** Bulk read messages. Keys can be from different chats & participants */
 	const readMessages = async(keys: WAMessageKey[]) => {
 		const privacySettings = await fetchPrivacySettings()
-		// based on privacy settings, we have to change the read type
 		const readType = privacySettings.readreceipts === 'all' ? 'read' : 'read-self'
 		await sendReceipts(keys, readType)
  	}
 
-	/** Fetch all the devices we've to send a message to */
 	const getUSyncDevices = async(jids: string[], useCache: boolean, ignoreZeroDevices: boolean) => {
 		const deviceResults: JidWithDevice[] = []
 
@@ -185,7 +181,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			.withDeviceProtocol()
 
 		for(const jid of toFetch) {
-			query.withUser(new USyncUser().withId(jid)) // todo: investigate - the idea here is that <user> should have an inline lid field with the lid being the pn equivalent
+			query.withUser(new USyncUser().withId(jid)) // TODO: investigate - the idea here is that <user> should have an inline lid field with the lid being the pn equivalent
 		}
 
 		const result = await sock.executeUSyncQuery(query)
@@ -279,7 +275,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const msgId = await relayMessage(meJid, protocolMessage, {
 			additionalAttributes: {
 				category: 'peer',
-
 				push_priority: 'high_force',
 			},
 		})
@@ -364,9 +359,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isInteractiveMessage = getContentType(normalizedMessage) === 'interactiveMessage'
 
 		if(participant && !isInteractiveMessage) {
-			// when the retry request is not for a group
-			// only send to the specific device that asked for a retry
-			// otherwise the message is sent out to every device that should be a recipient
 			if(!isGroup && !isStatus) {
 				additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 			}
@@ -387,22 +379,20 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				if(normalizeMessageContent(message)?.pinInChatMessage) {
-					extraAttrs['decrypt-fail'] = 'hide' // todo: expand for reactions and other types
+					extraAttrs['decrypt-fail'] = 'hide' // TODO: expand for reactions and other types
 				}
 
 				if(isGroup || isStatus) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async() => {
-							let groupData = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // todo: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
+							let groupData = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // TODO: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
 							if(groupData && Array.isArray(groupData?.participants)) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
 							} else if(!isStatus) {
 								try {
-									// Try with retry mechanism for better reliability
 									groupData = await groupMetadataWithRetry(jid, 3, 300_000)
 								} catch(error) {
 									logger.warn({ jid, error }, 'failed to get group metadata with retry, falling back to regular call')
-									// Fallback to regular call
 									groupData = await groupMetadata(jid)
 								}
 							}
@@ -442,18 +432,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					)
 
 					const senderKeyJids: string[] = []
-					// ensure a connection is established with every device
 					for(const { user, device } of devices) {
 						const jid: string = jidEncode(user, groupData?.addressingMode === 'lid' ? 'lid' : 's.whatsapp.net', device)
 						if(!senderKeyMap[jid] || !!participant) {
 							senderKeyJids.push(jid)
-							// store that this person has had the sender keys sent to them
 							senderKeyMap[jid] = true
 						}
 					}
 
-					// if there are some participants with whom the session has not been established
-					// if there are, we re-send the senderkey
 					if(senderKeyJids.length) {
 						logger.debug({ senderKeyJids }, 'sending new sender key')
 
@@ -533,7 +519,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					if(additionalAttributes?.['category'] === 'peer') {
 						const peerNode = participants[0]?.content?.[0] as BinaryNode
 						if(peerNode) {
-							binaryNodeContent.push(peerNode) // push only enc
+							binaryNodeContent.push(peerNode)
 						}
 					} else {
 						binaryNodeContent.push({
@@ -553,9 +539,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					},
 					content: binaryNodeContent
 				}
-				// if the participant to send to is explicitly specified (generally retry recp)
-				// ensure the message is only sent to that person
-				// if a retry receipt is sent to everyone -- it'll fail decryption for everyone else who received the msg
+
 				if(participant) {
 					if(isJidGroup(destinationJid)) {
 						stanza.attrs.to = destinationJid
@@ -600,7 +584,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					(stanza.content as BinaryNode[]).push(...additionalNodes)
 				}
 
-				const content = normalizeMessageContent(message)!
+				// const content = normalizeMessageContent(message)!
 
 				logger.debug({ msgId }, `sending message to ${participants.length} devices`)
 
@@ -842,9 +826,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const isPollMessage = 'poll' in content && !!content.poll
 				const additionalAttributes: BinaryNodeAttributes = {}
 				const additionalNodes: BinaryNode[] = []
-				// required for delete
 				if(isDeleteMsg) {
-					// if the chat is a group, and I am not the author, then delete the message as an admin
 					if(isJidGroup(content.delete?.remoteJid as string) && !content.delete?.fromMe) {
 						additionalAttributes.edit = '8'
 					} else {

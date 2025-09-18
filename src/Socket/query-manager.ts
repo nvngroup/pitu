@@ -41,7 +41,6 @@ export class QueryManager {
 			} catch(error) {
 				lastError = error as Error
 
-				// Don't retry on certain types of errors
 				if(error instanceof Boom) {
 					const statusCode = error.output?.statusCode
 					if(statusCode === 401 || statusCode === 403 || statusCode === 404) {
@@ -71,7 +70,6 @@ export class QueryManager {
 		)
 
 		if(config.jitter) {
-			// Add random jitter of ±25%
 			const jitterRange = exponentialDelay * 0.25
 			return exponentialDelay + (Math.random() - 0.5) * 2 * jitterRange
 		}

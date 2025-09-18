@@ -23,12 +23,12 @@ export const encodeWAM = (binaryInfo: BinaryInfo) => {
 }
 
 function encodeWAMHeader(binaryInfo: BinaryInfo) {
-	const headerBuffer = Buffer.alloc(8) // starting buffer
+	const headerBuffer = Buffer.alloc(8)
 	headerBuffer.write('WAM', 0, 'utf8')
 	headerBuffer.writeUInt8(binaryInfo.protocolVersion, 3)
-	headerBuffer.writeUInt8(1, 4) //random flag
+	headerBuffer.writeUInt8(1, 4)
 	headerBuffer.writeUInt16BE(binaryInfo.sequence, 5)
-	headerBuffer.writeUInt8(0, 7) // regular channel
+	headerBuffer.writeUInt8(0, 7)
 
 	binaryInfo.buffer.push(headerBuffer)
 }

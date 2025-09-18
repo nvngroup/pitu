@@ -46,8 +46,6 @@ export const makeNoiseHandler = ({
 			throw new Error('Invalid ciphertext: empty or null')
 		}
 
-		// before the handshake is finished, we use the same counter
-		// after handshake, the counters are different
 		const iv = generateIV(isFinished ? readCounter : writeCounter)
 		const result = aesDecryptGCM(ciphertext, decKey, iv, hash)
 
@@ -162,9 +160,6 @@ export const makeNoiseHandler = ({
 			return frame
 		},
 		decodeFrame: async(newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
-			// the binary protocol uses its own framing mechanism
-			// on top of the WS frames
-			// so we get this data and separate out the frames
 			const getBytesSize = () => {
 				if(inBytes.length >= 3) {
 					try {
@@ -199,7 +194,6 @@ export const makeNoiseHandler = ({
 						frame = await decodeBinaryNode(result)
 					} catch(error) {
 						logger.error({ error }, 'Failed to decode binary node')
-						// Skip this frame and continue with the next one
 						size = getBytesSize()
 						continue
 					}

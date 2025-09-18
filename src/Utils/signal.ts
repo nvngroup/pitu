@@ -87,11 +87,6 @@ export const parseAndInjectE2ESessions = async(
 		assertNodeErrorFree(node)
 	}
 
-	// Most of the work in repository.injectE2ESession is CPU intensive, not IO
-	// So Promise.all doesn't really help here,
-	// but blocks even loop if we're using it inside keys.transaction, and it makes it "sync" actually
-	// This way we chunk it in smaller parts and between those parts we can yield to the event loop
-	// It's rare case when you need to E2E sessions for so many users, but it's possible
 	const chunkSize = 100
 	const chunks = chunk(nodes, chunkSize)
 	for(const nodesChunk of chunks) {
@@ -133,9 +128,9 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 		if(Array.isArray(deviceList)) {
 			for(const { id: device, keyIndex } of deviceList) {
 				if(
-					(!excludeZeroDevices || device !== 0) && // if zero devices are not-excluded, or device is non zero
-					(myUser !== user || myDevice !== device) && // either different user or if me user, not this device
-					(device === 0 || !!keyIndex) // ensure that "key-index" is specified for "non-zero" devices, produces a bad req otherwise
+					(!excludeZeroDevices || device !== 0) &&
+					(myUser !== user || myDevice !== device) &&
+					(device === 0 || !!keyIndex)
 				) {
 					extracted.push({ user, device })
 				}

@@ -79,7 +79,7 @@ export const generateLinkPreviewIfRequired = async(text: string, getUrlInfo: Mes
 		try {
 			const urlInfo = await getUrlInfo(url)
 			return urlInfo
-		} catch(error) { // ignore if fails
+		} catch(error) {
 			logger?.error({ trace: error.stack }, 'url generation failed')
 		}
 	}
@@ -122,12 +122,10 @@ export const prepareWAMessageMedia = async(
 		media: message[mediaType]
 	}
 	delete uploadData[mediaType]
-	// check if cacheable + generate cache key
 	const cacheableKey = typeof uploadData.media === 'object' &&
 			('url' in uploadData.media) &&
 			!!uploadData.media.url &&
 			!!options.mediaCache && (
-	// generate the key
 		mediaType + ':' + uploadData.media.url.toString()
 	)
 
@@ -139,7 +137,6 @@ export const prepareWAMessageMedia = async(
 		uploadData.mimetype = MIMETYPE_MAP[mediaType]
 	}
 
-	// check for cache hit
 	if(cacheableKey) {
 		const mediaBuff = options.mediaCache!.get<Buffer>(cacheableKey)
 		if(mediaBuff) {
@@ -218,7 +215,7 @@ export const prepareWAMessageMedia = async(
 			opts: options.options
 		}
 	)
-	 // url safe Base64 encode the SHA256 hash of the body
+
 	const fileEncSha256B64 = fileEncSha256.toString('base64')
 	const [{ mediaUrl, directPath }] = await Promise.all([
 		(async() => {
@@ -338,7 +335,6 @@ export const generateForwardMessageContent = (
 		throw new Boom('no content in message', { statusCode: 400 })
 	}
 
-	// hacky copy
 	content = normalizeMessageContent(content)
 	content = waproto.Message.decode(waproto.Message.encode(content!).finish())
 
@@ -512,7 +508,6 @@ export const generateWAMessageContent = async(
 		}
 
 		m.messageContextInfo = {
-			// encKey
 			messageSecret: message.event.messageSecret || randomBytes(32)
 		}
 
@@ -554,14 +549,11 @@ export const generateWAMessageContent = async(
 		}
 
 		if(message.poll.toAnnouncementGroup) {
-			// poll v2 is for community announcement groups (single select and multiple)
 			m.pollCreationMessageV2 = pollCreationMessage
 		} else {
 			if(message.poll.selectableCount === 1) {
-			//poll v3 is for single select polls
 				m.pollCreationMessageV3 = pollCreationMessage
 			} else {
-				// poll v3 for multiple choice polls
 				m.pollCreationMessage = pollCreationMessage
 			}
 		}
@@ -687,8 +679,6 @@ export const generateWAMessageFromContent = (
 	message: WAMessageContent,
 	options: MessageGenerationOptionsFromContent
 ) => {
-	// set timestamp to now
-	// if not specified
 	if(!options.timestamp) {
 		options.timestamp = new Date()
 	}
@@ -703,7 +693,6 @@ export const generateWAMessageFromContent = (
 
 		let quotedMsg = normalizeMessageContent(quoted.message)!
 		const msgType = getContentType(quotedMsg)!
-		// strip any redundant properties
 		quotedMsg = waproto.Message.fromObject({ [msgType]: quotedMsg[msgType] })
 
 		const quotedContent = quotedMsg[msgType]
@@ -716,8 +705,6 @@ export const generateWAMessageFromContent = (
 		contextInfo.stanzaId = quoted.key.id
 		contextInfo.quotedMessage = quotedMsg
 
-		// if a participant is quoted, then it must be a group
-		// hence, remoteJid of group must also be entered
 		if(jid !== quoted.key.remoteJid) {
 			contextInfo.remoteJid = quoted.key.remoteJid
 		}
@@ -726,19 +713,14 @@ export const generateWAMessageFromContent = (
 	}
 
 	if(
-		// if we want to send a disappearing message
 		!!options?.ephemeralExpiration &&
-		// and it's not a protocol message -- delete, toggle disappear message
 		key !== 'protocolMessage' &&
-		// already not converted to disappearing message
 		key !== 'ephemeralMessage' &&
-		// newsletters don't support ephemeral messages
 		!isJidNewsletter(jid)
 	) {
 		innerMessage[key].contextInfo = {
 			...(innerMessage[key].contextInfo || {}),
 			expiration: options.ephemeralExpiration || WA_DEFAULT_EPHEMERAL,
-			//ephemeralSettingTimestamp: options.ephemeralOptions.eph_setting_ts?.toString()
 		}
 	}
 
@@ -764,9 +746,7 @@ export const generateWAMessage = async(
 	content: AnyMessageContent,
 	options: MessageGenerationOptions,
 ) => {
-	// ensure msg ID is with every log
 	options.logger = options?.logger?.child({ msgId: options.messageId })
-	// Pass jid in the options to generateWAMessageContent
 	return generateWAMessageFromContent(
 		jid,
 		await generateWAMessageContent(
@@ -797,7 +777,6 @@ export const normalizeMessageContent = (content: WAMessageContent | null | undef
 		 return undefined
 	 }
 
-	 // set max iterations to prevent an infinite loop
 	 for(let i = 0;i < 5;i++) {
 		 const inner = getFutureProofMessage(content)
 		 if(!inner) {

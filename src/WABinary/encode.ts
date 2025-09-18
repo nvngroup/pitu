@@ -48,7 +48,7 @@ const encodeBinaryNodeInner = (
 
 		if(length >= 1 << 20) {
 			pushByte(TAGS.BINARY_32)
-			pushInt(length, 4) // 32 bit integer
+			pushInt(length, 4)
 		} else if(length >= 256) {
 			pushByte(TAGS.BINARY_20)
 			pushInt20(length)
@@ -236,9 +236,7 @@ const encodeBinaryNodeInner = (
 		for(const item of content) {
 			encodeBinaryNodeInner(item, opts, buffer)
 		}
-	} else if(typeof content === 'undefined') {
-		// do nothing
-	} else {
+	} else if(typeof content === 'undefined') { } else {
 		throw new Error(`invalid children for header "${tag}": ${content} (${typeof content})`)
 	}
 

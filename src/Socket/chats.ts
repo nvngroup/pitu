@@ -36,10 +36,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	let privacySettings: { [_: string]: string } | undefined
 	let syncState: SyncState = SyncState.Connecting
-	/** this mutex ensures that the notifications (receipts, messages etc.) are processed in order */
 	const processingMutex = makeMutex()
 
-	// Timeout for AwaitingInitialSync state
 	let awaitingSyncTimeout: NodeJS.Timeout | undefined
 
 	const placeholderResendCache = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
@@ -54,7 +52,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		config.onWhatsAppCache = onWhatsAppCache
 	}
 
-	/** helper function to fetch the given app state sync key */
 	const getAppStateSyncKey = async(keyId: string) => {
 		const { [keyId]: key } = await authState.keys.get('app-state-sync-key', [keyId])
 		return key
@@ -79,7 +76,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		return privacySettings
 	}
 
-	/** helper function to run a privacy IQ query */
 	const privacyQuery = async(name: string, value: string) => {
 		await query({
 			tag: 'iq',
@@ -205,7 +201,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 	}
 
-	/** update the profile picture for yourself or a group */
 	const updateProfilePicture = async(jid: string, content: WAMediaUpload, dimensions?: { w: number; h: number }) => {
 		let targetJid
 		if(!jid) {
@@ -213,7 +208,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 
 		if(jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
-			targetJid = jidNormalizedUser(jid) // in case it is someone other than us
+			targetJid = jidNormalizedUser(jid)
 		}
 
 		const { img } = await generateProfilePicture(content, dimensions)
@@ -235,7 +230,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		})
 	}
 
-	/** remove the profile picture for yourself or a group */
 	const removeProfilePicture = async(jid: string) => {
 		let targetJid
 		if(!jid) {
@@ -243,7 +237,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 
 		if(jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
-			targetJid = jidNormalizedUser(jid) // in case it is someone other than us
+			targetJid = jidNormalizedUser(jid)
 		}
 
 		await query({
@@ -257,7 +251,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		})
 	}
 
-	/** update the profile status for yourself */
 	const updateProfileStatus = async(status: string) => {
 		await query({
 			tag: 'iq',
@@ -398,19 +391,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const resyncAppState = ev.createBufferedFunction(async(collections: readonly WAPatchName[], isInitialSync: boolean) => {
-		// we use this to determine which events to fire
-		// otherwise when we resync from scratch -- all notifications will fire
 		const initialVersionMap: { [T in WAPatchName]?: number } = {}
 		const globalMutationMap: ChatMutationMap = {}
 
 		await authState.keys.transaction(
 			async() => {
 				const collectionsToHandle = new Set<string>(collections)
-				// in case something goes wrong -- ensure we don't enter a loop that cannot be exited from
 				const attemptsMap: { [T in WAPatchName]?: number } = {}
-				// keep executing till all collections are done
-				// sometimes a single patch request will not return all the patches (God knows why)
-				// so we fetch till they're all done (this is determined by the "has_more_patches" flag)
 				while(collectionsToHandle.size) {
 					const states = {} as { [T in WAPatchName]: LTHashState }
 					const nodes: BinaryNode[] = []
@@ -436,7 +423,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 							attrs: {
 								name,
 								version: state.version.toString(),
-								// return snapshot if being synced from scratch
 								'return_snapshot': (!state.version).toString()
 							}
 						})
@@ -458,7 +444,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 						]
 					})
 
-					// extract from binary node
 					const decoded = await extractSyncdPatches(result, config?.options)
 					for(const key in decoded) {
 						const name = key as WAPatchName
@@ -480,7 +465,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 							}
 
-							// only process if there are syncd patches
 							if(patches.length) {
 								const { state: newState, mutationMap } = await decodePatches(
 									name,
@@ -503,12 +487,10 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 							if(hasMorePatches) {
 								logger.trace(`${name} has more patches...`)
-							} else { // collection is done with sync
+							} else {
 								collectionsToHandle.delete(name)
 							}
 						} catch(error) {
-							// if retry attempts overshoot
-							// or key not found
 							const isIrrecoverableError: boolean = attemptsMap[name]! >= MAX_SYNC_ATTEMPTS
 								|| error.output?.statusCode === 404
 								|| error.name === 'TypeError'
@@ -517,11 +499,9 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								`failed to sync state from version${isIrrecoverableError ? '' : ', removing and trying from scratch'}`
 							)
 							await authState.keys.set({ 'app-state-sync-version': { [name]: null } })
-							// increment number of retries
 							attemptsMap[name] = (attemptsMap[name] || 0) + 1
 
 							if(isIrrecoverableError) {
-								// stop retrying
 								collectionsToHandle.delete(name)
 							}
 						}
@@ -761,7 +741,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 	}
 
-	/** sending non-abt props may fix QR scan fail if server expects */
 	const fetchProps = async() => {
 		const resultNode = await query({
 			tag: 'iq',
@@ -783,7 +762,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		let props: { [_: string]: string } = {}
 		if(propsNode) {
-			if(propsNode.attrs?.hash) { // on some clients, the hash is returning as undefined
+			if(propsNode.attrs?.hash) {
 				authState.creds.lastPropHash = propsNode?.attrs?.hash
 				ev.emit('creds.update', authState.creds)
 			}
@@ -939,7 +918,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				ev.emit('contacts.update', [{ id: jid, notify: msg.pushName, verifiedName: msg.verifiedBizName! }])
 			}
 
-			// update our pushname too
 			if(msg.key.fromMe && msg.pushName && authState.creds.me?.name !== msg.pushName) {
 				ev.emit('creds.update', { me: { ...authState.creds.me!, name: msg.pushName } })
 			}
@@ -953,7 +931,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			)
 			: false
 
-		// State machine: decide on sync and flush
 		if(historyMsg && syncState === SyncState.AwaitingInitialSync) {
 			if(awaitingSyncTimeout) {
 				clearTimeout(awaitingSyncTimeout)
@@ -963,7 +940,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			if(shouldProcessHistoryMsg) {
 				syncState = SyncState.Syncing
 				logger.info('Transitioned to Syncing state')
-				// Let doAppStateSync handle the final flush after it's done
 			} else {
 				syncState = SyncState.Online
 				logger.info('History sync skipped, transitioning to Online state and flushing buffer')
@@ -976,7 +952,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				logger.info('Doing app state sync')
 				await resyncAppState(ALL_WA_PATCH_NAMES, true)
 
-				// Sync is complete, go online and flush everything
 				syncState = SyncState.Online
 				logger.info('App state sync complete, transitioning to Online state and flushing buffer')
 				ev.flush()
@@ -1033,7 +1008,6 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 			break
 		case 'groups':
-			// handled in groups.ts
 			break
 		default:
 			logger.trace({ node }, 'received unknown sync')

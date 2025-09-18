@@ -17,7 +17,7 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 			throw new Boom('USyncQuery must have at least one protocol')
 		}
 
-		// todo: validate users, throw WARNING on no valid users
+		// TODO: validate users, throw WARNING on no valid users
 		// variable below has only validated users
 		const validUsers = usyncQuery.users
 

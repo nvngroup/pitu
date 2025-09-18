@@ -12,17 +12,15 @@ import { SenderKeyRecord } from './Group/sender-key-record'
 import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
 
-// Constants for libsignal operations
 const SIGNAL_CONSTANTS = {
-	MIGRATION_CACHE_TTL: 15 * 60 * 1000, // 15 minutes instead of 5
+	MIGRATION_CACHE_TTL: 15 * 60 * 1000,
 	PREKEY_MESSAGE_TYPE: 3,
 	WHATSAPP_DOMAIN: '@s.whatsapp.net',
 	LID_DOMAIN: '@lid',
 	DEFAULT_DEVICE: 0,
-	SESSION_CACHE_TTL: 5 * 60 * 1000, // 5 minutes for session cache
+	SESSION_CACHE_TTL: 5 * 60 * 1000,
 } as const
 
-// Interfaces for better type safety
 export interface SessionValidationResult {
 	exists: boolean
 	reason?: string
@@ -51,15 +49,13 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	const lidMapping = new LIDMappingStore(auth.keys as SignalKeyStoreWithTransaction)
 	const storage = signalStorage(auth, lidMapping)
 
-	// Enhanced operation-level deduplication with better configuration
 	const recentMigrations = new NodeCache({
 		stdTTL: SIGNAL_CONSTANTS.MIGRATION_CACHE_TTL,
-		checkperiod: 60, // Check for expired keys every minute
+		checkperiod: 60,
 		useClones: false,
-		maxKeys: 1000 // Prevent memory leaks
+		maxKeys: 1000
 	})
 
-	// Session validation cache to avoid repeated validations
 	const sessionValidationCache = new NodeCache({
 		stdTTL: SIGNAL_CONSTANTS.SESSION_CACHE_TTL,
 		useClones: false,
@@ -108,7 +104,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				return jid
 			}
 
-			// Check if LID session exists
 			const lidAddr = jidToSignalProtocolAddress(lidForPN)
 			const { [lidAddr.toString()]: lidSession } = await auth.keys.get('session', [lidAddr.toString()])
 
@@ -116,7 +111,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				return lidForPN
 			}
 
-			// Try migration if PN session exists
 			const pnAddr = jidToSignalProtocolAddress(jid)
 			const { [pnAddr.toString()]: pnSession } = await auth.keys.get('session', [pnAddr.toString()])
 
@@ -209,7 +203,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		},
 		async encryptMessage({ jid, data }): Promise<EncryptionResult> {
 			try {
-				// Use utility function to get optimal encryption JID
 				const encryptionJid = await getOptimalEncryptionJid(jid)
 
 				const addr = jidToSignalProtocolAddress(encryptionJid)
@@ -266,7 +259,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 		async validateSession(jid: string): Promise<SessionValidationResult> {
 			try {
-				// Check cache first
 				const cacheKey = `validation:${jid}`
 				const cached = sessionValidationCache.get(cacheKey) as SessionValidationResult | undefined
 				if(cached) {
@@ -320,7 +312,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					await auth.keys.set({ session: { [addr.toString()]: null } })
 				})
 
-				// Invalidate cache entries
 				sessionValidationCache.del(`validation:${jid}`)
 
 				logger.info(`Session deleted for: ${jid}`)
@@ -332,9 +323,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 		async migrateSession(fromJid: string, toJid: string, options: SessionMigrationOptions = {}): Promise<void> {
 			try {
-				// Enhanced validation
 				if(!options.skipValidation) {
-					// Only migrate PN → LID
 					if(!fromJid.includes(SIGNAL_CONSTANTS.WHATSAPP_DOMAIN) || !toJid.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 						logger.warn(`Invalid migration direction: ${fromJid} → ${toJid}`)
 						return
@@ -352,13 +341,11 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const deviceId = fromDecoded.device
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
-				// Check deduplication unless forced
 				if(!options.force && recentMigrations.has(migrationKey)) {
 					logger.trace(`Migration already processed: ${migrationKey}`)
 					return
 				}
 
-				// Check if LID session already exists
 				const lidAddr = jidToSignalProtocolAddress(toJid)
 				const { [lidAddr.toString()]: lidExists } = await auth.keys.get('session', [lidAddr.toString()])
 
@@ -369,26 +356,21 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				}
 
 				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
-					// Store mapping
 					const mappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
 					if(!mappingResult.success) {
 						logger.error(`Failed to store LID mapping: ${mappingResult.error}`)
 						return
 					}
 
-					// Load and copy session
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
 					if(fromSession?.haveOpenSession()) {
-						// Deep copy session to prevent reference issues
 						const sessionBytes = fromSession.serialize()
 						const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
 
-						// Store at LID address
 						await (storage as any).storeSession(lidAddr.toString(), copiedSession)
 
-						// Delete PN session - maintain single encryption layer
 						await auth.keys.set({ session: { [fromAddr.toString()]: null } })
 
 						logger.info(`Session migrated successfully: ${fromJid} → ${toJid}`)
@@ -397,7 +379,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					}
 				})
 
-				// Update caches
 				recentMigrations.set(migrationKey, true)
 				sessionValidationCache.del(`validation:${fromJid}`)
 				sessionValidationCache.del(`validation:${toJid}`)
@@ -415,7 +396,6 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 		destroy() {
 			try {
-				// Clear all caches
 				recentMigrations.flushAll()
 				sessionValidationCache.flushAll()
 
@@ -446,7 +426,6 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		try {
 			let actualId = id
 
-			// Handle legacy ID format and try LID mapping
 			if(id.includes('.') && !id.includes('_1')) {
 				const parts = id.split('.')
 				const device = parts[1] || '0'
