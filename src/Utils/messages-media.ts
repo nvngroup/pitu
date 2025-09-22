@@ -73,7 +73,7 @@ export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: Medi
 		try {
 			await fs.unlink(filePath)
 		} catch(error) {
-			logger.trace(error)
+			logger?.trace(error)
 		}
 
 		throw error
@@ -751,7 +751,7 @@ export const encryptMediaRetryRequest = async(
 				attrs: {
 					jid: key.remoteJid!,
 					'from_me': (!!key.fromMe).toString(),
-					participant: key?.participant
+					participant: key.participant!
 				}
 			}
 		]
