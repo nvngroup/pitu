@@ -61,7 +61,7 @@ export const makeNoiseHandler = ({
 
 	const localHKDF = async(data: Uint8Array) => {
 		const key = await hkdf(Buffer.from(data), 64, { salt, info: '' })
-		return [key.slice(0, 32), key.slice(32)]
+		return [key.subarray(0, 32), key.subarray(32)]
 	}
 
 	const mixIntoKey = async(data: Uint8Array) => {
@@ -179,8 +179,8 @@ export const makeNoiseHandler = ({
 
 			let size = getBytesSize()
 			while(size && size > 0 && inBytes.length >= size + 3) {
-				let frame: Uint8Array | BinaryNode = inBytes.slice(3, size + 3)
-				inBytes = inBytes.slice(size + 3)
+				let frame: Uint8Array | BinaryNode = inBytes.subarray(3, size + 3)
+				inBytes = inBytes.subarray(size + 3)
 
 				if(isFinished) {
 					const result = decrypt(frame)

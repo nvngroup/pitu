@@ -21,8 +21,8 @@ export const tryAlternativeDecryption = (
 			decipher.setAAD(additionalData)
 		}
 
-		const enc = ciphertext.slice(0, ciphertext.length - 16)
-		const tag = ciphertext.slice(ciphertext.length - 16)
+		const enc = ciphertext.subarray(0, ciphertext.length - 16)
+		const tag = ciphertext.subarray(ciphertext.length - 16)
 
 		try {
 			decipher.setAuthTag(tag)
@@ -75,14 +75,14 @@ export const createFallbackDecryptStream = (
 
 				const AES_CHUNK_SIZE = 16
 				const decryptLength = Math.floor(data.length / AES_CHUNK_SIZE) * AES_CHUNK_SIZE
-				remainingBytes = data.slice(decryptLength)
-				data = data.slice(0, decryptLength)
+				remainingBytes = data.subarray(decryptLength)
+				data = data.subarray(0, decryptLength)
 
 				if(!aes) {
 					let ivValue = ivBuf
 					if(firstBlockIsIV) {
-						ivValue = data.slice(0, AES_CHUNK_SIZE)
-						data = data.slice(AES_CHUNK_SIZE)
+						ivValue = data.subarray(0, AES_CHUNK_SIZE)
+						data = data.subarray(AES_CHUNK_SIZE)
 					}
 
 					try {

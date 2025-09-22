@@ -70,7 +70,7 @@ describe('Media Download Tests', () => {
 				const expectedHex = plaintext.slice(range.startByte || 0, range.endByte || undefined).toString('hex')
 				expect(hex).toBe(expectedHex)
 
-				logger.trace('success on ', range)
+				logger.trace(range, 'success on ')
 			}
 		}
 	})

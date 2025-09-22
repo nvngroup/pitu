@@ -12,7 +12,7 @@ export class SenderMessageKey {
 		keys.set(new Uint8Array(derivative[0].slice(16)))
 		keys.set(new Uint8Array(derivative[1].slice(0, 16)), 16)
 
-		this.iv = Buffer.from(derivative[0].slice(0, 16))
+		this.iv = Buffer.from(derivative[0].subarray(0, 16))
 		this.cipherKey = Buffer.from(keys.buffer)
 		this.iteration = iteration
 		this.seed = seed

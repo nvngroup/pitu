@@ -94,7 +94,7 @@ export function aesDecryptCTR(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 }
 
 export function aesDecrypt(buffer: Buffer, key: Buffer) {
-	return aesDecryptWithIV(buffer.slice(16, buffer.length), key, buffer.slice(0, 16))
+	return aesDecryptWithIV(buffer.subarray(16, buffer.length), key, buffer.subarray(0, 16))
 }
 
 export function aesDecryptWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
