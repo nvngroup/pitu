@@ -17,8 +17,6 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 			throw new Boom('USyncQuery must have at least one protocol')
 		}
 
-		// TODO: validate users, throw WARNING on no valid users
-		// variable below has only validated users
 		const validUsers = usyncQuery.users
 
 		const userNodes = validUsers.map((user) => {
@@ -44,6 +42,7 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 			attrs: {},
 			content: usyncQuery.protocols.map((a) => a.getQueryElement())
 		}
+
 		const iq = {
 			tag: 'iq',
 			attrs: {
@@ -60,6 +59,8 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 						sid: generateMessageTag(),
 						last: 'true',
 						index: '0',
+						target: 'devices',
+						sync: 'full'
 					},
 					content: [
 						queryNode,
@@ -71,11 +72,58 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 
 		const result = await query(iq)
 
+		// Force device sync after query
+		await ensureDeviceSync()
+
 		return usyncQuery.parseUSyncQueryResult(result)
+	}
+
+	const ensureDeviceSync = async() => {
+		try {
+			const deviceSyncIq = {
+				tag: 'iq',
+				attrs: {
+					to: S_WHATSAPP_NET,
+					type: 'get',
+					xmlns: 'usync',
+				},
+				content: [
+					{
+						tag: 'usync',
+						attrs: {
+							context: 'interactive',
+							mode: 'query',
+							sid: generateMessageTag(),
+							last: 'true',
+							index: '0',
+						},
+						content: [
+							{
+								tag: 'query',
+								attrs: {},
+								content: [
+									{
+										tag: 'devices',
+										attrs: {
+											version: '2',
+										},
+									}
+								]
+							}
+						]
+					}
+				],
+			}
+
+			await query(deviceSyncIq)
+		} catch(error) {
+			console.warn('Device sync failed:', error)
+		}
 	}
 
 	return {
 		...sock,
 		executeUSyncQuery,
+		ensureDeviceSync,
 	}
 }
