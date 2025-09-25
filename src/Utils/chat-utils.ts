@@ -71,7 +71,9 @@ const makeLtHashGenerator = ({ indexValueMap, hash }: Pick<LTHashState, 'hash' |
 			const prevOp = indexValueMap[indexMacBase64]
 			if(operation === waproto.SyncdMutation.SyncdOperation.REMOVE) {
 				if(!prevOp) {
-					throw new Boom('tried remove, but no previous op', { data: { indexMac, valueMac } })
+					// Log warning instead of throwing error to prevent crash
+					console.warn('Attempted to remove non-existent operation:', { indexMacBase64 })
+					return
 				}
 
 				delete indexValueMap[indexMacBase64]

@@ -124,7 +124,7 @@ export class MACErrorManager {
 	/**
 	 * Obtém estatísticas de erro
 	 */
-	getErrorStats(jid?: string): any {
+	getErrorStats(jid?: string) {
 		if(jid) {
 			const history = this.errorHistory.get(jid) || []
 			const recentErrors = history.filter(err => Date.now() - err.timestamp < this.cooldownPeriod)

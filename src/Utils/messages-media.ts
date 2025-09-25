@@ -657,7 +657,7 @@ export const getWAUploadToServer = (
 
 			const auth = encodeURIComponent(uploadInfo.auth)
 			const url = `https://${hostname}${MEDIA_PATH_MAP[mediaType]}/${fileEncSha256B64}?auth=${auth}&token=${fileEncSha256B64}`
-			let result: any
+			let result: { [key: string]: string } | undefined
 			try {
 
 				const body = await axios.post(

@@ -247,7 +247,7 @@ export class BadMACRecoveryManager {
 	/**
 	 * Get Bad MAC error statistics
 	 */
-	getStats(jid?: string, authorJid?: string): Record<string, any> {
+	getStats(jid?: string, authorJid?: string) {
 		if(jid) {
 			const normalizedJid = jidNormalizedUser(jid)
 			const key = authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
