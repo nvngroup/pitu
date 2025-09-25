@@ -30,11 +30,14 @@ export const WA_CERT_DETAILS = {
 }
 
 export const PROCESSABLE_HISTORY_TYPES = [
-	waproto.Message.HistorySyncNotification.HistorySyncType.INITIAL_BOOTSTRAP,
-	waproto.Message.HistorySyncNotification.HistorySyncType.PUSH_NAME,
-	waproto.Message.HistorySyncNotification.HistorySyncType.RECENT,
-	waproto.Message.HistorySyncNotification.HistorySyncType.FULL,
-	waproto.Message.HistorySyncNotification.HistorySyncType.ON_DEMAND,
+	waproto.Message.HistorySyncType.INITIAL_BOOTSTRAP,
+	waproto.Message.HistorySyncType.INITIAL_STATUS_V3,
+	waproto.Message.HistorySyncType.FULL,
+	waproto.Message.HistorySyncType.RECENT,
+	waproto.Message.HistorySyncType.PUSH_NAME,
+	waproto.Message.HistorySyncType.NON_BLOCKING_DATA,
+	waproto.Message.HistorySyncType.ON_DEMAND,
+	waproto.Message.HistorySyncType.NO_HISTORY
 ]
 
 export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
