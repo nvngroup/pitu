@@ -327,8 +327,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		{ messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList }: MessageRelayOptions
 	) => {
 		const meId = authState.creds.me!.id
-
-		let shouldIncludeDeviceIdentity = false
+		const meLid = authState.creds.me?.lid
+		const isRetryResend = Boolean(participant?.jid)
+		let shouldIncludeDeviceIdentity = isRetryResend
 
 		const { user, server } = jidDecode(jid)!
 		const statusJid = 'status@broadcast'
@@ -441,7 +442,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const senderKeyJids: string[] = []
 					for(const { user, device } of devices) {
 						const jid: string = jidEncode(user, groupData?.addressingMode === 'lid' ? 'lid' : 's.whatsapp.net', device)
-						if(!senderKeyMap[jid] || !!participant) {
+						if (!senderKeyMap[jid] || !!isRetryResend) {
 							senderKeyJids.push(jid)
 							senderKeyMap[jid] = true
 						}
@@ -465,13 +466,30 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						participants.push(...result.nodes)
 					}
 
-					binaryNodeContent.push({
-						tag: 'enc',
-						attrs: { v: '2', type: 'skmsg', ...extraAttrs },
-						content: ciphertext
-					})
+					if (isRetryResend) {
+						const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
+							data: bytes,
+							jid: participant?.jid!
+						})
 
-					await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
+						binaryNodeContent.push({
+							tag: 'enc',
+							attrs: {
+								v: '2',
+								type,
+								count: participant!.count.toString()
+							},
+							content: encryptedContent
+						})
+					} else {
+						binaryNodeContent.push({
+							tag: 'enc',
+							attrs: { v: '2', type: 'skmsg', ...extraAttrs },
+							content: ciphertext
+						})
+
+						await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
+					}
 				} else {
 					const { user: meUser } = jidDecode(meId)!
 
@@ -873,6 +891,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			const content = assertMediaContent(message.message)
 			const mediaKey = content.mediaKey!
 			const meId = authState.creds.me!.id
+			const meLid = authState.creds.me?.lid
 			const node = await encryptMediaRetryRequest(message.key, mediaKey, meId)
 
 			let error: Error | undefined = undefined
