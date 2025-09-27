@@ -122,7 +122,7 @@ const startSock = async () => {
 			// received a new message
 			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
-				// logger.info('recv messages ', JSON.stringify(upsert, undefined, 2))
+				// logger.info(JSON.stringify(upsert, undefined, 2))
 
 				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages as any[]) {
@@ -533,6 +533,38 @@ const startSock = async () => {
 								}
 							}
 
+							if (text === "!interactive") {
+								await sock.readMessages([msg.key]);
+								await sendMessageWTyping({
+									title: "Mensagem Interativa",
+									body: "Esta é uma mensagem interativa com template buttons",
+									footer: 'Selecione uma opção:',
+									interactiveButtons: [
+										{
+											name: 'quick_reply',
+											buttonParamsJson: JSON.stringify({
+												display_text: '🤩 Excelente',
+												id: '10'
+											})
+										},
+										{
+											name: 'quick_reply',
+											buttonParamsJson: JSON.stringify({
+												display_text: ' Regular',
+												id: '5'
+											})
+										},
+										{
+											name: 'quick_reply',
+											buttonParamsJson: JSON.stringify({
+												display_text: '☹ Péssimo',
+												id: '1'
+											})
+										}
+									],
+								}, msg.key.remoteJid!);
+							}
+
 							// TESTE DE TODOS OS TIPOS DE BOTÃO
 							if (text === "!allbuttons") {
 								await sock.readMessages([msg.key]);
@@ -674,7 +706,7 @@ const startSock = async () => {
 !buttons - Botões
 !list - Lista de opções
 ~!template - Template buttons~
-~!interactive - Mensagem interativa~
+!interactive - Mensagem interativa
 ~!allbuttons - Todos tipos de botão~
 
 ✏️ *AÇÕES:*

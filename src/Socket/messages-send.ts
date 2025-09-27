@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
-import { AnyMessageContent, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, SocketConfig, WAMessageKey } from '../Types'
+import { AnyMessageContent, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
 import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
@@ -564,18 +564,95 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.debug({ jid }, 'adding device identity')
 				}
 
+				const nativeFlow = message?.interactiveMessage?.nativeFlowMessage ||
+								  message?.viewOnceMessage?.message?.interactiveMessage?.nativeFlowMessage ||
+								  message?.viewOnceMessageV2?.message?.interactiveMessage?.nativeFlowMessage ||
+								  message?.viewOnceMessageV2Extension?.message?.interactiveMessage?.nativeFlowMessage
+
+				const firstButtonName = nativeFlow?.buttons?.[0]?.name
+
 				const buttonType = getButtonType(message)
 				if(buttonType) {
-					(stanza.content as BinaryNode[]).push({
-						tag: 'biz',
-						attrs: {},
-						content: [
+					const bizNode: BinaryNode = { tag: 'biz', attrs: {} }
+
+					if(nativeFlow && (firstButtonName === 'review_and_pay' || firstButtonName === 'payment_info')) {
+						bizNode.attrs = {
+							native_flow_name: firstButtonName === 'review_and_pay' ? 'order_details' : firstButtonName
+						}
+					} else if(nativeFlow && nativeFlowSpecials.includes(firstButtonName || '')) {
+						// Only works for WhatsApp Original, not WhatsApp Business
+						bizNode.content = [{
+							tag: 'biz',
+							attrs: {
+								actual_actors: '2',
+								host_storage: '2',
+								privacy_mode_ts: unixTimestampSeconds().toString()
+							},
+							content: [{
+								tag: 'interactive',
+								attrs: {
+									type: 'native_flow',
+									v: '1'
+								},
+								content: [{
+									tag: 'native_flow',
+									attrs: {
+										v: '2',
+										name: firstButtonName || 'mixed'
+									}
+								}]
+							},
+							{
+								tag: 'quality_control',
+								attrs: {
+									source_type: 'third_party'
+								}
+							}]
+						}]
+					} else if(nativeFlow || message?.buttonsMessage ||
+							   message?.viewOnceMessage?.message?.buttonsMessage ||
+							   message?.viewOnceMessageV2?.message?.buttonsMessage ||
+							   message?.viewOnceMessageV2Extension?.message?.buttonsMessage) {
+						// It works for whatsapp original and whatsapp business
+						bizNode.attrs = {
+							actual_actors: '2',
+							host_storage: '2',
+							privacy_mode_ts: unixTimestampSeconds().toString()
+						}
+						bizNode.content = [{
+							tag: 'interactive',
+							attrs: {
+								type: 'native_flow',
+								v: '1'
+							},
+							content: [{
+								tag: 'native_flow',
+								attrs: {
+									v: '9',
+									name: 'mixed'
+								}
+							}]
+						}]
+					} else if(message?.listMessage) {
+						// list message only support in private chat
+						bizNode.content = [{
+							tag: 'list',
+							attrs: {
+								type: 'product_list',
+								v: '2'
+							}
+						}]
+					} else {
+						bizNode.content = [
 							{
 								tag: buttonType,
-								attrs: getButtonArgs(message),
+								attrs: firstButtonName ? getButtonAttrs(message, nativeFlowSpecials.indexOf(firstButtonName) !== -1 ? firstButtonName : undefined) : getButtonAttrs(message),
+								content: firstButtonName ? getButtonContent(message, nativeFlowSpecials.indexOf(firstButtonName) !== -1 ? firstButtonName : undefined) : getButtonContent(message)
 							}
 						]
-					})
+					}
+
+					(stanza.content as BinaryNode[]).push(bizNode)
 
 					logger.debug({ jid }, 'adding business node')
 				}
@@ -644,6 +721,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const getButtonType = (message: waproto.IMessage) => {
 		if(message.buttonsMessage) {
 			return 'buttons'
+		} else if(message.interactiveMessage?.nativeFlowMessage) {
+			return 'interactive'
 		} else if(message.buttonsResponseMessage) {
 			return 'buttons_response'
 		} else if(message.interactiveResponseMessage) {
@@ -655,8 +734,22 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const getButtonArgs = (message: waproto.IMessage): BinaryNode['attrs'] => {
-		if(message.templateMessage) {
+	const getButtonAttrs = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['attrs'] => {
+		if(message.interactiveMessage?.nativeFlowMessage) {
+			switch (nativeFlowSpecial) {
+			case 'review_and_pay':
+			case 'payment_info':
+				return {
+					native_flow_name: nativeFlowSpecial === 'review_and_pay' ? 'order_details' : nativeFlowSpecial
+				}
+			default:
+				return {
+					actual_actors: '2',
+					host_storage: '2',
+					privacy_mode_ts: unixTimestampSeconds().toString()
+				}
+			}
+		} else if(message.templateMessage) {
 			// TODO: Add attributes
 			return {}
 		} else if(message.listMessage) {
@@ -668,6 +761,54 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return { v: '2', type: ListType[type].toLowerCase() }
 		} else {
 			return {}
+		}
+	}
+
+	const getButtonContent = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['content'] => {
+		if(message.interactiveMessage?.nativeFlowMessage && nativeFlowSpecial) {
+			switch (nativeFlowSpecial) {
+			case 'review_and_pay':
+			case 'payment_info':
+				return []
+			default:
+				return [{
+					tag: 'interactive',
+					attrs: {
+						type: 'native_flow',
+						v: '1'
+					},
+					content: [{
+						tag: 'native_flow',
+						attrs: {
+							v: '2',
+							name: nativeFlowSpecial || 'mixed'
+						}
+					}]
+				},
+				{
+					tag: 'quality_control',
+					attrs: {
+						source_type: 'third_party'
+					}
+				}]
+			}
+		} else if(message.interactiveMessage?.nativeFlowMessage) {
+			return [{
+				tag: 'interactive',
+				attrs: {
+					type: 'native_flow',
+					v: '1'
+				},
+				content: [{
+					tag: 'native_flow',
+					attrs: {
+						v: '9',
+						name: 'mixed'
+					}
+				}]
+			}]
+		} else {
+			return []
 		}
 	}
 
@@ -712,7 +853,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		relayMessage,
 		sendReceipt,
 		sendReceipts,
-		getButtonArgs,
+		getButtonAttrs,
+		getButtonContent,
 		readMessages,
 		refreshMediaConn,
 		waUploadToServer,
@@ -856,31 +998,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.warn('cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
+				logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')
+
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
 					if(getContentType(fullMsg.message!) === 'listMessage') {
 						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
-					}
-				} catch(err) {
-					logger.error(err)
-				}
-
-				try {
-					if(getContentType(fullMsg.message!) === 'listMessage') {
-						let text = `${fullMsg.message?.listMessage?.description}\n\n`
-						fullMsg.message?.listMessage?.sections?.map(list => {
-							list.rows?.map(l => {
-								text += `${l.rowId} - ${l.title}\n`
-							})
-						})
-
-						const message = {
-							extendedTextMessage: {
-								text: text
-							}
-						}
-						await relayMessage(jid, message, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
 				} catch(err) {
 					logger.error(err)

@@ -20,6 +20,7 @@ export type WAMessageKey = waproto.IMessageKey & {
     participantLid?: string
     peerRecipientPn?: string
     peerRecipientLid?: string
+    isViewOnce?: boolean
 }
 export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo
@@ -66,6 +67,12 @@ export type MessageWithContextInfo =
     | 'pollResultSnapshotMessage'
     | 'messageHistoryNotice'
 
+export const nativeFlowSpecials = [
+    'mpm', 'cta_catalog', 'send_location',
+    'call_permission_request', 'wa_payment_transaction_details',
+    'automated_greeting_message_view_catalog', 'payment_info', 'review_and_pay'
+]
+
 export type DownloadableMessage = { mediaKey?: Uint8Array | null, directPath?: string | null, url?: string | null }
 
 export type MessageReceiptType = 'read' | 'read-self' | 'hist_sync' | 'peer_msg' | 'sender' | 'inactive' | 'played' | undefined
@@ -87,10 +94,22 @@ export interface WAUrlInfo {
     originalThumbnailUrl?: string
 }
 
+export interface Carousel {
+    image?: WAMediaUpload
+    video?: WAMediaUpload
+    product?: WASendableProduct
+    title: string
+    body: string
+    footer: string
+    buttons: waproto.Message.InteractiveMessage.NativeFlowMessage.INativeFlowButton[]
+}
+
 type Mentionable = {
+    /** list of jids that are mentioned in the accompanying text */
     mentions?: string[]
 }
 type Contextable = {
+    /** add contextInfo to the message */
     contextInfo?: waproto.IContextInfo
 }
 type ViewOnce = {
@@ -107,18 +126,50 @@ type Templatable = {
     footer?: string
 }
 
+type Interactiveable = {
+    interactiveButtons?: waproto.Message.InteractiveMessage.NativeFlowMessage.INativeFlowButton[]
+    title?: string
+    subtitle?: string
+    footer?: string
+    hasMediaAttachment?: boolean
+}
+
 type Editable = {
   edit?: WAMessageKey
 }
 
-type Listable = {
-    sections?: waproto.Message.ListMessage.ISection[]
-
+type Shopable = {
+    shop?: waproto.Message.InteractiveMessage.IShopMessage
     title?: string
+    subtitle?: string
+    footer?: string
+    hasMediaAttachment?: boolean
+}
 
+type Collectionable = {
+    collection?: waproto.Message.InteractiveMessage.ICollectionMessage
+    title?: string
+    subtitle?: string
+    footer?: string
+    hasMediaAttachment?: boolean
+}
+
+type Listable = {
+    /** Sections of the List */
+    sections?: waproto.Message.ListMessage.ISection[]
+    /** Title of a List Message only */
+    title?: string
+    /** Text of the button on the list (required) */
     buttonText?: string
-
+    /** ListType of a List Message only */
     listType?: waproto.Message.ListMessage.ListType
+}
+
+type Cardsable = {
+    cards?: Carousel[]
+    title?: string
+    subtitle?: string
+    footer?: string
 }
 
 type WithDimensions = {
@@ -189,6 +240,31 @@ export type ButtonReplyInfo = {
     displayText: string
     id: string
     index: number
+} | {
+    title?: string
+    description?: string
+    rowId: string
+} | {
+    body?: string
+    nativeFlows?: {
+        name: string
+        paramsJson: string
+        version: number
+    }
+}
+
+export type PaymentInfo = {
+    note: string
+    currency?: string
+    offset?: number
+    amount?: number
+    expiry?: number
+    from?: string
+    image?: {
+        placeholderArgb: number
+        textArgb: number
+        subtextArgb: number
+    }
 }
 
 export type GroupInviteInfo = {
@@ -205,16 +281,18 @@ export type WASendableProduct = Omit<waproto.Message.ProductMessage.IProductSnap
 
 export type AnyRegularMessageContent = (
     ({
+        body: string
+        linkPreview?: WAUrlInfo | null
+    } & Interactiveable
+    | {
         text: string
         linkPreview?: WAUrlInfo | null
     }
-        & Mentionable & Contextable & Buttonable & Templatable & Listable & Editable)
+        & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
-        text?: string
-        linkPreview?: WAUrlInfo | null
         poll: PollMessageOptions
-    } & Mentionable & Contextable & Buttonable & Templatable & Editable)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
     | {
         contacts: {
             displayName?: string
@@ -227,7 +305,7 @@ export type AnyRegularMessageContent = (
     | { react: waproto.Message.IReactionMessage }
     | {
         buttonReply: ButtonReplyInfo
-        type: 'template' | 'plain'
+        type: 'template' | 'plain' | 'list' | 'interactive'
     }
     | {
         groupInvite: GroupInviteInfo
@@ -248,6 +326,9 @@ export type AnyRegularMessageContent = (
         businessOwnerJid?: string
         body?: string
         footer?: string
+    }
+    | {
+        payment: PaymentInfo
     } | SharePhoneNumber | RequestPhoneNumber
     | {
         event: EventMessageOptions

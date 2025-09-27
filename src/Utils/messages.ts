@@ -463,18 +463,48 @@ export const generateWAMessageContent = async(
 		m.messageContextInfo.messageAddOnDurationInSecs = message.type === 1 ? message.time || 86400 : 0
 	} else if('buttonReply' in message) {
 		switch (message.type) {
+		case 'list':
+			const buttonReplyList = message.buttonReply as { title?: string; description?: string; rowId: string }
+			m.listResponseMessage = {
+				title: buttonReplyList.title,
+				description: buttonReplyList.description,
+				singleSelectReply: {
+					selectedRowId: buttonReplyList.rowId
+				},
+				listType: waproto.Message.ListResponseMessage.ListType.SINGLE_SELECT
+			}
+			break
 		case 'template':
+			const buttonReplyTemplate = message.buttonReply as { displayText: string; id: string; index: number }
 			m.templateButtonReplyMessage = {
-				selectedDisplayText: message.buttonReply.displayText,
-				selectedId: message.buttonReply.id,
-				selectedIndex: message.buttonReply.index,
+				selectedDisplayText: buttonReplyTemplate.displayText,
+				selectedId: buttonReplyTemplate.id,
+				selectedIndex: buttonReplyTemplate.index
 			}
 			break
 		case 'plain':
+			const buttonReplyPlain = message.buttonReply as { displayText: string; id: string }
 			m.buttonsResponseMessage = {
-				selectedButtonId: message.buttonReply.id,
-				selectedDisplayText: message.buttonReply.displayText,
-				type: waproto.Message.ButtonsResponseMessage.Type.DISPLAY_TEXT,
+				selectedButtonId: buttonReplyPlain.id,
+				selectedDisplayText: buttonReplyPlain.displayText,
+				type: waproto.Message.ButtonsResponseMessage.Type.DISPLAY_TEXT
+			}
+			break
+		case 'interactive':
+			const buttonReplyInteractive = message.buttonReply as {
+					body?: string;
+					nativeFlows?: { name: string; paramsJson: string; version: number }
+				}
+			m.interactiveResponseMessage = {
+				body: {
+					text: buttonReplyInteractive.body,
+					format: waproto.Message.InteractiveResponseMessage.Body.Format.EXTENSIONS_1
+				},
+				nativeFlowResponseMessage: {
+					name: buttonReplyInteractive.nativeFlows?.name,
+					paramsJson: buttonReplyInteractive.nativeFlows?.paramsJson,
+					version: buttonReplyInteractive.nativeFlows?.version
+				}
 			}
 			break
 		}
@@ -563,9 +593,405 @@ export const generateWAMessageContent = async(
 		}
 	} else if('requestPhoneNumber' in message) {
 		m.requestPhoneNumberMessage = {}
+	} else if('buttons' in message && !!message.buttons) {
+		const buttonsMessage: any = {
+			buttons: message.buttons.map(b => ({
+				...b,
+				type: waproto.Message.ButtonsMessage.Button.Type.RESPONSE
+			}))
+		}
+
+		if('text' in message) {
+			buttonsMessage.contentText = message.text
+			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.EMPTY
+		} else {
+			if('caption' in message) {
+				buttonsMessage.contentText = message.caption
+			}
+
+			const messageKeys = Object.keys(m)
+			if(messageKeys.length > 0) {
+				const type = messageKeys[0].replace('Message', '').toUpperCase()
+				buttonsMessage.headerType = (waproto.Message.ButtonsMessage.HeaderType as any)[type] || waproto.Message.ButtonsMessage.HeaderType.EMPTY
+				Object.assign(buttonsMessage, m)
+			}
+		}
+
+		if('footer' in message && !!message.footer) {
+			buttonsMessage.footerText = message.footer
+		}
+
+		if('title' in message && !!message.title) {
+			buttonsMessage.text = message.title
+			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.TEXT
+		}
+
+		const messageWithMentions = message as any
+		buttonsMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { buttonsMessage }
+	} else if('templateButtons' in message && !!message.templateButtons) {
+		const hydratedTemplate: any = {
+			hydratedButtons: message.templateButtons
+		}
+
+		if('text' in message) {
+			hydratedTemplate.hydratedContentText = message.text
+		} else {
+			if('caption' in message) {
+				hydratedTemplate.hydratedContentText = message.caption
+			}
+
+			Object.assign(hydratedTemplate, m)
+		}
+
+		if('footer' in message && !!message.footer) {
+			hydratedTemplate.hydratedFooterText = message.footer
+		}
+
+		const messageWithMentions = message as any
+		hydratedTemplate.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { templateMessage: { hydratedTemplate } }
+	} else if('interactiveButtons' in message && !!message.interactiveButtons) {
+		const interactiveMessage: any = {
+			nativeFlowMessage: {
+				buttons: message.interactiveButtons
+			}
+		}
+
+		if('text' in message) {
+			interactiveMessage.body = {
+				text: message.text
+			}
+			interactiveMessage.header = {
+				title: message.title,
+				subtitle: message.subtitle,
+				hasMediaAttachment: false
+			}
+		} else {
+			if('caption' in message) {
+				interactiveMessage.body = {
+					text: message.caption
+				}
+			}
+
+			interactiveMessage.header = {
+				title: message.title,
+				subtitle: message.subtitle,
+				hasMediaAttachment: message.hasMediaAttachment ? message.hasMediaAttachment : false,
+				...m
+			}
+		}
+
+		if('footer' in message && !!message.footer) {
+			interactiveMessage.footer = {
+				text: message.footer
+			}
+		}
+
+		const messageWithMentions = message as any
+		interactiveMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { interactiveMessage }
+	} else if('shop' in message && !!message.shop) {
+		const msgAny = message as any
+		const interactiveMessage: any = {
+			shopStorefrontMessage: {
+				surface: msgAny.shop.surface,
+				id: msgAny.shop.id
+			}
+		}
+
+		if('text' in message) {
+			interactiveMessage.body = {
+				text: msgAny.text
+			}
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: false
+			}
+		} else {
+			if('caption' in message) {
+				interactiveMessage.body = {
+					text: msgAny.caption
+				}
+			}
+
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: msgAny.hasMediaAttachment ? msgAny.hasMediaAttachment : false,
+				...m
+			}
+		}
+
+		if('footer' in msgAny && !!msgAny.footer) {
+			interactiveMessage.footer = {
+				text: msgAny.footer
+			}
+		}
+
+		const messageWithMentions = message as any
+		interactiveMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { interactiveMessage }
+	} else if('collection' in message && !!message.collection) {
+		const msgAny = message as any
+		const interactiveMessage: any = {
+			collectionMessage: {
+				bizJid: msgAny.collection.bizJid,
+				id: msgAny.collection.id,
+				messageVersion: msgAny.collection.version
+			}
+		}
+
+		if('text' in message) {
+			interactiveMessage.body = {
+				text: msgAny.text
+			}
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: false
+			}
+		} else {
+			if('caption' in message) {
+				interactiveMessage.body = {
+					text: msgAny.caption
+				}
+			}
+
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: msgAny.hasMediaAttachment ? msgAny.hasMediaAttachment : false,
+				...m
+			}
+		}
+
+		if('footer' in msgAny && !!msgAny.footer) {
+			interactiveMessage.footer = {
+				text: msgAny.footer
+			}
+		}
+
+		const messageWithMentions = message as any
+		interactiveMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { interactiveMessage }
+	} else if('cards' in message && !!message.cards) {
+		const msgAny = message as any
+		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
+			const { image, video, product, title, body, footer, buttons } = slide
+			let header: any
+
+			if(product) {
+				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
+				header = {
+					productMessage: {
+						product: {
+							...product,
+							productImage: imageMessage,
+						}
+					}
+				}
+			} else if(image) {
+				header = await prepareWAMessageMedia({ image: image }, options)
+			} else if(video) {
+				header = await prepareWAMessageMedia({ video: video }, options)
+			}
+
+			const msg = {
+				header: {
+					title,
+					hasMediaAttachment: true,
+					...header
+				},
+				body: {
+					text: body
+				},
+				footer: {
+					text: footer
+				},
+				nativeFlowMessage: {
+					buttons,
+				}
+			}
+
+			return msg
+		}))
+
+		const interactiveMessage: any = {
+			carouselMessage: {
+				cards: slides
+			}
+		}
+
+		if('text' in message) {
+			interactiveMessage.body = {
+				text: msgAny.text
+			}
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: false
+			}
+		}
+
+		if('footer' in msgAny && !!msgAny.footer) {
+			interactiveMessage.footer = {
+				text: msgAny.footer
+			}
+		}
+
+		const messageWithMentions = message as any
+		interactiveMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { interactiveMessage }
+	} else if('sections' in message && !!message.sections) {
+		const msgAny = message as any
+		const listMessage: any = {
+			title: msgAny.title,
+			buttonText: msgAny.buttonText,
+			footerText: msgAny.footer,
+			description: msgAny.text,
+			sections: msgAny.sections,
+			listType: msgAny.listType || waproto.Message.ListMessage.ListType.SINGLE_SELECT
+		}
+
+		const messageWithMentions = message as any
+		listMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { listMessage }
+	} else if('cards' in message && !!message.cards) {
+		const msgAny = message as any
+		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
+			const { image, video, product, title, body, footer, buttons } = slide
+			let header: any
+
+			if(product) {
+				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
+				header = {
+					productMessage: {
+						product: {
+							...product,
+							productImage: imageMessage,
+						}
+					}
+				}
+			} else if(image) {
+				header = await prepareWAMessageMedia({ image: image }, options)
+			} else if(video) {
+				header = await prepareWAMessageMedia({ video: video }, options)
+			}
+
+			const msg = {
+				header: {
+					title,
+					hasMediaAttachment: true,
+					...header
+				},
+				body: {
+					text: body
+				},
+				footer: {
+					text: footer
+				},
+				nativeFlowMessage: {
+					buttons,
+				}
+			}
+
+			return msg
+		}))
+
+		const interactiveMessage: any = {
+			carouselMessage: {
+				cards: slides
+			}
+		}
+
+		if('text' in message) {
+			interactiveMessage.body = {
+				text: msgAny.text
+			}
+			interactiveMessage.header = {
+				title: msgAny.title,
+				subtitle: msgAny.subtitle,
+				hasMediaAttachment: false
+			}
+		}
+
+		if('footer' in msgAny && !!msgAny.footer) {
+			interactiveMessage.footer = {
+				text: msgAny.footer
+			}
+		}
+
+		const messageWithMentions = message as any
+		interactiveMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { interactiveMessage }
+	} else if('payment' in message) {
+		const msgAny = message as any
+		const requestPaymentMessage: any = {
+			amount: {
+				currencyCode: msgAny.payment?.currency || 'IDR',
+				offset: msgAny.payment?.offset || 0,
+				value: msgAny.payment?.amount || 999999999
+			},
+			expiryTimestamp: msgAny.payment?.expiry || 0,
+			amount1000: (msgAny.payment?.amount || 999999999) * 1000,
+			currencyCodeIso4217: msgAny.payment?.currency || 'IDR',
+			requestFrom: msgAny.payment?.from || '0@s.whatsapp.net',
+			noteMessage: {
+				extendedTextMessage: {
+					text: msgAny.payment?.note || 'Notes'
+				}
+			},
+			background: {
+				placeholderArgb: msgAny.payment?.image?.placeholderArgb || 4278190080,
+				textArgb: msgAny.payment?.image?.textArgb || 4294967295,
+				subtextArgb: msgAny.payment?.image?.subtextArgb || 3087007743
+			}
+		}
+
+		const messageWithMentions = message as any
+		requestPaymentMessage.contextInfo = {
+			...(messageWithMentions.contextInfo || {}),
+			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		}
+
+		m = { requestPaymentMessage }
 	} else {
 		m = await prepareWAMessageMedia(
-			message,
+			message as AnyMediaMessageContent,
 			options
 		)
 	}
@@ -622,13 +1048,14 @@ export const generateWAMessageContent = async(
 	}
 
 	if('sections' in message && !!message.sections) {
+		const msgAny = message as any
 		const listMessage: waproto.Message.IListMessage = {
-			sections: message.sections,
-			buttonText: message.buttonText,
-			title: message.title,
-			footerText: message.footer,
-			description: message.text,
-			listType: message.hasOwnProperty('listType') ? message.listType : waproto.Message.ListMessage.ListType.PRODUCT_LIST
+			sections: msgAny.sections,
+			buttonText: msgAny.buttonText,
+			title: msgAny.title,
+			footerText: msgAny.footer,
+			description: msgAny.text,
+			listType: msgAny.hasOwnProperty('listType') ? msgAny.listType : waproto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
 
 		m = { listMessage }
