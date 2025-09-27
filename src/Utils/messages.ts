@@ -298,7 +298,7 @@ export const prepareWAMessageMedia = async(
 		delete obj.videoMessage
 	}
 
-	if (obj.stickerMessage) {
+	if(obj.stickerMessage) {
 		obj.stickerMessage.stickerSentTs = Date.now()
 	}
 

@@ -420,7 +420,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						devices.push(...additionalDevices)
 					}
 
-					if (groupData?.ephemeralDuration && groupData.ephemeralDuration > 0) {
+					if(groupData?.ephemeralDuration && groupData.ephemeralDuration > 0) {
 						additionalAttributes = {
 							...additionalAttributes,
 							expiration: groupData.ephemeralDuration.toString()
@@ -442,7 +442,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const senderKeyJids: string[] = []
 					for(const { user, device } of devices) {
 						const jid: string = jidEncode(user, groupData?.addressingMode === 'lid' ? 'lid' : 's.whatsapp.net', device)
-						if (!senderKeyMap[jid] || !!isRetryResend) {
+						if(!senderKeyMap[jid] || !!isRetryResend) {
 							senderKeyJids.push(jid)
 							senderKeyMap[jid] = true
 						}
@@ -466,7 +466,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						participants.push(...result.nodes)
 					}
 
-					if (isRetryResend) {
+					if(isRetryResend) {
 						const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
 							data: bytes,
 							jid: participant?.jid!

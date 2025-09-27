@@ -345,7 +345,7 @@ export function decodeMessageNode(
 	let msgType: MessageType
 	let chatId: string
 	let author: string
-	let fromMe: boolean = false
+	let fromMe = false
 
 	const msgId = stanza.attrs.id
 	const from = stanza.attrs.from
@@ -375,9 +375,10 @@ export function decodeMessageNode(
 				throw new Boom('receipient present, but msg not from me', { data: stanza })
 			}
 
-			if (isMe(from!) || isMeLid(from!)) {
+			if(isMe(from) || isMeLid(from)) {
 				fromMe = true
 			}
+
 			chatId = recipient
 		} else {
 			chatId = from
@@ -390,7 +391,7 @@ export function decodeMessageNode(
 			throw new Boom('No participant in group message')
 		}
 
-		if (isMe(participant) || isMeLid(participant)) {
+		if(isMe(participant) || isMeLid(participant)) {
 			fromMe = true
 		}
 
@@ -409,7 +410,7 @@ export function decodeMessageNode(
 			msgType = isParticipantMe ? 'peer_broadcast' : 'other_broadcast'
 		}
 
-		fromMe = isParticipantMe;
+		fromMe = isParticipantMe
 		chatId = from
 		author = participantLid || participant
 	} else if(isJidNewsletter(from)) {
@@ -417,7 +418,7 @@ export function decodeMessageNode(
 		chatId = from
 		author = from
 
-		if (isMe(from!) || isMeLid(from!)) {
+		if(isMe(from) || isMeLid(from)) {
 			fromMe = true
 		}
 	} else {
