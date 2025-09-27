@@ -224,16 +224,16 @@ export type AnyMediaMessageContent = (
         audio: WAMediaUpload
         ptt?: boolean
         seconds?: number
-    }
+    } & Mentionable & Contextable
     | ({
         sticker: WAMediaUpload
         isAnimated?: boolean
-    } & WithDimensions) | ({
+    } & Mentionable & Contextable & WithDimensions) | ({
         document: WAMediaUpload
         mimetype: string
         fileName?: string
         caption?: string
-    } & Contextable & Buttonable & Templatable))
+    } & Mentionable & Contextable & Buttonable & Templatable))
     & { mimetype?: string } & Editable
 
 export type ButtonReplyInfo = {
@@ -283,7 +283,7 @@ export type AnyRegularMessageContent = (
     ({
         body: string
         linkPreview?: WAUrlInfo | null
-    } & Interactiveable
+    } & Mentionable & Contextable & Interactiveable
     | {
         text: string
         linkPreview?: WAUrlInfo | null
@@ -328,8 +328,9 @@ export type AnyRegularMessageContent = (
         footer?: string
     }
     | {
-        payment: PaymentInfo
-    } | SharePhoneNumber | RequestPhoneNumber
+        payment: PaymentInfo & Mentionable & Contextable
+    } & Mentionable & Contextable
+    | SharePhoneNumber | RequestPhoneNumber
     | {
         event: EventMessageOptions
     }

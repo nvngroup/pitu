@@ -616,7 +616,7 @@ export const generateWAMessageContent = async(
 			const messageKeys = Object.keys(m)
 			if(messageKeys.length > 0) {
 				const type = messageKeys[0].replace('Message', '').toUpperCase()
-				buttonsMessage.headerType = (waproto.Message.ButtonsMessage.HeaderType as any)[type] || waproto.Message.ButtonsMessage.HeaderType.EMPTY
+				buttonsMessage.headerType = (waproto.Message.ButtonsMessage.HeaderType)[type] || waproto.Message.ButtonsMessage.HeaderType.EMPTY
 				Object.assign(buttonsMessage, m)
 			}
 		}
@@ -630,7 +630,7 @@ export const generateWAMessageContent = async(
 			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.TEXT
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		buttonsMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -656,7 +656,7 @@ export const generateWAMessageContent = async(
 			hydratedTemplate.hydratedFooterText = message.footer
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		hydratedTemplate.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -700,7 +700,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		interactiveMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -746,7 +746,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		interactiveMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -793,7 +793,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		interactiveMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -865,7 +865,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		interactiveMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -883,7 +883,7 @@ export const generateWAMessageContent = async(
 			listType: msgAny.listType || waproto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		listMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
@@ -964,7 +964,7 @@ export const generateWAMessageContent = async(
 		m = { interactiveMessage }
 	} else if('payment' in message) {
 		const msgAny = message as any
-		const requestPaymentMessage: any = {
+		const requestPaymentMessage = {
 			amount: {
 				currencyCode: msgAny.payment?.currency || 'IDR',
 				offset: msgAny.payment?.offset || 0,
@@ -984,9 +984,9 @@ export const generateWAMessageContent = async(
 				textArgb: msgAny.payment?.image?.textArgb || 4294967295,
 				subtextArgb: msgAny.payment?.image?.subtextArgb || 3087007743
 			}
-		}
+		} as any
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		requestPaymentMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
