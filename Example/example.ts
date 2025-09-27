@@ -560,7 +560,6 @@ const startSock = async () => {
 												display_text: '☹ Péssimo',
 												id: '1'
 											})
-										})
 										}
 									],
 								}, msg.key.remoteJid!);
