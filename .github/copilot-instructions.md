@@ -33,7 +33,7 @@ Sempre que possível, proponha a reutilização de componentes existentes em vez
 Antes de propor qualquer modificação, verifique se o código está alinhado com as últimas versões das dependências e as melhores práticas recomendadas. Isso garante que as alterações sejam compatíveis e aproveitem os recursos mais recentes disponíveis.
 
 # Sempre que possível, utilize o comando 'yarn build' para garantir que as alterações estejam corretas e otimizadas.
-Sempre que sugerir alterações, execute o comando `yarn build` para garantir que as modificações estejam corretas e otimizadas. Isso ajuda a identificar problemas de compilação e garante que o código esteja pronto para produção.
+Sempre que sugerir alterações, execute o comando `yarn build:tsc` para garantir que as modificações estejam corretas e otimizadas. Isso ajuda a identificar problemas de compilação e garante que o código esteja pronto para produção.
 
 # Sempre executar 'yarn lint:fix' ao modificar arquivos.
 Sempre que fizer alterações em arquivos, execute o comando `yarn lint:fix` para corrigir automaticamente problemas de formatação e estilo. Isso ajuda a manter a consistência do código e a evitar erros comuns.
