@@ -605,7 +605,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							native_flow_name: firstButtonName === 'review_and_pay' ? 'order_details' : firstButtonName
 						}
 					} else if(nativeFlow && nativeFlowSpecials.includes(firstButtonName || '')) {
-						// Only works for WhatsApp Original, not WhatsApp Business
 						bizNode.content = [{
 							tag: 'biz',
 							attrs: {
