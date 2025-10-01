@@ -1,7 +1,7 @@
 syntax = "proto3";
 package waproto;
 
-/// WhatsApp Version: 2.3000.1027717633
+/// WhatsApp Version: 2.3000.1027831359
 
 message ADVDeviceIdentity {
     optional uint32 rawId = 1;
@@ -967,6 +967,8 @@ message ClientPayload {
     optional AccountType accountType = 42;
     optional sfixed32 connectionSequenceInfo = 43;
     optional bool paaLink = 44;
+    optional int32 preacksCount = 45;
+    optional int32 processingQueueSize = 46;
     enum AccountType {
         DEFAULT = 0;
         GUEST = 1;
@@ -1446,6 +1448,7 @@ message DeviceCapabilities {
     optional ChatLockSupportLevel chatLockSupportLevel = 1;
     optional LIDMigration lidMigration = 2;
     optional BusinessBroadcast businessBroadcast = 3;
+    optional UserHasAvatar userHasAvatar = 4;
     message BusinessBroadcast {
         optional bool importListEnabled = 1;
     }
@@ -1457,6 +1460,10 @@ message DeviceCapabilities {
     }
     message LIDMigration {
         optional uint64 chatDbMigrationTimestamp = 1;
+    }
+    
+    message UserHasAvatar {
+        optional bool userHasAvatar = 1;
     }
     
 }
@@ -1634,6 +1641,8 @@ message ForwardedAIBotMessageInfo {
     optional string botName = 1;
     optional string botJid = 2;
     optional string creatorName = 3;
+    optional uint32 botEntryPointOrigin = 4;
+    optional uint32 forwardScore = 5;
 }
 
 message GlobalSettings {
@@ -2582,6 +2591,10 @@ message Message {
         
         message Footer {
             optional string text = 1;
+            optional bool hasMediaAttachment = 3;
+            oneof media {
+                Message.AudioMessage audioMessage = 2;
+            }
         }
         
         message Header {
@@ -3730,6 +3743,8 @@ message PatchDebugData {
         DARWIN = 6;
         IPAD = 7;
         WEAROS = 8;
+        WASG = 9;
+        WEARM = 10;
     }
 }
 
@@ -4257,6 +4272,8 @@ message SyncActionValue {
     optional BusinessBroadcastListAction businessBroadcastListAction = 69;
     optional MusicUserIdAction musicUserIdAction = 70;
     optional StatusPostOptInNotificationPreferencesAction statusPostOptInNotificationPreferencesAction = 71;
+    optional AvatarUpdatedAction avatarUpdatedAction = 72;
+    optional GalaxyFlowAction galaxyFlowAction = 73;
     message AgentAction {
         optional string name = 1;
         optional int32 deviceID = 2;
@@ -4270,6 +4287,16 @@ message SyncActionValue {
     message ArchiveChatAction {
         optional bool archived = 1;
         optional SyncActionValue.SyncActionMessageRange messageRange = 2;
+    }
+    
+    message AvatarUpdatedAction {
+        optional AvatarEventType eventType = 1;
+        repeated SyncActionValue.StickerAction recentAvatarStickers = 2;
+        enum AvatarEventType {
+            UPDATED = 0;
+            CREATED = 1;
+            DELETED = 2;
+        }
     }
     
     message BotWelcomeRequestAction {
@@ -4364,6 +4391,13 @@ message SyncActionValue {
             optional string id = 1;
         }
         
+    }
+    
+    message GalaxyFlowAction {
+        required GalaxyFlowActionType type = 1;
+        enum GalaxyFlowActionType {
+            LAUNCH = 1;
+        }
     }
     
     message KeyExpiration {

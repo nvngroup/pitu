@@ -10650,6 +10650,12 @@ export namespace waproto {
 
         /** ClientPayload paaLink */
         paaLink?: (boolean|null);
+
+        /** ClientPayload preacksCount */
+        preacksCount?: (number|null);
+
+        /** ClientPayload processingQueueSize */
+        processingQueueSize?: (number|null);
     }
 
     /** Represents a ClientPayload. */
@@ -10756,6 +10762,12 @@ export namespace waproto {
 
         /** ClientPayload paaLink. */
         public paaLink?: (boolean|null);
+
+        /** ClientPayload preacksCount. */
+        public preacksCount?: (number|null);
+
+        /** ClientPayload processingQueueSize. */
+        public processingQueueSize?: (number|null);
 
         /**
          * Creates a new ClientPayload instance using the specified properties.
@@ -14532,6 +14544,9 @@ export namespace waproto {
 
         /** DeviceCapabilities businessBroadcast */
         businessBroadcast?: (waproto.DeviceCapabilities.IBusinessBroadcast|null);
+
+        /** DeviceCapabilities userHasAvatar */
+        userHasAvatar?: (waproto.DeviceCapabilities.IUserHasAvatar|null);
     }
 
     /** Represents a DeviceCapabilities. */
@@ -14551,6 +14566,9 @@ export namespace waproto {
 
         /** DeviceCapabilities businessBroadcast. */
         public businessBroadcast?: (waproto.DeviceCapabilities.IBusinessBroadcast|null);
+
+        /** DeviceCapabilities userHasAvatar. */
+        public userHasAvatar?: (waproto.DeviceCapabilities.IUserHasAvatar|null);
 
         /**
          * Creates a new DeviceCapabilities instance using the specified properties.
@@ -14827,6 +14845,103 @@ export namespace waproto {
 
             /**
              * Gets the default type url for LIDMigration
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of a UserHasAvatar. */
+        interface IUserHasAvatar {
+
+            /** UserHasAvatar userHasAvatar */
+            userHasAvatar?: (boolean|null);
+        }
+
+        /** Represents a UserHasAvatar. */
+        class UserHasAvatar implements IUserHasAvatar {
+
+            /**
+             * Constructs a new UserHasAvatar.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.DeviceCapabilities.IUserHasAvatar);
+
+            /** UserHasAvatar userHasAvatar. */
+            public userHasAvatar?: (boolean|null);
+
+            /**
+             * Creates a new UserHasAvatar instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns UserHasAvatar instance
+             */
+            public static create(properties?: waproto.DeviceCapabilities.IUserHasAvatar): waproto.DeviceCapabilities.UserHasAvatar;
+
+            /**
+             * Encodes the specified UserHasAvatar message. Does not implicitly {@link waproto.DeviceCapabilities.UserHasAvatar.verify|verify} messages.
+             * @param message UserHasAvatar message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.DeviceCapabilities.IUserHasAvatar, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified UserHasAvatar message, length delimited. Does not implicitly {@link waproto.DeviceCapabilities.UserHasAvatar.verify|verify} messages.
+             * @param message UserHasAvatar message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.DeviceCapabilities.IUserHasAvatar, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a UserHasAvatar message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns UserHasAvatar
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.DeviceCapabilities.UserHasAvatar;
+
+            /**
+             * Decodes a UserHasAvatar message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns UserHasAvatar
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.DeviceCapabilities.UserHasAvatar;
+
+            /**
+             * Verifies a UserHasAvatar message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a UserHasAvatar message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns UserHasAvatar
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.DeviceCapabilities.UserHasAvatar;
+
+            /**
+             * Creates a plain object from a UserHasAvatar message. Also converts values to other types if specified.
+             * @param message UserHasAvatar
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.DeviceCapabilities.UserHasAvatar, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this UserHasAvatar to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for UserHasAvatar
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */
@@ -16825,6 +16940,12 @@ export namespace waproto {
 
         /** ForwardedAIBotMessageInfo creatorName */
         creatorName?: (string|null);
+
+        /** ForwardedAIBotMessageInfo botEntryPointOrigin */
+        botEntryPointOrigin?: (number|null);
+
+        /** ForwardedAIBotMessageInfo forwardScore */
+        forwardScore?: (number|null);
     }
 
     /** Represents a ForwardedAIBotMessageInfo. */
@@ -16844,6 +16965,12 @@ export namespace waproto {
 
         /** ForwardedAIBotMessageInfo creatorName. */
         public creatorName?: (string|null);
+
+        /** ForwardedAIBotMessageInfo botEntryPointOrigin. */
+        public botEntryPointOrigin?: (number|null);
+
+        /** ForwardedAIBotMessageInfo forwardScore. */
+        public forwardScore?: (number|null);
 
         /**
          * Creates a new ForwardedAIBotMessageInfo instance using the specified properties.
@@ -28134,6 +28261,12 @@ export namespace waproto {
 
                 /** Footer text */
                 text?: (string|null);
+
+                /** Footer hasMediaAttachment */
+                hasMediaAttachment?: (boolean|null);
+
+                /** Footer audioMessage */
+                audioMessage?: (waproto.Message.IAudioMessage|null);
             }
 
             /** Represents a Footer. */
@@ -28147,6 +28280,15 @@ export namespace waproto {
 
                 /** Footer text. */
                 public text?: (string|null);
+
+                /** Footer hasMediaAttachment. */
+                public hasMediaAttachment?: (boolean|null);
+
+                /** Footer audioMessage. */
+                public audioMessage?: (waproto.Message.IAudioMessage|null);
+
+                /** Footer media. */
+                public media?: "audioMessage";
 
                 /**
                  * Creates a new Footer instance using the specified properties.
@@ -42287,7 +42429,9 @@ export namespace waproto {
             UWP = 5,
             DARWIN = 6,
             IPAD = 7,
-            WEAROS = 8
+            WEAROS = 8,
+            WASG = 9,
+            WEARM = 10
         }
     }
 
@@ -48390,6 +48534,12 @@ export namespace waproto {
 
         /** SyncActionValue statusPostOptInNotificationPreferencesAction */
         statusPostOptInNotificationPreferencesAction?: (waproto.SyncActionValue.IStatusPostOptInNotificationPreferencesAction|null);
+
+        /** SyncActionValue avatarUpdatedAction */
+        avatarUpdatedAction?: (waproto.SyncActionValue.IAvatarUpdatedAction|null);
+
+        /** SyncActionValue galaxyFlowAction */
+        galaxyFlowAction?: (waproto.SyncActionValue.IGalaxyFlowAction|null);
     }
 
     /** Represents a SyncActionValue. */
@@ -48592,6 +48742,12 @@ export namespace waproto {
 
         /** SyncActionValue statusPostOptInNotificationPreferencesAction. */
         public statusPostOptInNotificationPreferencesAction?: (waproto.SyncActionValue.IStatusPostOptInNotificationPreferencesAction|null);
+
+        /** SyncActionValue avatarUpdatedAction. */
+        public avatarUpdatedAction?: (waproto.SyncActionValue.IAvatarUpdatedAction|null);
+
+        /** SyncActionValue galaxyFlowAction. */
+        public galaxyFlowAction?: (waproto.SyncActionValue.IGalaxyFlowAction|null);
 
         /**
          * Creates a new SyncActionValue instance using the specified properties.
@@ -48980,6 +49136,119 @@ export namespace waproto {
              * @returns The default type url
              */
             public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of an AvatarUpdatedAction. */
+        interface IAvatarUpdatedAction {
+
+            /** AvatarUpdatedAction eventType */
+            eventType?: (waproto.SyncActionValue.AvatarUpdatedAction.AvatarEventType|null);
+
+            /** AvatarUpdatedAction recentAvatarStickers */
+            recentAvatarStickers?: (waproto.SyncActionValue.IStickerAction[]|null);
+        }
+
+        /** Represents an AvatarUpdatedAction. */
+        class AvatarUpdatedAction implements IAvatarUpdatedAction {
+
+            /**
+             * Constructs a new AvatarUpdatedAction.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.SyncActionValue.IAvatarUpdatedAction);
+
+            /** AvatarUpdatedAction eventType. */
+            public eventType?: (waproto.SyncActionValue.AvatarUpdatedAction.AvatarEventType|null);
+
+            /** AvatarUpdatedAction recentAvatarStickers. */
+            public recentAvatarStickers: waproto.SyncActionValue.IStickerAction[];
+
+            /**
+             * Creates a new AvatarUpdatedAction instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns AvatarUpdatedAction instance
+             */
+            public static create(properties?: waproto.SyncActionValue.IAvatarUpdatedAction): waproto.SyncActionValue.AvatarUpdatedAction;
+
+            /**
+             * Encodes the specified AvatarUpdatedAction message. Does not implicitly {@link waproto.SyncActionValue.AvatarUpdatedAction.verify|verify} messages.
+             * @param message AvatarUpdatedAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.SyncActionValue.IAvatarUpdatedAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified AvatarUpdatedAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.AvatarUpdatedAction.verify|verify} messages.
+             * @param message AvatarUpdatedAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.SyncActionValue.IAvatarUpdatedAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an AvatarUpdatedAction message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns AvatarUpdatedAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.SyncActionValue.AvatarUpdatedAction;
+
+            /**
+             * Decodes an AvatarUpdatedAction message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns AvatarUpdatedAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.SyncActionValue.AvatarUpdatedAction;
+
+            /**
+             * Verifies an AvatarUpdatedAction message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an AvatarUpdatedAction message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns AvatarUpdatedAction
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.SyncActionValue.AvatarUpdatedAction;
+
+            /**
+             * Creates a plain object from an AvatarUpdatedAction message. Also converts values to other types if specified.
+             * @param message AvatarUpdatedAction
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.SyncActionValue.AvatarUpdatedAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this AvatarUpdatedAction to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for AvatarUpdatedAction
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        namespace AvatarUpdatedAction {
+
+            /** AvatarEventType enum. */
+            enum AvatarEventType {
+                UPDATED = 0,
+                CREATED = 1,
+                DELETED = 2
+            }
         }
 
         /** Properties of a BotWelcomeRequestAction. */
@@ -51006,6 +51275,111 @@ export namespace waproto {
                  * @returns The default type url
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+        }
+
+        /** Properties of a GalaxyFlowAction. */
+        interface IGalaxyFlowAction {
+
+            /** GalaxyFlowAction type */
+            type: waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType;
+        }
+
+        /** Represents a GalaxyFlowAction. */
+        class GalaxyFlowAction implements IGalaxyFlowAction {
+
+            /**
+             * Constructs a new GalaxyFlowAction.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.SyncActionValue.IGalaxyFlowAction);
+
+            /** GalaxyFlowAction type. */
+            public type: waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType;
+
+            /**
+             * Creates a new GalaxyFlowAction instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns GalaxyFlowAction instance
+             */
+            public static create(properties?: waproto.SyncActionValue.IGalaxyFlowAction): waproto.SyncActionValue.GalaxyFlowAction;
+
+            /**
+             * Encodes the specified GalaxyFlowAction message. Does not implicitly {@link waproto.SyncActionValue.GalaxyFlowAction.verify|verify} messages.
+             * @param message GalaxyFlowAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.SyncActionValue.IGalaxyFlowAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GalaxyFlowAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.GalaxyFlowAction.verify|verify} messages.
+             * @param message GalaxyFlowAction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.SyncActionValue.IGalaxyFlowAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GalaxyFlowAction message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GalaxyFlowAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.SyncActionValue.GalaxyFlowAction;
+
+            /**
+             * Decodes a GalaxyFlowAction message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GalaxyFlowAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.SyncActionValue.GalaxyFlowAction;
+
+            /**
+             * Verifies a GalaxyFlowAction message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GalaxyFlowAction message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GalaxyFlowAction
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.SyncActionValue.GalaxyFlowAction;
+
+            /**
+             * Creates a plain object from a GalaxyFlowAction message. Also converts values to other types if specified.
+             * @param message GalaxyFlowAction
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.SyncActionValue.GalaxyFlowAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GalaxyFlowAction to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for GalaxyFlowAction
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        namespace GalaxyFlowAction {
+
+            /** GalaxyFlowActionType enum. */
+            enum GalaxyFlowActionType {
+                LAUNCH = 1
             }
         }
 
