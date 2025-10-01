@@ -306,7 +306,7 @@ export class SessionDiagnostics {
 		try {
 			const lidMapping = repository.getLIDMappingStore()
 			const lidForPN = await lidMapping.getLIDForPN(jid)
-			
+
 			if(lidForPN) {
 				logger.debug({ jid, lidForPN }, 'LID mapping found but clearing not implemented in current SignalRepository interface')
 			}
