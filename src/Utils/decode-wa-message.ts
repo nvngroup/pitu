@@ -5,6 +5,7 @@ import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewslette
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
+import { sessionDiagnostics } from './session-diagnostics'
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if(!sender.includes('@s.whatsapp.net')) {
@@ -271,6 +272,17 @@ const attemptMACRecovery = async(
 	logger: ILogger
 ) => {
 	try {
+		// Record the MAC error for diagnostic tracking
+		sessionDiagnostics.recordSessionError(jid, 'mac_error_during_decryption')
+
+		logger.debug({
+			key,
+			sender: jid,
+			author: isGroupMessage ? author : undefined,
+			errorStats: sessionDiagnostics.getErrorStats(jid)
+		}, 'Starting MAC recovery with enhanced diagnostics')
+
+		// Try general MAC recovery first
 		const recoverySuccess = await macErrorManager.attemptAutomaticRecovery(
 			jid,
 			() => performSessionCleanup(jid, author, isGroupMessage, repository, logger)
@@ -282,13 +294,25 @@ const attemptMACRecovery = async(
 				sender: jid,
 				author: isGroupMessage ? author : undefined
 			}, 'MAC error recovery completed - session will be re-established')
+		} else {
+			// If automatic recovery fails, suggest forced reset
+			logger.warn({
+				key,
+				sender: jid,
+				author: isGroupMessage ? author : undefined,
+				recommendation: 'Consider forced session reset using sessionDiagnostics.forceSessionReset()',
+				errorStats: sessionDiagnostics.getErrorStats(jid)
+			}, 'Automatic MAC recovery failed - manual intervention may be required')
 		}
 	} catch(recoveryError) {
 		logger.error({
 			key,
 			sender: jid,
 			recoveryError
-		}, 'Failed to perform automatic MAC error recovery')
+		}, 'Failed to perform MAC error recovery')
+
+		// Record the recovery failure for diagnostics
+		sessionDiagnostics.recordSessionError(jid, `mac_recovery_failed: ${recoveryError.message}`)
 	}
 }
 

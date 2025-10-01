@@ -1,5 +1,6 @@
 import { Boom } from '@hapi/boom'
 import logger from './logger'
+import { sessionDiagnostics } from './session-diagnostics'
 
 export interface MACErrorInfo {
 	jid: string
@@ -49,12 +50,14 @@ export class MACErrorManager {
 	}
 
 	/**
-	 * Registra um erro de MAC
+	 * Registra um erro de MAC e integra com diagnósticos
 	 */
 	recordMACError(jid: string, error: Error): MACErrorInfo {
+		const errorType = this.detectMACErrorType(error)
+
 		const errorInfo: MACErrorInfo = {
 			jid,
-			errorType: this.categorizeError(error),
+			errorType,
 			originalError: error.message,
 			timestamp: Date.now(),
 			attemptCount: this.getAttemptCount(jid) + 1
@@ -66,17 +69,19 @@ export class MACErrorManager {
 
 		this.errorHistory.get(jid)!.push(errorInfo)
 
+		// Integrar com sistema de diagnósticos
+		sessionDiagnostics.recordSessionError(jid, `mac_error_${errorType}`)
+
 		logger.warn({
 			jid,
 			errorType: errorInfo.errorType,
 			attemptCount: errorInfo.attemptCount,
-			error: error.message
-		}, 'MAC error recorded')
+			error: error.message,
+			stackTrace: error.stack?.substring(0, 200) + '...'
+		}, 'MAC error recorded with diagnostic integration')
 
 		return errorInfo
-	}
-
-	/**
+	}	/**
 	 * Verifica se deve tentar recuperar a sessão
 	 */
 	shouldAttemptRecovery(jid: string): boolean {
@@ -111,6 +116,30 @@ export class MACErrorManager {
 		}
 
 		return recommendations
+	}
+
+	/**
+	 * Detecta o tipo específico de erro MAC
+	 */
+	private detectMACErrorType(error: Error): 'bad_mac' | 'invalid_mac' | 'mac_verification_failed' {
+		const msg = error.message?.toLowerCase() || ''
+		const stack = error.stack?.toLowerCase() || ''
+
+		if(msg.includes('bad mac') || stack.includes('bad mac')) {
+			return 'bad_mac'
+		} else if(msg.includes('invalid mac') || stack.includes('invalid mac')) {
+			return 'invalid_mac'
+		} else {
+			return 'mac_verification_failed'
+		}
+	}
+
+	/**
+	 * Obtém o número de tentativas para um JID
+	 */
+	private getAttemptCount(jid: string): number {
+		const history = this.errorHistory.get(jid) || []
+		return history.length
 	}
 
 	/**
@@ -204,13 +233,6 @@ export class MACErrorManager {
 		}
 
 		return 'bad_mac'
-	}
-
-	private getAttemptCount(jid: string): number {
-		const history = this.errorHistory.get(jid) || []
-		return history.filter(
-			err => Date.now() - err.timestamp < this.cooldownPeriod
-		).length
 	}
 
 	private cleanupOldErrors(): void {

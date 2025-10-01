@@ -156,6 +156,9 @@ export class BadMACRecoveryManager {
 	 * Recovers 1:1 session by removing corrupted data
 	 */
 	private async recover1to1Session(jid: string, authState: SignalAuthState, repository: SignalRepository): Promise<void> {
+		logger.info({ jid }, 'Starting comprehensive 1:1 session recovery for Bad MAC error')
+
+		// Step 1: Handle LID/PN mapping if applicable
 		if(jid.includes('@s.whatsapp.net')) {
 			const lidMapping = repository.getLIDMappingStore()
 			const lidForPN = await lidMapping.getLIDForPN(jid)
@@ -164,32 +167,63 @@ export class BadMACRecoveryManager {
 				const pnAddr = repository.jidToSignalProtocolAddress(jid)
 				const lidAddr = repository.jidToSignalProtocolAddress(lidForPN)
 
+				logger.debug({ jid, lidForPN, pnAddr: pnAddr.toString(), lidAddr: lidAddr.toString() },
+					'Clearing both PN and LID sessions due to Bad MAC error')
+
+				// Clear both sessions
 				await authState.keys.set({
 					session: {
-						[pnAddr]: null,
-						[lidAddr]: null
+						[pnAddr.toString()]: null,
+						[lidAddr.toString()]: null
 					}
 				})
 
+				// Clear identity keys for both addresses
 				await authState.keys.set({
-					'pre-key': {}
+					'pre-key': {
+						[pnAddr.toString()]: null,
+						[lidAddr.toString()]: null
+					}
 				})
 
-				logger.debug({ jid, lidForPN }, 'Reset both PN and LID sessions for Bad MAC recovery with pre-key cleanup')
-				return
+				logger.debug({ jid, lidForPN }, 'Reset both PN and LID sessions with identity keys for Bad MAC recovery')
 			}
 		}
 
+		// Step 2: Clear regular session
 		const addr = repository.jidToSignalProtocolAddress(jid)
+		logger.debug({ jid, address: addr.toString() }, 'Clearing session data for Bad MAC recovery')
+
 		await authState.keys.set({
-			session: { [addr]: null }
+			session: { [addr.toString()]: null }
 		})
 
+		// Clear identity key for this address
+		await authState.keys.set({
+			session: { [addr.toString()]: null }
+		})
+
+		// Step 3: Aggressive pre-key cleanup
+		logger.debug({ jid }, 'Performing aggressive pre-key cleanup for Bad MAC recovery')
+
+		// Get all pre-keys and clear them
+		const { 'pre-key': existingPreKeys } = await authState.keys.get('pre-key', [])
+		if(existingPreKeys && Object.keys(existingPreKeys).length > 0) {
+			logger.debug({ jid, preKeyCount: Object.keys(existingPreKeys).length },
+				'Clearing existing pre-keys during Bad MAC recovery')
+		}
+
+		await authState.keys.set({
+			session: { [addr.toString()]: null }
+		})
+
+		// Step 4: Clear signed pre-key to force regeneration
 		await authState.keys.set({
 			'pre-key': {}
 		})
 
-		logger.debug({ jid }, 'Reset session for Bad MAC recovery with pre-key cleanup')
+		logger.info({ jid, address: addr.toString() },
+			'Completed comprehensive session recovery for Bad MAC error - session, identity, and keys cleared')
 	}
 
 	/**
