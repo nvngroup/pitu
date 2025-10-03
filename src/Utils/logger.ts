@@ -2,12 +2,13 @@ import P from 'pino'
 
 export interface ILogger {
     level: string
-    child(obj: Record<string, unknown>): ILogger
-    trace(obj: unknown, msg?: string)
-    debug(obj: unknown, msg?: string)
-    info(obj: unknown, msg?: string)
-    warn(obj: unknown, msg?: string)
-    error(obj: unknown, msg?: string)
+    child(obj: object): ILogger
+    trace(obj: object, msg?: string): void
+    debug(obj: object, msg?: string): void
+    info(obj: object, msg?: string): void
+    warn(obj: object, msg?: string): void
+    error(obj: object, msg?: string): void
+    fatal(obj: object, msg?: string): void
 }
 
 const transport = P.transport({
