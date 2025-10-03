@@ -1,7 +1,7 @@
 syntax = "proto3";
 package waproto;
 
-/// WhatsApp Version: 2.3000.1027831359
+/// WhatsApp Version: 2.3000.1027946592
 
 message ADVDeviceIdentity {
     optional uint32 rawId = 1;
@@ -487,6 +487,11 @@ message BotMessageOrigin {
 
 message BotMessageOriginMetadata {
     repeated BotMessageOrigin origins = 1;
+}
+
+message BotMessageSharingInfo {
+    optional BotMetricsEntryPoint botEntryPointOrigin = 1;
+    optional uint32 forwardScore = 2;
 }
 
 message BotMetadata {
@@ -1230,6 +1235,7 @@ message ContextInfo {
     optional StatusAudienceMetadata statusAudienceMetadata = 69;
     optional uint32 nonJidMentions = 70;
     optional QuotedType quotedType = 71;
+    optional BotMessageSharingInfo botMessageSharingInfo = 72;
     message AdReplyInfo {
         optional string advertiserName = 1;
         optional MediaType mediaType = 2;
@@ -1341,6 +1347,8 @@ message ContextInfo {
         HD_IMAGE_CHILD = 4;
         MOTION_PHOTO_PARENT = 5;
         MOTION_PHOTO_CHILD = 6;
+        HEVC_VIDEO_PARENT = 7;
+        HEVC_VIDEO_CHILD = 8;
     }
     message QuestionReplyQuotedMessage {
         optional int32 serverQuestionId = 1;
@@ -1641,8 +1649,6 @@ message ForwardedAIBotMessageInfo {
     optional string botName = 1;
     optional string botJid = 2;
     optional string creatorName = 3;
-    optional uint32 botEntryPointOrigin = 4;
-    optional uint32 forwardScore = 5;
 }
 
 message GlobalSettings {
@@ -1854,6 +1860,10 @@ message InteractiveAnnotation {
     }
 }
 
+message InteractiveMessageAdditionalMetadata {
+    optional bool isGalaxyFlowCompleted = 1;
+}
+
 message KeepInChat {
     optional KeepType keepType = 1;
     optional int64 serverTimestamp = 2;
@@ -2052,6 +2062,7 @@ message Message {
     optional QuestionResponseMessage questionResponseMessage = 107;
     optional NewsletterFollowerInviteMessage newsletterFollowerInviteMessage = 108;
     optional StatusQuotedMessage statusQuotedMessage = 109;
+    optional StatusStickerInteractionMessage statusStickerInteractionMessage = 110;
     message AlbumMessage {
         optional uint32 expectedImageCount = 2;
         optional uint32 expectedVideoCount = 3;
@@ -3331,6 +3342,16 @@ message Message {
         }
     }
     
+    message StatusStickerInteractionMessage {
+        optional MessageKey key = 1;
+        optional string stickerKey = 2;
+        optional StatusStickerType type = 3;
+        enum StatusStickerType {
+            UNKNOWN = 0;
+            REACTION = 1;
+        }
+    }
+    
     message StickerMessage {
         optional string url = 1;
         optional bytes fileSha256 = 2;
@@ -3550,6 +3571,8 @@ message MessageAssociation {
         STATUS_ADD_YOURS_AI_IMAGINE = 15;
         STATUS_QUESTION = 16;
         STATUS_ADD_YOURS_DIWALI = 17;
+        STATUS_REACTION = 18;
+        HEVC_VIDEO_DUAL_UPLOAD = 19;
     }
 }
 
@@ -4117,6 +4140,7 @@ message StatusAttribution {
             PINTEREST = 6;
             THREADS = 7;
             APPLE_MUSIC = 8;
+            SHARECHAT = 9;
         }
     }
     
@@ -4949,6 +4973,7 @@ message WebMessageInfo {
     optional string botTargetId = 73;
     optional GroupHistoryIndividualMessageInfo groupHistoryIndividualMessageInfo = 74;
     optional GroupHistoryBundleInfo groupHistoryBundleInfo = 75;
+    optional InteractiveMessageAdditionalMetadata interactiveMessageAdditionalMetadata = 76;
     enum BizPrivacyStatus {
         E2EE = 0;
         FB = 2;
