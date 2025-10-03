@@ -36,6 +36,7 @@
   "dependencies": {
     "@cacheable/node-cache": "^1.7.3",
     "@hapi/boom": "^10.0.1",
+    "@logtail/pino": "^0.5.6",
     "async-lock": "^1.4.1",
     "axios": "^1.12.2",
     "jimp": "^1.6.0",

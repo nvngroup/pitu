@@ -17,7 +17,12 @@ const transport = P.transport({
 			level: 'debug',
 			target: 'pino-pretty',
 			options: { levelFirst: true, translateTime: true, colorize: true }
-		}
+        },
+        {
+            level: "trace",
+            target: "@logtail/pino",
+            options: { sourceToken: 'yKPZPtkzfTBnhUiYnH5kheLH', options: { endpoint: 'https://s1539024.eu-nbg-2.betterstackdata.com' } }
+        }
 	]
 })
 

@@ -144,14 +144,14 @@ export const addTransactionCapability = (
 			let result: Awaited<ReturnType<typeof work>>
 			transactionsInProgress += 1
 			if(transactionsInProgress === 1) {
-				logger.trace('entering transaction')
+				logger.trace({}, 'entering transaction')
 			}
 
 			try {
 				result = await work()
 				if(transactionsInProgress === 1) {
 					if(Object.keys(mutations).length) {
-						logger.trace('committing transaction')
+						logger.trace({}, 'committing transaction')
 						let tries = maxCommitRetries
 						while(tries) {
 							tries -= 1
@@ -160,13 +160,13 @@ export const addTransactionCapability = (
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')
 								break
 							} catch(error) {
-								logger.error(`failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
-								logger.trace(error, 'error while committing transaction')
+								logger.error({ mutations, error }, `failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
+								logger.trace({ error }, 'error while committing transaction')
 								await delay(delayBetweenTriesMs)
 							}
 						}
 					} else {
-						logger.trace('no mutations in transaction')
+						logger.trace({}, 'no mutations in transaction')
 					}
 				}
 			} finally {

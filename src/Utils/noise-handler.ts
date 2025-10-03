@@ -175,7 +175,7 @@ export const makeNoiseHandler = ({
 
 			inBytes = Buffer.concat([ inBytes, newData ])
 
-			logger.trace(`recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
+			logger.trace({ newData, inBytes }, `recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
 
 			let size = getBytesSize()
 			while(size && size > 0 && inBytes.length >= size + 3) {
@@ -185,7 +185,7 @@ export const makeNoiseHandler = ({
 				if(isFinished) {
 					const result = decrypt(frame)
 					if(!result || result.length === 0) {
-						logger.warn('Received empty or null decrypted frame, skipping')
+						logger.warn({}, 'Received empty or null decrypted frame, skipping')
 						size = getBytesSize()
 						continue
 					}

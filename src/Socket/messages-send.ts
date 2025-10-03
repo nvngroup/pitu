@@ -76,7 +76,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					ttl: +mediaConnNode!.attrs.ttl,
 					fetchDate: new Date()
 				}
-				logger.debug('fetched media conn')
+				logger.debug({}, 'fetched media conn')
 				return node
 			})()
 		}
@@ -149,7 +149,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const deviceResults: JidWithDevice[] = []
 
 		if(!useCache) {
-			logger.debug('not using cache for devices')
+			logger.debug({}, 'not using cache for devices')
 		}
 
 		const toFetch: string[] = []
@@ -1020,7 +1020,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				if('cachedGroupMetadata' in options) {
-					logger.warn('cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
+					logger.warn({}, 'cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
 				logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')

@@ -72,7 +72,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 
 	function buffer() {
 		if(!isBuffering) {
-			logger.trace('Event buffer activated')
+			logger.trace({}, 'Event buffer activated')
 			isBuffering = true
 		}
 	}
@@ -82,7 +82,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			return false
 		}
 
-		logger.trace('Flushing event buffer')
+		logger.trace({}, 'Flushing event buffer')
 		isBuffering = false
 
 		const newData = makeBufferData()
@@ -350,7 +350,7 @@ function append<E extends BufferableEvent>(
 			}
 
 			if(data.messageUpdates[key]) {
-				logger.debug('absorbed prior message update in message upsert')
+				logger.debug({}, 'absorbed prior message update in message upsert')
 				Object.assign(message, data.messageUpdates[key].update)
 				delete data.messageUpdates[key]
 			}

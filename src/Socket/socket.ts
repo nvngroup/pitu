@@ -346,14 +346,14 @@ export const makeSocket = (config: SocketConfig) => {
 				if(retryCount === 0) {
 					const timeSinceLastUpload = Date.now() - lastUploadTime
 					if(timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
-						logger.debug(`Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
+						logger.debug({}, `Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
 						resolve()
 						return
 					}
 				}
 
 				if(uploadPreKeysPromise) {
-					logger.debug('Pre-key upload already in progress, waiting for completion')
+					logger.debug({}, 'Pre-key upload already in progress, waiting for completion')
 					try {
 						await uploadPreKeysPromise
 						resolve()
@@ -383,7 +383,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 						if(retryCount < 3) {
 							const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
-							logger.info(`Retrying pre-key upload in ${backoffDelay}ms`)
+							logger.info({}, `Retrying pre-key upload in ${backoffDelay}ms`)
 							await new Promise(resolve => setTimeout(resolve, backoffDelay))
 							return uploadPreKeys(count, retryCount + 1)
 						}
@@ -428,8 +428,8 @@ export const makeSocket = (config: SocketConfig) => {
 			const preKeyCount = await getAvailablePreKeysOnServer()
 			const { exists: currentPreKeyExists, currentPreKeyId } = await verifyCurrentPreKeyExists()
 
-			logger.info(`${preKeyCount} pre-keys found on server`)
-			logger.info(`Current prekey ID: ${currentPreKeyId}, exists in storage: ${currentPreKeyExists}`)
+			logger.info({ preKeyCount }, `${preKeyCount} pre-keys found on server`)
+			logger.info({ currentPreKeyId, currentPreKeyExists }, `Current prekey ID: ${currentPreKeyId}, exists in storage: ${currentPreKeyExists}`)
 
 			const lowServerCount = preKeyCount <= MIN_PREKEY_COUNT
 			const missingCurrentPreKey = !currentPreKeyExists && currentPreKeyId > 0
@@ -446,10 +446,10 @@ export const makeSocket = (config: SocketConfig) => {
 					reasons.push(`current prekey ${currentPreKeyId} missing from storage`)
 				}
 
-				logger.info(`Uploading PreKeys due to: ${reasons.join(', ')}`)
+				logger.info({ reasons }, `Uploading PreKeys due to: ${reasons.join(', ')}`)
 				await uploadPreKeys()
 			} else {
-				logger.info(`PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
+				logger.info({ preKeyCount, currentPreKeyId }, `PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
 			}
 		} catch(error) {
 			logger.error({ error }, 'Failed to check/upload pre-keys during initialization')
@@ -593,14 +593,14 @@ export const makeSocket = (config: SocketConfig) => {
 						}, 'error in sending keep alive')
 
 						if(consecutiveFailures >= MAX_FAILURES) {
-							logger.warn('Too many keep-alive failures, ending connection')
+							logger.warn({}, 'Too many keep-alive failures, ending connection')
 							end(new Boom('Keep-alive failures exceeded threshold', {
 								statusCode: DisconnectReason.connectionLost
 							}))
 						}
 					})
 			} else {
-				logger.warn('keep alive called when WS not open')
+				logger.warn({}, 'keep alive called when WS not open')
 			}
 		}, keepAliveIntervalMs))
 	}
@@ -787,7 +787,7 @@ export const makeSocket = (config: SocketConfig) => {
 		genPairQR()
 	})
 	ws.on('CB:iq,,pair-success', async(stanza: BinaryNode) => {
-		logger.debug('pair success recv')
+		logger.debug({}, 'pair success recv')
 		try {
 			const { reply, creds: updatedCreds } = configureSuccessfulPairing(stanza, creds)
 
@@ -810,7 +810,7 @@ export const makeSocket = (config: SocketConfig) => {
 		await uploadPreKeysToServerIfRequired()
 		await sendPassiveIq('active')
 
-		logger.trace('opened connection to WA')
+		logger.trace({}, 'opened connection to WA')
 		clearTimeout(qrTimer)
 
 		ev.emit('creds.update', { me: { ...authState.creds.me!, lid: node.attrs.lid } })
@@ -851,7 +851,7 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 
 	ws.on('CB:ib,,offline_preview', (node: BinaryNode) => {
-	  logger.trace('offline preview received', JSON.stringify(node))
+		logger.trace(node, 'offline preview received')
 		sendNode({
 			tag: 'ib',
 			attrs: {},
@@ -882,10 +882,10 @@ export const makeSocket = (config: SocketConfig) => {
 		const child = getBinaryNodeChild(node, 'offline')
 		const offlineNotifs = +(child?.attrs.count || 0)
 
-		logger.trace(`handled ${offlineNotifs} offline messages/notifications`)
+		logger.trace({ offlineNotifs }, `handled ${offlineNotifs} offline messages/notifications`)
 		if(didStartBuffer) {
 			ev.flush()
-			logger.trace('flushed events for initial buffer')
+			logger.trace({}, 'flushed events for initial buffer')
 		}
 
 		ev.emit('connection.update', { receivedPendingNotifications: true })

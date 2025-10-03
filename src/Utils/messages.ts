@@ -237,25 +237,25 @@ export const prepareWAMessageMedia = async(
 					if(!uploadData.width && originalImageDimensions) {
 						uploadData.width = originalImageDimensions.width
 						uploadData.height = originalImageDimensions.height
-						logger?.debug('set dimensions')
+						logger?.debug({}, 'set dimensions')
 					}
 
-					logger?.debug('generated thumbnail')
+					logger?.debug({}, 'generated thumbnail')
 				}
 
 				if(requiresDurationComputation) {
 					uploadData.seconds = await getAudioDuration(originalFilePath!)
-					logger?.debug('computed audio duration')
+					logger?.debug({}, 'computed audio duration')
 				}
 
 				if(requiresWaveformProcessing) {
 					uploadData.waveform = await getAudioWaveform(originalFilePath!, logger)
-					logger?.debug('processed waveform')
+					logger?.debug({}, 'processed waveform')
 				}
 
 				if(requiresAudioBackground) {
 					uploadData.backgroundArgb = await assertColor(options.backgroundColor)
-					logger?.debug('computed backgroundColor audio status')
+					logger?.debug({}, 'computed backgroundColor audio status')
 				}
 			} catch(error) {
 				logger?.error({ trace: error.stack }, 'failed to obtain extra info')
@@ -270,7 +270,7 @@ export const prepareWAMessageMedia = async(
 						await fs.unlink(originalFilePath)
 					}
 
-					logger?.debug('removed tmp files')
+					logger?.debug({}, 'removed tmp files')
 				} catch(error) {
 					logger?.error(error, 'failed to remove tmp files')
 				}

@@ -235,7 +235,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		if(retryCount === 1) {
 			const msgId = await requestPlaceholderResend(msgKey)
-			logger.debug(`sendRetryRequest: requested placeholder resend for message ${msgId}`)
+			logger.debug({ msgId }, `sendRetryRequest: requested placeholder resend for message ${msgId}`)
 		}
 
 		const deviceIdentity = encodeSignedDeviceIdentity(account!, true)
@@ -805,7 +805,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				return
 			}
 
-			logger.debug('received unavailable message, acked and requested resend from phone')
+			logger.debug({}, 'received unavailable message, acked and requested resend from phone')
 		} else {
 			if(placeholderResendCache.get(node.attrs.id)) {
 				placeholderResendCache.del(node.attrs.id)
@@ -887,7 +887,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 								}
 
 								if(getBinaryNodeChild(node, 'unavailable')) {
-									logger.debug('Message unavailable, skipping retry')
+									logger.debug({}, 'Message unavailable, skipping retry')
 									return
 								}
 
@@ -895,9 +895,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 									logger.info({ error: errorMessage }, 'PreKey error detected, uploading and retrying')
 
 									try {
-										logger.debug('Uploading pre-keys for error recovery')
+										logger.debug({}, 'Uploading pre-keys for error recovery')
 										await uploadPreKeys(5)
-										logger.debug('Waiting for server to process new pre-keys')
+										logger.debug({}, 'Waiting for server to process new pre-keys')
 										await delay(1000)
 									} catch(uploadErr) {
 										logger.error({ uploadErr }, 'Pre-key upload failed, proceeding with retry anyway')
@@ -1236,7 +1236,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	ev.on('connection.update', ({ isOnline }) => {
 		if(typeof isOnline !== 'undefined') {
 			sendActiveReceipts = isOnline
-			logger.trace(`sendActiveReceipts set to "${sendActiveReceipts}"`)
+			logger.trace({ sendActiveReceipts }, `sendActiveReceipts set to "${sendActiveReceipts}"`)
 		}
 	})
 

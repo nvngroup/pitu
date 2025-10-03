@@ -416,7 +416,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 						states[name] = state
 
-						logger.trace(`resyncing ${name} from v${state.version}`)
+						logger.trace(state, `resyncing ${name} from v${state.version}`)
 
 						nodes.push({
 							tag: 'collection',
@@ -460,7 +460,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								states[name] = newState
 								Object.assign(globalMutationMap, mutationMap)
 
-								logger.trace(`restored state of ${name} from snapshot to v${newState.version} with mutations`)
+								logger.trace(newState, `restored state of ${name} from snapshot to v${newState.version} with mutations`)
 
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 							}
@@ -479,14 +479,14 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 
-								logger.trace(`synced ${name} to v${newState.version}`)
+								logger.trace(newState, `synced ${name} to v${newState.version}`)
 								initialVersionMap[name] = newState.version
 
 								Object.assign(globalMutationMap, mutationMap)
 							}
 
 							if(hasMorePatches) {
-								logger.trace(`${name} has more patches...`)
+								logger.trace({ name }, `${name} has more patches...`)
 							} else {
 								collectionsToHandle.delete(name)
 							}
@@ -565,7 +565,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const me = authState.creds.me!
 		if(type === 'available' || type === 'unavailable') {
 			if(!me.name) {
-				logger.warn('no name present, ignoring presence update request...')
+				logger.warn({}, 'no name present, ignoring presence update request...')
 				return
 			}
 
@@ -770,7 +770,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			props = reduceBinaryNodeToDictionary(propsNode, 'prop')
 		}
 
-		logger.debug('fetched props')
+		logger.debug({}, 'fetched props')
 
 		return props
 	}
@@ -939,21 +939,21 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 			if(shouldProcessHistoryMsg) {
 				syncState = SyncState.Syncing
-				logger.info('Transitioned to Syncing state')
+				logger.info({}, 'Transitioned to Syncing state')
 			} else {
 				syncState = SyncState.Online
-				logger.info('History sync skipped, transitioning to Online state and flushing buffer')
+				logger.info({}, 'History sync skipped, transitioning to Online state and flushing buffer')
 				ev.flush()
 			}
 		}
 
 		const doAppStateSync = async() => {
 			if(syncState === SyncState.Syncing) {
-				logger.info('Doing app state sync')
+				logger.info({}, 'Doing app state sync')
 				await resyncAppState(ALL_WA_PATCH_NAMES, true)
 
 				syncState = SyncState.Online
-				logger.info('App state sync complete, transitioning to Online state and flushing buffer')
+				logger.info({}, 'App state sync complete, transitioning to Online state and flushing buffer')
 				ev.flush()
 
 				const accountSyncCounter = (authState.creds.accountSyncCounter || 0) + 1
@@ -983,7 +983,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		])
 
 		if(msg.message?.protocolMessage?.appStateSyncKeyShare && syncState === SyncState.Syncing) {
-			logger.info('App state sync key arrived, triggering app state sync')
+			logger.info({}, 'App state sync key arrived, triggering app state sync')
 			await doAppStateSync()
 		}
 	})
@@ -1035,7 +1035,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 
 		syncState = SyncState.AwaitingInitialSync
-		logger.info('Connection is now AwaitingInitialSync, buffering events')
+		logger.info({}, 'Connection is now AwaitingInitialSync, buffering events')
 		ev.buffer()
 
 		const willSyncHistory = shouldSyncHistoryMessage(
@@ -1045,13 +1045,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		)
 
 		if(!willSyncHistory) {
-			logger.info('History sync is disabled by config, not waiting for notification. Transitioning to Online.')
+			logger.info({}, 'History sync is disabled by config, not waiting for notification. Transitioning to Online.')
 			syncState = SyncState.Online
 			setTimeout(() => ev.flush(), 0)
 			return
 		}
 
-		logger.info('History sync is enabled, awaiting notification with a 20s timeout.')
+		logger.info({}, 'History sync is enabled, awaiting notification with a 20s timeout.')
 
 		if(awaitingSyncTimeout) {
 			clearTimeout(awaitingSyncTimeout)
@@ -1059,7 +1059,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		awaitingSyncTimeout = setTimeout(() => {
 			if(syncState === SyncState.AwaitingInitialSync) {
-				logger.warn('Timeout in AwaitingInitialSync, forcing state to Online and flushing buffer')
+				logger.warn({}, 'Timeout in AwaitingInitialSync, forcing state to Online and flushing buffer')
 				syncState = SyncState.Online
 				ev.flush()
 			}

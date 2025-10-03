@@ -834,7 +834,7 @@ export const processSyncAction = (
 		const unarchiveChats = !!action.unarchiveChatsSetting.unarchiveChats
 		ev.emit('creds.update', { accountSettings: { unarchiveChats } })
 
-		logger?.info(`archive setting updated => '${action.unarchiveChatsSetting.unarchiveChats}'`)
+		logger?.info({ action }, `archive setting updated => '${action.unarchiveChatsSetting.unarchiveChats}'`)
 		if(accountSettings) {
 			accountSettings.unarchiveChats = unarchiveChats
 		}

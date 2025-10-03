@@ -41,7 +41,7 @@ export const hkdfInfoKey = (type: MediaType) => {
 
 export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: MediaType, logger?: ILogger) => {
 	const { stream } = await getStream(media)
-	logger?.debug('got stream for raw upload')
+	logger?.debug({}, 'got stream for raw upload')
 
 	const hasher = Crypto.createHash('sha256')
 	const filePath = join(tmpdir(), mediaType + generateMessageIDV2())
@@ -61,7 +61,7 @@ export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: Medi
 		await once(fileWriteStream, 'finish')
 		stream.destroy()
 		const fileSha256 = hasher.digest()
-		logger?.debug('hashed data for raw upload')
+		logger?.debug({}, 'hashed data for raw upload')
 		return {
 			filePath: filePath,
 			fileSha256,
@@ -262,7 +262,7 @@ export async function getAudioWaveform(buffer: Buffer | string | Readable, logge
 
 		return waveform
 	} catch(e) {
-		logger?.error('Failed to generate waveform: ' + e)
+		logger?.error({ e }, 'Failed to generate waveform:')
 	}
 }
 
@@ -334,7 +334,7 @@ export async function generateThumbnail(
 
 			await fs.unlink(imgFilename)
 		} catch(err) {
-			options.logger?.error('could not generate video thumb: ' + err)
+			options.logger?.error({ err }, 'could not generate video thumb:')
 		}
 	}
 
@@ -362,7 +362,7 @@ export const encryptedStream = async(
 ) => {
 	const { stream, type } = await getStream(media, opts)
 
-	logger?.debug('fetched media stream')
+	logger?.debug({}, 'fetched media stream')
 
 	const mediaKey = Crypto.randomBytes(32)
 	const { cipherKey, iv, macKey } = await getMediaKeys(mediaKey, mediaType)
@@ -436,7 +436,7 @@ export const encryptedStream = async(
 		originalFileStream?.end?.()
 		stream.destroy()
 
-		logger?.debug('encrypted data successfully')
+		logger?.debug({}, 'encrypted data successfully')
 
 		return {
 			mediaKey,
@@ -653,7 +653,7 @@ export const getWAUploadToServer = (
 		fileEncSha256B64 = encodeBase64EncodedStringForUpload(fileEncSha256B64)
 
 		for(const { hostname } of hosts) {
-			logger.debug(`uploading to "${hostname}"`)
+			logger.debug({ hostname }, `uploading to "${hostname}"`)
 
 			const auth = encodeURIComponent(uploadInfo.auth)
 			const url = `https://${hostname}${MEDIA_PATH_MAP[mediaType]}/${fileEncSha256B64}?auth=${auth}&token=${fileEncSha256B64}`
