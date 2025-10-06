@@ -11,7 +11,7 @@ const question = (text: string) => new Promise<string>((resolve) => rl.question(
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
 	const { version, isLatest } = await fetchLatestBaileysVersion()
-	logger.info(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+	logger.info({ version, isLatest }, 'using WA version')
 	const sock = makeWASocket({
 		version,
 		logger,
@@ -29,7 +29,7 @@ const startSock = async () => {
 		// todo move to QR event
 		const phoneNumber: string = await question('Please enter your phone number:\n')
 		const code: string = await sock.requestPairingCode(phoneNumber)
-		logger.info(`Pairing code: ${code}`)
+		logger.info({ code }, 'Pairing code:')
 	}
 
 	const sendMessageWTyping = async (msg: AnyMessageContent, jid: string) => {
@@ -59,7 +59,7 @@ const startSock = async () => {
 					if ((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
 						startSock()
 					} else {
-						logger.info('Connection closed. You are logged out.')
+						logger.info({}, 'Connection closed. You are logged out.')
 					}
 				}
 
@@ -88,7 +88,7 @@ const startSock = async () => {
 
 				if (update.qr) {
 					const website: string = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
-					logger.info(`QR code received, open in browser: ${website}`)
+					logger.info({ website }, 'QR code received, open in browser:')
 				}
 			}
 
@@ -114,9 +114,9 @@ const startSock = async () => {
 			if (events['messaging-history.set']) {
 				const { chats, contacts, messages, isLatest, progress, syncType } = events['messaging-history.set']
 				if (syncType === waproto.HistorySync.HistorySyncType.ON_DEMAND) {
-					logger.info(`received on-demand history sync, messages= ${messages}`)
+					logger.info({ messages }, 'received on-demand history sync')
 				}
-				logger.info(`recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`)
+				logger.info({ chats, contacts, messages, isLatest, progress, syncType }, 'received messaging history')
 			}
 
 			// received a new message
