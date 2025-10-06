@@ -3,7 +3,7 @@ import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
-import { MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
+import { CacheStore, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,
 	aesEncryptGCM,
@@ -47,6 +47,7 @@ import {
 import { CacheManager } from './cache-manager'
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
+import { LIDMappingStore } from '../Signal/lid-mapping'
 
 export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const {
@@ -79,12 +80,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const retryMutex = makeMutex()
 
-	const msgRetryCache = config.msgRetryCounterCache || CacheManager.getInstance('MSG_RETRY')
-	const callOfferCache = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
+	const msgRetryCache: CacheStore = config.msgRetryCounterCache || CacheManager.getInstance('MSG_RETRY')
+	const callOfferCache: CacheStore = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
+	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
-	const placeholderResendCache = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
-
-	let sendActiveReceipts = false
+	let sendActiveReceipts: boolean = false
 
 	const sendMessageAck = async({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
 		const stanza: BinaryNode = {
@@ -136,8 +136,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		offerContent.push({ tag: 'net', attrs: { medium: '3' }, content: undefined })
 		offerContent.push({ tag: 'capability', attrs: { ver: '1' }, content: new Uint8Array([1, 4, 255, 131, 207, 4]) })
 		offerContent.push({ tag: 'encopt', attrs: { keygen: '2' }, content: undefined })
-		const encKey = randomBytes(32)
-		const devices = (await getUSyncDevices([toJid], true, false)).map(({ user, device }) => jidEncode(user, 's.whatsapp.net', device))
+		const encKey: Buffer = randomBytes(32)
+		const devices: string[] = (await getUSyncDevices([toJid], true, false)).map(({ user, device }) => jidEncode(user, 's.whatsapp.net', device))
 		await assertSessions(devices, true)
 		const { nodes: destinations, shouldIncludeDeviceIdentity } = await createParticipantNodes(devices, {
 			call: {
@@ -218,10 +218,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const sendRetryRequest = async(node: BinaryNode, forceIncludeKeys = false) => {
 		const { fullMessage } = decodeMessageNode(node, authState.creds.me!.id, authState.creds.me!.lid || '')
 		const { key: msgKey } = fullMessage
-		const msgId = msgKey.id!
+		const msgId: string = msgKey.id!
 
 		const key = `${msgId}:${msgKey?.participant}`
-		let retryCount = msgRetryCache.get<number>(key) || 0
+		let retryCount: number = msgRetryCache.get<number>(key) || 0
 		if(retryCount >= maxMsgRetryCount) {
 			logger.debug({ retryCount, msgId }, 'reached retry limit, clearing')
 			msgRetryCache.del(key)
@@ -234,7 +234,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const { account, signedPreKey, signedIdentityKey: identityKey } = authState.creds
 
 		if(retryCount === 1) {
-			const msgId = await requestPlaceholderResend(msgKey)
+			const msgId: string | undefined = await requestPlaceholderResend(msgKey)
 			logger.debug({ msgId }, `sendRetryRequest: requested placeholder resend for message ${msgId}`)
 		}
 
@@ -278,7 +278,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					const { update, preKeys } = await getNextPreKeys(authState, 1)
 
 					const [keyId] = Object.keys(preKeys)
-					const key = preKeys[+keyId]
+					const key: KeyPair = preKeys[+keyId]
 
 					const content = receipt.content! as BinaryNode[]
 					content.push({
@@ -306,8 +306,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const handleEncryptNotification = async(node: BinaryNode) => {
 		const from = node.attrs.from
 		if(from === S_WHATSAPP_NET) {
-			const countChild = getBinaryNodeChild(node, 'count')
-			const count = +countChild!.attrs.value
+			const countChild: BinaryNode | undefined = getBinaryNodeChild(node, 'count')
+			const count: number = +countChild!.attrs.value
 			const shouldUploadMorePreKeys = count < MIN_PREKEY_COUNT
 
 			logger.debug({ count, shouldUploadMorePreKeys }, 'recv pre-key count')
@@ -315,7 +315,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				await uploadPreKeys()
 			}
 		} else {
-			const identityNode = getBinaryNodeChild(node, 'identity')
+			const identityNode: BinaryNode | undefined = getBinaryNodeChild(node, 'identity')
 			if(identityNode) {
 				logger.trace({ jid: from }, 'identity changed')
 			} else {
@@ -358,7 +358,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			}
 			break
 		case 'modify':
-			const oldNumber = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
+			const oldNumber: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
 			msg.messageStubParameters = oldNumber || []
 			msg.messageStubType = WAMessageStubType.GROUP_PARTICIPANT_CHANGE_NUMBER
 			break
@@ -370,7 +370,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const stubType = `GROUP_PARTICIPANT_${child.tag.toUpperCase()}`
 			msg.messageStubType = WAMessageStubType[stubType]
 
-			const participants = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
+			const participants: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
 			if(
 				participants.length === 1 &&
 					areJidsSameUser(participants[0], participant) &&
@@ -386,7 +386,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			msg.messageStubParameters = [ child.attrs.subject ]
 			break
 		case 'description':
-			const description = getBinaryNodeChild(child, 'body')?.content?.toString()
+			const description: string | undefined = getBinaryNodeChild(child, 'body')?.content?.toString()
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_DESCRIPTION
 			msg.messageStubParameters = description ? [ description ] : undefined
 			break
@@ -413,7 +413,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 			break
 		case 'membership_approval_mode':
-			const approvalMode = getBinaryNodeChild(child, 'group_join')
+			const approvalMode: BinaryNode | undefined = getBinaryNodeChild(child, 'group_join')
 			if(approvalMode) {
 				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE
 				msg.messageStubParameters = [ approvalMode.attrs.state ]
@@ -425,7 +425,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			msg.messageStubParameters = [ participantJid, 'created', child.attrs.request_method ]
 			break
 		case 'revoked_membership_requests':
-			const isDenied = areJidsSameUser(participantJid, participant)
+			const isDenied: boolean = areJidsSameUser(participantJid, participant)
 			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
 			msg.messageStubParameters = [ participantJid, isDenied ? 'revoked' : 'rejected' ]
 			break
@@ -435,14 +435,14 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const processNotification = async(node: BinaryNode) => {
 		const result: Partial<waproto.IWebMessageInfo> = { }
 		const [child] = getAllBinaryNodeChildren(node)
-		const nodeType = node.attrs.type
-		const from = jidNormalizedUser(node.attrs.from)
+		const nodeType: string = node.attrs.type
+		const from: string = jidNormalizedUser(node.attrs.from)
 
 		switch (nodeType) {
 		case 'privacy_token':
-			const tokenList = getBinaryNodeChildren(child, 'token')
+			const tokenList: BinaryNode[] = getBinaryNodeChildren(child, 'token')
 			for(const { attrs, content } of tokenList) {
-				const jid = attrs.jid
+				const jid: string = attrs.jid
 				ev.emit('chats.update', [
 					{
 						id: jid,
@@ -465,15 +465,15 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			await handleEncryptNotification(node)
 			break
 		case 'devices':
-			const devices = getBinaryNodeChildren(child, 'device')
+			const devices: BinaryNode[] = getBinaryNodeChildren(child, 'device')
 			if(areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
-				const deviceJids = devices.map(d => d.attrs.jid)
+				const deviceJids: string[] = devices.map(d => d.attrs.jid)
 				logger.trace({ deviceJids }, 'got my own devices')
 			}
 
 			break
 		case 'server_sync':
-			const update = getBinaryNodeChild(node, 'collection')
+			const update: BinaryNode | undefined = getBinaryNodeChild(node, 'collection')
 			if(update) {
 				const name = update.attrs.name as WAPatchName
 				await resyncAppState([name], false)
@@ -481,8 +481,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 			break
 		case 'picture':
-			const setPicture = getBinaryNodeChild(node, 'set')
-			const delPicture = getBinaryNodeChild(node, 'delete')
+			const setPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'set')
+			const delPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'delete')
 
 			ev.emit('contacts.update', [{
 				id: jidNormalizedUser(node?.attrs?.from) || from || ((setPicture || delPicture)?.attrs?.hash) || '',
@@ -490,7 +490,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			}])
 
 			if(isJidGroup(from)) {
-				const node = setPicture || delPicture
+				const node: BinaryNode | undefined = setPicture || delPicture
 				result.messageStubType = WAMessageStubType.GROUP_CHANGE_ICON
 
 				if(setPicture) {
@@ -507,8 +507,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			break
 		case 'account_sync':
 			if(child.tag === 'disappearing_mode') {
-				const newDuration = +child.attrs.duration
-				const timestamp = +child.attrs.t
+				const newDuration: number = +child.attrs.duration
+				const timestamp: number = +child.attrs.t
 
 				logger.trace({ newDuration }, 'updated account disappearing mode')
 
@@ -522,7 +522,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					}
 				})
 			} else if(child.tag === 'blocklist') {
-				const blocklists = getBinaryNodeChildren(child, 'item')
+				const blocklists: BinaryNode[] = getBinaryNodeChildren(child, 'item')
 
 				for(const { attrs } of blocklists) {
 					const blocklist: string[] = [attrs.jid]
@@ -533,24 +533,24 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 			break
 		case 'link_code_companion_reg':
-			const linkCodeCompanionReg = getBinaryNodeChild(node, 'link_code_companion_reg')
-			const ref = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
-			const primaryIdentityPublicKey = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
-			const primaryEphemeralPublicKeyWrapped = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
-			const codePairingPublicKey = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
-			const companionSharedKey = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
-			const random = randomBytes(32)
-			const linkCodeSalt = randomBytes(32)
-			const linkCodePairingExpanded = await hkdf(companionSharedKey, 32, {
+			const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
+			const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
+			const primaryIdentityPublicKey: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
+			const primaryEphemeralPublicKeyWrapped: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
+			const codePairingPublicKey: Buffer = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
+			const companionSharedKey: Buffer = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
+			const random: Buffer = randomBytes(32)
+			const linkCodeSalt: Buffer = randomBytes(32)
+			const linkCodePairingExpanded: Buffer = await hkdf(companionSharedKey, 32, {
 				salt: linkCodeSalt,
 				info: 'link_code_pairing_key_bundle_encryption_key'
 			})
-			const encryptPayload = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
-			const encryptIv = randomBytes(12)
-			const encrypted = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
-			const encryptedPayload = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
-			const identitySharedKey = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
-			const identityPayload = Buffer.concat([companionSharedKey, identitySharedKey, random])
+			const encryptPayload: Buffer = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
+			const encryptIv: Buffer = randomBytes(12)
+			const encrypted: Buffer = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
+			const encryptedPayload: Buffer = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
+			const identitySharedKey: Buffer = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
+			const identityPayload: Buffer = Buffer.concat([companionSharedKey, identitySharedKey, random])
 			authState.creds.advSecretKey = (await hkdf(identityPayload, 32, { info: 'adv_secret' })).toString('base64')
 			await query({
 				tag: 'iq',
@@ -597,11 +597,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	}
 
 	async function decipherLinkPublicKey(data: Uint8Array | Buffer) {
-		const buffer = toRequiredBuffer(data)
-		const salt = buffer.subarray(0, 32)
-		const secretKey = await derivePairingCodeKey(authState.creds.pairingCode!, salt)
-		const iv = buffer.subarray(32, 48)
-		const payload = buffer.subarray(48, 80)
+		const buffer: Buffer = toRequiredBuffer(data)
+		const salt: Buffer = buffer.subarray(0, 32)
+		const secretKey: Buffer = await derivePairingCodeKey(authState.creds.pairingCode!, salt)
+		const iv: Buffer = buffer.subarray(32, 48)
+		const payload: Buffer = buffer.subarray(48, 80)
 		return aesDecryptCTR(payload, secretKey, iv)
 	}
 
@@ -615,13 +615,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const willSendMessageAgain = (id: string, participant: string) => {
 		const key = `${id}:${participant}`
-		const retryCount = msgRetryCache.get<number>(key) || 0
+		const retryCount: number = msgRetryCache.get<number>(key) || 0
 		return retryCount < maxMsgRetryCount
 	}
 
 	const updateSendMessageAgainCount = (id: string, participant: string) => {
 		const key = `${id}:${participant}`
-		const newValue = (msgRetryCache.get<number>(key) || 0) + 1
+		const newValue: number = (msgRetryCache.get<number>(key) || 0) + 1
 		msgRetryCache.set(key, newValue)
 	}
 
@@ -633,7 +633,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const msgs = await Promise.all(ids.map(id => getMessage({ ...key, id })))
 		const remoteJid: string = key.remoteJid!
 		const participant: string = key.participant || remoteJid
-		const sendToAll = !jidDecode(participant)?.device
+		const sendToAll: boolean = !jidDecode(participant)?.device
 		await assertSessions([participant], true)
 
 		if(isJidGroup(remoteJid)) {
@@ -665,10 +665,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const handleReceipt = async(node: BinaryNode) => {
 		const { attrs, content } = node
-		const isLid = attrs.from.includes('lid')
-		const isNodeFromMe = areJidsSameUser(attrs.participant || attrs.from, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
-		const remoteJid = !isNodeFromMe || isJidGroup(attrs.from) ? attrs.from : attrs.recipient
-		const fromMe = !attrs.recipient || (attrs.type === 'retry' && isNodeFromMe)
+		const isLid: boolean = attrs.from.includes('lid')
+		const isNodeFromMe: boolean = areJidsSameUser(attrs.participant || attrs.from, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
+		const remoteJid: string = !isNodeFromMe || isJidGroup(attrs.from) ? attrs.from : attrs.recipient
+		const fromMe: boolean = !attrs.recipient || (attrs.type === 'retry' && isNodeFromMe)
 
 		const key: waproto.IMessageKey = {
 			remoteJid,
@@ -685,7 +685,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		const ids: string[] = [attrs.id]
 		if(Array.isArray(content)) {
-			const items = getBinaryNodeChildren(content[0], 'item')
+			const items: BinaryNode[] = getBinaryNodeChildren(content[0], 'item')
 			ids.push(...items.map(i => i.attrs.id))
 		}
 
@@ -753,7 +753,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	}
 
 	const handleNotification = async(node: BinaryNode) => {
-		const remoteJid = node.attrs.from
+		const remoteJid: string = node.attrs.from
 		if(shouldIgnoreJid(remoteJid) && remoteJid !== '@s.whatsapp.net') {
 			logger.debug({ remoteJid, id: node.attrs.id }, 'ignored notification')
 			await sendMessageAck(node)
@@ -764,10 +764,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			await Promise.all([
 				processingMutex.mutex(
 					async() => {
-						const msg = await processNotification(node)
+						const msg: Partial<waproto.IWebMessageInfo> | undefined = await processNotification(node)
 						if (msg) {
-							const isLid = node.attrs.from.includes('lid')
-							const fromMe = areJidsSameUser(node.attrs.participant || remoteJid, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
+							const isLid: boolean = node.attrs.from.includes('lid')
+							const fromMe: boolean = areJidsSameUser(node.attrs.participant || remoteJid, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
 							msg.key = {
 								remoteJid,
 								fromMe,
@@ -833,7 +833,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		if(msg.message?.protocolMessage?.lidMigrationMappingSyncMessage?.encodedMappingPayload) {
 			try {
 				const payload = msg.message.protocolMessage.lidMigrationMappingSyncMessage.encodedMappingPayload
-				const decoded = waproto.LIDMigrationMappingSyncPayload.decode(payload)
+				const decoded: waproto.LIDMigrationMappingSyncPayload = waproto.LIDMigrationMappingSyncPayload.decode(payload)
 
 				logger.debug(
 					{
@@ -843,11 +843,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					'Received LID migration sync message from server'
 				)
 
-				const lidMapping = signalRepository.getLIDMappingStore()
+				const lidMapping: LIDMappingStore = signalRepository.getLIDMappingStore()
 				if(decoded.pnToLidMappings && decoded.pnToLidMappings.length > 0) {
 					for(const mapping of decoded.pnToLidMappings) {
 						const pn = `${mapping.pn}@s.whatsapp.net`
-						const lidValue = mapping.latestLid || mapping.assignedLid
+						const lidValue: number | Long = mapping.latestLid || mapping.assignedLid
 						const lid = `${lidValue}@lid`
 
 						await lidMapping.storeLIDPNMapping(lid, pn)
@@ -877,8 +877,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 							return sendMessageAck(node, NACK_REASONS.ParsingError)
 						}
 
-						const errorMessage = msg?.messageStubParameters?.[0] || ''
-						const isPreKeyError = errorMessage.includes('PreKey')
+						const errorMessage: string = msg?.messageStubParameters?.[0] || ''
+						const isPreKeyError: boolean = errorMessage.includes('PreKey')
 
 						retryMutex.mutex(async() => {
 							try {
@@ -905,7 +905,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 									}
 								}
 
-								const encNode = getBinaryNodeChild(node, 'enc')
+								const encNode: BinaryNode | undefined = getBinaryNodeChild(node, 'enc')
 								await sendRetryRequest(node, !encNode)
 								if(retryRequestDelayMs) {
 									await delay(retryRequestDelayMs)
@@ -913,7 +913,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 							} catch(err) {
 								logger.error({ err, isPreKeyError }, 'Failed to handle retry, attempting basic retry')
 								try {
-									const encNode = getBinaryNodeChild(node, 'enc')
+									const encNode: BinaryNode | undefined = getBinaryNodeChild(node, 'enc')
 									await sendRetryRequest(node, !encNode)
 								} catch(retryErr) {
 									logger.error({ retryErr }, 'Failed to send retry after error handling')
@@ -924,7 +924,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						})
 					} else {
 						let type: MessageReceiptType = undefined
-						let participant = msg.key.participant
+						let participant: string | null | undefined = msg.key.participant
 						if(category === 'peer') {
 							type = 'peer_msg'
 						} else if(msg.key.fromMe) {
@@ -938,9 +938,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 						await sendReceipt(msg.key.remoteJid!, participant!, [msg.key.id!], type)
 
-						const isAnyHistoryMsg = getHistoryMsg(msg.message!)
+						const isAnyHistoryMsg: waproto.Message.IHistorySyncNotification | null | undefined = getHistoryMsg(msg.message!)
 						if(isAnyHistoryMsg) {
-							const jid = jidNormalizedUser(msg.key.remoteJid!)
+							const jid: string = jidNormalizedUser(msg.key.remoteJid!)
 							await sendReceipt(jid, undefined, [msg.key.id!], 'hist_sync')
 
 
@@ -1023,11 +1023,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		let status: WACallUpdateType
 		const { attrs } = node
 		const [infoChild] = getAllBinaryNodeChildren(node)
-		const callId = infoChild.attrs['call-id']
-		const from = infoChild.attrs.from || infoChild.attrs['call-creator']
+		const callId: string = infoChild.attrs['call-id']
+		const from: string = infoChild.attrs.from || infoChild.attrs['call-creator']
 		status = getCallStatusFromNode(infoChild)
 		if(isLidUser(from) && infoChild.tag === 'relaylatency') {
-			const verify = callOfferCache.get(callId)
+			const verify: unknown = callOfferCache.get(callId)
 			if(!verify) {
 				status = 'offer'
 				const callLid: WACallEvent = {
@@ -1058,7 +1058,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			callOfferCache.set(call.id, call)
 		}
 
-		const existingCall = callOfferCache.get<WACallEvent>(call.id)
+		const existingCall: WACallEvent | undefined = callOfferCache.get(call.id)
 
 		if(existingCall) {
 			call.isVideo = existingCall.isVideo
@@ -1140,7 +1140,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			['notification', handleNotification]
 		])
 		const nodes: OfflineNode[] = []
-		let isProcessing = false
+		let isProcessing: boolean = false
 
 		const enqueue = (type: MessageType, node: BinaryNode) => {
 			nodes.push({ type, node })
