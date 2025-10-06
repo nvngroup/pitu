@@ -386,6 +386,10 @@ export function decodeMessageNode(
 				throw new Boom('receipient present, but msg not from me', { data: stanza })
 			}
 
+			if (isMe(from) || isMeLid(from)) {
+				fromMe = true
+			}
+
 			chatId = recipient
 		} else {
 			chatId = from
@@ -393,10 +397,6 @@ export function decodeMessageNode(
 
 		msgType = 'chat'
 		author = from
-
-		if (isMe(from) || isMeLid(from)) {
-			fromMe = true
-		}
 	} else if(isLidUser(from)) {
 		if(recipient) {
 			if(!isMeLid(from)) {
@@ -453,7 +453,6 @@ export function decodeMessageNode(
 		throw new Boom('Unknown message type', { data: stanza })
 	}
 
-	// const fromMe = (isLidUser(from) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
 	const pushname = stanza?.attrs?.notify
 
 	const key: WAMessageKey = {
