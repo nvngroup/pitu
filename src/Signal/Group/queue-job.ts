@@ -35,7 +35,7 @@ async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => v
 
 export default function queueJob<T>(bucket: string | number, awaitable: () => Promise<T>): Promise<T> {
 	if(typeof bucket !== 'string') {
-		logger.warn(`Unhandled bucket type (for naming): ${typeof bucket} ${bucket}`)
+		logger.warn({ bucket }, 'Unhandled bucket type (for naming)')
 	}
 
 	let inactive = false

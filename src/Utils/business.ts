@@ -259,7 +259,7 @@ export const uploadingNecessaryImages = async(
 				)
 				await fs
 					.unlink(filePath)
-					.catch(err => logger.error('Error deleting temp file ', err))
+					.catch(err => logger.error({ err }, 'Error deleting temp file'))
 				return { url: getUrlFromDirectPath(directPath) }
 			}
 		)

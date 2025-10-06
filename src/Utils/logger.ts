@@ -26,4 +26,6 @@ const transport = P.transport({
 	]
 })
 
-export default P(transport)
+const logger: ILogger = P(transport)
+
+export default logger

@@ -32,24 +32,24 @@ export const tryAlternativeDecryption = (
 			return decipher.update(enc)
 		}
 	} catch(error) {
-		logger.error('First decryption attempt failed: ' + error.message)
+		logger.error({ error }, 'First decryption attempt failed: ')
 	}
 
 	try {
 		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 	} catch(error) {
-		logger.error('Second decryption attempt failed: ' + error.message)
+		logger.error({ error }, 'Second decryption attempt failed: ')
 	}
 
 	try {
 		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
 	} catch(error) {
-		logger.error('Third decryption attempt failed: ' + error.message)
+		logger.error({ error }, 'Third decryption attempt failed: ')
 	}
 
-	logger.error('All decryption attempts failed')
+	logger.error({}, 'All decryption attempts failed')
 	return Buffer.from([])
 }
 

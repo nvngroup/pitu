@@ -87,7 +87,7 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 				const metadata: GroupMetadata = await communityMetadata(`${communityNode.attrs.id}@g.us`)
 				return metadata ? metadata : Optional.empty()
 			} catch(error) {
-				logger.error('Error parsing community metadata:', error)
+				logger.error({ error }, 'Error parsing community metadata:')
 				return Optional.empty()
 			}
 		}

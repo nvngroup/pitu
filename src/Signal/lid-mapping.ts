@@ -40,13 +40,13 @@ export class LIDMappingStore {
 		const isValidType = expectedType === 'lid' ? isLidUser(jid) : isJidUser(jid)
 
 		if(!isValidType) {
-			logger.warn(`Invalid JID type for ${expectedType}: ${jid}`)
+			logger.warn({ jid }, `Invalid JID type for ${expectedType}`)
 			return null
 		}
 
 		const decoded = jidDecode(jid)
 		if(!decoded?.user) {
-			logger.warn(`Failed to decode JID: ${jid}`)
+			logger.warn({ jid }, 'Failed to decode JID')
 			return null
 		}
 
@@ -61,7 +61,7 @@ export class LIDMappingStore {
 	 */
 	private validateMappingParams(lid: string, pn: string): { lidJid: string; pnJid: string } | null {
 		if(!((isLidUser(lid) && isJidUser(pn)) || (isJidUser(lid) && isLidUser(pn)))) {
-			logger.error(`Invalid LID-PN mapping parameters: lid=${lid}, pn=${pn}`)
+			logger.error({ lid, pn }, 'Invalid LID-PN mapping parameters')
 			return null
 		}
 
@@ -93,7 +93,7 @@ export class LIDMappingStore {
 		try {
 			if(!lid?.trim() || !pn?.trim()) {
 				const error = 'LID and PN parameters cannot be empty'
-				logger.error(error)
+				logger.error({ error })
 				return { success: false, error }
 			}
 
@@ -114,7 +114,7 @@ export class LIDMappingStore {
 			const { user: pnUser } = pnDecoded
 			const { user: lidUser } = lidDecoded
 
-			logger.trace(`Storing USER LID mapping: PN ${pnUser} → LID ${lidUser}`)
+			logger.trace({ pnUser, lidUser }, 'Storing USER LID mapping')
 
 			await this.keys.transaction(async() => {
 				await this.keys.set({
@@ -125,7 +125,7 @@ export class LIDMappingStore {
 				})
 			})
 
-			logger.info(`USER LID mapping stored successfully: PN ${pnUser} → LID ${lidUser}`)
+			logger.info({ pnUser, lidUser }, 'USER LID mapping stored successfully')
 
 			return {
 				success: true,
@@ -147,7 +147,7 @@ export class LIDMappingStore {
 	async getLIDForPN(pn: string): Promise<string | null> {
 		try {
 			if(!pn?.trim()) {
-				logger.warn('getLIDForPN: Empty PN parameter')
+				logger.warn({ pn }, 'getLIDForPN: Empty PN parameter')
 				return null
 			}
 
@@ -162,13 +162,13 @@ export class LIDMappingStore {
 			const lidUser = stored[pnUser]
 
 			if(!lidUser || typeof lidUser !== 'string') {
-				logger.trace(`No LID mapping found for PN user ${pnUser}`)
+				logger.trace({ pnUser }, 'No LID mapping found for PN user')
 				return null
 			}
 
 			const deviceSpecificLid = this.createDeviceSpecificLid(lidUser, pnDevice)
 
-			logger.trace(`getLIDForPN: ${pn} → ${deviceSpecificLid} (user mapping with device ${pnDevice})`)
+			logger.trace({ pn, deviceSpecificLid, pnDevice }, 'getLIDForPN: Mapping found')
 			return deviceSpecificLid
 
 		} catch(error) {
@@ -185,7 +185,7 @@ export class LIDMappingStore {
 	async getPNForLID(lid: string): Promise<string | null> {
 		try {
 			if(!lid?.trim()) {
-				logger.warn('getPNForLID: Empty LID parameter')
+				logger.warn({ lid }, 'getPNForLID: Empty LID parameter')
 				return null
 			}
 
@@ -201,13 +201,13 @@ export class LIDMappingStore {
 			const pnUser = stored[reverseKey]
 
 			if(!pnUser || typeof pnUser !== 'string') {
-				logger.trace(`No reverse mapping found for LID user: ${lidUser}`)
+				logger.trace({ lidUser }, 'No reverse mapping found for LID user')
 				return null
 			}
 
 			const pnJid = this.createDeviceSpecificPN(pnUser, lidDevice)
 
-			logger.trace(`Found reverse mapping: ${lid} → ${pnJid}`)
+			logger.trace({ lid, pnJid }, 'Found reverse mapping')
 			return pnJid
 
 		} catch(error) {
@@ -224,7 +224,7 @@ export class LIDMappingStore {
 	async removeLIDPNMapping(userIdentifier: string): Promise<boolean> {
 		try {
 			if(!userIdentifier?.trim()) {
-				logger.warn('removeLIDPNMapping: Empty user identifier')
+				logger.warn({ userIdentifier }, 'removeLIDPNMapping: Empty user identifier')
 				return false
 			}
 
@@ -237,7 +237,7 @@ export class LIDMappingStore {
 				const reverseMappedUser = reverseStored[reverseKey]
 
 				if(!reverseMappedUser) {
-					logger.trace(`No mapping found for user: ${userIdentifier}`)
+					logger.trace({ userIdentifier, reverseMappedUser }, 'No mapping found for user')
 					return false
 				}
 
@@ -260,7 +260,7 @@ export class LIDMappingStore {
 				})
 			}
 
-			logger.info(`LID-PN mapping removed for user: ${userIdentifier}`)
+			logger.info({ userIdentifier }, 'LID-PN mapping removed for user')
 			return true
 
 		} catch(error) {
@@ -303,7 +303,7 @@ export class LIDMappingStore {
 	 */
 	async getMappingStats(): Promise<{ totalMappings: number; users: string[] }> {
 		try {
-			logger.trace('Getting mapping statistics...')
+			logger.trace({}, 'Getting mapping statistics...')
 			return {
 				totalMappings: 0,
 				users: []

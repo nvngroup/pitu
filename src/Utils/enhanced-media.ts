@@ -22,7 +22,7 @@ export const enhancedDownloadEncryptedContent = async(
 	try {
 		return await originalDownloadEncryptedContent(downloadUrl, keys, options)
 	} catch(error) {
-		logger.error('Error in original decryption, trying alternative method', error)
+		logger.error({ error }, 'Error in original decryption, trying alternative method')
 
 		const response = await axios.get(downloadUrl, {
 			responseType: 'arraybuffer',

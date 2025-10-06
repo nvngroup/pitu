@@ -69,7 +69,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		try {
 			const decoded = jidDecode(jid)
 			if(!decoded?.user) {
-				logger.warn(`Invalid JID format: ${jid}`)
+				logger.warn({ jid }, 'Invalid JID format')
 				return null
 			}
 
@@ -302,7 +302,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			try {
 				const decoded = validateAndDecodeJid(jid)
 				if(!decoded) {
-					logger.warn(`Cannot delete session for invalid JID: ${jid}`)
+					logger.warn({ jid }, 'Cannot delete session for invalid JID')
 					return
 				}
 
@@ -314,7 +314,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 				sessionValidationCache.del(`validation:${jid}`)
 
-				logger.info(`Session deleted for: ${jid}`)
+				logger.info({ jid }, 'Session deleted for')
 			} catch(error) {
 				logger.error({ error, jid }, 'Failed to delete session')
 				throw error
@@ -325,7 +325,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			try {
 				if(!options.skipValidation) {
 					if(!fromJid.includes(SIGNAL_CONSTANTS.WHATSAPP_DOMAIN) || !toJid.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
-						logger.warn(`Invalid migration direction: ${fromJid} → ${toJid}`)
+						logger.warn({ fromJid, toJid }, 'Invalid migration direction')
 						return
 					}
 				}
@@ -334,7 +334,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const toDecoded = validateAndDecodeJid(toJid)
 
 				if(!fromDecoded || !toDecoded) {
-					logger.error(`Failed to decode JIDs for migration: ${fromJid} → ${toJid}`)
+					logger.error({ fromJid, toJid }, 'Failed to decode JIDs for migration')
 					return
 				}
 
@@ -342,7 +342,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
 				if(!options.force && recentMigrations.has(migrationKey)) {
-					logger.trace(`Migration already processed: ${migrationKey}`)
+					logger.trace({ migrationKey }, 'Migration already processed')
 					return
 				}
 
@@ -350,7 +350,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const { [lidAddr.toString()]: lidExists } = await auth.keys.get('session', [lidAddr.toString()])
 
 				if(lidExists && !options.force) {
-					logger.trace(`LID session already exists: ${toJid}`)
+					logger.trace({ toJid }, 'LID session already exists')
 					recentMigrations.set(migrationKey, true)
 					return
 				}
@@ -358,7 +358,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
 					const mappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
 					if(!mappingResult.success) {
-						logger.error(`Failed to store LID mapping: ${mappingResult.error}`)
+						logger.error({ error: mappingResult.error }, 'Failed to store LID mapping')
 						return
 					}
 
@@ -373,9 +373,9 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 						await auth.keys.set({ session: { [fromAddr.toString()]: null } })
 
-						logger.info(`Session migrated successfully: ${fromJid} → ${toJid}`)
+						logger.info({ fromJid, toJid }, 'Session migrated successfully')
 					} else {
-						logger.warn(`No valid session found for migration: ${fromJid}`)
+						logger.warn({ fromJid }, 'No valid session found for migration')
 					}
 				})
 
@@ -399,7 +399,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				recentMigrations.flushAll()
 				sessionValidationCache.flushAll()
 
-				logger.trace('LibSignal repository destroyed and caches cleared')
+				logger.trace({}, 'LibSignal repository destroyed and caches cleared')
 			} catch(error) {
 				logger.error({ error }, 'Error during repository destruction')
 			}
@@ -463,7 +463,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		storeSession: async(id: string, session: libsignal.SessionRecord): Promise<void> => {
 			try {
 				await keys.set({ 'session': { [id]: session.serialize() } })
-				logger.trace(`Session stored for: ${id}`)
+				logger.trace({ id }, 'Session stored for')
 			} catch(error) {
 				logger.error({ error, id }, 'Failed to store session')
 				throw error
@@ -495,7 +495,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		removePreKey: async(id: number): Promise<void> => {
 			try {
 				await keys.set({ 'pre-key': { [id]: null } })
-				logger.trace(`Pre-key removed: ${id}`)
+				logger.trace({ id }, 'Pre-key removed')
 			} catch(error) {
 				logger.error({ error, id }, 'Failed to remove pre-key')
 				throw error
@@ -534,7 +534,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 						[keyId]: Buffer.from(serialized, 'utf-8')
 					}
 				})
-				logger.trace(`Sender key stored: ${keyId}`)
+				logger.trace({ keyId }, 'Sender key stored')
 			} catch(error) {
 				logger.error({ error, senderKeyName: senderKeyName.toString() }, 'Failed to store sender key')
 				throw error
