@@ -149,7 +149,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const deviceResults: JidWithDevice[] = []
 
 		if(!useCache) {
-			logger.debug({}, 'not using cache for devices')
+			logger.debug({ jids, ignoreZeroDevices }, 'not using cache for devices')
 		}
 
 		const toFetch: string[] = []
@@ -160,11 +160,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			jid = jidNormalizedUser(jid)
 			if(useCache) {
 				const devices = userDevicesCache.get<JidWithDevice[]>(user!)
-				if(devices) {
+				if(devices && devices.length > 0) {
 					deviceResults.push(...devices)
-
-					logger.trace({ user }, 'using cache for devices')
+					logger.trace({ user, deviceCount: devices.length }, 'using cache for devices')
 				} else {
+					logger.trace({ user }, 'no cached devices found, will fetch')
 					toFetch.push(jid)
 				}
 			} else {
@@ -173,35 +173,52 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 
 		if(!toFetch.length) {
+			logger.debug({ cachedDeviceCount: deviceResults.length }, 'using all cached devices')
 			return deviceResults
 		}
+
+		logger.debug({ toFetch, ignoreZeroDevices }, 'fetching devices from server')
 
 		const query = new USyncQuery()
 			.withContext('message')
 			.withDeviceProtocol()
 
 		for(const jid of toFetch) {
-			query.withUser(new USyncUser().withId(jid)) // TODO: investigate - the idea here is that <user> should have an inline lid field with the lid being the pn equivalent
+			query.withUser(new USyncUser().withId(jid))
 		}
 
-		const result = await sock.executeUSyncQuery(query)
+		try {
+			const result = await sock.executeUSyncQuery(query)
 
-		if(result) {
-			const extracted = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
-			const deviceMap: { [_: string]: JidWithDevice[] } = {}
+			if(result) {
+				const extracted = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
+				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
 
-			for(const item of extracted) {
-				deviceMap[item.user] = deviceMap[item.user] || []
-				deviceMap[item.user].push(item)
+				if(extracted.length === 0) {
+					logger.warn({ toFetch, ignoreZeroDevices }, 'no devices extracted from USyncQuery result')
+				}
 
-				deviceResults.push(item)
+				const deviceMap: { [_: string]: JidWithDevice[] } = {}
+
+				for(const item of extracted) {
+					deviceMap[item.user] = deviceMap[item.user] || []
+					deviceMap[item.user].push(item)
+
+					deviceResults.push(item)
+				}
+
+				for(const key in deviceMap) {
+					userDevicesCache.set(key, deviceMap[key])
+					logger.debug({ user: key, deviceCount: deviceMap[key].length }, 'cached devices for user')
+				}
+			} else {
+				logger.warn({ toFetch }, 'USyncQuery returned no result')
 			}
-
-			for(const key in deviceMap) {
-				userDevicesCache.set(key, deviceMap[key])
-			}
+		} catch(error) {
+			logger.error({ error: error.message, toFetch }, 'error fetching devices from server')
 		}
 
+		logger.debug({ totalDevices: deviceResults.length }, 'total devices found')
 		return deviceResults
 	}
 
@@ -327,7 +344,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		{ messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList }: MessageRelayOptions
 	) => {
 		const meId = authState.creds.me!.id
-		const meLid = authState.creds.me?.lid
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity = isRetryResend
 
@@ -502,17 +518,18 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						if(additionalAttributes?.['category'] !== 'peer') {
 							const additionalDevices = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
 							devices.push(...additionalDevices)
-						}
-
-						if(!isInteractiveMessage) {
-							const additionalDevices = await getUSyncDevices([meId, jid], !!useUserDevicesCache, true)
-							devices.push(...additionalDevices)
+							logger.debug({ count: additionalDevices.length }, 'fetched additional devices for 1:1 chat')
 						}
 					}
 
 					const allJids: string[] = []
 					const meJids: string[] = []
 					const otherJids: string[] = []
+
+					if(devices.length === 0) {
+						logger.warn({ jid, participant, isInteractiveMessage }, 'no devices found for message relay')
+					}
+
 					for(const { user, device } of devices) {
 						const isMe = user === meUser
 						const jid = jidEncode(isMe && isLid ? authState.creds?.me?.lid!.split(':')[0] || user : user, isLid ? 'lid' : 's.whatsapp.net', device)
@@ -524,6 +541,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 						allJids.push(jid)
 					}
+
+					logger.debug({ allJidsCount: allJids.length, meJidsCount: meJids.length, otherJidsCount: otherJids.length }, 'prepared jids for encryption')
 
 					await assertSessions(allJids, false)
 
@@ -553,6 +572,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							content: participants
 						})
 					}
+				} else {
+					logger.warn({ jid, msgId, isGroup, isStatus }, 'no participants to send message, message may not be delivered')
 				}
 
 				const stanza: BinaryNode = {
@@ -890,7 +911,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			const content = assertMediaContent(message.message)
 			const mediaKey = content.mediaKey!
 			const meId = authState.creds.me!.id
-			const meLid = authState.creds.me?.lid
 			const node = await encryptMediaRetryRequest(message.key, mediaKey, meId)
 
 			let error: Error | undefined = undefined

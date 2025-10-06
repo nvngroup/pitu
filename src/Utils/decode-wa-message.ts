@@ -386,7 +386,7 @@ export function decodeMessageNode(
 				throw new Boom('receipient present, but msg not from me', { data: stanza })
 			}
 
-			if (isMe(from) || isMeLid(from)) {
+			if(isMe(from) || isMeLid(from)) {
 				fromMe = true
 			}
 

@@ -127,14 +127,16 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 		const deviceList = devices?.deviceList as DeviceListData[]
 		if(Array.isArray(deviceList)) {
 			for(const { id: device, keyIndex } of deviceList) {
-				if(
-					(!excludeZeroDevices || device !== 0) &&
-					(myUser !== user || myDevice !== device) &&
-					(device === 0 || !!keyIndex)
-				) {
+				const shouldExcludeZero = excludeZeroDevices && device === 0
+				const isSameDevice = myUser === user && myDevice === device
+				const hasKeyIndex = device === 0 || !!keyIndex
+
+				if(!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
 					extracted.push({ user, device })
 				}
 			}
+		} else if(!devices) {
+			console.warn(`No device list found for user ${user}`)
 		}
 	}
 

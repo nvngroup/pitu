@@ -3,6 +3,7 @@ import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
+import { LIDMappingStore } from '../Signal/lid-mapping'
 import { CacheStore, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,
@@ -47,7 +48,6 @@ import {
 import { CacheManager } from './cache-manager'
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
-import { LIDMappingStore } from '../Signal/lid-mapping'
 
 export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const {
@@ -84,7 +84,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const callOfferCache: CacheStore = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
-	let sendActiveReceipts: boolean = false
+	let sendActiveReceipts = false
 
 	const sendMessageAck = async({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
 		const stanza: BinaryNode = {
@@ -630,14 +630,36 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		ids: string[],
 		retryNode: BinaryNode
 	) => {
-		const msgs = await Promise.all(ids.map(id => getMessage({ ...key, id })))
+		if(!getMessage) {
+			logger.error({ key, ids }, 'getMessage not provided, cannot retry message')
+			return
+		}
+
+		const msgs = await Promise.all(ids.map(async(id) => {
+			try {
+				const msg = await getMessage({ ...key, id })
+				if(!msg) {
+					logger.warn({ key, id }, 'getMessage returned null/undefined')
+				}
+
+				return msg
+			} catch(error) {
+				logger.error({ key, id, error: error.message }, 'error fetching message for retry')
+				return undefined
+			}
+		}))
+
 		const remoteJid: string = key.remoteJid!
 		const participant: string = key.participant || remoteJid
-		const sendToAll: boolean = !jidDecode(participant)?.device
+		const sendToAll = !jidDecode(participant)?.device
+
+		logger.trace({ participant, sendToAll, retryCount: retryNode.attrs.count }, 'preparing to retry message')
+
 		await assertSessions([participant], true)
 
 		if(isJidGroup(remoteJid)) {
 			await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } })
+			logger.debug({ remoteJid }, 'cleared sender-key-memory for group')
 		}
 
 		logger.debug({ participant, sendToAll }, 'forced new session for retry recp')
@@ -649,16 +671,23 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 				if(sendToAll) {
 					msgRelayOpts.useUserDevicesCache = false
+					logger.debug({ id: ids[i] }, 'retrying message to all devices')
 				} else {
 					msgRelayOpts.participant = {
 						jid: participant,
 						count: +retryNode.attrs.count
 					}
+					logger.debug({ id: ids[i], participant, count: retryNode.attrs.count }, 'retrying message to specific device')
 				}
 
-				await relayMessage(key.remoteJid!, msg, msgRelayOpts)
+				try {
+					await relayMessage(key.remoteJid!, msg, msgRelayOpts)
+					logger.debug({ id: ids[i] }, 'successfully retried message')
+				} catch(error) {
+					logger.error({ id: ids[i], error: error.message }, 'failed to retry message')
+				}
 			} else {
-				logger.debug({ jid: key.remoteJid, id: ids[i] }, 'recv retry request, but message not available')
+				logger.warn({ jid: key.remoteJid, id: ids[i] }, 'recv retry request, but message not available from getMessage')
 			}
 		}
 	}
@@ -765,7 +794,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				processingMutex.mutex(
 					async() => {
 						const msg: Partial<waproto.IWebMessageInfo> | undefined = await processNotification(node)
-						if (msg) {
+						if(msg) {
 							const isLid: boolean = node.attrs.from.includes('lid')
 							const fromMe: boolean = areJidsSameUser(node.attrs.participant || remoteJid, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
 							msg.key = {
@@ -1140,7 +1169,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			['notification', handleNotification]
 		])
 		const nodes: OfflineNode[] = []
-		let isProcessing: boolean = false
+		let isProcessing = false
 
 		const enqueue = (type: MessageType, node: BinaryNode) => {
 			nodes.push({ type, node })
