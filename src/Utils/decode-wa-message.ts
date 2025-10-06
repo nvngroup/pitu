@@ -393,6 +393,10 @@ export function decodeMessageNode(
 
 		msgType = 'chat'
 		author = from
+
+		if (isMe(from) || isMeLid(from)) {
+			fromMe = true
+		}
 	} else if(isLidUser(from)) {
 		if(recipient) {
 			if(!isMeLid(from)) {
