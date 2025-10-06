@@ -122,7 +122,7 @@ const startSock = async () => {
 			// received a new message
 			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
-				// logger.info(JSON.stringify(upsert, undefined, 2))
+				logger.info({ upsert }, 'Message upsert event received')
 
 				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages as any[]) {
