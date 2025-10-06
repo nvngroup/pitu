@@ -765,8 +765,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				processingMutex.mutex(
 					async() => {
 						const msg = await processNotification(node)
-						if(msg) {
-							const fromMe = areJidsSameUser(node.attrs.participant || remoteJid, authState.creds.me!.id)
+						if (msg) {
+							const isLid = node.attrs.from.includes('lid')
+							const fromMe = areJidsSameUser(node.attrs.participant || remoteJid, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
 							msg.key = {
 								remoteJid,
 								fromMe,
