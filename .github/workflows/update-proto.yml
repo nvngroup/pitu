@@ -5,15 +5,6 @@ on:
     - cron: "0 10 * * 1"
   workflow_dispatch:
     inputs:
-      release_type:
-        description: 'Tipo de release'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-        - patch
-        - minor
-        - major
       dry_run:
         description: 'Dry run (apenas simular, não executar)'
         required: false
