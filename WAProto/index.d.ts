@@ -16138,9 +16138,6 @@ export namespace waproto {
         /** EmbeddedMusic artworkEncSha256 */
         artworkEncSha256?: (Uint8Array|null);
 
-        /** EmbeddedMusic artworkMediaKey */
-        artworkMediaKey?: (Uint8Array|null);
-
         /** EmbeddedMusic artistAttribution */
         artistAttribution?: (string|null);
 
@@ -16149,6 +16146,18 @@ export namespace waproto {
 
         /** EmbeddedMusic isExplicit */
         isExplicit?: (boolean|null);
+
+        /** EmbeddedMusic artworkMediaKey */
+        artworkMediaKey?: (Uint8Array|null);
+
+        /** EmbeddedMusic musicSongStartTimeInMs */
+        musicSongStartTimeInMs?: (number|Long|null);
+
+        /** EmbeddedMusic derivedContentStartTimeInMs */
+        derivedContentStartTimeInMs?: (number|Long|null);
+
+        /** EmbeddedMusic overlapDurationInMs */
+        overlapDurationInMs?: (number|Long|null);
     }
 
     /** Represents an EmbeddedMusic. */
@@ -16181,9 +16190,6 @@ export namespace waproto {
         /** EmbeddedMusic artworkEncSha256. */
         public artworkEncSha256?: (Uint8Array|null);
 
-        /** EmbeddedMusic artworkMediaKey. */
-        public artworkMediaKey?: (Uint8Array|null);
-
         /** EmbeddedMusic artistAttribution. */
         public artistAttribution?: (string|null);
 
@@ -16192,6 +16198,18 @@ export namespace waproto {
 
         /** EmbeddedMusic isExplicit. */
         public isExplicit?: (boolean|null);
+
+        /** EmbeddedMusic artworkMediaKey. */
+        public artworkMediaKey?: (Uint8Array|null);
+
+        /** EmbeddedMusic musicSongStartTimeInMs. */
+        public musicSongStartTimeInMs?: (number|Long|null);
+
+        /** EmbeddedMusic derivedContentStartTimeInMs. */
+        public derivedContentStartTimeInMs?: (number|Long|null);
+
+        /** EmbeddedMusic overlapDurationInMs. */
+        public overlapDurationInMs?: (number|Long|null);
 
         /**
          * Creates a new EmbeddedMusic instance using the specified properties.
@@ -21670,9 +21688,6 @@ export namespace waproto {
         /** Message pollCreationMessageV4 */
         pollCreationMessageV4?: (waproto.Message.IFutureProofMessage|null);
 
-        /** Message pollCreationMessageV5 */
-        pollCreationMessageV5?: (waproto.Message.IFutureProofMessage|null);
-
         /** Message statusAddYours */
         statusAddYours?: (waproto.Message.IFutureProofMessage|null);
 
@@ -21720,6 +21735,15 @@ export namespace waproto {
 
         /** Message statusStickerInteractionMessage */
         statusStickerInteractionMessage?: (waproto.Message.IStatusStickerInteractionMessage|null);
+
+        /** Message pollCreationMessageV5 */
+        pollCreationMessageV5?: (waproto.Message.IPollCreationMessage|null);
+
+        /** Message pollResultSnapshotMessageV2 */
+        pollResultSnapshotMessageV2?: (waproto.Message.IPollResultSnapshotMessage|null);
+
+        /** Message newsletterFollowerInviteMessageV2 */
+        newsletterFollowerInviteMessageV2?: (waproto.Message.INewsletterFollowerInviteMessage|null);
     }
 
     /** Represents a Message. */
@@ -21962,9 +21986,6 @@ export namespace waproto {
         /** Message pollCreationMessageV4. */
         public pollCreationMessageV4?: (waproto.Message.IFutureProofMessage|null);
 
-        /** Message pollCreationMessageV5. */
-        public pollCreationMessageV5?: (waproto.Message.IFutureProofMessage|null);
-
         /** Message statusAddYours. */
         public statusAddYours?: (waproto.Message.IFutureProofMessage|null);
 
@@ -22012,6 +22033,15 @@ export namespace waproto {
 
         /** Message statusStickerInteractionMessage. */
         public statusStickerInteractionMessage?: (waproto.Message.IStatusStickerInteractionMessage|null);
+
+        /** Message pollCreationMessageV5. */
+        public pollCreationMessageV5?: (waproto.Message.IPollCreationMessage|null);
+
+        /** Message pollResultSnapshotMessageV2. */
+        public pollResultSnapshotMessageV2?: (waproto.Message.IPollResultSnapshotMessage|null);
+
+        /** Message newsletterFollowerInviteMessageV2. */
+        public newsletterFollowerInviteMessageV2?: (waproto.Message.INewsletterFollowerInviteMessage|null);
 
         /**
          * Creates a new Message instance using the specified properties.
@@ -32608,6 +32638,9 @@ export namespace waproto {
 
             /** PeerDataOperationRequestMessage historySyncChunkRetryRequest */
             historySyncChunkRetryRequest?: (waproto.Message.PeerDataOperationRequestMessage.IHistorySyncChunkRetryRequest|null);
+
+            /** PeerDataOperationRequestMessage galaxyFlowAction */
+            galaxyFlowAction?: (waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction|null);
         }
 
         /** Represents a PeerDataOperationRequestMessage. */
@@ -32642,6 +32675,9 @@ export namespace waproto {
 
             /** PeerDataOperationRequestMessage historySyncChunkRetryRequest. */
             public historySyncChunkRetryRequest?: (waproto.Message.PeerDataOperationRequestMessage.IHistorySyncChunkRetryRequest|null);
+
+            /** PeerDataOperationRequestMessage galaxyFlowAction. */
+            public galaxyFlowAction?: (waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction|null);
 
             /**
              * Creates a new PeerDataOperationRequestMessage instance using the specified properties.
@@ -32824,6 +32860,123 @@ export namespace waproto {
                  * @returns The default type url
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a GalaxyFlowAction. */
+            interface IGalaxyFlowAction {
+
+                /** GalaxyFlowAction type */
+                type: waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType;
+
+                /** GalaxyFlowAction flowId */
+                flowId: string;
+
+                /** GalaxyFlowAction stanzaId */
+                stanzaId: string;
+            }
+
+            /** Represents a GalaxyFlowAction. */
+            class GalaxyFlowAction implements IGalaxyFlowAction {
+
+                /**
+                 * Constructs a new GalaxyFlowAction.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction);
+
+                /** GalaxyFlowAction type. */
+                public type: waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType;
+
+                /** GalaxyFlowAction flowId. */
+                public flowId: string;
+
+                /** GalaxyFlowAction stanzaId. */
+                public stanzaId: string;
+
+                /**
+                 * Creates a new GalaxyFlowAction instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns GalaxyFlowAction instance
+                 */
+                public static create(properties?: waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction): waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction;
+
+                /**
+                 * Encodes the specified GalaxyFlowAction message. Does not implicitly {@link waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.verify|verify} messages.
+                 * @param message GalaxyFlowAction message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified GalaxyFlowAction message, length delimited. Does not implicitly {@link waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.verify|verify} messages.
+                 * @param message GalaxyFlowAction message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a GalaxyFlowAction message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GalaxyFlowAction
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction;
+
+                /**
+                 * Decodes a GalaxyFlowAction message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns GalaxyFlowAction
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction;
+
+                /**
+                 * Verifies a GalaxyFlowAction message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a GalaxyFlowAction message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns GalaxyFlowAction
+                 */
+                public static fromObject(object: { [k: string]: any }): waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction;
+
+                /**
+                 * Creates a plain object from a GalaxyFlowAction message. Also converts values to other types if specified.
+                 * @param message GalaxyFlowAction
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this GalaxyFlowAction to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for GalaxyFlowAction
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace GalaxyFlowAction {
+
+                /** GalaxyFlowActionType enum. */
+                enum GalaxyFlowActionType {
+                    NOTIFY_LAUNCH = 1
+                }
             }
 
             /** Properties of a HistorySyncChunkRetryRequest. */
@@ -34879,7 +35032,8 @@ export namespace waproto {
             COMPANION_META_NONCE_FETCH = 7,
             COMPANION_SYNCD_SNAPSHOT_FATAL_RECOVERY = 8,
             COMPANION_CANONICAL_USER_NONCE_FETCH = 9,
-            HISTORY_SYNC_CHUNK_RETRY = 10
+            HISTORY_SYNC_CHUNK_RETRY = 10,
+            GALAXY_FLOW_ACTION = 11
         }
 
         /** Properties of a PinInChatMessage. */
@@ -35135,7 +35289,7 @@ export namespace waproto {
             pollContentType?: (waproto.Message.PollContentType|null);
 
             /** PollCreationMessage pollType */
-            pollType?: (waproto.Message.PollCreationMessage.PollType|null);
+            pollType?: (waproto.Message.PollType|null);
 
             /** PollCreationMessage correctAnswer */
             correctAnswer?: (waproto.Message.PollCreationMessage.IOption|null);
@@ -35169,7 +35323,7 @@ export namespace waproto {
             public pollContentType?: (waproto.Message.PollContentType|null);
 
             /** PollCreationMessage pollType. */
-            public pollType?: (waproto.Message.PollCreationMessage.PollType|null);
+            public pollType?: (waproto.Message.PollType|null);
 
             /** PollCreationMessage correctAnswer. */
             public correctAnswer?: (waproto.Message.PollCreationMessage.IOption|null);
@@ -35356,12 +35510,6 @@ export namespace waproto {
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
             }
-
-            /** PollType enum. */
-            enum PollType {
-                POLL = 0,
-                QUIZ = 1
-            }
         }
 
         /** Properties of a PollEncValue. */
@@ -35478,6 +35626,9 @@ export namespace waproto {
 
             /** PollResultSnapshotMessage contextInfo */
             contextInfo?: (waproto.IContextInfo|null);
+
+            /** PollResultSnapshotMessage pollType */
+            pollType?: (waproto.Message.PollType|null);
         }
 
         /** Represents a PollResultSnapshotMessage. */
@@ -35497,6 +35648,9 @@ export namespace waproto {
 
             /** PollResultSnapshotMessage contextInfo. */
             public contextInfo?: (waproto.IContextInfo|null);
+
+            /** PollResultSnapshotMessage pollType. */
+            public pollType?: (waproto.Message.PollType|null);
 
             /**
              * Creates a new PollResultSnapshotMessage instance using the specified properties.
@@ -35680,6 +35834,12 @@ export namespace waproto {
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
             }
+        }
+
+        /** PollType enum. */
+        enum PollType {
+            POLL = 0,
+            QUIZ = 1
         }
 
         /** Properties of a PollUpdateMessage. */
@@ -42753,7 +42913,8 @@ export namespace waproto {
             IPAD = 7,
             WEAROS = 8,
             WASG = 9,
-            WEARM = 10
+            WEARM = 10,
+            CAPI = 11
         }
     }
 
@@ -48169,7 +48330,8 @@ export namespace waproto {
             STATUS_MENTION = 4,
             GROUP_STATUS = 5,
             RL_ATTRIBUTION = 6,
-            AI_CREATED = 7
+            AI_CREATED = 7,
+            LAYOUTS = 8
         }
     }
 
