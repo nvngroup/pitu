@@ -202,21 +202,48 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			return result
 		},
 		async encryptMessage({ jid, data }): Promise<EncryptionResult> {
+			const originalJid = jid
 			try {
+				const decoded = validateAndDecodeJid(jid)
+				if(!decoded) {
+					throw new Error(`Invalid JID format: ${jid}`)
+				}
+
 				const encryptionJid = await getOptimalEncryptionJid(jid)
+				logger.trace({ originalJid: jid, encryptionJid }, 'Encryption JID selected')
 
 				const addr = jidToSignalProtocolAddress(encryptionJid)
+
+				const sessionValidation = await repository.validateSession(encryptionJid)
+				if(!sessionValidation.exists) {
+					logger.warn(
+						{ jid: encryptionJid, reason: sessionValidation.reason, originalJid },
+						'No valid session for encryption'
+					)
+					throw new Error(`No valid session for ${encryptionJid}: ${sessionValidation.reason}`)
+				}
+
 				const cipher = new libsignal.SessionCipher(storage, addr)
 
 				const { type: sigType, body } = await cipher.encrypt(data)
 				const type: 'pkmsg' | 'msg' = sigType === SIGNAL_CONSTANTS.PREKEY_MESSAGE_TYPE ? 'pkmsg' : 'msg'
+
+				logger.trace({ jid: encryptionJid, type, originalJid }, 'Message encrypted successfully')
 
 				return {
 					type,
 					ciphertext: Buffer.from(body, 'binary')
 				}
 			} catch(error) {
-				logger.error({ error, jid }, 'Failed to encrypt message')
+				logger.error(
+					{
+						error,
+						jid: originalJid,
+						errorName: error?.name,
+						errorMessage: error?.message
+					},
+					'Failed to encrypt message'
+				)
 				throw error
 			}
 		},
@@ -355,33 +382,38 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					return
 				}
 
-				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
-					const mappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
-					if(!mappingResult.success) {
-						logger.error({ error: mappingResult.error }, 'Failed to store LID mapping')
-						return
-					}
+				let migrationSuccessful = false
 
+				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
-					if(fromSession?.haveOpenSession()) {
-						const sessionBytes = fromSession.serialize()
-						const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
-
-						await (storage as any).storeSession(lidAddr.toString(), copiedSession)
-
-						await auth.keys.set({ session: { [fromAddr.toString()]: null } })
-
-						logger.info({ fromJid, toJid }, 'Session migrated successfully')
-					} else {
-						logger.warn({ fromJid }, 'No valid session found for migration')
+					if(!fromSession?.haveOpenSession()) {
+						logger.warn({ fromJid, toJid }, 'No valid session found for migration')
+						return
 					}
+
+					const mappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
+					if(!mappingResult.success) {
+						logger.error({ error: mappingResult.error, fromJid, toJid }, 'Failed to store LID mapping')
+						return
+					}
+
+					const sessionBytes = fromSession.serialize()
+					const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
+
+					await (storage as any).storeSession(lidAddr.toString(), copiedSession)
+					await auth.keys.set({ session: { [fromAddr.toString()]: null } })
+
+					migrationSuccessful = true
+					logger.info({ fromJid, toJid }, 'Session migrated successfully')
 				})
 
-				recentMigrations.set(migrationKey, true)
-				sessionValidationCache.del(`validation:${fromJid}`)
-				sessionValidationCache.del(`validation:${toJid}`)
+				if(migrationSuccessful) {
+					recentMigrations.set(migrationKey, true)
+					sessionValidationCache.del(`validation:${fromJid}`)
+					sessionValidationCache.del(`validation:${toJid}`)
+				}
 
 			} catch(error) {
 				logger.error({ error, fromJid, toJid }, 'Session migration failed')
