@@ -20,6 +20,7 @@ This library was originally a project for **CS-2362 at Ashoka University** and i
 **Original code by [@WhiskeySockets](https://github.com/WhiskeySockets) - This fork is maintained by [@brunocgc](https://github.com/brunocgc)**
 
 ### 📜 Liability and License Notice
+
 Baileys and its maintainers **cannot be held liable** for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/Baileys/blob/master/LICENSE). The maintainers do not condone the use of this application in practices that violate WhatsApp's Terms of Service. Users are responsible for using this application ethically and legally.
 
 ---
@@ -27,6 +28,7 @@ Baileys and its maintainers **cannot be held liable** for misuse of this applica
 ## 🚀 Quick Start
 
 **Installation:**
+
 ```bash
 npm install @nvngroup/pitu
 # or
@@ -34,6 +36,7 @@ yarn add @nvngroup/pitu
 ```
 
 **Basic Usage:**
+
 ```typescript
 import makeWASocket from '@nvngroup/pitu'
 // See DOCUMENTATION-en.md for complete setup
@@ -52,16 +55,19 @@ For a comprehensive learning experience, check our organized documentation:
 We welcome contributions to improve Baileys! Here's how you can help:
 
 ### 🐛 **Bug Reports**
+
 - Check existing [issues](https://github.com/brunocgc/Baileys/issues) first
 - Provide detailed reproduction steps
 - Include your environment details (Node.js version, OS, etc.)
 
 ### 💡 **Feature Requests**
+
 - Open an [issue](https://github.com/brunocgc/Baileys/issues) with the "enhancement" label
 - Describe the feature and its use case
 - Provide examples if possible
 
 ### 🔧 **Code Contributions**
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes and test thoroughly
@@ -71,6 +77,7 @@ We welcome contributions to improve Baileys! Here's how you can help:
 7. Open a Pull Request
 
 ### 📋 **Development Guidelines**
+
 - Follow TypeScript best practices
 - Add tests for new features
 - Update documentation when needed
@@ -78,9 +85,9 @@ We welcome contributions to improve Baileys! Here's how you can help:
 
 ## 🔗 Links
 
-- **GitHub:** https://github.com/brunocgc/Baileys
-- **NPM:** https://www.npmjs.com/package/@nvngroup/pitu
-- **Site:** https://www.nvngroup.com.br
+- **GitHub:** <https://github.com/brunocgc/Baileys>
+- **NPM:** <https://www.npmjs.com/package/@nvngroup/pitu>
+- **Site:** <https://www.nvngroup.com.br>
 
 ---
 

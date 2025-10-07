@@ -106,9 +106,11 @@ The Socket is the foundation for all Baileys operations, essential for any appli
 `BaileysEventMap` defines all events that can be emitted by the Baileys Socket. Each event represents a relevant action or update during communication with WhatsApp. Below, I explain each of the main events:
 
 ### connection.update
+
 Update of the WebSocket connection state (open, closed, connecting, etc). Allows monitoring the health of the connection and reacting to drops or reconnections.
 
 Listen for connection updates:
+
 ```ts
 sock.ev.on('connection.update', (update) => {
     if (update.connection === 'open') {
@@ -120,9 +122,11 @@ sock.ev.on('connection.update', (update) => {
 ```
 
 ### creds.update
+
 Update of authentication credentials. Important for persisting session data and avoiding the need for a new login.
 
 Always save credentials when updated:
+
 ```ts
 sock.ev.on('creds.update', (creds) => {
     saveCreds(creds)
@@ -130,7 +134,9 @@ sock.ev.on('creds.update', (creds) => {
 ```
 
 ### messaging-history.set
+
 Synchronization of chat, contact, and message history. Used when restoring sessions or syncing old data.
+
 - `chats`: List of synced chats
 - `contacts`: List of contacts
 - `messages`: Synced messages
@@ -140,6 +146,7 @@ Synchronization of chat, contact, and message history. Used when restoring sessi
 - `peerDataRequestSessionId`: Request session ID
 
 Receive chat, contact, and message history:
+
 ```ts
 sock.ev.on('messaging-history.set', (data) => {
     console.log('History synced:', data)
@@ -147,9 +154,11 @@ sock.ev.on('messaging-history.set', (data) => {
 ```
 
 ### chats.upsert
+
 Insertion of new detected chats.
 
 Detect new chats:
+
 ```ts
 sock.ev.on('chats.upsert', (chats) => {
     chats.forEach(chat => console.log('New chat:', chat))
@@ -157,9 +166,11 @@ sock.ev.on('chats.upsert', (chats) => {
 ```
 
 ### chats.update
+
 Update of existing chats (e.g., name, status, etc).
 
 Chat updates:
+
 ```ts
 sock.ev.on('chats.update', (updates) => {
     updates.forEach(update => console.log('Chat updated:', update))
@@ -167,9 +178,11 @@ sock.ev.on('chats.update', (updates) => {
 ```
 
 ### chats.phoneNumberShare
+
 Phone number sharing event in a chat.
 
 Number sharing:
+
 ```ts
 sock.ev.on('chats.phoneNumberShare', (data) => {
     console.log('Number shared:', data)
@@ -177,9 +190,11 @@ sock.ev.on('chats.phoneNumberShare', (data) => {
 ```
 
 ### chats.delete
+
 Deletion of chats by ID.
 
 Chat deletion:
+
 ```ts
 sock.ev.on('chats.delete', (ids) => {
     console.log('Chats deleted:', ids)
@@ -187,9 +202,11 @@ sock.ev.on('chats.delete', (ids) => {
 ```
 
 ### presence.update
+
 Update of presence (online, typing, etc) of contacts in a chat.
 
 Presence change:
+
 ```ts
 sock.ev.on('presence.update', (data) => {
     console.log('Presence updated:', data)
@@ -197,9 +214,11 @@ sock.ev.on('presence.update', (data) => {
 ```
 
 ### contacts.upsert
+
 Insertion of new contacts.
 
 New contacts:
+
 ```ts
 sock.ev.on('contacts.upsert', (contacts) => {
     contacts.forEach(contact => console.log('New contact:', contact))
@@ -207,9 +226,11 @@ sock.ev.on('contacts.upsert', (contacts) => {
 ```
 
 ### contacts.update
+
 Update of existing contacts.
 
 Contact update:
+
 ```ts
 sock.ev.on('contacts.update', (updates) => {
     updates.forEach(update => console.log('Contact updated:', update))
@@ -217,9 +238,11 @@ sock.ev.on('contacts.update', (updates) => {
 ```
 
 ### messages.delete
+
 Deletion of messages. Can be by specific key(s) or all from a chat.
 
 Message deletion:
+
 ```ts
 sock.ev.on('messages.delete', (info) => {
     console.log('Messages deleted:', info)
@@ -227,9 +250,11 @@ sock.ev.on('messages.delete', (info) => {
 ```
 
 ### messages.update
+
 Update of messages (e.g., edit, delivery status, etc).
 
 Message update:
+
 ```ts
 sock.ev.on('messages.update', (updates) => {
     updates.forEach(update => console.log('Message updated:', update))
@@ -237,9 +262,11 @@ sock.ev.on('messages.update', (updates) => {
 ```
 
 ### messages.media-update
+
 Media update in messages (download, upload, error, etc).
 
 Media update:
+
 ```ts
 sock.ev.on('messages.media-update', (medias) => {
     medias.forEach(media => console.log('Media updated:', media))
@@ -247,9 +274,11 @@ sock.ev.on('messages.media-update', (medias) => {
 ```
 
 ### messages.upsert
+
 Insertion of new messages (received or sent). Includes type (notify, append, etc) and optionally a requestId.
 
 New messages:
+
 ```ts
 sock.ev.on('messages.upsert', ({ messages, type }) => {
     messages.forEach(msg => console.log('New message:', msg))
@@ -257,9 +286,11 @@ sock.ev.on('messages.upsert', ({ messages, type }) => {
 ```
 
 ### messages.reaction
+
 Reaction to messages (e.g., emoji). If the reaction is removed, the `reaction.text` field will be empty.
 
 Message reactions:
+
 ```ts
 sock.ev.on('messages.reaction', (reactions) => {
     reactions.forEach(reaction => console.log('Reaction:', reaction))
@@ -267,9 +298,11 @@ sock.ev.on('messages.reaction', (reactions) => {
 ```
 
 ### message-receipt.update
+
 Update of message receipts (delivered, read, etc).
 
 Message receipts:
+
 ```ts
 sock.ev.on('message-receipt.update', (receipts) => {
     receipts.forEach(receipt => console.log('Receipt:', receipt))
@@ -277,9 +310,11 @@ sock.ev.on('message-receipt.update', (receipts) => {
 ```
 
 ### groups.upsert
+
 Insertion of new groups.
 
 New groups:
+
 ```ts
 sock.ev.on('groups.upsert', (groups) => {
     groups.forEach(group => console.log('New group:', group))
@@ -287,9 +322,11 @@ sock.ev.on('groups.upsert', (groups) => {
 ```
 
 ### groups.update
+
 Update of existing groups.
 
 Group update:
+
 ```ts
 sock.ev.on('groups.update', (updates) => {
     updates.forEach(update => console.log('Group updated:', update))
@@ -297,13 +334,16 @@ sock.ev.on('groups.update', (updates) => {
 ```
 
 ### group-participants.update
+
 Action on group participants (add, remove, promote, etc).
+
 - `id`: Group ID
 - `author`: Who performed the action
 - `participants`: Affected participants
 - `action`: Type of action
 
 Group participants change:
+
 ```ts
 sock.ev.on('group-participants.update', (data) => {
     console.log('Group participants updated:', data)
@@ -311,9 +351,11 @@ sock.ev.on('group-participants.update', (data) => {
 ```
 
 ### group.join-request
+
 Group join request, including method and action taken.
 
 Group join request:
+
 ```ts
 sock.ev.on('group.join-request', (data) => {
     console.log('Group join request:', data)
@@ -321,9 +363,11 @@ sock.ev.on('group.join-request', (data) => {
 ```
 
 ### blocklist.set
+
 Setting the blocked contacts list.
 
 Blocklist set:
+
 ```ts
 sock.ev.on('blocklist.set', (data) => {
     console.log('Blocklist set:', data)
@@ -331,9 +375,11 @@ sock.ev.on('blocklist.set', (data) => {
 ```
 
 ### blocklist.update
+
 Update of the blocklist (addition or removal).
 
 Blocklist update:
+
 ```ts
 sock.ev.on('blocklist.update', (data) => {
     console.log('Blocklist updated:', data)
@@ -341,9 +387,11 @@ sock.ev.on('blocklist.update', (data) => {
 ```
 
 ### call
+
 Update about calls (received, rejected, accepted, etc).
 
 Call update:
+
 ```ts
 sock.ev.on('call', (calls) => {
     calls.forEach(call => console.log('Call:', call))
@@ -351,9 +399,11 @@ sock.ev.on('call', (calls) => {
 ```
 
 ### labels.edit
+
 Editing labels for organizing chats/messages.
 
 Label edit:
+
 ```ts
 sock.ev.on('labels.edit', (label) => {
     console.log('Label edited:', label)
@@ -361,9 +411,11 @@ sock.ev.on('labels.edit', (label) => {
 ```
 
 ### labels.association
+
 Association or removal of labels in chats or messages.
 
 Label association:
+
 ```ts
 sock.ev.on('labels.association', (data) => {
     console.log('Label association:', data)
@@ -378,7 +430,8 @@ Authentication and session management are fundamental to ensure your application
 
 `makeWASocket` is the main function to initialize the connection with WhatsApp Web. It accepts several configuration options, including authentication state.
 
-#### Basic connection example:
+#### Basic connection example
+
 ```ts
 import makeWASocket from 'baileys'
 
@@ -410,6 +463,7 @@ startSocket()
 - The `creds.update` event should be listened to automatically save credentials whenever there is a change.
 
 ### Notes
+
 - Always save credentials after any update to avoid session loss.
 - The directory passed to `useMultiFileAuthState` can be customized as needed.
 - For production, it is recommended to store credentials in a secure and, if possible, encrypted location.
@@ -469,7 +523,8 @@ You can override only the options you want, keeping the rest of the default sett
 
 The `patchMessageBeforeSending` option allows you to modify or adjust a message before it is sent to WhatsApp. This function receives the message object as a parameter and should return the (possibly changed) message. It is useful for adding, removing, or transforming fields dynamically, such as inserting metadata, correcting formatting, or applying specific business rules.
 
-#### Example usage:
+#### Example usage
+
 ```ts
 const sock = makeWASocket({
     patchMessageBeforeSending: (msg) => {
@@ -483,6 +538,7 @@ const sock = makeWASocket({
 ```
 
 You can use this function to:
+
 - Add prefixes or suffixes to messages
 - Inject extra information (e.g., IDs, tags)
 - Correct or standardize fields before sending
@@ -498,7 +554,8 @@ The `shouldSyncHistoryMessage` function allows you to programmatically control w
 
 This function is useful for filtering old messages, for example, ignoring messages from certain types, groups, or contacts during history restoration.
 
-#### Example of usage:
+#### Example of usage
+
 ```ts
 const sock = makeWASocket({
     shouldSyncHistoryMessage: (msg) => {
@@ -512,6 +569,7 @@ const sock = makeWASocket({
 ```
 
 You can use this function to:
+
 - Sync only messages from specific contacts
 - Ignore messages from groups, channels, or bots
 - Filter messages by type (text, media, etc)
@@ -525,7 +583,8 @@ The `shouldIgnoreJid` function allows you to programmatically define which JIDs 
 
 This function is useful for filtering groups, contacts, channels, or any JID you don't want your bot/process to interact with or process.
 
-#### Example of usage:
+#### Example of usage
+
 ```ts
 const sock = makeWASocket({
     shouldIgnoreJid: (jid) => {
@@ -543,6 +602,7 @@ const sock = makeWASocket({
 ```
 
 You can use this function to:
+
 - Ignore specific groups, channels, or contacts
 - Block interactions with certain JIDs
 - Reduce processing of unwanted events
@@ -557,7 +617,8 @@ It is essential for scenarios where Baileys needs to access the full content of 
 
 This function should be asynchronous and return the corresponding message for the provided identifier, or `undefined` if not found.
 
-#### Example of usage:
+#### Example of usage
+
 ```ts
 const sock = makeWASocket({
     getMessage: async (key) => {
@@ -568,6 +629,7 @@ const sock = makeWASocket({
 ```
 
 You can use this function to:
+
 - Allow Baileys to retrieve old messages for operations like deletion, editing, quoting
 - Integrate with your own databases, caches, or persistence systems
 - Ensure that operations dependent on previous messages work correctly
@@ -582,7 +644,8 @@ The `cachedGroupMetadata` function allows you to provide Baileys with a caching 
 
 This function should be asynchronous and receive the group JID as a parameter, returning the group metadata (if cached) or `undefined` if not available locally.
 
-#### Example of usage:
+#### Example of usage
+
 ```ts
 const sock = makeWASocket({
     cachedGroupMetadata: async (jid) => {
@@ -593,6 +656,7 @@ const sock = makeWASocket({
 ```
 
 You can use this function to:
+
 - Reduce repeated calls to the WhatsApp API for already known groups
 - Integrate with databases, Redis, or other caching systems
 - Improve performance and scalability of bots interacting with many groups
@@ -609,7 +673,8 @@ This function should return a Signal Protocol-compatible implementation, respons
 
 In most cases, Baileys already provides a default implementation (`makeLibSignalRepository`), but you can customize it to integrate with databases, distributed systems, or high-availability solutions.
 
-#### Example of usage:
+#### Example of usage
+
 ```ts
 const sock = makeWASocket({
     makeSignalRepository: makeLibSignalRepository // Baileys default
@@ -617,6 +682,7 @@ const sock = makeWASocket({
 ```
 
 You can customize this function to:
+
 - Integrate key storage with external databases
 - Implement backup and recovery strategies for Signal sessions
 - Ensure high availability and resilience in distributed environments
@@ -634,11 +700,13 @@ Message management is one of the main features of Baileys Socket, allowing you t
 To send messages, use the `sock.sendMessage` method. It accepts the recipient's JID and the message content (text, media, buttons, lists, polls, among others).
 
 #### Example: Sending a text message
+
 ```ts
 await sock.sendMessage('5511999999999@s.whatsapp.net', { text: 'Hello, world!' })
 ```
 
 #### Example: Sending an image
+
 ```ts
 await sock.sendMessage('5511999999999@s.whatsapp.net', {
     image: { url: './Media/cat.jpeg' },
@@ -647,6 +715,7 @@ await sock.sendMessage('5511999999999@s.whatsapp.net', {
 ```
 
 #### Example: Sending audio
+
 ```ts
 await sock.sendMessage('5511999999999@s.whatsapp.net', {
     audio: { url: './Media/sonata.mp3' },
@@ -656,6 +725,7 @@ await sock.sendMessage('5511999999999@s.whatsapp.net', {
 ```
 
 #### Notes
+
 - The JID can be a contact, group, or broadcast.
 - For media, use `{ url: 'file/path' }` or buffer.
 - The method returns the sent message object, including the `key` (used for editing, deletion, quoting, etc).
@@ -665,32 +735,38 @@ await sock.sendMessage('5511999999999@s.whatsapp.net', {
 The `sendMessage` method of Baileys is highly robust and flexible, allowing sending of messages to contacts, groups, status, and even advanced operations like editing, deletion, pinning, polls, and more. Below, I detail how message management works internally, based on the source code (`src/Socket/messages-send.ts`).
 
 #### 1. Message Generation and Sending
+
 - The `sendMessage` method prepares the message using `generateWAMessage`, which assembles the content according to the type (text, media, buttons, etc) and applies the provided options.
 - Before sending, the message can be modified by the `patchMessageBeforeSending` function (useful for global customizations).
 - The actual sending is done by `relayMessage`, which handles encryption, distribution to multiple devices and participants (in groups), and assembling special attributes (edit, delete, pin, etc).
 - The method returns the complete sent message object, including the `key` (used for editing, deletion, quoting, etc).
 
 #### 2. Special Sending Options
+
 - **Edit:** By passing `{ edit: messageKey }` in the options, the message will be edited (if allowed by WhatsApp).
 - **Delete:** By passing `{ delete: messageKey }`, the message will be deleted for all possible participants.
 - **Pin:** By passing `{ pin: true }`, the message will be pinned in the chat (if supported).
 - **Polls:** Sending polls is handled specially, adding specific metadata.
 
 #### 3. Sending to Groups, Contacts, and Status
+
 - Baileys automatically detects if the JID is a group, contact, or status, and adjusts sending as needed.
 - For groups, it handles distribution to all participants and management of encryption keys (Signal Protocol).
 - For status, it uses the special JID `status@broadcast`.
 
 #### 4. Read and Delivery Receipts
+
 - The `readMessages` method allows marking messages as read, respecting the user's privacy settings.
 - The `sendReceipt` method allows sending custom receipts (read, delivered, etc) for specific messages.
 - The `sendReceipts` method allows sending receipts in bulk for multiple messages/chats.
 
 #### 5. Sync and Sessions
+
 - Baileys automatically manages sessions and devices, guaranteeing that messages are delivered to all recipient devices (multi-device).
 - Utilizes cache and sync to optimize sending and avoid redundancies.
 
 #### 6. Best Practices and Notes
+
 - Always use the return of `sendMessage` to store the message object, making future operations (edit, delete, quote, etc) easier.
 - For bulk operations (e.g., marking multiple messages as read), use the bulk methods (`readMessages`, `sendReceipts`).
 - Sending to groups is more complex due to the need to distribute keys and ensure delivery to all participants.
@@ -698,6 +774,7 @@ The `sendMessage` method of Baileys is highly robust and flexible, allowing send
 - Use socket events (`messages.upsert`, `messages.update`, etc) to monitor message status and update your system in real time.
 
 #### 7. Advanced Example: Sending, Editing, and Deleting
+
 ```ts
 // Sending a message and then editing and deleting it
 const msg = await sock.sendMessage(jid, { text: 'Original message' })
@@ -710,12 +787,14 @@ await sock.sendMessage(jid, { delete: msg.key })
 ```
 
 #### 8. Example: Marking multiple messages as read
+
 ```ts
 // Assuming you have an array of WAMessageKey
 await sock.readMessages([key1, key2, key3])
 ```
 
 #### 9. Example: Sending to group with quote
+
 ```ts
 // Replying to a message in a group
 await sock.sendMessage(groupJid, { text: 'Hello, group!' }, { quoted: originalMessage })
@@ -732,6 +811,7 @@ Baileys offers a complete API for managing WhatsApp groups, allowing you to crea
 ```ts
 const metadata = await sock.groupMetadata(jid)
 ```
+
 Returns detailed group information, such as name, participants, description, settings, etc.
 
 #### 2. Create a Group
@@ -739,6 +819,7 @@ Returns detailed group information, such as name, participants, description, set
 ```ts
 const metadata = await sock.groupCreate('Group Name', ['jid1@s.whatsapp.net', 'jid2@s.whatsapp.net'])
 ```
+
 Creates a new group with the given name and participants.
 
 #### 3. Leave a Group
@@ -746,6 +827,7 @@ Creates a new group with the given name and participants.
 ```ts
 await sock.groupLeave('group-id@g.us')
 ```
+
 Removes the current user from the group.
 
 #### 4. Update Group Subject
@@ -753,6 +835,7 @@ Removes the current user from the group.
 ```ts
 await sock.groupUpdateSubject('group-id@g.us', 'New Subject')
 ```
+
 Changes the group name/subject.
 
 #### 5. Update Group Description
@@ -760,6 +843,7 @@ Changes the group name/subject.
 ```ts
 await sock.groupUpdateDescription('group-id@g.us', 'New description')
 ```
+
 Changes the group description. To remove, just pass `undefined` as the description.
 
 #### 6. Manage Participants
@@ -778,19 +862,25 @@ await sock.groupParticipantsUpdate('group-id@g.us', ['jid@s.whatsapp.net'], 'dem
 ```ts
 const groups = await sock.groupFetchAllParticipating()
 ```
+
 Returns an object with all groups the user is participating in.
 
 #### 8. Manage Invites
 
 - **Get invite code:**
+
   ```ts
   const code = await sock.groupInviteCode('group-id@g.us')
   ```
+
 - **Revoke invite code:**
+
   ```ts
   const newCode = await sock.groupRevokeInvite('group-id@g.us')
   ```
+
 - **Accept invite by code:**
+
   ```ts
   const groupJid = await sock.groupAcceptInvite('code')
   ```
@@ -798,18 +888,25 @@ Returns an object with all groups the user is participating in.
 #### 9. Advanced Modes and Settings
 
 - **Enable/disable disappearing messages:**
+
   ```ts
   await sock.groupToggleEphemeral('group-id@g.us', 86400) // 24h in seconds
   ```
+
 - **Set group to admins only:**
+
   ```ts
   await sock.groupSettingUpdate('group-id@g.us', 'announcement')
   ```
+
 - **Unlock group for everyone:**
+
   ```ts
   await sock.groupSettingUpdate('group-id@g.us', 'not_announcement')
   ```
+
 - **Enable/disable join approval:**
+
   ```ts
   await sock.groupJoinApprovalMode('group-id@g.us', 'on')
   await sock.groupJoinApprovalMode('group-id@g.us', 'off')
@@ -818,10 +915,13 @@ Returns an object with all groups the user is participating in.
 #### 10. Manage Join Requests
 
 - **List pending requests:**
+
   ```ts
   const requests = await sock.groupRequestParticipantsList('group-id@g.us')
   ```
+
 - **Approve or reject requests:**
+
   ```ts
   await sock.groupRequestParticipantsUpdate('group-id@g.us', ['jid@s.whatsapp.net'], 'approve')
   await sock.groupRequestParticipantsUpdate('group-id@g.us', ['jid@s.whatsapp.net'], 'reject')
@@ -835,6 +935,7 @@ Returns an object with all groups the user is participating in.
 - `group.join-request`: Group join requests.
 
 Example of listening to events:
+
 ```ts
 sock.ev.on('groups.update', (updates) => {
     updates.forEach(update => console.log('Group updated:', update))
@@ -977,6 +1078,7 @@ const disappearingMode = await sock.fetchDisappearingDuration('jid@s.whatsapp.ne
 - `contacts.update`: Contact update.
 
 Example of listening to events:
+
 ```ts
 sock.ev.on('chats.update', (updates) => {
     updates.forEach(update => console.log('Chat updated:', update))
@@ -1000,6 +1102,7 @@ Baileys offers full support for managing WhatsApp business resources, such as pr
 ```ts
 const catalog = await sock.getCatalog({ jid: 'jid@whatsapp.net', limit: 10, cursor: '...' })
 ```
+
 Returns the business account's product catalog. Allows pagination via `limit` and `cursor`.
 
 #### 2. Fetch Catalog Collections
@@ -1007,6 +1110,7 @@ Returns the business account's product catalog. Allows pagination via `limit` an
 ```ts
 const collections = await sock.getCollections('jid@whatsapp.net', 20)
 ```
+
 Returns the product collections registered in the business account.
 
 #### 3. Fetch Order Details
@@ -1014,6 +1118,7 @@ Returns the product collections registered in the business account.
 ```ts
 const details = await sock.getOrderDetails('orderId', 'tokenBase64')
 ```
+
 Returns the details of an order placed in the business catalog.
 
 #### 4. Create Product in Catalog
@@ -1026,6 +1131,7 @@ const product = await sock.productCreate({
   ...otherFields
 })
 ```
+
 Creates a new product in the business account's catalog.
 
 #### 5. Edit Product in Catalog
@@ -1037,6 +1143,7 @@ const editedProduct = await sock.productUpdate('product-id', {
   ...otherFields
 })
 ```
+
 Edits an existing product in the catalog.
 
 #### 6. Delete Product(s) from Catalog
@@ -1045,6 +1152,7 @@ Edits an existing product in the catalog.
 const result = await sock.productDelete(['product-id-1', 'product-id-2'])
 // result.deleted => number of products deleted
 ```
+
 Removes one or more products from the business catalog.
 
 ### Notes
@@ -1060,6 +1168,7 @@ USync is the protocol used by Baileys to sync contacts, groups, messages, and ot
 ### How USync Works
 
 USync uses specialized queries (USyncQuery) to fetch, update, and sync different types of data. Each USync protocol defines:
+
 - A unique name
 - How to build the query
 - How to build the query for each user
@@ -1081,18 +1190,24 @@ interface USyncQueryProtocol {
 ### Main Sync Operations
 
 - **Sync contacts:**
+
   ```ts
   // Example: fetch contact information
   const result = await sock.onWhatsApp('jid@s.whatsapp.net')
   ```
+
 - **Sync status:**
+
   ```ts
   const status = await sock.fetchStatus('jid@s.whatsapp.net')
   ```
+
 - **Sync disappearing mode:**
+
   ```ts
   const disappearingMode = await sock.fetchDisappearingDuration('jid@s.whatsapp.net')
   ```
+
 - **Sync groups, chats, and other data:**
   - USync can be used internally to keep groups, chats, and other data synced between devices.
 
@@ -1109,6 +1224,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 ### Main Utilities and Helpers
 
 #### 1. Authentication and Session Persistence
+
 - **useMultiFileAuthState**: Allows saving and restoring authentication state in multiple files, ideal for persistent bots and applications.
 
   ```ts
@@ -1116,9 +1232,11 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
   const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
   // Pass 'state' to makeWASocket and save credentials on 'creds.update' event
   ```
+
   > Tip: Always save credentials after any change to avoid session loss.
 
 #### 2. Event Handling and Buffering
+
 - **makeEventBuffer**: Allows grouping socket events for batch processing, useful for sync and performance.
 - **captureEventStream / readAndEmitEventStream**: Record and replay event streams for debugging, testing, or scenario replication.
 
@@ -1131,6 +1249,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
   ```
 
 #### 3. Message and Media Helpers
+
 - **downloadMediaMessage**: Easily download received media.
 - **generateWAMessage / generateWAMessageFromContent**: Generate messages in WhatsApp's accepted format, useful for advanced customizations.
 - **processMessage / decodeWAMessage**: Help process and decode received messages.
@@ -1141,18 +1260,22 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
   ```
 
 #### 4. Encryption and Signal Helpers
+
 - **makeSignalRepository / makeLibSignalRepository**: Create custom repositories to store Signal keys, integrating with databases or distributed systems.
 - **addTransactionCapability**: Adds transaction support to SignalKeyStore, important for concurrent environments.
 
 #### 5. Cache and Performance Utilities
+
 - **cachedGroupMetadata**: Implement group metadata cache to reduce repeated calls and improve performance.
 - **getMessage**: Allows Baileys to fetch old messages from your local storage.
 
 #### 6. General Helpers
+
 - **Browsers**: Allows customizing the user-agent/emulated browser for the socket.
 - **delay**: Utility function to wait for a time (useful in async flows).
 
 ### Integration Best Practices
+
 - Always handle critical events like `connection.update` and `creds.update` to ensure resilience and persistence.
 - Implement cache and persistence for chats, groups, and messages, especially in medium/large bots.
 - Use media helpers to handle files efficiently and safely.
@@ -1162,6 +1285,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 ### Practical Examples
 
 #### Downloading received media
+
 ```ts
 import { downloadMediaMessage } from 'baileys'
 const buffer = await downloadMediaMessage(msg, 'buffer', { })
@@ -1169,6 +1293,7 @@ const buffer = await downloadMediaMessage(msg, 'buffer', { })
 ```
 
 #### Session persistence
+
 ```ts
 import { useMultiFileAuthState } from 'baileys'
 const { state, saveCreds } = await useMultiFileAuthState('auth')
@@ -1177,6 +1302,7 @@ sock.ev.on('creds.update', saveCreds)
 ```
 
 #### Group metadata cache
+
 ```ts
 const sock = makeWASocket({
   cachedGroupMetadata: async (jid) => {
@@ -1186,6 +1312,7 @@ const sock = makeWASocket({
 ```
 
 #### Event buffering
+
 ```ts
 import { makeEventBuffer } from 'baileys'
 const ev = makeEventBuffer(logger)

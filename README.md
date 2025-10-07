@@ -20,6 +20,7 @@ Esta biblioteca foi originalmente um projeto para **CS-2362 na Universidade Asho
 **Código original por [@WhiskeySockets](https://github.com/WhiskeySockets) - Este fork é mantido por [@nvngroup](https://github.com/nvngroup)**
 
 ### 📜 Aviso de Responsabilidade e Licença
+
 O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso indevido desta aplicação, conforme declarado na [licença MIT](https://github.com/nvngroup/pitu/blob/master/LICENSE). Os mantenedores não aprovam o uso desta aplicação em práticas que violem os Termos de Serviço do WhatsApp. Os usuários são responsáveis por usar esta aplicação de forma ética e legal.
 
 ---
@@ -27,6 +28,7 @@ O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso inde
 ## 🚀 Início Rápido
 
 **Instalação:**
+
 ```bash
 npm install @nvngroup/pitu
 # ou
@@ -34,6 +36,7 @@ yarn add @nvngroup/pitu
 ```
 
 **Uso Básico:**
+
 ```typescript
 import makeWASocket from '@nvngroup/pitu'
 // Veja DOCUMENTATION.md para configuração completa
@@ -52,16 +55,19 @@ Para uma experiência de aprendizado abrangente, confira nossa documentação or
 Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode ajudar:
 
 ### 🐛 **Relatórios de Bug**
+
 - Verifique primeiro as [issues existentes](https://github.com/nvngroup/pitu/issues)
 - Forneça passos detalhados para reprodução
 - Inclua detalhes do seu ambiente (versão do Node.js, SO, etc.)
 
 ### 💡 **Solicitações de Funcionalidades**
+
 - Abra uma [issue](https://github.com/nvngroup/pitu/issues) com a label "enhancement"
 - Descreva a funcionalidade e seu caso de uso
 - Forneça exemplos se possível
 
 ### 🔧 **Contribuições de Código**
+
 1. Faça um fork do repositório
 2. Crie uma branch para a funcionalidade: `git checkout -b feature/funcionalidade-incrivel`
 3. Faça suas alterações e teste completamente
@@ -71,6 +77,7 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 7. Abra um Pull Request
 
 ### 📋 **Diretrizes de Desenvolvimento**
+
 - Siga as melhores práticas do TypeScript
 - Adicione testes para novas funcionalidades
 - Atualize a documentação quando necessário
@@ -78,9 +85,9 @@ Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode aju
 
 ## 🔗 Links
 
-- **GitHub:** https://github.com/nvngroup/pitu
-- **NPM:** https://www.npmjs.com/package/@nvngroup/pitu
-- **Site:** https://www.nvngroup.com.br
+- **GitHub:** <https://github.com/nvngroup/pitu>
+- **NPM:** <https://www.npmjs.com/package/@nvngroup/pitu>
+- **Site:** <https://www.nvngroup.com.br>
 
 ---
 
