@@ -47,7 +47,7 @@ export const getRawMediaUploadData = async(media: WAMediaUpload, mediaType: Medi
 	const filePath: string = join(tmpdir(), mediaType + generateMessageIDV2())
 	const fileWriteStream: WriteStream = createWriteStream(filePath)
 
-	let fileLength: number = 0
+	let fileLength = 0
 	try {
 		for await (const data of stream) {
 			fileLength += data.length
@@ -246,7 +246,7 @@ export async function getAudioWaveform(buffer: Buffer | string | Readable, logge
 		const filteredData: number[] = []
 		for(let i = 0; i < samples; i++) {
 			const blockStart: number = blockSize * i
-			let sum: number = 0
+			let sum = 0
 			for(let j = 0; j < blockSize; j++) {
 				sum = sum + Math.abs(rawData[blockStart + j])
 			}
@@ -383,7 +383,7 @@ export const encryptedStream = async(
 		originalFileStream = createWriteStream(originalFilePath)
 	}
 
-	let fileLength: number = 0
+	let fileLength = 0
 	const aes: Crypto.Cipheriv = Crypto.createCipheriv('aes-256-cbc', cipherKey, iv)
 	const hmac: Crypto.Hmac = Crypto.createHmac('sha256', macKey!).update(iv)
 	const sha256Plain: Crypto.Hash = Crypto.createHash('sha256')
@@ -509,9 +509,9 @@ export const downloadEncryptedContent = async(
 	{ cipherKey, iv }: MediaDecryptionKeyInfo,
 	{ startByte, endByte, options }: MediaDownloadOptions = {}
 ) => {
-	let bytesFetched: number = 0
-	let startChunk: number = 0
-	let firstBlockIsIV: boolean = false
+	let bytesFetched = 0
+	let startChunk = 0
+	let firstBlockIsIV = false
 	if(startByte) {
 		const chunk: number = toSmallestChunkSize(startByte || 0)
 		if(chunk) {

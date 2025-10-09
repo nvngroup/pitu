@@ -55,7 +55,7 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 
 export const isRealMessage = (message: waproto.IWebMessageInfo, meId: string) => {
 	const normalizedContent: waproto.IMessage | undefined = normalizeMessageContent(message.message)
-	const hasSomeContent: boolean = !!getContentType(normalizedContent)
+	const hasSomeContent = !!getContentType(normalizedContent)
 	return (
 		!!normalizedContent
 		|| REAL_MSG_STUB_TYPES.has(message.messageStubType!)
@@ -175,9 +175,9 @@ const processMessage = async(
 	if(protocolMsg) {
 		switch (protocolMsg.type) {
 		case waproto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION:
-				const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
-				const process: boolean = shouldProcessHistoryMsg
-				const isLatest: boolean = !creds.processedHistoryMessages?.length
+			const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
+			const process: boolean = shouldProcessHistoryMsg
+			const isLatest = !creds.processedHistoryMessages?.length
 
 			logger?.trace({
 				histNotification,
@@ -219,7 +219,7 @@ const processMessage = async(
 
 			break
 		case waproto.Message.ProtocolMessage.Type.APP_STATE_SYNC_KEY_SHARE:
-				const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
+			const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
 			if(keys?.length) {
 				let newAppStateSyncKeyId = ''
 				await keyStore.transaction(
@@ -265,7 +265,7 @@ const processMessage = async(
 			})
 			break
 		case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
-				const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
+			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
 			if(response) {
 				placeholderResendCache?.del(response.stanzaId!)
 				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
@@ -372,25 +372,25 @@ const processMessage = async(
 			emitGroupUpdate({ restrict: restrictValue === 'true' || restrictValue === 'on' })
 			break
 		case WAMessageStubType.GROUP_CHANGE_SUBJECT:
-				const name: string | undefined = message.messageStubParameters?.[0]
+			const name: string | undefined = message.messageStubParameters?.[0]
 			chat.name = name
 			emitGroupUpdate({ subject: name })
 			break
 		case WAMessageStubType.GROUP_CHANGE_DESCRIPTION:
-				const description: string | undefined = message.messageStubParameters?.[0]
+			const description: string | undefined = message.messageStubParameters?.[0]
 			chat.description = description
 			emitGroupUpdate({ desc: description })
 			break
 		case WAMessageStubType.GROUP_CHANGE_INVITE_LINK:
-				const code: string | undefined = message.messageStubParameters?.[0]
+			const code: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ inviteCode: code })
 			break
 		case WAMessageStubType.GROUP_MEMBER_ADD_MODE:
-				const memberAddValue: string | undefined = message.messageStubParameters?.[0]
+			const memberAddValue: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ memberAddMode: memberAddValue === 'all_member_add' })
 			break
 		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE:
-				const approvalMode: string | undefined = message.messageStubParameters?.[0]
+			const approvalMode: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ joinApprovalMode: approvalMode === 'on' })
 			break
 		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD:

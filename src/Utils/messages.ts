@@ -1176,7 +1176,7 @@ export const normalizeMessageContent = (content: WAMessageContent | null | undef
 	 }
 
 	 for(let i = 0;i < 5;i++) {
-			const inner: waproto.Message.IFutureProofMessage | null | undefined = getFutureProofMessage(content)
+		const inner: waproto.Message.IFutureProofMessage | null | undefined = getFutureProofMessage(content)
 		 if(!inner) {
 			 break
 		 }
@@ -1400,7 +1400,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 		}
 
 		const contentType: keyof waproto.IMessage | undefined = getContentType(mContent)
-		let mediaType: "audio" | "document" | "gif" | "image" | "ppic" | "product" | "ptt" | "sticker" | "video" | "thumbnail-document" | "thumbnail-image" | "thumbnail-video" | "thumbnail-link" | "md-msg-hist" | "md-app-state" | "product-catalog-image" | "payment-bg-image" | "ptv" = contentType?.replace('Message', '') as MediaType
+		let mediaType: 'audio' | 'document' | 'gif' | 'image' | 'ppic' | 'product' | 'ptt' | 'sticker' | 'video' | 'thumbnail-document' | 'thumbnail-image' | 'thumbnail-video' | 'thumbnail-link' | 'md-msg-hist' | 'md-app-state' | 'product-catalog-image' | 'payment-bg-image' | 'ptv' = contentType?.replace('Message', '') as MediaType
 		const media = mContent[contentType!]
 
 		if(!media || typeof media !== 'object' || (!('url' in media) && !('thumbnailDirectPath' in media))) {

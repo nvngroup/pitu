@@ -88,10 +88,10 @@ export const makeNoiseHandler = ({
 	let salt: Buffer = hash
 	let encKey: Buffer = hash
 	let decKey: Buffer = hash
-	let readCounter: number = 0
-	let writeCounter: number = 0
-	let isFinished: boolean = false
-	let sentIntro: boolean = false
+	let readCounter = 0
+	let writeCounter = 0
+	let isFinished = false
+	let sentIntro = false
 
 	let inBytes: Buffer = Buffer.alloc(0)
 

@@ -32,7 +32,7 @@ export class SessionDiagnostics {
 
 		try {
 			const { session } = await authState.keys.get('session', [addr.toString()])
-			const hasSession: boolean = !!session?.[addr.toString()]
+			const hasSession = !!session?.[addr.toString()]
 
 			const { 'pre-key': preKeys } = await authState.keys.get('pre-key', [])
 			const hasPreKeys: boolean = preKeys && Object.keys(preKeys).length > 0
@@ -40,8 +40,8 @@ export class SessionDiagnostics {
 			const errorInfo = this.sessionErrors.get(normalizedJid)!
 			const hasRecentErrors: boolean | undefined = errorInfo && (Date.now() - errorInfo.lastError.getTime()) < 300000 // 5 minutes
 
-			let recommendation: string = 'Session appears healthy'
-			let canRecover: boolean = true
+			let recommendation = 'Session appears healthy'
+			let canRecover = true
 
 			if(!hasSession) {
 				recommendation = 'Session missing - requires key exchange'
@@ -107,9 +107,9 @@ export class SessionDiagnostics {
 			}
 
 			const sessionKeys: string[] = Object.keys(allSessions)
-			let healthy: number = 0
-			let corrupted: number = 0
-			let missing: number = 0
+			let healthy = 0
+			let corrupted = 0
+			let missing = 0
 
 			for(const sessionKey of sessionKeys) {
 				const sessionData = allSessions[sessionKey]
@@ -316,7 +316,7 @@ export class SessionDiagnostics {
 	 */
 	cleanup(): void {
 		const cutoff: number = Date.now() - (24 * 60 * 60 * 1000) // 24 hours
-		let cleaned: number = 0
+		let cleaned = 0
 
 		for(const [jid, errorInfo] of this.sessionErrors.entries()) {
 			if(errorInfo.lastError.getTime() < cutoff) {
