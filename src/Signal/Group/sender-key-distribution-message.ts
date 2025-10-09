@@ -1,12 +1,6 @@
 import { waproto } from '../../../WAProto'
 import { CiphertextMessage } from './ciphertext-message'
-
-interface SenderKeyDistributionMessageStructure {
-  id: number
-  iteration: number
-  chainKey: string | Uint8Array
-  signingKey: string | Uint8Array
-}
+import { SenderKeyDistributionMessageStructure } from './types'
 
 export class SenderKeyDistributionMessage extends CiphertextMessage {
 	private readonly id: number
@@ -26,7 +20,7 @@ export class SenderKeyDistributionMessage extends CiphertextMessage {
 
 		if(serialized) {
 			try {
-				const message = serialized.slice(1)
+				const message: Uint8Array = serialized.slice(1)
 				const distributionMessage = waproto.SenderKeyDistributionMessage.decode(
 					message
 				).toJSON() as SenderKeyDistributionMessageStructure
@@ -52,7 +46,7 @@ export class SenderKeyDistributionMessage extends CiphertextMessage {
 			this.chainKey = chainKey!
 			this.signatureKey = signatureKey!
 
-			const message = waproto.SenderKeyDistributionMessage.encode(
+			const message: Uint8Array = waproto.SenderKeyDistributionMessage.encode(
 				waproto.SenderKeyDistributionMessage.create({
 					id,
 					iteration,

@@ -33,7 +33,7 @@ export const makeNoiseHandler = ({
 	}
 
 	const encrypt = (plaintext: Uint8Array) => {
-		const result = aesEncryptGCM(plaintext, encKey, generateIV(writeCounter), hash)
+		const result: Buffer = aesEncryptGCM(plaintext, encKey, generateIV(writeCounter), hash)
 
 		writeCounter += 1
 
@@ -46,8 +46,8 @@ export const makeNoiseHandler = ({
 			throw new Error('Invalid ciphertext: empty or null')
 		}
 
-		const iv = generateIV(isFinished ? readCounter : writeCounter)
-		const result = aesDecryptGCM(ciphertext, decKey, iv, hash)
+		const iv: Uint8Array = generateIV(isFinished ? readCounter : writeCounter)
+		const result: Buffer = aesDecryptGCM(ciphertext, decKey, iv, hash)
 
 		if(isFinished) {
 			readCounter += 1
@@ -60,7 +60,7 @@ export const makeNoiseHandler = ({
 	}
 
 	const localHKDF = async(data: Uint8Array) => {
-		const key = await hkdf(Buffer.from(data), 64, { salt, info: '' })
+		const key: Buffer = await hkdf(Buffer.from(data), 64, { salt, info: '' })
 		return [key.subarray(0, 32), key.subarray(32)]
 	}
 
@@ -83,17 +83,17 @@ export const makeNoiseHandler = ({
 		isFinished = true
 	}
 
-	const data = Buffer.from(NOISE_MODE)
-	let hash = data.byteLength === 32 ? data : sha256(data)
-	let salt = hash
-	let encKey = hash
-	let decKey = hash
-	let readCounter = 0
-	let writeCounter = 0
-	let isFinished = false
-	let sentIntro = false
+	const data: Buffer = Buffer.from(NOISE_MODE)
+	let hash: Buffer = data.byteLength === 32 ? data : sha256(data)
+	let salt: Buffer = hash
+	let encKey: Buffer = hash
+	let decKey: Buffer = hash
+	let readCounter: number = 0
+	let writeCounter: number = 0
+	let isFinished: boolean = false
+	let sentIntro: boolean = false
 
-	let inBytes = Buffer.alloc(0)
+	let inBytes: Buffer = Buffer.alloc(0)
 
 	authenticate(NOISE_HEADER)
 	authenticate(publicKey)
@@ -108,10 +108,10 @@ export const makeNoiseHandler = ({
 			authenticate(serverHello!.ephemeral!)
 			await mixIntoKey(Curve.sharedKey(privateKey, serverHello!.ephemeral!))
 
-			const decStaticContent = decrypt(serverHello!.static!)
+			const decStaticContent: Buffer = decrypt(serverHello!.static!)
 			await mixIntoKey(Curve.sharedKey(privateKey, decStaticContent))
 
-			const certDecoded = decrypt(serverHello!.payload!)
+			const certDecoded: Buffer = decrypt(serverHello!.payload!)
 
 			const { intermediate: certIntermediate } = waproto.CertChain.decode(certDecoded)
 
@@ -121,7 +121,7 @@ export const makeNoiseHandler = ({
 				throw new Boom('certification match failed', { statusCode: 400 })
 			}
 
-			const keyEnc = encrypt(noiseKey.public)
+			const keyEnc: Buffer = encrypt(noiseKey.public)
 			await mixIntoKey(Curve.sharedKey(noiseKey.private, serverHello!.ephemeral!))
 
 			return keyEnc
@@ -145,8 +145,8 @@ export const makeNoiseHandler = ({
 				header = Buffer.from(NOISE_HEADER)
 			}
 
-			const introSize = sentIntro ? 0 : header.length
-			const frame = Buffer.alloc(introSize + 3 + data.byteLength)
+			const introSize: number = sentIntro ? 0 : header.length
+			const frame: Buffer = Buffer.alloc(introSize + 3 + data.byteLength)
 
 			if(!sentIntro) {
 				frame.set(header)
@@ -177,13 +177,13 @@ export const makeNoiseHandler = ({
 
 			logger.trace({ newData, inBytes }, `recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
 
-			let size = getBytesSize()
+			let size: number | undefined = getBytesSize()
 			while(size && size > 0 && inBytes.length >= size + 3) {
 				let frame: Uint8Array | BinaryNode = inBytes.subarray(3, size + 3)
 				inBytes = inBytes.subarray(size + 3)
 
 				if(isFinished) {
-					const result = decrypt(frame)
+					const result: Buffer = decrypt(frame)
 					if(!result || result.length === 0) {
 						logger.warn({}, 'Received empty or null decrypted frame, skipping')
 						size = getBytesSize()

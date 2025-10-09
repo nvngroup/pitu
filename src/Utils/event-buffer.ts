@@ -1,56 +1,11 @@
 import EventEmitter from 'events'
 import { waproto } from '../../WAProto'
-import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, WAMessage, WAMessageStatus } from '../Types'
+import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, GroupMetadata, MessageUpsertType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageUpdate } from '../Types'
 import { trimUndefined } from './generics'
 import { ILogger } from './logger'
 import { updateMessageWithReaction, updateMessageWithReceipt } from './messages'
 import { isRealMessage, shouldIncrementChatUnread } from './process-message'
-
-const BUFFERABLE_EVENT = [
-	'messaging-history.set',
-	'chats.upsert',
-	'chats.update',
-	'chats.delete',
-	'contacts.upsert',
-	'contacts.update',
-	'messages.upsert',
-	'messages.update',
-	'messages.delete',
-	'messages.reaction',
-	'message-receipt.update',
-	'groups.update',
-] as const
-
-type BufferableEvent = typeof BUFFERABLE_EVENT[number]
-
-/**
- * A map that contains a list of all events that have been triggered
- *
- * Note, this can contain different type of events
- * this can make processing events extremely efficient -- since everything
- * can be done in a single transaction
- */
-type BaileysEventData = Partial<BaileysEventMap>
-
-const BUFFERABLE_EVENT_SET = new Set<BaileysEvent>(BUFFERABLE_EVENT)
-
-type BaileysBufferableEventEmitter = BaileysEventEmitter & {
-	process(handler: (events: BaileysEventData) => void | Promise<void>): (() => void)
-	/**
-	 * starts buffering events, call flush() to release them
-	 * */
-	buffer(): void
-	/** buffers all events till the promise completes */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	createBufferedFunction<A extends any[], T>(work: (...args: A) => Promise<T>): ((...args: A) => Promise<T>)
-	/**
-	 * flushes all buffered events
-	 * @param force if true, will flush all data regardless of any pending buffers
-	 * @returns returns true if the flush actually happened, otherwise false
-	 */
-	flush(): boolean
-	isBuffering(): boolean
-}
+import { BaileysBufferableEventEmitter, BaileysEventData, BUFFERABLE_EVENT_SET, BufferableEvent } from './types'
 
 /**
  * The event buffer logically consolidates different events into a single event
@@ -61,7 +16,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	const ev = new EventEmitter()
 	const historyCache = new Set<string>()
 
-	let data = makeBufferData()
+	let data: BufferedEventData = makeBufferData()
 	let isBuffering = false
 
 	ev.on('event', (map: BaileysEventData) => {
@@ -85,7 +40,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 		logger.trace({}, 'Flushing event buffer')
 		isBuffering = false
 
-		const newData = makeBufferData()
+		const newData: BufferedEventData = makeBufferData()
 		const chatUpdates = Object.values(data.chatUpdates)
 		let conditionalChatUpdatesLeft = 0
 		for(const update of chatUpdates) {
@@ -96,7 +51,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			}
 		}
 
-		const consolidatedData = consolidateEvents(data)
+		const consolidatedData: Partial<BaileysEventMap> = consolidateEvents(data)
 		if(Object.keys(consolidatedData).length) {
 			ev.emit('event', consolidatedData)
 		}
@@ -182,7 +137,7 @@ function append<E extends BufferableEvent>(
 	switch (event) {
 	case 'messaging-history.set':
 		for(const chat of eventData.chats as Chat[]) {
-			const existingChat = data.historySets.chats[chat.id]
+			const existingChat: Chat = data.historySets.chats[chat.id]
 			if(existingChat) {
 				existingChat.endOfHistoryTransferType = chat.endOfHistoryTransferType
 			}
@@ -196,12 +151,12 @@ function append<E extends BufferableEvent>(
 		}
 
 		for(const contact of eventData.contacts as Contact[]) {
-			const existingContact = data.historySets.contacts[contact.id]
+			const existingContact: Contact = data.historySets.contacts[contact.id]
 			if(existingContact) {
 				Object.assign(existingContact, trimUndefined(contact))
 			} else {
 				const historyContactId = `c:${contact.id}`
-				const hasAnyName = contact.notify || contact.name || contact.verifiedName
+				const hasAnyName: string | undefined = contact.notify || contact.name || contact.verifiedName
 				if(!historyCache.has(historyContactId) || hasAnyName) {
 					data.historySets.contacts[contact.id] = contact
 					historyCache.add(historyContactId)
@@ -210,8 +165,8 @@ function append<E extends BufferableEvent>(
 		}
 
 		for(const message of eventData.messages as WAMessage[]) {
-			const key = stringifyMessageKey(message.key)
-			const existingMsg = data.historySets.messages[key]
+			const key: string = stringifyMessageKey(message.key)
+			const existingMsg: WAMessage = data.historySets.messages[key]
 			if(!existingMsg && !historyCache.has(key)) {
 				data.historySets.messages[key] = message
 				historyCache.add(key)
@@ -227,7 +182,7 @@ function append<E extends BufferableEvent>(
 		break
 	case 'chats.upsert':
 		for(const chat of eventData as Chat[]) {
-			let upsert = data.chatUpserts[chat.id]
+			let upsert: Chat = data.chatUpserts[chat.id]
 			if(!upsert) {
 				upsert = data.historySets[chat.id]
 				if(upsert) {
@@ -252,12 +207,12 @@ function append<E extends BufferableEvent>(
 		break
 	case 'chats.update':
 		for(const update of eventData as ChatUpdate[]) {
-			const chatId = update.id!
-			const conditionMatches = update.conditional ? update.conditional(data) : true
+			const chatId: string = update.id!
+			const conditionMatches: boolean | undefined = update.conditional ? update.conditional(data) : true
 			if(conditionMatches) {
 				delete update.conditional
 
-				const upsert = data.historySets.chats[chatId] || data.chatUpserts[chatId]
+				const upsert: Chat = data.historySets.chats[chatId] || data.chatUpserts[chatId]
 				if(upsert) {
 					concatChats(upsert, update)
 				} else {
@@ -297,7 +252,7 @@ function append<E extends BufferableEvent>(
 		break
 	case 'contacts.upsert':
 		for(const contact of eventData as Contact[]) {
-			let upsert = data.contactUpserts[contact.id]
+			let upsert: Contact = data.contactUpserts[contact.id]
 			if(!upsert) {
 				upsert = data.historySets.contacts[contact.id]
 				if(upsert) {
@@ -322,12 +277,12 @@ function append<E extends BufferableEvent>(
 	case 'contacts.update':
 		const contactUpdates = eventData as BaileysEventMap['contacts.update']
 		for(const update of contactUpdates) {
-			const id = update.id!
-			const upsert = data.historySets.contacts[id] || data.contactUpserts[id]
+			const id: string = update.id!
+			const upsert: Contact = data.historySets.contacts[id] || data.contactUpserts[id]
 			if(upsert) {
 				Object.assign(upsert, update)
 			} else {
-				const contactUpdate = data.contactUpdates[id] || { }
+				const contactUpdate: Partial<Contact> = data.contactUpdates[id] || { }
 				data.contactUpdates[id] = Object.assign(contactUpdate, update)
 			}
 		}
@@ -336,8 +291,8 @@ function append<E extends BufferableEvent>(
 	case 'messages.upsert':
 		const { messages, type } = eventData as BaileysEventMap['messages.upsert']
 		for(const message of messages) {
-			const key = stringifyMessageKey(message.key)
-			let existing = data.messageUpserts[key]?.message
+			const key: string = stringifyMessageKey(message.key)
+			let existing: WAMessage = data.messageUpserts[key]?.message
 			if(!existing) {
 				existing = data.historySets.messages[key]
 				if(existing) {
@@ -371,15 +326,15 @@ function append<E extends BufferableEvent>(
 	case 'messages.update':
 		const msgUpdates = eventData as BaileysEventMap['messages.update']
 		for(const { key, update } of msgUpdates) {
-			const keyStr = stringifyMessageKey(key)
-			const existing = data.historySets.messages[keyStr] || data.messageUpserts[keyStr]?.message
+			const keyStr: string = stringifyMessageKey(key)
+			const existing: WAMessage = data.historySets.messages[keyStr] || data.messageUpserts[keyStr]?.message
 			if(existing) {
 				Object.assign(existing, update)
 				if(update.status === WAMessageStatus.READ && !key.fromMe) {
 					decrementChatReadCounterIfMsgDidUnread(existing)
 				}
 			} else {
-				const msgUpdate = data.messageUpdates[keyStr] || { key, update: { } }
+				const msgUpdate: WAMessageUpdate = data.messageUpdates[keyStr] || { key, update: { } }
 				Object.assign(msgUpdate.update, update)
 				data.messageUpdates[keyStr] = msgUpdate
 			}
@@ -391,7 +346,7 @@ function append<E extends BufferableEvent>(
 		if('keys' in deleteData) {
 			const { keys } = deleteData
 			for(const key of keys) {
-				const keyStr = stringifyMessageKey(key)
+				const keyStr: string = stringifyMessageKey(key)
 				if(!data.messageDeletes[keyStr]) {
 					data.messageDeletes[keyStr] = key
 
@@ -406,7 +361,7 @@ function append<E extends BufferableEvent>(
 				}
 			}
 		} else {
-			// TODO: add support
+			// TODO: add support for "all" deletion
 			logger.trace({ eventData }, 'messages.delete with "all" not yet supported in event buffer')
 		}
 
@@ -414,7 +369,7 @@ function append<E extends BufferableEvent>(
 	case 'messages.reaction':
 		const reactions = eventData as BaileysEventMap['messages.reaction']
 		for(const { key, reaction } of reactions) {
-			const keyStr = stringifyMessageKey(key)
+			const keyStr: string = stringifyMessageKey(key)
 			const existing = data.messageUpserts[keyStr]
 			if(existing) {
 				updateMessageWithReaction(existing.message, reaction)
@@ -429,7 +384,7 @@ function append<E extends BufferableEvent>(
 	case 'message-receipt.update':
 		const receipts = eventData as BaileysEventMap['message-receipt.update']
 		for(const { key, receipt } of receipts) {
-			const keyStr = stringifyMessageKey(key)
+			const keyStr: string = stringifyMessageKey(key)
 			const existing = data.messageUpserts[keyStr]
 			if(existing) {
 				updateMessageWithReceipt(existing.message, receipt)
@@ -444,8 +399,8 @@ function append<E extends BufferableEvent>(
 	case 'groups.update':
 		const groupUpdates = eventData as BaileysEventMap['groups.update']
 		for(const update of groupUpdates) {
-			const id = update.id!
-			const groupUpdate = data.groupUpdates[id] || { }
+			const id: string = update.id!
+			const groupUpdate: Partial<GroupMetadata> = data.groupUpdates[id] || { }
 			if(!data.groupUpdates[id]) {
 				data.groupUpdates[id] = Object.assign(groupUpdate, update)
 
@@ -458,7 +413,7 @@ function append<E extends BufferableEvent>(
 	}
 
 	function absorbingChatUpdate(existing: Chat) {
-		const chatId = existing.id
+		const chatId: string = existing.id
 		const update = data.chatUpdates[chatId]
 		if(update) {
 			const conditionMatches = update.conditional ? update.conditional(data) : true
@@ -475,7 +430,7 @@ function append<E extends BufferableEvent>(
 	}
 
 	function decrementChatReadCounterIfMsgDidUnread(message: WAMessage) {
-		const chatId = message.key.remoteJid!
+		const chatId: string = message.key.remoteJid!
 		const chat = data.chatUpdates[chatId] || data.chatUpserts[chatId]
 		if(
 			isRealMessage(message, '')
@@ -507,7 +462,7 @@ function consolidateEvents(data: BufferedEventData) {
 		}
 	}
 
-	const chatUpsertList = Object.values(data.chatUpserts)
+	const chatUpsertList: Chat[] = Object.values(data.chatUpserts)
 	if(chatUpsertList.length) {
 		map['chats.upsert'] = chatUpsertList
 	}
@@ -517,26 +472,26 @@ function consolidateEvents(data: BufferedEventData) {
 		map['chats.update'] = chatUpdateList
 	}
 
-	const chatDeleteList = Array.from(data.chatDeletes)
+	const chatDeleteList: string[] = Array.from(data.chatDeletes)
 	if(chatDeleteList.length) {
 		map['chats.delete'] = chatDeleteList
 	}
 
 	const messageUpsertList = Object.values(data.messageUpserts)
 	if(messageUpsertList.length) {
-		const type = messageUpsertList[0].type
+		const type: MessageUpsertType = messageUpsertList[0].type
 		map['messages.upsert'] = {
 			messages: messageUpsertList.map(m => m.message),
 			type
 		}
 	}
 
-	const messageUpdateList = Object.values(data.messageUpdates)
+	const messageUpdateList: WAMessageUpdate[] = Object.values(data.messageUpdates)
 	if(messageUpdateList.length) {
 		map['messages.update'] = messageUpdateList
 	}
 
-	const messageDeleteList = Object.values(data.messageDeletes)
+	const messageDeleteList: WAMessageKey[] = Object.values(data.messageDeletes)
 	if(messageDeleteList.length) {
 		map['messages.delete'] = { keys: messageDeleteList }
 	}
@@ -555,17 +510,17 @@ function consolidateEvents(data: BufferedEventData) {
 		map['message-receipt.update'] = messageReceiptList
 	}
 
-	const contactUpsertList = Object.values(data.contactUpserts)
+	const contactUpsertList: Contact[] = Object.values(data.contactUpserts)
 	if(contactUpsertList.length) {
 		map['contacts.upsert'] = contactUpsertList
 	}
 
-	const contactUpdateList = Object.values(data.contactUpdates)
+	const contactUpdateList: Partial<Contact>[] = Object.values(data.contactUpdates)
 	if(contactUpdateList.length) {
 		map['contacts.update'] = contactUpdateList
 	}
 
-	const groupUpdateList = Object.values(data.groupUpdates)
+	const groupUpdateList: Partial<GroupMetadata>[] = Object.values(data.groupUpdates)
 	if(groupUpdateList.length) {
 		map['groups.update'] = groupUpdateList
 	}

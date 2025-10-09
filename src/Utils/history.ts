@@ -1,8 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
+import { Transform } from 'stream'
 import { promisify } from 'util'
 import { inflate } from 'zlib'
 import { waproto } from '../../WAProto'
-import { Chat, Contact, WAMessageStubType } from '../Types'
+import { Chat, Contact, WAMessageContent, WAMessageStubType } from '../Types'
 import { isJidUser } from '../WABinary'
 import { toNumber } from './generics'
 import { normalizeMessageContent } from './messages'
@@ -14,15 +15,15 @@ export const downloadHistory = async(
 	msg: waproto.Message.IHistorySyncNotification,
 	options: AxiosRequestConfig<{}>
 ) => {
-	const stream = await downloadContentFromMessage(msg, 'md-msg-hist', { options })
+	const stream: Transform = await downloadContentFromMessage(msg, 'md-msg-hist', { options })
 	const bufferArray: Buffer[] = []
 	for await (const chunk of stream) {
 		bufferArray.push(chunk)
 	}
 
-	let buffer = Buffer.concat(bufferArray)
+	let buffer: Buffer = Buffer.concat(bufferArray)
 
-	const decompressed = await inflatePromise(buffer)
+	const decompressed: Buffer = await inflatePromise(buffer)
 	buffer = Buffer.from(decompressed)
 
 	const syncData = waproto.HistorySync.decode(buffer)
@@ -47,14 +48,14 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 				jid: isJidUser(chat.id) ? chat.id : undefined
 			})
 
-			const msgs = chat.messages || []
+			const msgs: waproto.IHistorySyncMsg[] = chat.messages || []
 			delete chat.messages
 			delete chat.archived
 			delete chat.muteEndTime
 			delete chat.pinned
 
 			for(const item of msgs) {
-				const message = item.message!
+				const message: waproto.IWebMessageInfo | null | undefined = item.message
 				messages.push(message)
 
 				if(!chat.messages?.length) {
@@ -112,8 +113,8 @@ export const downloadAndProcessHistorySyncNotification = async(
 }
 
 export const getHistoryMsg = (message: waproto.IMessage) => {
-	const normalizedContent = !!message ? normalizeMessageContent(message) : undefined
-	const anyHistoryMsg = normalizedContent?.protocolMessage?.historySyncNotification
+	const normalizedContent: WAMessageContent | undefined = !!message ? normalizeMessageContent(message) : undefined
+	const anyHistoryMsg: waproto.Message.IHistorySyncNotification | null | undefined = normalizedContent?.protocolMessage?.historySyncNotification
 
 	return anyHistoryMsg
 }

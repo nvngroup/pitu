@@ -1,14 +1,14 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { PROCESSABLE_HISTORY_TYPES } from '../Defaults'
-import { ALL_WA_PATCH_NAMES, ChatModification, ChatMutation, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
+import { ALL_WA_PATCH_NAMES, CacheStore, ChatModification, ChatMutation, Contact, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
 import type { LabelActionBody } from '../Types/Label'
 import { SyncState } from '../Types/State'
 import { chatModificationToAppPatch, ChatMutationMap, decodePatches, decodeSyncdSnapshot, encodeSyncdPatch, extractSyncdPatches, generateProfilePicture, getHistoryMsg, newLTHashState, processSyncAction } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
-import { USyncQuery, USyncUser } from '../WAUSync'
+import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import { makeUSyncSocket } from './usync'
 
@@ -40,13 +40,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	let awaitingSyncTimeout: NodeJS.Timeout | undefined
 
-	const placeholderResendCache = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
+	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
 	if(!config.placeholderResendCache) {
 		config.placeholderResendCache = placeholderResendCache
 	}
 
-	const onWhatsAppCache = config.onWhatsAppCache || CacheManager.getInstance('ON_WHATSAPP')
+	const onWhatsAppCache: CacheStore = config.onWhatsAppCache || CacheManager.getInstance('ON_WHATSAPP')
 
 	if(!config.onWhatsAppCache) {
 		config.onWhatsAppCache = onWhatsAppCache
@@ -147,7 +147,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const onWhatsApp = async(...jids: string[]) => {
-		const cacheKey = jids.sort().join(',')
+		const cacheKey: string = jids.sort().join(',')
 		const cached = onWhatsAppCache.get(cacheKey)
 		if(cached) {
 			return cached
@@ -181,7 +181,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			usyncQuery.withUser(new USyncUser().withId(jid))
 		}
 
-		const result = await sock.executeUSyncQuery(usyncQuery)
+		const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(usyncQuery)
 		if(result) {
 			return result.list
 		}
@@ -195,7 +195,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			usyncQuery.withUser(new USyncUser().withId(jid))
 		}
 
-		const result = await sock.executeUSyncQuery(usyncQuery)
+		const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(usyncQuery)
 		if(result) {
 			return result.list
 		}
@@ -274,7 +274,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const fetchBlocklist = async() => {
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				xmlns: 'blocklist',
@@ -283,7 +283,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			}
 		})
 
-		const listNode = getBinaryNodeChild(result, 'list')
+		const listNode: BinaryNode | undefined = getBinaryNodeChild(result, 'list')
 		return getBinaryNodeChildren(listNode, 'item')
 			.map(n => n.attrs.jid)
 	}
@@ -309,7 +309,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const getBusinessProfile = async(jid: string): Promise<WABusinessProfile | void> => {
-		const results = await query({
+		const results: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: 's.whatsapp.net',
@@ -326,19 +326,19 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			}]
 		})
 
-		const profileNode = getBinaryNodeChild(results, 'business_profile')
-		const profiles = getBinaryNodeChild(profileNode, 'profile')
+		const profileNode: BinaryNode | undefined = getBinaryNodeChild(results, 'business_profile')
+		const profiles: BinaryNode | undefined = getBinaryNodeChild(profileNode, 'profile')
 		if(profiles) {
-			const address = getBinaryNodeChild(profiles, 'address')
-			const description = getBinaryNodeChild(profiles, 'description')
-			const website = getBinaryNodeChild(profiles, 'website')
-			const email = getBinaryNodeChild(profiles, 'email')
-			const category = getBinaryNodeChild(getBinaryNodeChild(profiles, 'categories'), 'category')
-			const businessHours = getBinaryNodeChild(profiles, 'business_hours')
-			const businessHoursConfig = businessHours
+			const address: BinaryNode | undefined = getBinaryNodeChild(profiles, 'address')
+			const description: BinaryNode | undefined = getBinaryNodeChild(profiles, 'description')
+			const website: BinaryNode | undefined = getBinaryNodeChild(profiles, 'website')
+			const email: BinaryNode | undefined = getBinaryNodeChild(profiles, 'email')
+			const category: BinaryNode | undefined = getBinaryNodeChild(getBinaryNodeChild(profiles, 'categories'), 'category')
+			const businessHours: BinaryNode | undefined = getBinaryNodeChild(profiles, 'business_hours')
+			const businessHoursConfig: BinaryNode[] | undefined = businessHours
 				? getBinaryNodeChildren(businessHours, 'business_hours_config')
 				: undefined
-			const websiteStr = website?.content?.toString()
+			const websiteStr: string | undefined = website?.content?.toString()
 			return {
 				wid: profiles.attrs?.jid,
 				address: address?.content?.toString(),
@@ -404,7 +404,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 					for(const name of collectionsToHandle) {
 						const result = await authState.keys.get('app-state-sync-version', [name])
-						let state = result[name]
+						let state: LTHashState = result[name]
 
 						if(state) {
 							if(typeof initialVersionMap[name] === 'undefined') {
@@ -428,7 +428,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 						})
 					}
 
-					const result = await query({
+					const result: BinaryNode = await query({
 						tag: 'iq',
 						attrs: {
 							to: S_WHATSAPP_NET,
@@ -523,7 +523,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	 */
 	const profilePictureUrl = async(jid: string, type: 'preview' | 'image' = 'preview', timeoutMs?: number) => {
 		jid = jidNormalizedUser(jid)
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				target: jid,
@@ -535,12 +535,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				{ tag: 'picture', attrs: { type, query: 'url' } }
 			]
 		}, timeoutMs)
-		const child = getBinaryNodeChild(result, 'picture')
+		const child: BinaryNode | undefined = getBinaryNodeChild(result, 'picture')
 		return child?.attrs?.url
 	}
 
 	const createCallLink = async(type: 'audio' | 'video', event?: { startTime: number }, timeoutMs?: number) => {
-		const result = await query(
+		const result: BinaryNode = await query(
 			{
 				tag: 'call',
 				attrs: {
@@ -557,12 +557,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			},
 			timeoutMs
 		)
-		const child = getBinaryNodeChild(result, 'link_create')
+		const child: BinaryNode | undefined = getBinaryNodeChild(result, 'link_create')
 		return child?.attrs?.token
 	}
 
 	const sendPresenceUpdate = async(type: WAPresence, toJid?: string) => {
-		const me = authState.creds.me!
+		const me: Contact = authState.creds.me!
 		if(type === 'available' || type === 'unavailable') {
 			if(!me.name) {
 				logger.warn({}, 'no name present, ignoring presence update request...')
@@ -580,7 +580,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			})
 		} else {
 			const { server } = jidDecode(toJid)!
-			const isLid = server === 'lid'
+			const isLid: boolean = server === 'lid'
 			await sendNode({
 				tag: 'chatstate',
 				attrs: {
@@ -623,8 +623,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	const handlePresenceUpdate = ({ tag, attrs, content }: BinaryNode) => {
 		let presence: PresenceData | undefined
-		const jid = attrs.from
-		const participant = attrs.participant || attrs.from
+		const jid: string = attrs.from
+		const participant: string = attrs.participant || attrs.from
 
 		if(shouldIgnoreJid(jid) && jid !== '@s.whatsapp.net') {
 			return
@@ -637,7 +637,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			}
 		} else if(Array.isArray(content)) {
 			const [firstChild] = content
-			let type = firstChild.tag as WAPresence
+			let type: WAPresence = firstChild.tag as WAPresence
 			if(type === 'paused') {
 				type = 'available'
 			}
@@ -742,7 +742,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const fetchProps = async() => {
-		const resultNode = await query({
+		const resultNode: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -757,7 +757,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			]
 		})
 
-		const propsNode = getBinaryNodeChild(resultNode, 'props')
+		const propsNode: BinaryNode | undefined = getBinaryNodeChild(resultNode, 'props')
 
 
 		let props: { [_: string]: string } = {}
@@ -781,7 +781,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	 * requires the last messages till the last message received; required for archive & unread
 	*/
 	const chatModify = (mod: ChatModification, jid: string) => {
-		const patch = chatModificationToAppPatch(mod, jid)
+		const patch: WAPatchCreate = chatModificationToAppPatch(mod, jid)
 		return appPatch(patch)
 	}
 

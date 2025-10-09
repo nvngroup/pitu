@@ -28,9 +28,9 @@ export const getPreKeys = async({ get }: SignalKeyStore, min: number, limit: num
 }
 
 export const generateOrGetPreKeys = (creds: AuthenticationCreds, range: number) => {
-	const avaliable = creds.nextPreKeyId - creds.firstUnuploadedPreKeyId
-	const remaining = range - avaliable
-	const lastPreKeyId = creds.nextPreKeyId + remaining - 1
+	const avaliable: number = creds.nextPreKeyId - creds.firstUnuploadedPreKeyId
+	const remaining: number = range - avaliable
+	const lastPreKeyId: number = creds.nextPreKeyId + remaining - 1
 	const newPreKeys: { [id: number]: KeyPair } = { }
 	if(remaining > 0) {
 		for(let i = creds.nextPreKeyId;i <= lastPreKeyId;i++) {
@@ -93,12 +93,12 @@ export const parseAndInjectE2ESessions = async(
 		await Promise.all(
 			nodesChunk.map(
 				async node => {
-					const signedKey = getBinaryNodeChild(node, 'skey')!
-					const key = getBinaryNodeChild(node, 'key')!
-					const identity = getBinaryNodeChildBuffer(node, 'identity')!
-					const jid = node.attrs.jid
-					const registrationId = getBinaryNodeChildUInt(node, 'registration', 4)
-					const newlid = convertlidDevice(jid, lid, meid, melid)
+					const signedKey: BinaryNode = getBinaryNodeChild(node, 'skey')!
+					const key: BinaryNode = getBinaryNodeChild(node, 'key')!
+					const identity: Uint8Array = getBinaryNodeChildBuffer(node, 'identity')!
+					const jid: string = node.attrs.jid
+					const registrationId: number | undefined = getBinaryNodeChildUInt(node, 'registration', 4)
+					const newlid: string = convertlidDevice(jid, lid, meid, melid)
 
 					await repository.injectE2ESession({
 						jid: newlid,
@@ -127,9 +127,9 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 		const deviceList = devices?.deviceList as DeviceListData[]
 		if(Array.isArray(deviceList)) {
 			for(const { id: device, keyIndex } of deviceList) {
-				const shouldExcludeZero = excludeZeroDevices && device === 0
-				const isSameDevice = myUser === user && myDevice === device
-				const hasKeyIndex = device === 0 || !!keyIndex
+				const shouldExcludeZero: boolean = excludeZeroDevices && device === 0
+				const isSameDevice: boolean = myUser === user && myDevice === device
+				const hasKeyIndex: boolean = device === 0 || !!keyIndex
 
 				if(!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
 					extracted.push({ user, device })

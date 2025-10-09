@@ -12,7 +12,7 @@ const _queueAsyncBuckets = new Map<string | number, Array<QueueJob<any>>>()
 async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => void): Promise<void> {
 	let offset = 0
 	while(offset < queue.length) {
-		const limit = Math.min(queue.length, offset + GROUP_CONSTANTS.QUEUE_GC_LIMIT)
+		const limit: number = Math.min(queue.length, offset + GROUP_CONSTANTS.QUEUE_GC_LIMIT)
 		for(let i = offset; i < limit; i++) {
 			const job = queue[i]
 			try {

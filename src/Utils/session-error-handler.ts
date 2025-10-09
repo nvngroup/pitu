@@ -1,17 +1,11 @@
 import logger from './logger'
-
-export interface SessionErrorInfo {
-	jid: string
-	errorType: 'bad_mac' | 'session_corrupt' | 'key_missing' | 'unknown'
-	originalError: string
-	timestamp: number
-}
+import { SessionErrorInfo } from './types'
 
 /**
  * Detecta e categoriza erros de sessão/criptografia
  */
 export function detectSessionError(error: Error): SessionErrorInfo | null {
-	const errorMsg = error.message?.toLowerCase() || ''
+	const errorMsg: string = error.message?.toLowerCase() || ''
 
 	// Padrões de erro conhecidos
 	const patterns = {
@@ -51,10 +45,9 @@ export class SessionRecoveryStrategy {
 			this.errorHistory.set(jid, [])
 		}
 
-		const errors = this.errorHistory.get(jid)!
+		const errors: SessionErrorInfo[] = this.errorHistory.get(jid)!
 		errors.push(errorInfo)
 
-		// Mantém apenas os últimos 10 erros
 		if(errors.length > 10) {
 			errors.splice(0, errors.length - 10)
 		}
@@ -70,7 +63,7 @@ export class SessionRecoveryStrategy {
 	 * Verifica se deve tentar recuperar a sessão
 	 */
 	shouldAttemptRecovery(jid: string): boolean {
-		const recentErrors = this.getRecentErrorCount(jid)
+		const recentErrors: number = this.getRecentErrorCount(jid)
 		return recentErrors < this.maxRetries
 	}
 
@@ -78,8 +71,8 @@ export class SessionRecoveryStrategy {
 	 * Obtém contagem de erros recentes (últimos 5 minutos)
 	 */
 	private getRecentErrorCount(jid: string): number {
-		const errors = this.errorHistory.get(jid) || []
-		const recentThreshold = Date.now() - 300000 // 5 minutos
+		const errors: SessionErrorInfo[] = this.errorHistory.get(jid) || []
+		const recentThreshold: number = Date.now() - 300000 // 5 minutos
 
 		return errors.filter(error => error.timestamp > recentThreshold).length
 	}
@@ -88,10 +81,10 @@ export class SessionRecoveryStrategy {
 	 * Limpa histórico antigo de erros
 	 */
 	cleanup() {
-		const cleanupThreshold = Date.now() - 3600000 // 1 hora
+		const cleanupThreshold: number = Date.now() - 3600000 // 1 hora
 
 		for(const [jid, errors] of this.errorHistory.entries()) {
-			const recentErrors = errors.filter(error => error.timestamp > cleanupThreshold)
+			const recentErrors: SessionErrorInfo[] = errors.filter(error => error.timestamp > cleanupThreshold)
 
 			if(recentErrors.length === 0) {
 				this.errorHistory.delete(jid)
@@ -105,7 +98,7 @@ export class SessionRecoveryStrategy {
 	 * Gera recomendações de recuperação
 	 */
 	getRecoveryRecommendation(jid: string, errorType: SessionErrorInfo['errorType']): string {
-		const recentErrors = this.getRecentErrorCount(jid)
+		const recentErrors: number = this.getRecentErrorCount(jid)
 
 		switch (errorType) {
 		case 'bad_mac':
@@ -130,8 +123,8 @@ export class SessionRecoveryStrategy {
 	 * Obtém estatísticas de erro para um JID
 	 */
 	getErrorStats(jid: string) {
-		const errors = this.errorHistory.get(jid) || []
-		const recentErrors = this.getRecentErrorCount(jid)
+		const errors: SessionErrorInfo[] = this.errorHistory.get(jid) || []
+		const recentErrors: number = this.getRecentErrorCount(jid)
 
 		const errorsByType = errors.reduce((acc, error) => {
 			acc[error.errorType] = (acc[error.errorType] || 0) + 1

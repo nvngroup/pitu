@@ -1,6 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
 import { waproto } from '../../WAProto'
-import { AuthenticationCreds, BaileysEventEmitter, CacheStore, Chat, GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod, SignalKeyStoreWithTransaction, SocketConfig, WAMessageStubType } from '../Types'
+import { AuthenticationCreds, BaileysEventEmitter, CacheStore, Chat, Contact, GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod, SignalKeyStoreWithTransaction, SocketConfig, WAMessageStubType } from '../Types'
 import { getContentType, normalizeMessageContent } from '../Utils/messages'
 import { areJidsSameUser, isJidBroadcast, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
 import { aesDecryptGCM, hmacSign } from './crypto'
@@ -33,7 +33,7 @@ const REAL_MSG_REQ_ME_STUB_TYPES = new Set([
 export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => {
 	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid!)
 	message.key.participant = message.key.participant ? jidNormalizedUser(message.key.participant) : undefined
-	const content = normalizeMessageContent(message.message)
+	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
 	if(content?.reactionMessage) {
 		normaliseKey(content.reactionMessage.key!)
 	}
@@ -54,8 +54,8 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 }
 
 export const isRealMessage = (message: waproto.IWebMessageInfo, meId: string) => {
-	const normalizedContent = normalizeMessageContent(message.message)
-	const hasSomeContent = !!getContentType(normalizedContent)
+	const normalizedContent: waproto.IMessage | undefined = normalizeMessageContent(message.message)
+	const hasSomeContent: boolean = !!getContentType(normalizedContent)
 	return (
 		!!normalizedContent
 		|| REAL_MSG_STUB_TYPES.has(message.messageStubType!)
@@ -112,7 +112,7 @@ export function decryptPollVote(
 		voterJid,
 	}: PollContext
 ) {
-	const sign = Buffer.concat(
+	const sign: Buffer = Buffer.concat(
 		[
 			toBinary(pollMsgId),
 			toBinary(pollCreatorJid),
@@ -122,11 +122,11 @@ export function decryptPollVote(
 		]
 	)
 
-	const key0 = hmacSign(pollEncKey, new Uint8Array(32), 'sha256')
-	const decKey = hmacSign(sign, key0, 'sha256')
-	const aad = toBinary(`${pollMsgId}\u0000${voterJid}`)
+	const key0: Buffer = hmacSign(pollEncKey, new Uint8Array(32), 'sha256')
+	const decKey: Buffer = hmacSign(sign, key0, 'sha256')
+	const aad: Buffer = toBinary(`${pollMsgId}\u0000${voterJid}`)
 
-	const decrypted = aesDecryptGCM(encPayload!, decKey, encIv!, aad)
+	const decrypted: Buffer = aesDecryptGCM(encPayload!, decKey, encIv!, aad)
 	return waproto.Message.PollVoteMessage.decode(decrypted)
 
 	function toBinary(txt: string) {
@@ -147,11 +147,11 @@ const processMessage = async(
 		getMessage
 	}: ProcessMessageContext
 ) => {
-	const meId = creds.me!.id
+	const meId: string = creds.me!.id
 	const { accountSettings } = creds
 
 	const chat: Partial<Chat> = { id: jidNormalizedUser(getChatId(message.key)) }
-	const isRealMsg = isRealMessage(message, meId)
+	const isRealMsg: boolean | undefined = isRealMessage(message, meId)
 
 	if(isRealMsg) {
 		chat.messages = [{ message }]
@@ -161,7 +161,7 @@ const processMessage = async(
 		}
 	}
 
-	const content = normalizeMessageContent(message.message)
+	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
 
 	if(
 		(isRealMsg || content?.reactionMessage?.key?.fromMe)
@@ -171,13 +171,13 @@ const processMessage = async(
 		chat.readOnly = false
 	}
 
-	const protocolMsg = content?.protocolMessage
+	const protocolMsg: waproto.Message.IProtocolMessage | null | undefined = content?.protocolMessage
 	if(protocolMsg) {
 		switch (protocolMsg.type) {
 		case waproto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION:
-			const histNotification = protocolMsg.historySyncNotification!
-			const process = shouldProcessHistoryMsg
-			const isLatest = !creds.processedHistoryMessages?.length
+				const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
+				const process: boolean = shouldProcessHistoryMsg
+				const isLatest: boolean = !creds.processedHistoryMessages?.length
 
 			logger?.trace({
 				histNotification,
@@ -196,7 +196,13 @@ const processMessage = async(
 					})
 				}
 
-				const data = await downloadAndProcessHistorySyncNotification(
+				const data: {
+					chats: Chat[];
+					contacts: Contact[];
+					messages: waproto.IWebMessageInfo[];
+					syncType: waproto.HistorySync.HistorySyncType;
+					progress: number | null | undefined;
+				} = await downloadAndProcessHistorySyncNotification(
 					histNotification,
 					options
 				)
@@ -213,14 +219,14 @@ const processMessage = async(
 
 			break
 		case waproto.Message.ProtocolMessage.Type.APP_STATE_SYNC_KEY_SHARE:
-			const keys = protocolMsg.appStateSyncKeyShare!.keys
+				const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
 			if(keys?.length) {
 				let newAppStateSyncKeyId = ''
 				await keyStore.transaction(
 					async() => {
 						const newKeys: string[] = []
 						for(const { keyData, keyId } of keys) {
-							const strKeyId = Buffer.from(keyId!.keyId!).toString('base64')
+							const strKeyId: string = Buffer.from(keyId!.keyId!).toString('base64')
 							newKeys.push(strKeyId)
 
 							await keyStore.set({ 'app-state-sync-key': { [strKeyId]: keyData! } })
@@ -259,7 +265,7 @@ const processMessage = async(
 			})
 			break
 		case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
-			const response = protocolMsg.peerDataOperationRequestResponseMessage!
+				const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
 			if(response) {
 				placeholderResendCache?.del(response.stanzaId!)
 				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
@@ -310,7 +316,7 @@ const processMessage = async(
 			key: content.reactionMessage?.key!,
 		}])
 	} else if(message.messageStubType) {
-		const jid = message.key?.remoteJid!
+		const jid: string = message.key?.remoteJid!
 		let participants: string[]
 		const emitParticipantsUpdate = (action: ParticipantAction) => (
 			ev.emit('group-participants.update', { id: jid, author: message.participant!, participants, action })
@@ -358,33 +364,33 @@ const processMessage = async(
 			emitParticipantsUpdate('promote')
 			break
 		case WAMessageStubType.GROUP_CHANGE_ANNOUNCE:
-			const announceValue = message.messageStubParameters?.[0]
+			const announceValue: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ announce: announceValue === 'true' || announceValue === 'on' })
 			break
 		case WAMessageStubType.GROUP_CHANGE_RESTRICT:
-			const restrictValue = message.messageStubParameters?.[0]
+			const restrictValue: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ restrict: restrictValue === 'true' || restrictValue === 'on' })
 			break
 		case WAMessageStubType.GROUP_CHANGE_SUBJECT:
-			const name = message.messageStubParameters?.[0]
+				const name: string | undefined = message.messageStubParameters?.[0]
 			chat.name = name
 			emitGroupUpdate({ subject: name })
 			break
 		case WAMessageStubType.GROUP_CHANGE_DESCRIPTION:
-			const description = message.messageStubParameters?.[0]
+				const description: string | undefined = message.messageStubParameters?.[0]
 			chat.description = description
 			emitGroupUpdate({ desc: description })
 			break
 		case WAMessageStubType.GROUP_CHANGE_INVITE_LINK:
-			const code = message.messageStubParameters?.[0]
+				const code: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ inviteCode: code })
 			break
 		case WAMessageStubType.GROUP_MEMBER_ADD_MODE:
-			const memberAddValue = message.messageStubParameters?.[0]
+				const memberAddValue: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ memberAddMode: memberAddValue === 'all_member_add' })
 			break
 		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE:
-			const approvalMode = message.messageStubParameters?.[0]
+				const approvalMode: string | undefined = message.messageStubParameters?.[0]
 			emitGroupUpdate({ joinApprovalMode: approvalMode === 'on' })
 			break
 		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD:
@@ -396,16 +402,16 @@ const processMessage = async(
 		}
 
 	} else if(content?.pollUpdateMessage) {
-		const creationMsgKey = content.pollUpdateMessage.pollCreationMessageKey!
-		const pollMsg = await getMessage(creationMsgKey)
+		const creationMsgKey: waproto.IMessageKey = content.pollUpdateMessage.pollCreationMessageKey!
+		const pollMsg: waproto.IMessage | undefined = await getMessage(creationMsgKey)
 		if(pollMsg) {
-			const meIdNormalised = jidNormalizedUser(meId)
-			const pollCreatorJid = getKeyAuthor(creationMsgKey, meIdNormalised)
-			const voterJid = getKeyAuthor(message.key, meIdNormalised)
-			const pollEncKey = pollMsg.messageContextInfo?.messageSecret!
+			const meIdNormalised: string = jidNormalizedUser(meId)
+			const pollCreatorJid: string = getKeyAuthor(creationMsgKey, meIdNormalised)
+			const voterJid: string = getKeyAuthor(message.key, meIdNormalised)
+			const pollEncKey: Uint8Array = pollMsg.messageContextInfo?.messageSecret!
 
 			try {
-				const voteMsg = decryptPollVote(
+				const voteMsg: waproto.Message.PollVoteMessage = decryptPollVote(
 					content.pollUpdateMessage.vote!,
 					{
 						pollEncKey,

@@ -1,16 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { BinaryNode } from '../WABinary'
-
-export interface RetryConfig {
-	maxRetries: number
-	baseDelayMs: number
-	maxDelayMs: number
-	jitter: boolean
-}
-
-export interface QueryFunction {
-	<T>(node: BinaryNode, timeoutMs?: number): Promise<T>
-}
+import { QueryFunction, RetryConfig } from './types'
 
 /**
  * Enhanced query utility with configurable retry logic and exponential backoff
@@ -42,7 +32,7 @@ export class QueryManager {
 				lastError = error as Error
 
 				if(error instanceof Boom) {
-					const statusCode = error.output?.statusCode
+					const statusCode: number = error.output?.statusCode
 					if(statusCode === 401 || statusCode === 403 || statusCode === 404) {
 						throw error
 					}
@@ -52,7 +42,7 @@ export class QueryManager {
 					break
 				}
 
-				const delay = this.calculateDelay(attempt, config)
+				const delay: number = this.calculateDelay(attempt, config)
 				await this.sleep(delay)
 			}
 		}
@@ -64,13 +54,13 @@ export class QueryManager {
 	 * Calculate exponential backoff delay with optional jitter
 	 */
 	private static calculateDelay(attempt: number, config: RetryConfig): number {
-		const exponentialDelay = Math.min(
+		const exponentialDelay: number = Math.min(
 			config.baseDelayMs * Math.pow(2, attempt),
 			config.maxDelayMs
 		)
 
 		if(config.jitter) {
-			const jitterRange = exponentialDelay * 0.25
+			const jitterRange: number = exponentialDelay * 0.25
 			return exponentialDelay + (Math.random() - 0.5) * 2 * jitterRange
 		}
 

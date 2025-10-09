@@ -1,7 +1,7 @@
 import NodeCache from '@cacheable/node-cache'
 import { randomBytes } from 'crypto'
 import { DEFAULT_CACHE_TTLS } from '../Defaults'
-import type { AuthenticationCreds, CacheStore, SignalDataSet, SignalDataTypeMap, SignalKeyStore, SignalKeyStoreWithTransaction, TransactionCapabilityOptions } from '../Types'
+import type { AuthenticationCreds, CacheStore, KeyPair, SignalDataSet, SignalDataTypeMap, SignalKeyStore, SignalKeyStoreWithTransaction, TransactionCapabilityOptions } from '../Types'
 import { Curve, signedKeyPair } from './crypto'
 import { delay, generateRegistrationId } from './generics'
 import { ILogger } from './logger'
@@ -45,7 +45,7 @@ export function makeCacheableSignalKeyStore(
 				logger.trace({ items: idsToFetch.length }, 'loading from store')
 				const fetched = await store.get(type, idsToFetch)
 				for(const id of idsToFetch) {
-					const item = fetched[id]
+					const item: SignalDataTypeMap[typeof type] | undefined = fetched[id]
 					if(item) {
 						data[id] = item
 						cache.set(getUniqueId(type, id), item)
@@ -96,8 +96,8 @@ export const addTransactionCapability = (
 	return {
 		get: async(type, ids) => {
 			if(isInTransaction()) {
-				const dict = transactionCache[type]
-				const idsRequiringFetch = dict
+				const dict: SignalDataSet[typeof type] = transactionCache[type]
+				const idsRequiringFetch: string[] = dict
 					? ids.filter(item => typeof dict[item] === 'undefined')
 					: ids
 				if(idsRequiringFetch.length) {
@@ -113,7 +113,7 @@ export const addTransactionCapability = (
 
 				return ids.reduce(
 					(dict, id) => {
-						const value = transactionCache[type]?.[id]
+						const value: SignalDataTypeMap[typeof type] | null | undefined = transactionCache[type]?.[id]
 						if(value) {
 							dict[id] = value
 						}
@@ -152,7 +152,7 @@ export const addTransactionCapability = (
 				if(transactionsInProgress === 1) {
 					if(Object.keys(mutations).length) {
 						logger.trace({}, 'committing transaction')
-						let tries = maxCommitRetries
+						let tries: number = maxCommitRetries
 						while(tries) {
 							tries -= 1
 							try {
@@ -188,7 +188,7 @@ export const addTransactionCapability = (
 }
 
 export const initAuthCreds = (): AuthenticationCreds => {
-	const identityKey = Curve.generateKeyPair()
+	const identityKey: KeyPair = Curve.generateKeyPair()
 	return {
 		noiseKey: Curve.generateKeyPair(),
 		pairingEphemeralKeyPair: Curve.generateKeyPair(),

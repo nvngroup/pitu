@@ -42,7 +42,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 			})
 		}
 
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -66,7 +66,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 	const getCollections = async(jid?: string, limit = 51) => {
 		jid = jid || authState.creds.me?.id
 		jid = jidNormalizedUser(jid)
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -110,7 +110,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 	}
 
 	const getOrderDetails = async(orderId: string, tokenBase64: string) => {
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -157,9 +157,9 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 
 	const productUpdate = async(productId: string, update: ProductUpdate) => {
 		update = await uploadingNecessaryImagesOfProduct(update, waUploadToServer)
-		const editNode = toProductNode(productId, update)
+		const editNode: BinaryNode = toProductNode(productId, update)
 
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -187,8 +187,8 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 			]
 		})
 
-		const productCatalogEditNode = getBinaryNodeChild(result, 'product_catalog_edit')
-		const productNode = getBinaryNodeChild(productCatalogEditNode, 'product')
+		const productCatalogEditNode: BinaryNode | undefined = getBinaryNodeChild(result, 'product_catalog_edit')
+		const productNode: BinaryNode | undefined = getBinaryNodeChild(productCatalogEditNode, 'product')
 
 		return parseProductNode(productNode!)
 	}
@@ -197,9 +197,9 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		// ensure isHidden is defined
 		create.isHidden = !!create.isHidden
 		create = await uploadingNecessaryImagesOfProduct(create, waUploadToServer)
-		const createNode = toProductNode(undefined, create)
+		const createNode: BinaryNode = toProductNode(undefined, create)
 
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -227,14 +227,14 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 			]
 		})
 
-		const productCatalogAddNode = getBinaryNodeChild(result, 'product_catalog_add')
-		const productNode = getBinaryNodeChild(productCatalogAddNode, 'product')
+		const productCatalogAddNode: BinaryNode | undefined = getBinaryNodeChild(result, 'product_catalog_add')
+		const productNode: BinaryNode | undefined = getBinaryNodeChild(productCatalogAddNode, 'product')
 
 		return parseProductNode(productNode!)
 	}
 
 	const productDelete = async(productIds: string[]) => {
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: S_WHATSAPP_NET,
@@ -262,7 +262,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 			]
 		})
 
-		const productCatalogDelNode = getBinaryNodeChild(result, 'product_catalog_delete')
+		const productCatalogDelNode: BinaryNode | undefined = getBinaryNodeChild(result, 'product_catalog_delete')
 		return {
 			deleted: +(productCatalogDelNode?.attrs.deleted_count || 0)
 		}

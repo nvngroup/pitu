@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { SocketConfig } from '../Types'
 import { BinaryNode, S_WHATSAPP_NET } from '../WABinary'
-import { USyncQuery } from '../WAUSync'
+import { USyncQuery, USyncUser } from '../WAUSync'
 import { makeSocket } from './socket'
 
 export const makeUSyncSocket = (config: SocketConfig) => {
@@ -19,9 +19,9 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 
 		// TODO: validate users, throw WARNING on no valid users
 		// variable below has only validated users
-		const validUsers = usyncQuery.users
+		const validUsers: USyncUser[] = usyncQuery.users
 
-		const userNodes = validUsers.map((user) => {
+		const userNodes: BinaryNode[] = validUsers.map((user) => {
 			return {
 				tag: 'user',
 				attrs: {
@@ -69,7 +69,7 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 			],
 		}
 
-		const result = await query(iq)
+		const result: BinaryNode = await query(iq)
 
 		return usyncQuery.parseUSyncQueryResult(result)
 	}

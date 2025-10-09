@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
 import { LIDMappingStore } from '../Signal/lid-mapping'
-import { CacheStore, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
+import { CacheStore, GroupMetadata, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,
 	aesEncryptGCM,
@@ -22,14 +22,12 @@ import {
 	getHistoryMsg,
 	getNextPreKeys,
 	getStatusFromReceiptType, hkdf,
-	MISSING_KEYS_ERROR_TEXT,
-	NACK_REASONS,
-	NO_MESSAGE_FOUND_ERROR_TEXT,
 	unixTimestampSeconds,
 	xmppPreKey,
 	xmppSignedPreKey
 } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
+import { MISSING_KEYS_ERROR_TEXT, NACK_REASONS, NO_MESSAGE_FOUND_ERROR_TEXT } from '../Utils/types'
 import {
 	areJidsSameUser,
 	BinaryNode,
@@ -121,7 +119,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	}
 
 	const offerCall = async(toJid: string, isVideo = false) => {
-		const callId = randomBytes(16).toString('hex').toUpperCase().substring(0, 64)
+		const callId: string = randomBytes(16).toString('hex').toUpperCase().substring(0, 64)
 		const offerContent: BinaryNode[] = []
 		offerContent.push({ tag: 'audio', attrs: { enc: 'opus', rate: '16000' }, content: undefined })
 		offerContent.push({ tag: 'audio', attrs: { enc: 'opus', rate: '8000' }, content: undefined })
@@ -304,11 +302,11 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	}
 
 	const handleEncryptNotification = async(node: BinaryNode) => {
-		const from = node.attrs.from
+		const from: string = node.attrs.from
 		if(from === S_WHATSAPP_NET) {
 			const countChild: BinaryNode | undefined = getBinaryNodeChild(node, 'count')
 			const count: number = +countChild!.attrs.value
-			const shouldUploadMorePreKeys = count < MIN_PREKEY_COUNT
+			const shouldUploadMorePreKeys: boolean = count < MIN_PREKEY_COUNT
 
 			logger.debug({ count, shouldUploadMorePreKeys }, 'recv pre-key count')
 			if(shouldUploadMorePreKeys) {
@@ -329,10 +327,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		child: BinaryNode,
 		msg: Partial<waproto.IWebMessageInfo>
 	) => {
-		const participantJid = getBinaryNodeChild(child, 'participant')?.attrs?.jid || participant
+		const participantJid: string = getBinaryNodeChild(child, 'participant')?.attrs?.jid || participant
 		switch (child?.tag) {
 		case 'create':
-			const metadata = extractGroupMetadata(child)
+			const metadata: GroupMetadata = extractGroupMetadata(child)
 
 			msg.messageStubType = WAMessageStubType.GROUP_CREATE
 			msg.messageStubParameters = [metadata.subject]
@@ -635,9 +633,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			return
 		}
 
-		const msgs = await Promise.all(ids.map(async(id) => {
+		const msgs: (waproto.IMessage | undefined)[] = await Promise.all(ids.map(async(id) => {
 			try {
-				const msg = await getMessage({ ...key, id })
+				const msg: waproto.IMessage | undefined = await getMessage({ ...key, id })
 				if(!msg) {
 					logger.warn({ key, id }, 'getMessage returned null/undefined')
 				}
@@ -757,7 +755,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 						if(attrs.type === 'retry') {
 							key.participant = key.participant || attrs.from
-							const retryNode = getBinaryNodeChild(node, 'retry')
+							const retryNode: BinaryNode | undefined = getBinaryNodeChild(node, 'retry')
 							if(willSendMessageAgain(ids[0], key.participant)) {
 								if(key.fromMe) {
 									try {
@@ -861,7 +859,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		if(msg.message?.protocolMessage?.lidMigrationMappingSyncMessage?.encodedMappingPayload) {
 			try {
-				const payload = msg.message.protocolMessage.lidMigrationMappingSyncMessage.encodedMappingPayload
+				const payload: Uint8Array = msg.message.protocolMessage.lidMigrationMappingSyncMessage.encodedMappingPayload
 				const decoded: waproto.LIDMigrationMappingSyncPayload = waproto.LIDMigrationMappingSyncPayload.decode(payload)
 
 				logger.debug(
@@ -1105,20 +1103,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const handleBadAck = async({ attrs }: BinaryNode) => {
 		const key: WAMessageKey = { remoteJid: attrs.from, fromMe: true, id: attrs.id }
-
-		// WARNING: REFRAIN FROM ENABLING THIS FOR NOW. IT WILL CAUSE A LOOP
-		// // current hypothesis is that if pash is sent in the ack
-		// // it means -- the message hasn't reached all devices yet
-		// // we'll retry sending the message here
-		// if(attrs.phash) {
-		// 	logger.trace({ attrs }, 'received phash in ack, resending message...')
-		// 	const msg = await getMessage(key)
-		// 	if(msg) {
-		// 		await relayMessage(key.remoteJid!, msg, { messageId: key.id!, useUserDevicesCache: false })
-		// 	} else {
-		// 		logger.warn({ attrs }, 'could not send message again, as it was not found')
-		// 	}
-		// }
 
 		if(attrs.error) {
 			logger.warn({ attrs }, 'received error in ack')

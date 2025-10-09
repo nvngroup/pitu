@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'crypto'
+import { CipherGCM, Cipheriv, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, Decipheriv, randomBytes } from 'crypto'
 import * as libsignal from 'libsignal'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { KeyPair } from '../Types'
@@ -37,22 +37,22 @@ export const Curve = {
 }
 
 export const signedKeyPair = (identityKeyPair: KeyPair, keyId: number) => {
-	const preKey = Curve.generateKeyPair()
-	const pubKey = generateSignalPubKey(preKey.public)
+	const preKey: KeyPair = Curve.generateKeyPair()
+	const pubKey: Uint8Array = generateSignalPubKey(preKey.public)
 
 	const signature = Curve.sign(identityKeyPair.private, pubKey)
 
 	return { keyPair: preKey, signature, keyId }
 }
 
-const GCM_TAG_LENGTH = 128 >> 3
+const GCM_TAG_LENGTH: number = 128 >> 3
 
 /**
  * encrypt AES 256 GCM;
  * where the tag tag is suffixed to the ciphertext
  * */
 export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
-	const cipher = createCipheriv('aes-256-gcm', key, iv)
+	const cipher: CipherGCM = createCipheriv('aes-256-gcm', key, iv)
 	cipher.setAAD(additionalData)
 	return Buffer.concat([cipher.update(plaintext), cipher.final(), cipher.getAuthTag()])
 }
@@ -63,9 +63,9 @@ export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8A
  * */
 export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
 	try {
-		const decipher = createDecipheriv('aes-256-gcm', key, iv)
-		const enc = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
-		const tag = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
+		const decipher: DecipherGCM = createDecipheriv('aes-256-gcm', key, iv)
+		const enc: Uint8Array = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
+		const tag: Uint8Array = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
 
 		decipher.setAAD(additionalData)
 		decipher.setAuthTag(tag)
@@ -84,12 +84,12 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 }
 
 export function aesEncryptCTR(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const cipher = createCipheriv('aes-256-ctr', key, iv)
+	const cipher: Cipheriv = createCipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([cipher.update(plaintext), cipher.final()])
 }
 
 export function aesDecryptCTR(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const decipher = createDecipheriv('aes-256-ctr', key, iv)
+	const decipher: Decipheriv = createDecipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 }
 
@@ -98,18 +98,18 @@ export function aesDecrypt(buffer: Buffer, key: Buffer) {
 }
 
 export function aesDecryptWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes = createDecipheriv('aes-256-cbc', key, IV)
+	const aes: Decipheriv = createDecipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([aes.update(buffer), aes.final()])
 }
 
 export function aesEncrypt(buffer: Buffer | Uint8Array, key: Buffer) {
-	const IV = randomBytes(16)
-	const aes = createCipheriv('aes-256-cbc', key, IV)
+	const IV: Buffer = randomBytes(16)
+	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([IV, aes.update(buffer), aes.final()])
 }
 
 export function aesEncrypWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes = createCipheriv('aes-256-cbc', key, IV)
+	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([aes.update(buffer), aes.final()])
 }
 
@@ -130,7 +130,7 @@ export async function hkdf(
 	expandedLength: number,
 	info: { salt?: Buffer, info?: string }
 ): Promise<Buffer> {
-	const inputKeyMaterial = buffer instanceof Uint8Array
+	const inputKeyMaterial: Uint8Array | Buffer = buffer instanceof Uint8Array
 		? buffer
 		: new Uint8Array(buffer)
 
@@ -142,7 +142,7 @@ export async function hkdf(
 	const keyBuffer = new ArrayBuffer(inputKeyMaterial.byteLength)
 	new Uint8Array(keyBuffer).set(inputKeyMaterial)
 
-	const importedKey = await crypto.subtle.importKey(
+	const importedKey: CryptoKey = await crypto.subtle.importKey(
 		'raw',
 		keyBuffer,
 		{ name: 'HKDF' },
@@ -150,7 +150,7 @@ export async function hkdf(
 		['deriveBits']
 	)
 
-	const derivedBits = await crypto.subtle.deriveBits(
+	const derivedBits: ArrayBuffer = await crypto.subtle.deriveBits(
 		{
 			name: 'HKDF',
 			hash: 'SHA-256',
@@ -179,7 +179,7 @@ export async function derivePairingCodeKey(pairingCode: string, salt: Buffer): P
 		['deriveBits']
 	)
 
-	const derivedBits = await crypto.subtle.deriveBits(
+	const derivedBits: ArrayBuffer = await crypto.subtle.deriveBits(
 		{
 			name: 'PBKDF2',
 			salt: saltArrayBuffer,

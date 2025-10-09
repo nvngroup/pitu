@@ -30,8 +30,8 @@ export class GroupSessionBuilder {
 
 		if(senderKeyRecord.isEmpty()) {
 			const keyId: number = keyhelper.generateSenderKeyId()
-			const senderKey = keyhelper.generateSenderKey()
-			const signingKey = keyhelper.generateSenderSigningKey()
+			const senderKey: Buffer = keyhelper.generateSenderKey()
+			const signingKey: keyhelper.SigningKeyPair = keyhelper.generateSenderSigningKey()
 
 			senderKeyRecord.setSenderKeyState(keyId, 0, senderKey, signingKey)
 			await this.senderKeyStore.storeSenderKey(senderKeyName, senderKeyRecord)

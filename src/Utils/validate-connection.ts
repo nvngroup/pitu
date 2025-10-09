@@ -2,7 +2,7 @@ import { Boom } from '@hapi/boom'
 import { createHash } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
-import type { AuthenticationCreds, SignalCreds, SocketConfig } from '../Types'
+import type { AuthenticationCreds, SignalCreds, SignalIdentity, SocketConfig } from '../Types'
 import { BinaryNode, getBinaryNodeChild, jidDecode, S_WHATSAPP_NET } from '../WABinary'
 import { Curve, hmacSign } from './crypto'
 import { encodeBigEndian } from './generics'
@@ -68,7 +68,7 @@ export const generateLoginNode = (userJid: string, config: SocketConfig): waprot
 }
 
 const getPlatformType = (platform: string): waproto.DeviceProps.PlatformType => {
-	const platformType = platform.toUpperCase()
+	const platformType: string = platform.toUpperCase()
 	return waproto.DeviceProps.PlatformType[platformType] || waproto.DeviceProps.PlatformType.DESKTOP
 }
 
@@ -76,7 +76,7 @@ export const generateRegistrationNode = (
 	{ registrationId, signedPreKey, signedIdentityKey }: SignalCreds,
 	config: SocketConfig
 ) => {
-	const appVersionBuf = createHash('md5')
+	const appVersionBuf: Buffer = createHash('md5')
 		.update(config.version.join('.'))
 		.digest()
 
@@ -86,7 +86,7 @@ export const generateRegistrationNode = (
 		requireFullSync: config.syncFullHistory,
 	}
 
-	const companionProto = waproto.DeviceProps.encode(companion).finish()
+	const companionProto: Uint8Array = waproto.DeviceProps.encode(companion).finish()
 
 	const registerPayload: waproto.IClientPayload = {
 		...getClientPayload(config),
@@ -111,46 +111,45 @@ export const configureSuccessfulPairing = (
 	stanza: BinaryNode,
 	{ advSecretKey, signedIdentityKey, signalIdentities }: Pick<AuthenticationCreds, 'advSecretKey' | 'signedIdentityKey' | 'signalIdentities'>
 ) => {
-	const msgId = stanza.attrs.id
+	const msgId: string = stanza.attrs.id
 
-	const pairSuccessNode = getBinaryNodeChild(stanza, 'pair-success')
-
-	const deviceIdentityNode = getBinaryNodeChild(pairSuccessNode, 'device-identity')
-	const platformNode = getBinaryNodeChild(pairSuccessNode, 'platform')
-	const deviceNode = getBinaryNodeChild(pairSuccessNode, 'device')
-	const businessNode = getBinaryNodeChild(pairSuccessNode, 'biz')
+	const pairSuccessNode: BinaryNode | undefined = getBinaryNodeChild(stanza, 'pair-success')
+	const deviceIdentityNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'device-identity')
+	const platformNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'platform')
+	const deviceNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'device')
+	const businessNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'biz')
 
 	if(!deviceIdentityNode || !deviceNode) {
 		throw new Boom('Missing device-identity or device in pair success node', { data: stanza })
 	}
 
-	const bizName = businessNode?.attrs.name
-	const jid = deviceNode.attrs.jid
+	const bizName: string | undefined = businessNode?.attrs.name
+	const jid: string = deviceNode.attrs.jid
 
 	const { details, hmac, accountType } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
-	const isHostedAccount = accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED
+	const isHostedAccount: boolean = accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED
 
-	const hmacPrefix = isHostedAccount ? Buffer.from([6, 5]) : Buffer.alloc(0)
-	const advSign = hmacSign(Buffer.concat([hmacPrefix, details!]), Buffer.from(advSecretKey, 'base64'))
+	const hmacPrefix: Buffer = isHostedAccount ? Buffer.from([6, 5]) : Buffer.alloc(0)
+	const advSign: Buffer = hmacSign(Buffer.concat([hmacPrefix, details!]), Buffer.from(advSecretKey, 'base64'))
 	if(Buffer.compare(hmac!, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
 
-	const account = waproto.ADVSignedDeviceIdentity.decode(details!)
+	const account: waproto.ADVSignedDeviceIdentity = waproto.ADVSignedDeviceIdentity.decode(details!)
 	const { accountSignatureKey, accountSignature, details: deviceDetails } = account
-	const accountMsg = Buffer.concat([ Buffer.from([6, 0]), deviceDetails!, signedIdentityKey.public ])
+	const accountMsg: Buffer = Buffer.concat([ Buffer.from([6, 0]), deviceDetails!, signedIdentityKey.public ])
 	if(!Curve.verify(accountSignatureKey!, accountMsg, accountSignature!)) {
 		throw new Boom('Failed to verify account signature')
 	}
 
-	const devicePrefix = isHostedAccount ? Buffer.from([6, 6]) : Buffer.from([6, 1])
-	const deviceMsg = Buffer.concat([devicePrefix, deviceDetails!, signedIdentityKey.public, accountSignatureKey!])
+	const devicePrefix: Buffer = isHostedAccount ? Buffer.from([6, 6]) : Buffer.from([6, 1])
+	const deviceMsg: Buffer = Buffer.concat([devicePrefix, deviceDetails!, signedIdentityKey.public, accountSignatureKey!])
 	account.deviceSignature = Curve.sign(signedIdentityKey.private, deviceMsg)
 
-	const identity = createSignalIdentity(jid, accountSignatureKey!)
-	const accountEnc = encodeSignedDeviceIdentity(account, false)
+	const identity: SignalIdentity = createSignalIdentity(jid, accountSignatureKey!)
+	const accountEnc: Uint8Array = encodeSignedDeviceIdentity(account, false)
 
-	const deviceIdentity = waproto.ADVDeviceIdentity.decode(account.details!)
+	const deviceIdentity: waproto.ADVDeviceIdentity = waproto.ADVDeviceIdentity.decode(account.details!)
 
 	const reply: BinaryNode = {
 		tag: 'iq',

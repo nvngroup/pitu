@@ -1,26 +1,8 @@
+import { LIDMappingStore } from '../Signal/lid-mapping'
 import type { SignalAuthState, SignalRepository } from '../Types'
 import { jidNormalizedUser } from '../WABinary'
 import logger from './logger'
-
-export interface SessionDiagnosticResult {
-	jid: string
-	hasSession: boolean
-	hasPreKeys: boolean
-	hasIdentityKey: boolean
-	hasSenderKey?: boolean
-	sessionAge?: number
-	lastError?: string
-	recommendation: string
-	canRecover: boolean
-}
-
-export interface SessionHealth {
-	healthy: number
-	corrupted: number
-	missing: number
-	total: number
-	score: number
-}
+import { SessionDiagnosticResult, SessionHealth } from './types'
 
 /**
  * Utility class for diagnosing and recovering corrupted Signal sessions
@@ -45,24 +27,21 @@ export class SessionDiagnostics {
 		authState: SignalAuthState,
 		repository: SignalRepository
 	): Promise<SessionDiagnosticResult> {
-		const normalizedJid = jidNormalizedUser(jid)
+		const normalizedJid: string = jidNormalizedUser(jid)
 		const addr = repository.jidToSignalProtocolAddress(normalizedJid)
 
 		try {
-			// Check session existence
 			const { session } = await authState.keys.get('session', [addr.toString()])
-			const hasSession = !!session?.[addr.toString()]
+			const hasSession: boolean = !!session?.[addr.toString()]
 
-			// Check pre-keys
 			const { 'pre-key': preKeys } = await authState.keys.get('pre-key', [])
-			const hasPreKeys = preKeys && Object.keys(preKeys).length > 0
+			const hasPreKeys: boolean = preKeys && Object.keys(preKeys).length > 0
 
-			// Check for recent errors
-			const errorInfo = this.sessionErrors.get(normalizedJid)
-			const hasRecentErrors = errorInfo && (Date.now() - errorInfo.lastError.getTime()) < 300000 // 5 minutes
+			const errorInfo = this.sessionErrors.get(normalizedJid)!
+			const hasRecentErrors: boolean | undefined = errorInfo && (Date.now() - errorInfo.lastError.getTime()) < 300000 // 5 minutes
 
-			let recommendation = 'Session appears healthy'
-			let canRecover = true
+			let recommendation: string = 'Session appears healthy'
+			let canRecover: boolean = true
 
 			if(!hasSession) {
 				recommendation = 'Session missing - requires key exchange'
@@ -88,7 +67,7 @@ export class SessionDiagnostics {
 				jid: normalizedJid,
 				hasSession,
 				hasPreKeys,
-				hasIdentityKey: hasSession, // Assume identity key exists if session exists
+				hasIdentityKey: hasSession,
 				lastError: errorInfo?.errorTypes?.[errorInfo.errorTypes.length - 1],
 				recommendation,
 				canRecover
@@ -127,10 +106,10 @@ export class SessionDiagnostics {
 				}
 			}
 
-			const sessionKeys = Object.keys(allSessions)
-			let healthy = 0
-			let corrupted = 0
-			let missing = 0
+			const sessionKeys: string[] = Object.keys(allSessions)
+			let healthy: number = 0
+			let corrupted: number = 0
+			let missing: number = 0
 
 			for(const sessionKey of sessionKeys) {
 				const sessionData = allSessions[sessionKey]
@@ -141,7 +120,7 @@ export class SessionDiagnostics {
 				}
 
 				// Extract JID from session key
-				const parts = sessionKey.split('.')
+				const parts: string[] = sessionKey.split('.')
 				if(parts.length >= 2) {
 					const jid = `${parts[0]}@s.whatsapp.net`
 					const errorInfo = this.sessionErrors.get(jid)
@@ -156,8 +135,8 @@ export class SessionDiagnostics {
 				}
 			}
 
-			const total = healthy + corrupted + missing
-			const score = total > 0 ? Math.round((healthy / total) * 100) : 100
+			const total: number = healthy + corrupted + missing
+			const score: number = total > 0 ? Math.round((healthy / total) * 100) : 100
 
 			logger.info({
 				healthy,
@@ -185,7 +164,7 @@ export class SessionDiagnostics {
 	 * Records a session error for tracking
 	 */
 	recordSessionError(jid: string, errorType: string): void {
-		const normalizedJid = jidNormalizedUser(jid)
+		const normalizedJid: string = jidNormalizedUser(jid)
 		const existing = this.sessionErrors.get(normalizedJid) || {
 			count: 0,
 			lastError: new Date(),
@@ -223,31 +202,26 @@ export class SessionDiagnostics {
 			clearLIDMapping?: boolean
 		} = {}
 	): Promise<boolean> {
-		const normalizedJid = jidNormalizedUser(jid)
+		const normalizedJid: string = jidNormalizedUser(jid)
 
 		try {
 			logger.warn({ jid: normalizedJid, options }, 'Forcing complete session reset')
 
-			// Clear session data
 			await this.clearSessionData(normalizedJid, authState, repository)
 
-			// Clear pre-keys if requested
 			if(options.clearPreKeys) {
 				await authState.keys.set({ 'pre-key': {} })
 				logger.debug({ jid: normalizedJid }, 'Pre-keys cleared during forced reset')
 			}
 
-			// Clear sender keys for group chats if requested
 			if(options.clearSenderKeys && normalizedJid.includes('@g.us')) {
 				await this.clearGroupSenderKeys(normalizedJid, authState)
 			}
 
-			// Clear LID mapping if requested
 			if(options.clearLIDMapping && normalizedJid.includes('@s.whatsapp.net')) {
 				await this.clearLIDMapping(normalizedJid, repository)
 			}
 
-			// Clear error history for this JID
 			this.sessionErrors.delete(normalizedJid)
 
 			logger.info({ jid: normalizedJid }, 'Forced session reset completed successfully')
@@ -266,7 +240,7 @@ export class SessionDiagnostics {
 		authState: SignalAuthState,
 		repository: SignalRepository
 	): Promise<void> {
-		const addr = repository.jidToSignalProtocolAddress(jid)
+		const addr: string = repository.jidToSignalProtocolAddress(jid)
 
 		await authState.keys.set({
 			session: { [addr.toString()]: null }
@@ -304,8 +278,8 @@ export class SessionDiagnostics {
 	 */
 	private async clearLIDMapping(jid: string, repository: SignalRepository): Promise<void> {
 		try {
-			const lidMapping = repository.getLIDMappingStore()
-			const lidForPN = await lidMapping.getLIDForPN(jid)
+			const lidMapping: LIDMappingStore = repository.getLIDMappingStore()
+			const lidForPN: string | null = await lidMapping.getLIDForPN(jid)
 
 			if(lidForPN) {
 				logger.debug({ jid, lidForPN }, 'LID mapping found but clearing not implemented in current SignalRepository interface')
@@ -317,7 +291,7 @@ export class SessionDiagnostics {
 	 * Gets error statistics for a specific JID
 	 */
 	getErrorStats(jid: string) {
-		const normalizedJid = jidNormalizedUser(jid)
+		const normalizedJid: string = jidNormalizedUser(jid)
 		const errorInfo = this.sessionErrors.get(normalizedJid)
 
 		if(!errorInfo) {
@@ -341,8 +315,8 @@ export class SessionDiagnostics {
 	 * Cleans up old error data
 	 */
 	cleanup(): void {
-		const cutoff = Date.now() - (24 * 60 * 60 * 1000) // 24 hours
-		let cleaned = 0
+		const cutoff: number = Date.now() - (24 * 60 * 60 * 1000) // 24 hours
+		let cleaned: number = 0
 
 		for(const [jid, errorInfo] of this.sessionErrors.entries()) {
 			if(errorInfo.lastError.getTime() < cutoff) {
