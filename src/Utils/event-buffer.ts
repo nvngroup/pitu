@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { waproto } from '../../WAProto'
-import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, GroupMetadata, MessageUpsertType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageUpdate } from '../Types'
+import { BaileysEvent, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, GroupMetadata, MessageUpsertType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageUpdate } from '../Types'
 import { trimUndefined } from './generics'
 import { ILogger } from './logger'
 import { updateMessageWithReaction, updateMessageWithReceipt } from './messages'

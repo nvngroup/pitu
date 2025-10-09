@@ -18,7 +18,6 @@ import {
 	MessageType,
 	MessageUserReceipt,
 	MessageWithContextInfo,
-	WAMediaUpload,
 	WAMessage,
 	WAMessageContent,
 	WAMessageStatus,

@@ -7,9 +7,9 @@ interface QueueJob<T> {
   reject: (reason?: unknown) => void
 }
 
-const _queueAsyncBuckets = new Map<string | number, Array<QueueJob<any>>>()
+const queueAsyncBuckets = new Map<string | number, Array<QueueJob<unknown>>>()
 
-async function _asyncQueueExecutor(queue: Array<QueueJob<any>>, cleanup: () => void): Promise<void> {
+async function _asyncQueueExecutor(queue: Array<QueueJob<unknown>>, cleanup: () => void): Promise<void> {
 	let offset = 0
 	while(offset < queue.length) {
 		const limit: number = Math.min(queue.length, offset + GROUP_CONSTANTS.QUEUE_GC_LIMIT)
@@ -39,22 +39,22 @@ export default function queueJob<T>(bucket: string | number, awaitable: () => Pr
 	}
 
 	let inactive = false
-	if(!_queueAsyncBuckets.has(bucket)) {
-		_queueAsyncBuckets.set(bucket, [])
+	if(!queueAsyncBuckets.has(bucket)) {
+		queueAsyncBuckets.set(bucket, [])
 		inactive = true
 	}
 
-	const queue = _queueAsyncBuckets.get(bucket)!
+	const queue = queueAsyncBuckets.get(bucket)!
 	const job = new Promise<T>((resolve, reject) => {
 		queue.push({
 			awaitable,
-			resolve: resolve as (value: any) => void,
+			resolve: resolve as (value: unknown) => void,
 			reject
 		})
 	})
 
 	if(inactive) {
-		_asyncQueueExecutor(queue, () => _queueAsyncBuckets.delete(bucket))
+		_asyncQueueExecutor(queue, () => queueAsyncBuckets.delete(bucket))
 	}
 
 	return job
