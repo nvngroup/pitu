@@ -1,7 +1,7 @@
 syntax = "proto3";
 package waproto;
 
-/// WhatsApp Version: 2.3000.1028024109
+/// WhatsApp Version: 2.3000.1028235684
 
 message ADVDeviceIdentity {
     optional uint32 rawId = 1;
@@ -360,6 +360,7 @@ message BotCapabilityMetadata {
         RICH_RESPONSE_UR_INLINE_REELS_ENABLED = 43;
         RICH_RESPONSE_UR_MEDIA_GRID_ENABLED = 44;
         RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER = 45;
+        RICH_RESPONSE_IN_APP_SURVEY = 46;
     }
 }
 
@@ -1681,14 +1682,16 @@ message GroupHistoryBundleInfo {
     optional Message.MessageHistoryBundle deprecatedMessageHistoryBundle = 1;
     optional ProcessState processState = 2;
     enum ProcessState {
-        NOT_DOWNLOADED = 0;
-        DOWNLOADED = 1;
-        DOWNLOAD_FAILED = 2;
+        NOT_INJECTED = 0;
+        INJECTED = 1;
+        INJECTED_PARTIAL = 2;
+        INJECTION_FAILED = 3;
     }
 }
 
 message GroupHistoryIndividualMessageInfo {
     optional MessageKey bundleMessageKey = 1;
+    optional bool editedAfterReceivedAsHistory = 2;
 }
 
 message GroupMention {
@@ -2062,12 +2065,12 @@ message Message {
     optional StatusQuestionAnswerMessage statusQuestionAnswerMessage = 105;
     optional FutureProofMessage questionReplyMessage = 106;
     optional QuestionResponseMessage questionResponseMessage = 107;
-    optional NewsletterFollowerInviteMessage newsletterFollowerInviteMessage = 108;
     optional StatusQuotedMessage statusQuotedMessage = 109;
     optional StatusStickerInteractionMessage statusStickerInteractionMessage = 110;
     optional PollCreationMessage pollCreationMessageV5 = 111;
     optional PollResultSnapshotMessage pollResultSnapshotMessageV2 = 112;
     optional NewsletterFollowerInviteMessage newsletterFollowerInviteMessageV2 = 113;
+    optional RequestContactInfoMessage requestContactInfoMessage = 114;
     message AlbumMessage {
         optional uint32 expectedImageCount = 2;
         optional uint32 expectedVideoCount = 3;
@@ -2393,6 +2396,7 @@ message Message {
         repeated Message.VideoEndCard endCardTiles = 36;
         optional string videoContentUrl = 37;
         optional EmbeddedMusic musicMetadata = 38;
+        optional Message.PaymentExtendedMetadata paymentExtendedMetadata = 39;
         enum FontType {
             SYSTEM = 0;
             SYSTEM_TEXT = 1;
@@ -2705,6 +2709,9 @@ message Message {
         optional uint32 linkMediaDuration = 4;
         optional SocialMediaPostType socialMediaPostType = 5;
         optional bool linkInlineVideoMuted = 6;
+        optional string videoContentUrl = 7;
+        optional EmbeddedMusic musicMetadata = 8;
+        optional string videoContentCaption = 9;
         enum SocialMediaPostType {
             NONE = 0;
             REEL = 1;
@@ -2889,6 +2896,12 @@ message Message {
         }
     }
     
+    message PaymentExtendedMetadata {
+        optional uint32 type = 1;
+        optional string platform = 2;
+        optional string messageParamsJson = 3;
+    }
+    
     message PaymentInviteMessage {
         optional ServiceType serviceType = 1;
         optional int64 expiryTimestamp = 2;
@@ -2938,9 +2951,9 @@ message Message {
         }
         
         message GalaxyFlowAction {
-            required GalaxyFlowActionType type = 1;
-            required string flowId = 2;
-            required string stanzaId = 3;
+            optional GalaxyFlowActionType type = 1;
+            optional string flowId = 2;
+            optional string stanzaId = 3;
             enum GalaxyFlowActionType {
                 NOTIFY_LAUNCH = 1;
             }
@@ -3264,6 +3277,12 @@ message Message {
         optional string text = 2;
         optional string groupingKey = 3;
         optional int64 senderTimestampMs = 4;
+    }
+    
+    message RequestContactInfoMessage {
+        optional string text = 1;
+        optional string ctaButtonText = 2;
+        optional ContextInfo contextInfo = 3;
     }
     
     message RequestPaymentMessage {

@@ -4325,7 +4325,8 @@ export namespace waproto {
             RICH_RESPONSE_UNIFIED_DOMAIN_CITATIONS = 42,
             RICH_RESPONSE_UR_INLINE_REELS_ENABLED = 43,
             RICH_RESPONSE_UR_MEDIA_GRID_ENABLED = 44,
-            RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER = 45
+            RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER = 45,
+            RICH_RESPONSE_IN_APP_SURVEY = 46
         }
     }
 
@@ -17485,9 +17486,10 @@ export namespace waproto {
 
         /** ProcessState enum. */
         enum ProcessState {
-            NOT_DOWNLOADED = 0,
-            DOWNLOADED = 1,
-            DOWNLOAD_FAILED = 2
+            NOT_INJECTED = 0,
+            INJECTED = 1,
+            INJECTED_PARTIAL = 2,
+            INJECTION_FAILED = 3
         }
     }
 
@@ -17496,6 +17498,9 @@ export namespace waproto {
 
         /** GroupHistoryIndividualMessageInfo bundleMessageKey */
         bundleMessageKey?: (waproto.IMessageKey|null);
+
+        /** GroupHistoryIndividualMessageInfo editedAfterReceivedAsHistory */
+        editedAfterReceivedAsHistory?: (boolean|null);
     }
 
     /** Represents a GroupHistoryIndividualMessageInfo. */
@@ -17509,6 +17514,9 @@ export namespace waproto {
 
         /** GroupHistoryIndividualMessageInfo bundleMessageKey. */
         public bundleMessageKey?: (waproto.IMessageKey|null);
+
+        /** GroupHistoryIndividualMessageInfo editedAfterReceivedAsHistory. */
+        public editedAfterReceivedAsHistory?: (boolean|null);
 
         /**
          * Creates a new GroupHistoryIndividualMessageInfo instance using the specified properties.
@@ -21727,9 +21735,6 @@ export namespace waproto {
         /** Message questionResponseMessage */
         questionResponseMessage?: (waproto.Message.IQuestionResponseMessage|null);
 
-        /** Message newsletterFollowerInviteMessage */
-        newsletterFollowerInviteMessage?: (waproto.Message.INewsletterFollowerInviteMessage|null);
-
         /** Message statusQuotedMessage */
         statusQuotedMessage?: (waproto.Message.IStatusQuotedMessage|null);
 
@@ -21744,6 +21749,9 @@ export namespace waproto {
 
         /** Message newsletterFollowerInviteMessageV2 */
         newsletterFollowerInviteMessageV2?: (waproto.Message.INewsletterFollowerInviteMessage|null);
+
+        /** Message requestContactInfoMessage */
+        requestContactInfoMessage?: (waproto.Message.IRequestContactInfoMessage|null);
     }
 
     /** Represents a Message. */
@@ -22025,9 +22033,6 @@ export namespace waproto {
         /** Message questionResponseMessage. */
         public questionResponseMessage?: (waproto.Message.IQuestionResponseMessage|null);
 
-        /** Message newsletterFollowerInviteMessage. */
-        public newsletterFollowerInviteMessage?: (waproto.Message.INewsletterFollowerInviteMessage|null);
-
         /** Message statusQuotedMessage. */
         public statusQuotedMessage?: (waproto.Message.IStatusQuotedMessage|null);
 
@@ -22042,6 +22047,9 @@ export namespace waproto {
 
         /** Message newsletterFollowerInviteMessageV2. */
         public newsletterFollowerInviteMessageV2?: (waproto.Message.INewsletterFollowerInviteMessage|null);
+
+        /** Message requestContactInfoMessage. */
+        public requestContactInfoMessage?: (waproto.Message.IRequestContactInfoMessage|null);
 
         /**
          * Creates a new Message instance using the specified properties.
@@ -26159,6 +26167,9 @@ export namespace waproto {
 
             /** ExtendedTextMessage musicMetadata */
             musicMetadata?: (waproto.IEmbeddedMusic|null);
+
+            /** ExtendedTextMessage paymentExtendedMetadata */
+            paymentExtendedMetadata?: (waproto.Message.IPaymentExtendedMetadata|null);
         }
 
         /** Represents an ExtendedTextMessage. */
@@ -26262,6 +26273,9 @@ export namespace waproto {
 
             /** ExtendedTextMessage musicMetadata. */
             public musicMetadata?: (waproto.IEmbeddedMusic|null);
+
+            /** ExtendedTextMessage paymentExtendedMetadata. */
+            public paymentExtendedMetadata?: (waproto.Message.IPaymentExtendedMetadata|null);
 
             /**
              * Creates a new ExtendedTextMessage instance using the specified properties.
@@ -29709,6 +29723,15 @@ export namespace waproto {
 
             /** LinkPreviewMetadata linkInlineVideoMuted */
             linkInlineVideoMuted?: (boolean|null);
+
+            /** LinkPreviewMetadata videoContentUrl */
+            videoContentUrl?: (string|null);
+
+            /** LinkPreviewMetadata musicMetadata */
+            musicMetadata?: (waproto.IEmbeddedMusic|null);
+
+            /** LinkPreviewMetadata videoContentCaption */
+            videoContentCaption?: (string|null);
         }
 
         /** Represents a LinkPreviewMetadata. */
@@ -29737,6 +29760,15 @@ export namespace waproto {
 
             /** LinkPreviewMetadata linkInlineVideoMuted. */
             public linkInlineVideoMuted?: (boolean|null);
+
+            /** LinkPreviewMetadata videoContentUrl. */
+            public videoContentUrl?: (string|null);
+
+            /** LinkPreviewMetadata musicMetadata. */
+            public musicMetadata?: (waproto.IEmbeddedMusic|null);
+
+            /** LinkPreviewMetadata videoContentCaption. */
+            public videoContentCaption?: (string|null);
 
             /**
              * Creates a new LinkPreviewMetadata instance using the specified properties.
@@ -32086,6 +32118,115 @@ export namespace waproto {
             }
         }
 
+        /** Properties of a PaymentExtendedMetadata. */
+        interface IPaymentExtendedMetadata {
+
+            /** PaymentExtendedMetadata type */
+            type?: (number|null);
+
+            /** PaymentExtendedMetadata platform */
+            platform?: (string|null);
+
+            /** PaymentExtendedMetadata messageParamsJson */
+            messageParamsJson?: (string|null);
+        }
+
+        /** Represents a PaymentExtendedMetadata. */
+        class PaymentExtendedMetadata implements IPaymentExtendedMetadata {
+
+            /**
+             * Constructs a new PaymentExtendedMetadata.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.Message.IPaymentExtendedMetadata);
+
+            /** PaymentExtendedMetadata type. */
+            public type?: (number|null);
+
+            /** PaymentExtendedMetadata platform. */
+            public platform?: (string|null);
+
+            /** PaymentExtendedMetadata messageParamsJson. */
+            public messageParamsJson?: (string|null);
+
+            /**
+             * Creates a new PaymentExtendedMetadata instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns PaymentExtendedMetadata instance
+             */
+            public static create(properties?: waproto.Message.IPaymentExtendedMetadata): waproto.Message.PaymentExtendedMetadata;
+
+            /**
+             * Encodes the specified PaymentExtendedMetadata message. Does not implicitly {@link waproto.Message.PaymentExtendedMetadata.verify|verify} messages.
+             * @param message PaymentExtendedMetadata message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.Message.IPaymentExtendedMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified PaymentExtendedMetadata message, length delimited. Does not implicitly {@link waproto.Message.PaymentExtendedMetadata.verify|verify} messages.
+             * @param message PaymentExtendedMetadata message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.Message.IPaymentExtendedMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a PaymentExtendedMetadata message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns PaymentExtendedMetadata
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.Message.PaymentExtendedMetadata;
+
+            /**
+             * Decodes a PaymentExtendedMetadata message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns PaymentExtendedMetadata
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.Message.PaymentExtendedMetadata;
+
+            /**
+             * Verifies a PaymentExtendedMetadata message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a PaymentExtendedMetadata message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns PaymentExtendedMetadata
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.Message.PaymentExtendedMetadata;
+
+            /**
+             * Creates a plain object from a PaymentExtendedMetadata message. Also converts values to other types if specified.
+             * @param message PaymentExtendedMetadata
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.Message.PaymentExtendedMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this PaymentExtendedMetadata to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for PaymentExtendedMetadata
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
         /** Properties of a PaymentInviteMessage. */
         interface IPaymentInviteMessage {
 
@@ -32866,13 +33007,13 @@ export namespace waproto {
             interface IGalaxyFlowAction {
 
                 /** GalaxyFlowAction type */
-                type: waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType;
+                type?: (waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType|null);
 
                 /** GalaxyFlowAction flowId */
-                flowId: string;
+                flowId?: (string|null);
 
                 /** GalaxyFlowAction stanzaId */
-                stanzaId: string;
+                stanzaId?: (string|null);
             }
 
             /** Represents a GalaxyFlowAction. */
@@ -32885,13 +33026,13 @@ export namespace waproto {
                 constructor(properties?: waproto.Message.PeerDataOperationRequestMessage.IGalaxyFlowAction);
 
                 /** GalaxyFlowAction type. */
-                public type: waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType;
+                public type?: (waproto.Message.PeerDataOperationRequestMessage.GalaxyFlowAction.GalaxyFlowActionType|null);
 
                 /** GalaxyFlowAction flowId. */
-                public flowId: string;
+                public flowId?: (string|null);
 
                 /** GalaxyFlowAction stanzaId. */
-                public stanzaId: string;
+                public stanzaId?: (string|null);
 
                 /**
                  * Creates a new GalaxyFlowAction instance using the specified properties.
@@ -37027,6 +37168,115 @@ export namespace waproto {
 
             /**
              * Gets the default type url for ReactionMessage
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of a RequestContactInfoMessage. */
+        interface IRequestContactInfoMessage {
+
+            /** RequestContactInfoMessage text */
+            text?: (string|null);
+
+            /** RequestContactInfoMessage ctaButtonText */
+            ctaButtonText?: (string|null);
+
+            /** RequestContactInfoMessage contextInfo */
+            contextInfo?: (waproto.IContextInfo|null);
+        }
+
+        /** Represents a RequestContactInfoMessage. */
+        class RequestContactInfoMessage implements IRequestContactInfoMessage {
+
+            /**
+             * Constructs a new RequestContactInfoMessage.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: waproto.Message.IRequestContactInfoMessage);
+
+            /** RequestContactInfoMessage text. */
+            public text?: (string|null);
+
+            /** RequestContactInfoMessage ctaButtonText. */
+            public ctaButtonText?: (string|null);
+
+            /** RequestContactInfoMessage contextInfo. */
+            public contextInfo?: (waproto.IContextInfo|null);
+
+            /**
+             * Creates a new RequestContactInfoMessage instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns RequestContactInfoMessage instance
+             */
+            public static create(properties?: waproto.Message.IRequestContactInfoMessage): waproto.Message.RequestContactInfoMessage;
+
+            /**
+             * Encodes the specified RequestContactInfoMessage message. Does not implicitly {@link waproto.Message.RequestContactInfoMessage.verify|verify} messages.
+             * @param message RequestContactInfoMessage message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: waproto.Message.IRequestContactInfoMessage, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified RequestContactInfoMessage message, length delimited. Does not implicitly {@link waproto.Message.RequestContactInfoMessage.verify|verify} messages.
+             * @param message RequestContactInfoMessage message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: waproto.Message.IRequestContactInfoMessage, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a RequestContactInfoMessage message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns RequestContactInfoMessage
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.Message.RequestContactInfoMessage;
+
+            /**
+             * Decodes a RequestContactInfoMessage message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns RequestContactInfoMessage
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.Message.RequestContactInfoMessage;
+
+            /**
+             * Verifies a RequestContactInfoMessage message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a RequestContactInfoMessage message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns RequestContactInfoMessage
+             */
+            public static fromObject(object: { [k: string]: any }): waproto.Message.RequestContactInfoMessage;
+
+            /**
+             * Creates a plain object from a RequestContactInfoMessage message. Also converts values to other types if specified.
+             * @param message RequestContactInfoMessage
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: waproto.Message.RequestContactInfoMessage, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this RequestContactInfoMessage to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+
+            /**
+             * Gets the default type url for RequestContactInfoMessage
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */
