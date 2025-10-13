@@ -151698,6 +151698,7 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.IExternalWebBetaAction|null} [externalWebBetaAction] SyncActionValue externalWebBetaAction
          * @property {waproto.SyncActionValue.IPrivacySettingRelayAllCalls|null} [privacySettingRelayAllCalls] SyncActionValue privacySettingRelayAllCalls
          * @property {waproto.SyncActionValue.ICallLogAction|null} [callLogAction] SyncActionValue callLogAction
+         * @property {waproto.SyncActionValue.IUGCBot|null} [ugcBot] SyncActionValue ugcBot
          * @property {waproto.SyncActionValue.IStatusPrivacyAction|null} [statusPrivacy] SyncActionValue statusPrivacy
          * @property {waproto.SyncActionValue.IBotWelcomeRequestAction|null} [botWelcomeRequestAction] SyncActionValue botWelcomeRequestAction
          * @property {waproto.SyncActionValue.IDeleteIndividualCallLogAction|null} [deleteIndividualCallLog] SyncActionValue deleteIndividualCallLog
@@ -151726,7 +151727,6 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.IMusicUserIdAction|null} [musicUserIdAction] SyncActionValue musicUserIdAction
          * @property {waproto.SyncActionValue.IStatusPostOptInNotificationPreferencesAction|null} [statusPostOptInNotificationPreferencesAction] SyncActionValue statusPostOptInNotificationPreferencesAction
          * @property {waproto.SyncActionValue.IAvatarUpdatedAction|null} [avatarUpdatedAction] SyncActionValue avatarUpdatedAction
-         * @property {waproto.SyncActionValue.IGalaxyFlowAction|null} [galaxyFlowAction] SyncActionValue galaxyFlowAction
          */
 
         /**
@@ -152041,6 +152041,14 @@ $root.waproto = (function() {
         SyncActionValue.prototype.callLogAction = null;
 
         /**
+         * SyncActionValue ugcBot.
+         * @member {waproto.SyncActionValue.IUGCBot|null|undefined} ugcBot
+         * @memberof waproto.SyncActionValue
+         * @instance
+         */
+        SyncActionValue.prototype.ugcBot = null;
+
+        /**
          * SyncActionValue statusPrivacy.
          * @member {waproto.SyncActionValue.IStatusPrivacyAction|null|undefined} statusPrivacy
          * @memberof waproto.SyncActionValue
@@ -152263,14 +152271,6 @@ $root.waproto = (function() {
          * @instance
          */
         SyncActionValue.prototype.avatarUpdatedAction = null;
-
-        /**
-         * SyncActionValue galaxyFlowAction.
-         * @member {waproto.SyncActionValue.IGalaxyFlowAction|null|undefined} galaxyFlowAction
-         * @memberof waproto.SyncActionValue
-         * @instance
-         */
-        SyncActionValue.prototype.galaxyFlowAction = null;
 
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
@@ -152498,6 +152498,12 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SyncActionValue.prototype, "_ugcBot", {
+            get: $util.oneOfGetter($oneOfFields = ["ugcBot"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
         Object.defineProperty(SyncActionValue.prototype, "_statusPrivacy", {
             get: $util.oneOfGetter($oneOfFields = ["statusPrivacy"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -152665,12 +152671,6 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
-        // Virtual OneOf for proto3 optional field
-        Object.defineProperty(SyncActionValue.prototype, "_galaxyFlowAction", {
-            get: $util.oneOfGetter($oneOfFields = ["galaxyFlowAction"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
         /**
          * Creates a new SyncActionValue instance using the specified properties.
          * @function create
@@ -152769,6 +152769,8 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.PrivacySettingRelayAllCalls.encode(message.privacySettingRelayAllCalls, writer.uint32(/* id 41, wireType 2 =*/330).fork()).ldelim();
             if (message.callLogAction != null && Object.hasOwnProperty.call(message, "callLogAction"))
                 $root.waproto.SyncActionValue.CallLogAction.encode(message.callLogAction, writer.uint32(/* id 42, wireType 2 =*/338).fork()).ldelim();
+            if (message.ugcBot != null && Object.hasOwnProperty.call(message, "ugcBot"))
+                $root.waproto.SyncActionValue.UGCBot.encode(message.ugcBot, writer.uint32(/* id 43, wireType 2 =*/346).fork()).ldelim();
             if (message.statusPrivacy != null && Object.hasOwnProperty.call(message, "statusPrivacy"))
                 $root.waproto.SyncActionValue.StatusPrivacyAction.encode(message.statusPrivacy, writer.uint32(/* id 44, wireType 2 =*/354).fork()).ldelim();
             if (message.botWelcomeRequestAction != null && Object.hasOwnProperty.call(message, "botWelcomeRequestAction"))
@@ -152825,8 +152827,6 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.StatusPostOptInNotificationPreferencesAction.encode(message.statusPostOptInNotificationPreferencesAction, writer.uint32(/* id 71, wireType 2 =*/570).fork()).ldelim();
             if (message.avatarUpdatedAction != null && Object.hasOwnProperty.call(message, "avatarUpdatedAction"))
                 $root.waproto.SyncActionValue.AvatarUpdatedAction.encode(message.avatarUpdatedAction, writer.uint32(/* id 72, wireType 2 =*/578).fork()).ldelim();
-            if (message.galaxyFlowAction != null && Object.hasOwnProperty.call(message, "galaxyFlowAction"))
-                $root.waproto.SyncActionValue.GalaxyFlowAction.encode(message.galaxyFlowAction, writer.uint32(/* id 73, wireType 2 =*/586).fork()).ldelim();
             return writer;
         };
 
@@ -153009,6 +153009,10 @@ $root.waproto = (function() {
                         message.callLogAction = $root.waproto.SyncActionValue.CallLogAction.decode(reader, reader.uint32());
                         break;
                     }
+                case 43: {
+                        message.ugcBot = $root.waproto.SyncActionValue.UGCBot.decode(reader, reader.uint32());
+                        break;
+                    }
                 case 44: {
                         message.statusPrivacy = $root.waproto.SyncActionValue.StatusPrivacyAction.decode(reader, reader.uint32());
                         break;
@@ -153119,10 +153123,6 @@ $root.waproto = (function() {
                     }
                 case 72: {
                         message.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 73: {
-                        message.galaxyFlowAction = $root.waproto.SyncActionValue.GalaxyFlowAction.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -153454,6 +153454,14 @@ $root.waproto = (function() {
                         return "callLogAction." + error;
                 }
             }
+            if (message.ugcBot != null && message.hasOwnProperty("ugcBot")) {
+                properties._ugcBot = 1;
+                {
+                    var error = $root.waproto.SyncActionValue.UGCBot.verify(message.ugcBot);
+                    if (error)
+                        return "ugcBot." + error;
+                }
+            }
             if (message.statusPrivacy != null && message.hasOwnProperty("statusPrivacy")) {
                 properties._statusPrivacy = 1;
                 {
@@ -153678,14 +153686,6 @@ $root.waproto = (function() {
                         return "avatarUpdatedAction." + error;
                 }
             }
-            if (message.galaxyFlowAction != null && message.hasOwnProperty("galaxyFlowAction")) {
-                properties._galaxyFlowAction = 1;
-                {
-                    var error = $root.waproto.SyncActionValue.GalaxyFlowAction.verify(message.galaxyFlowAction);
-                    if (error)
-                        return "galaxyFlowAction." + error;
-                }
-            }
             return null;
         };
 
@@ -153890,6 +153890,11 @@ $root.waproto = (function() {
                     throw TypeError(".waproto.SyncActionValue.callLogAction: object expected");
                 message.callLogAction = $root.waproto.SyncActionValue.CallLogAction.fromObject(object.callLogAction);
             }
+            if (object.ugcBot != null) {
+                if (typeof object.ugcBot !== "object")
+                    throw TypeError(".waproto.SyncActionValue.ugcBot: object expected");
+                message.ugcBot = $root.waproto.SyncActionValue.UGCBot.fromObject(object.ugcBot);
+            }
             if (object.statusPrivacy != null) {
                 if (typeof object.statusPrivacy !== "object")
                     throw TypeError(".waproto.SyncActionValue.statusPrivacy: object expected");
@@ -154029,11 +154034,6 @@ $root.waproto = (function() {
                 if (typeof object.avatarUpdatedAction !== "object")
                     throw TypeError(".waproto.SyncActionValue.avatarUpdatedAction: object expected");
                 message.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.fromObject(object.avatarUpdatedAction);
-            }
-            if (object.galaxyFlowAction != null) {
-                if (typeof object.galaxyFlowAction !== "object")
-                    throw TypeError(".waproto.SyncActionValue.galaxyFlowAction: object expected");
-                message.galaxyFlowAction = $root.waproto.SyncActionValue.GalaxyFlowAction.fromObject(object.galaxyFlowAction);
             }
             return message;
         };
@@ -154239,6 +154239,11 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._callLogAction = "callLogAction";
             }
+            if (message.ugcBot != null && message.hasOwnProperty("ugcBot")) {
+                object.ugcBot = $root.waproto.SyncActionValue.UGCBot.toObject(message.ugcBot, options);
+                if (options.oneofs)
+                    object._ugcBot = "ugcBot";
+            }
             if (message.statusPrivacy != null && message.hasOwnProperty("statusPrivacy")) {
                 object.statusPrivacy = $root.waproto.SyncActionValue.StatusPrivacyAction.toObject(message.statusPrivacy, options);
                 if (options.oneofs)
@@ -154378,11 +154383,6 @@ $root.waproto = (function() {
                 object.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.toObject(message.avatarUpdatedAction, options);
                 if (options.oneofs)
                     object._avatarUpdatedAction = "avatarUpdatedAction";
-            }
-            if (message.galaxyFlowAction != null && message.hasOwnProperty("galaxyFlowAction")) {
-                object.galaxyFlowAction = $root.waproto.SyncActionValue.GalaxyFlowAction.toObject(message.galaxyFlowAction, options);
-                if (options.oneofs)
-                    object._galaxyFlowAction = "galaxyFlowAction";
             }
             return object;
         };
@@ -160252,235 +160252,6 @@ $root.waproto = (function() {
             })();
 
             return FavoritesAction;
-        })();
-
-        SyncActionValue.GalaxyFlowAction = (function() {
-
-            /**
-             * Properties of a GalaxyFlowAction.
-             * @memberof waproto.SyncActionValue
-             * @interface IGalaxyFlowAction
-             * @property {waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType} type GalaxyFlowAction type
-             */
-
-            /**
-             * Constructs a new GalaxyFlowAction.
-             * @memberof waproto.SyncActionValue
-             * @classdesc Represents a GalaxyFlowAction.
-             * @implements IGalaxyFlowAction
-             * @constructor
-             * @param {waproto.SyncActionValue.IGalaxyFlowAction=} [properties] Properties to set
-             */
-            function GalaxyFlowAction(properties) {
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * GalaxyFlowAction type.
-             * @member {waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType} type
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @instance
-             */
-            GalaxyFlowAction.prototype.type = 1;
-
-            /**
-             * Creates a new GalaxyFlowAction instance using the specified properties.
-             * @function create
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {waproto.SyncActionValue.IGalaxyFlowAction=} [properties] Properties to set
-             * @returns {waproto.SyncActionValue.GalaxyFlowAction} GalaxyFlowAction instance
-             */
-            GalaxyFlowAction.create = function create(properties) {
-                return new GalaxyFlowAction(properties);
-            };
-
-            /**
-             * Encodes the specified GalaxyFlowAction message. Does not implicitly {@link waproto.SyncActionValue.GalaxyFlowAction.verify|verify} messages.
-             * @function encode
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {waproto.SyncActionValue.IGalaxyFlowAction} message GalaxyFlowAction message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            GalaxyFlowAction.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
-                return writer;
-            };
-
-            /**
-             * Encodes the specified GalaxyFlowAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.GalaxyFlowAction.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {waproto.SyncActionValue.IGalaxyFlowAction} message GalaxyFlowAction message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            GalaxyFlowAction.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-
-            /**
-             * Decodes a GalaxyFlowAction message from the specified reader or buffer.
-             * @function decode
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {waproto.SyncActionValue.GalaxyFlowAction} GalaxyFlowAction
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            GalaxyFlowAction.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.GalaxyFlowAction();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.type = reader.int32();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                if (!message.hasOwnProperty("type"))
-                    throw $util.ProtocolError("missing required 'type'", { instance: message });
-                return message;
-            };
-
-            /**
-             * Decodes a GalaxyFlowAction message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {waproto.SyncActionValue.GalaxyFlowAction} GalaxyFlowAction
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            GalaxyFlowAction.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-
-            /**
-             * Verifies a GalaxyFlowAction message.
-             * @function verify
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            GalaxyFlowAction.verify = function verify(message) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                switch (message.type) {
-                default:
-                    return "type: enum value expected";
-                case 1:
-                    break;
-                }
-                return null;
-            };
-
-            /**
-             * Creates a GalaxyFlowAction message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {waproto.SyncActionValue.GalaxyFlowAction} GalaxyFlowAction
-             */
-            GalaxyFlowAction.fromObject = function fromObject(object) {
-                if (object instanceof $root.waproto.SyncActionValue.GalaxyFlowAction)
-                    return object;
-                var message = new $root.waproto.SyncActionValue.GalaxyFlowAction();
-                switch (object.type) {
-                default:
-                    if (typeof object.type === "number") {
-                        message.type = object.type;
-                        break;
-                    }
-                    break;
-                case "LAUNCH":
-                case 1:
-                    message.type = 1;
-                    break;
-                }
-                return message;
-            };
-
-            /**
-             * Creates a plain object from a GalaxyFlowAction message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {waproto.SyncActionValue.GalaxyFlowAction} message GalaxyFlowAction
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            GalaxyFlowAction.toObject = function toObject(message, options) {
-                if (!options)
-                    options = {};
-                var object = {};
-                if (options.defaults)
-                    object.type = options.enums === String ? "LAUNCH" : 1;
-                if (message.type != null && message.hasOwnProperty("type"))
-                    object.type = options.enums === String ? $root.waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType[message.type] === undefined ? message.type : $root.waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType[message.type] : message.type;
-                return object;
-            };
-
-            /**
-             * Converts this GalaxyFlowAction to JSON.
-             * @function toJSON
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            GalaxyFlowAction.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-
-            /**
-             * Gets the default type url for GalaxyFlowAction
-             * @function getTypeUrl
-             * @memberof waproto.SyncActionValue.GalaxyFlowAction
-             * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
-             */
-            GalaxyFlowAction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/waproto.SyncActionValue.GalaxyFlowAction";
-            };
-
-            /**
-             * GalaxyFlowActionType enum.
-             * @name waproto.SyncActionValue.GalaxyFlowAction.GalaxyFlowActionType
-             * @enum {number}
-             * @property {number} LAUNCH=1 LAUNCH value
-             */
-            GalaxyFlowAction.GalaxyFlowActionType = (function() {
-                var valuesById = {}, values = Object.create(valuesById);
-                values[valuesById[1] = "LAUNCH"] = 1;
-                return values;
-            })();
-
-            return GalaxyFlowAction;
         })();
 
         SyncActionValue.KeyExpiration = (function() {
@@ -170968,6 +170739,225 @@ $root.waproto = (function() {
             };
 
             return TimeFormatAction;
+        })();
+
+        SyncActionValue.UGCBot = (function() {
+
+            /**
+             * Properties of a UGCBot.
+             * @memberof waproto.SyncActionValue
+             * @interface IUGCBot
+             * @property {Uint8Array|null} [definition] UGCBot definition
+             */
+
+            /**
+             * Constructs a new UGCBot.
+             * @memberof waproto.SyncActionValue
+             * @classdesc Represents a UGCBot.
+             * @implements IUGCBot
+             * @constructor
+             * @param {waproto.SyncActionValue.IUGCBot=} [properties] Properties to set
+             */
+            function UGCBot(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * UGCBot definition.
+             * @member {Uint8Array|null|undefined} definition
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @instance
+             */
+            UGCBot.prototype.definition = null;
+
+            // OneOf field names bound to virtual getters and setters
+            var $oneOfFields;
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(UGCBot.prototype, "_definition", {
+                get: $util.oneOfGetter($oneOfFields = ["definition"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new UGCBot instance using the specified properties.
+             * @function create
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {waproto.SyncActionValue.IUGCBot=} [properties] Properties to set
+             * @returns {waproto.SyncActionValue.UGCBot} UGCBot instance
+             */
+            UGCBot.create = function create(properties) {
+                return new UGCBot(properties);
+            };
+
+            /**
+             * Encodes the specified UGCBot message. Does not implicitly {@link waproto.SyncActionValue.UGCBot.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {waproto.SyncActionValue.IUGCBot} message UGCBot message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            UGCBot.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.definition != null && Object.hasOwnProperty.call(message, "definition"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.definition);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified UGCBot message, length delimited. Does not implicitly {@link waproto.SyncActionValue.UGCBot.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {waproto.SyncActionValue.IUGCBot} message UGCBot message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            UGCBot.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes a UGCBot message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.SyncActionValue.UGCBot} UGCBot
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            UGCBot.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.UGCBot();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.definition = reader.bytes();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Decodes a UGCBot message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.SyncActionValue.UGCBot} UGCBot
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            UGCBot.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies a UGCBot message.
+             * @function verify
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            UGCBot.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                var properties = {};
+                if (message.definition != null && message.hasOwnProperty("definition")) {
+                    properties._definition = 1;
+                    if (!(message.definition && typeof message.definition.length === "number" || $util.isString(message.definition)))
+                        return "definition: buffer expected";
+                }
+                return null;
+            };
+
+            /**
+             * Creates a UGCBot message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.SyncActionValue.UGCBot} UGCBot
+             */
+            UGCBot.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.SyncActionValue.UGCBot)
+                    return object;
+                var message = new $root.waproto.SyncActionValue.UGCBot();
+                if (object.definition != null)
+                    if (typeof object.definition === "string")
+                        $util.base64.decode(object.definition, message.definition = $util.newBuffer($util.base64.length(object.definition)), 0);
+                    else if (object.definition.length >= 0)
+                        message.definition = object.definition;
+                return message;
+            };
+
+            /**
+             * Creates a plain object from a UGCBot message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {waproto.SyncActionValue.UGCBot} message UGCBot
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            UGCBot.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (message.definition != null && message.hasOwnProperty("definition")) {
+                    object.definition = options.bytes === String ? $util.base64.encode(message.definition, 0, message.definition.length) : options.bytes === Array ? Array.prototype.slice.call(message.definition) : message.definition;
+                    if (options.oneofs)
+                        object._definition = "definition";
+                }
+                return object;
+            };
+
+            /**
+             * Converts this UGCBot to JSON.
+             * @function toJSON
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            UGCBot.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for UGCBot
+             * @function getTypeUrl
+             * @memberof waproto.SyncActionValue.UGCBot
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            UGCBot.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.SyncActionValue.UGCBot";
+            };
+
+            return UGCBot;
         })();
 
         SyncActionValue.UnarchiveChatsSetting = (function() {
