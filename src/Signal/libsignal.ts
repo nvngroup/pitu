@@ -1,16 +1,17 @@
 import NodeCache from '@cacheable/node-cache'
 import * as libsignal from 'libsignal'
-import type { SignalAuthState, SignalKeyStoreWithTransaction } from '../Types'
+import type { SignalAuthState, SignalKeyStoreWithTransaction, SignedKeyPair } from '../Types'
 import { SignalRepository } from '../Types/Signal'
 import { generateSignalPubKey } from '../Utils'
 import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
-import { jidDecode } from '../WABinary'
+import { FullJid, jidDecode } from '../WABinary'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
 import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
+import { EncryptionResult, LIDMappingResult, SessionMigrationOptions, SessionValidationResult } from './types'
 
 const SIGNAL_CONSTANTS = {
 	MIGRATION_CACHE_TTL: 15 * 60 * 1000,
@@ -21,33 +22,9 @@ const SIGNAL_CONSTANTS = {
 	SESSION_CACHE_TTL: 5 * 60 * 1000,
 } as const
 
-export interface SessionValidationResult {
-	exists: boolean
-	reason?: string
-}
-
-export interface EncryptionResult {
-	type: 'pkmsg' | 'msg'
-	ciphertext: Buffer
-}
-
-export interface EncryptionWithWireResult extends EncryptionResult {
-	wireJid: string
-}
-
-export interface GroupEncryptionResult {
-	ciphertext: Buffer
-	senderKeyDistributionMessage: Buffer
-}
-
-export interface SessionMigrationOptions {
-	force?: boolean
-	skipValidation?: boolean
-}
-
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
 	const lidMapping = new LIDMappingStore(auth.keys as SignalKeyStoreWithTransaction)
-	const storage = signalStorage(auth, lidMapping)
+	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
 	const recentMigrations = new NodeCache({
 		stdTTL: SIGNAL_CONSTANTS.MIGRATION_CACHE_TTL,
@@ -67,7 +44,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	 */
 	const validateAndDecodeJid = (jid: string): { user: string; device: number } | null => {
 		try {
-			const decoded = jidDecode(jid)
+			const decoded: FullJid | undefined = jidDecode(jid)
 			if(!decoded?.user) {
 				logger.warn({ jid }, 'Invalid JID format')
 				return null
@@ -99,7 +76,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		}
 
 		try {
-			const lidForPN = await lidMapping.getLIDForPN(jid)
+			const lidForPN: string | null = await lidMapping.getLIDForPN(jid)
 			if(!lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 				return jid
 			}
@@ -141,7 +118,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 						`${group}:${authorJid}`,
 						error,
 						async() => {
-							const keyId = senderName.toString()
+							const keyId: string = senderName.toString()
 							await auth.keys.set({ 'sender-key': { [keyId]: null } })
 						}
 					)
@@ -202,21 +179,48 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			return result
 		},
 		async encryptMessage({ jid, data }): Promise<EncryptionResult> {
+			const originalJid = jid
 			try {
-				const encryptionJid = await getOptimalEncryptionJid(jid)
+				const decoded = validateAndDecodeJid(jid)
+				if(!decoded) {
+					throw new Error(`Invalid JID format: ${jid}`)
+				}
+
+				const encryptionJid: string = await getOptimalEncryptionJid(jid)
+				logger.trace({ originalJid: jid, encryptionJid }, 'Encryption JID selected')
 
 				const addr = jidToSignalProtocolAddress(encryptionJid)
+
+				const sessionValidation = await repository.validateSession(encryptionJid)
+				if(!sessionValidation.exists) {
+					logger.warn(
+						{ jid: encryptionJid, reason: sessionValidation.reason, originalJid },
+						'No valid session for encryption'
+					)
+					throw new Error(`No valid session for ${encryptionJid}: ${sessionValidation.reason}`)
+				}
+
 				const cipher = new libsignal.SessionCipher(storage, addr)
 
 				const { type: sigType, body } = await cipher.encrypt(data)
 				const type: 'pkmsg' | 'msg' = sigType === SIGNAL_CONSTANTS.PREKEY_MESSAGE_TYPE ? 'pkmsg' : 'msg'
+
+				logger.trace({ jid: encryptionJid, type, originalJid }, 'Message encrypted successfully')
 
 				return {
 					type,
 					ciphertext: Buffer.from(body, 'binary')
 				}
 			} catch(error) {
-				logger.error({ error, jid }, 'Failed to encrypt message')
+				logger.error(
+					{
+						error,
+						jid: originalJid,
+						errorName: error?.name,
+						errorMessage: error?.message
+					},
+					'Failed to encrypt message'
+				)
 				throw error
 			}
 		},
@@ -233,7 +237,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 			const senderKeyDistributionMessage = await builder.create(senderName)
 			const session = new GroupCipher(storage, senderName)
-			const ciphertext = await session.encrypt(data)
+			const ciphertext: Uint8Array = await session.encrypt(data)
 
 			return {
 				ciphertext,
@@ -338,7 +342,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					return
 				}
 
-				const deviceId = fromDecoded.device
+				const deviceId: number = fromDecoded.device
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
 				if(!options.force && recentMigrations.has(migrationKey)) {
@@ -355,33 +359,38 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					return
 				}
 
-				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
-					const mappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
-					if(!mappingResult.success) {
-						logger.error({ error: mappingResult.error }, 'Failed to store LID mapping')
-						return
-					}
+				let migrationSuccessful = false
 
+				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
-					if(fromSession?.haveOpenSession()) {
-						const sessionBytes = fromSession.serialize()
-						const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
-
-						await (storage as any).storeSession(lidAddr.toString(), copiedSession)
-
-						await auth.keys.set({ session: { [fromAddr.toString()]: null } })
-
-						logger.info({ fromJid, toJid }, 'Session migrated successfully')
-					} else {
-						logger.warn({ fromJid }, 'No valid session found for migration')
+					if(!fromSession?.haveOpenSession()) {
+						logger.debug({ fromJid, toJid }, 'No valid session found for migration')
+						return
 					}
+
+					const mappingResult: LIDMappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
+					if(!mappingResult.success) {
+						logger.error({ error: mappingResult.error, fromJid, toJid }, 'Failed to store LID mapping')
+						return
+					}
+
+					const sessionBytes = fromSession.serialize()
+					const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
+
+					await (storage as any).storeSession(lidAddr.toString(), copiedSession)
+					await auth.keys.set({ session: { [fromAddr.toString()]: null } })
+
+					migrationSuccessful = true
+					logger.info({ fromJid, toJid }, 'Session migrated successfully')
 				})
 
-				recentMigrations.set(migrationKey, true)
-				sessionValidationCache.del(`validation:${fromJid}`)
-				sessionValidationCache.del(`validation:${toJid}`)
+				if(migrationSuccessful) {
+					recentMigrations.set(migrationKey, true)
+					sessionValidationCache.del(`validation:${fromJid}`)
+					sessionValidationCache.del(`validation:${toJid}`)
+				}
 
 			} catch(error) {
 				logger.error({ error, fromJid, toJid }, 'Session migration failed')
@@ -422,18 +431,18 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 	/**
 	 * Enhanced session loading with LID preference
 	 */
-	const loadSessionWithLIDPreference = async(id: string): Promise<libsignal.SessionRecord | null> => {
+	const loadSessionWithLIDPreference = async(id: string): Promise<any> => {
 		try {
-			let actualId = id
+			let actualId: string = id
 
 			if(id.includes('.') && !id.includes('_1')) {
-				const parts = id.split('.')
-				const device = parts[1] || '0'
-				const pnJid = device === '0'
+				const parts: string[] = id.split('.')
+				const device: string = parts[1] || '0'
+				const pnJid: string = device === '0'
 					? `${parts[0]}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
 					: `${parts[0]}:${device}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
 
-				const lidForPN = await lidMapping.getLIDForPN(pnJid)
+				const lidForPN: string | null = await lidMapping.getLIDForPN(pnJid)
 				if(lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 					const lidAddr = jidToSignalProtocolAddress(lidForPN)
 					const lidId = lidAddr.toString()
@@ -503,7 +512,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		},
 
 		loadSignedPreKey: (): { privKey: Buffer; pubKey: Buffer } => {
-			const key = creds.signedPreKey
+			const key: SignedKeyPair = creds.signedPreKey
 			return {
 				privKey: Buffer.from(key.keyPair.private),
 				pubKey: Buffer.from(key.keyPair.public)
@@ -547,7 +556,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 
 		getOurIdentity: (): { privKey: Buffer; pubKey: Buffer } => {
 			const { signedIdentityKey } = creds
-			const pubKey = generateSignalPubKey(signedIdentityKey.public)
+			const pubKey: Uint8Array = generateSignalPubKey(signedIdentityKey.public)
 			return {
 				privKey: Buffer.from(signedIdentityKey.private),
 				pubKey: Buffer.isBuffer(pubKey) ? pubKey : Buffer.from(pubKey),

@@ -1,12 +1,7 @@
 import { calculateSignature, verifySignature } from 'libsignal/src/curve'
 import { waproto } from '../../../WAProto'
 import { CiphertextMessage } from './ciphertext-message'
-
-interface SenderKeyMessageStructure {
-  id: number
-  iteration: number
-  ciphertext: string | Buffer
-}
+import { SenderKeyMessageStructure } from './types'
 
 export class SenderKeyMessage extends CiphertextMessage {
 	private readonly SIGNATURE_LENGTH = 64
@@ -28,8 +23,8 @@ export class SenderKeyMessage extends CiphertextMessage {
 
 		if(serialized) {
 			const version: number = serialized[0]
-			const message = serialized.slice(1, serialized.length - this.SIGNATURE_LENGTH)
-			const signature = serialized.slice(-1 * this.SIGNATURE_LENGTH)
+			const message: Uint8Array = serialized.slice(1, serialized.length - this.SIGNATURE_LENGTH)
+			const signature: Uint8Array = serialized.slice(-1 * this.SIGNATURE_LENGTH)
 			const senderKeyMessage = waproto.SenderKeyMessage.decode(message).toJSON() as SenderKeyMessageStructure
 
 			this.serialized = serialized
@@ -43,8 +38,8 @@ export class SenderKeyMessage extends CiphertextMessage {
 			this.signature = signature
 		} else {
 			const version: number = (((this.CURRENT_VERSION << 4) | this.CURRENT_VERSION) & 0xff) % 256
-			const ciphertextBuffer = Buffer.from(ciphertext!)
-			const message = waproto.SenderKeyMessage.encode(
+			const ciphertextBuffer: Buffer = Buffer.from(ciphertext!)
+			const message: Uint8Array = waproto.SenderKeyMessage.encode(
 				waproto.SenderKeyMessage.create({
 					id: keyId!,
 					iteration: iteration!,
@@ -52,7 +47,7 @@ export class SenderKeyMessage extends CiphertextMessage {
 				})
 			).finish()
 
-			const signature = this.getSignature(signatureKey!, Buffer.concat([Buffer.from([version]), message]))
+			const signature: Uint8Array = this.getSignature(signatureKey!, Buffer.concat([Buffer.from([version]), message]))
 
 			this.serialized = Buffer.concat([Buffer.from([version]), message, Buffer.from(signature)])
 			this.messageVersion = this.CURRENT_VERSION
@@ -76,8 +71,8 @@ export class SenderKeyMessage extends CiphertextMessage {
 	}
 
 	public verifySignature(signatureKey: Uint8Array): void {
-		const part1 = this.serialized.slice(0, this.serialized.length - this.SIGNATURE_LENGTH)
-		const part2 = this.serialized.slice(-1 * this.SIGNATURE_LENGTH)
+		const part1: Uint8Array = this.serialized.slice(0, this.serialized.length - this.SIGNATURE_LENGTH)
+		const part2: Uint8Array = this.serialized.slice(-1 * this.SIGNATURE_LENGTH)
 		const res: boolean = verifySignature(signatureKey, part1, part2)
 		if(!res) {
 			throw new Error('Invalid signature!')

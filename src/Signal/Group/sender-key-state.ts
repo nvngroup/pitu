@@ -1,29 +1,7 @@
 import { SenderChainKey } from './sender-chain-key'
 import { SenderMessageKey } from './sender-message-key'
-import { GROUP_CONSTANTS } from './types'
+import { GROUP_CONSTANTS, SenderChainKeyStructure, SenderKeyStateStructure, SenderMessageKeyStructure, SenderSigningKeyStructure } from './types'
 import { ensureBuffer, validateIteration, validateKeyId } from './utils'
-
-interface SenderChainKeyStructure {
-  iteration: number
-  seed: Uint8Array
-}
-
-interface SenderSigningKeyStructure {
-  public: Uint8Array
-  private?: Uint8Array
-}
-
-interface SenderMessageKeyStructure {
-  iteration: number
-  seed: Uint8Array
-}
-
-interface SenderKeyStateStructure {
-  senderKeyId: number
-  senderChainKey: SenderChainKeyStructure
-  senderSigningKey: SenderSigningKeyStructure
-  senderMessageKeys: SenderMessageKeyStructure[]
-}
 
 export class SenderKeyState {
 	private readonly MAX_MESSAGE_KEYS = GROUP_CONSTANTS.MAX_MESSAGE_KEYS
@@ -44,8 +22,8 @@ export class SenderKeyState {
 				senderMessageKeys: senderKeyStateStructure.senderMessageKeys || []
 			}
 		} else {
-			const keyId = id ?? 0
-			const iter = iteration ?? 0
+			const keyId: number = id ?? 0
+			const iter: number = iteration ?? 0
 
 			validateKeyId(keyId)
 			validateIteration(iter)
@@ -100,7 +78,7 @@ export class SenderKeyState {
 	}
 
 	public getSigningKeyPrivate(): Buffer | undefined {
-		const privateKey = this.senderKeyStateStructure.senderSigningKey.private
+		const privateKey: Uint8Array | undefined = this.senderKeyStateStructure.senderSigningKey.private
 		return privateKey ? ensureBuffer(privateKey) : undefined
 	}
 
@@ -120,10 +98,10 @@ export class SenderKeyState {
 	}
 
 	public removeSenderMessageKey(iteration: number): SenderMessageKey | null {
-		const index = this.senderKeyStateStructure.senderMessageKeys.findIndex(key => key.iteration === iteration)
+		const index: number = this.senderKeyStateStructure.senderMessageKeys.findIndex(key => key.iteration === iteration)
 
 		if(index !== -1) {
-			const messageKey = this.senderKeyStateStructure.senderMessageKeys[index]
+			const messageKey: SenderMessageKeyStructure = this.senderKeyStateStructure.senderMessageKeys[index]
 			this.senderKeyStateStructure.senderMessageKeys.splice(index, 1)
 			return new SenderMessageKey(messageKey.iteration, messageKey.seed)
 		}

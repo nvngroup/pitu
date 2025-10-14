@@ -1,6 +1,6 @@
 import { Boom } from '@hapi/boom'
-import { createHash } from 'crypto'
-import { createWriteStream, promises as fs } from 'fs'
+import { createHash, Hash } from 'crypto'
+import { createWriteStream, promises as fs, WriteStream } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { CatalogCollection, CatalogStatus, OrderDetails, OrderProduct, Product, ProductCreate, ProductUpdate, WAMediaUpload, WAMediaUploadFunction } from '../Types'
@@ -10,9 +10,9 @@ import logger from './logger'
 import { getStream, getUrlFromDirectPath } from './messages-media'
 
 export const parseCatalogNode = (node: BinaryNode) => {
-	const catalogNode = getBinaryNodeChild(node, 'product_catalog')
-	const products = getBinaryNodeChildren(catalogNode, 'product').map(parseProductNode)
-	const paging = getBinaryNodeChild(catalogNode, 'paging')
+	const catalogNode: BinaryNode | undefined = getBinaryNodeChild(node, 'product_catalog')
+	const products: Product[] = getBinaryNodeChildren(catalogNode, 'product').map(parseProductNode)
+	const paging: BinaryNode | undefined = getBinaryNodeChild(catalogNode, 'paging')
 
 	return {
 		products,
@@ -23,13 +23,13 @@ export const parseCatalogNode = (node: BinaryNode) => {
 }
 
 export const parseCollectionsNode = (node: BinaryNode) => {
-	const collectionsNode = getBinaryNodeChild(node, 'collections')
-	const collections = getBinaryNodeChildren(collectionsNode, 'collection').map<CatalogCollection>(
+	const collectionsNode: BinaryNode | undefined = getBinaryNodeChild(node, 'collections')
+	const collections: CatalogCollection[] = getBinaryNodeChildren(collectionsNode, 'collection').map<CatalogCollection>(
 		collectionNode => {
-			const id = getBinaryNodeChildString(collectionNode, 'id')!
-			const name = getBinaryNodeChildString(collectionNode, 'name')!
+			const id: string = getBinaryNodeChildString(collectionNode, 'id')!
+			const name: string = getBinaryNodeChildString(collectionNode, 'name')!
 
-			const products = getBinaryNodeChildren(collectionNode, 'product').map(parseProductNode)
+			const products: Product[] = getBinaryNodeChildren(collectionNode, 'product').map(parseProductNode)
 			return {
 				id,
 				name,
@@ -45,10 +45,10 @@ export const parseCollectionsNode = (node: BinaryNode) => {
 }
 
 export const parseOrderDetailsNode = (node: BinaryNode) => {
-	const orderNode = getBinaryNodeChild(node, 'order')
-	const products = getBinaryNodeChildren(orderNode, 'product').map<OrderProduct>(
+	const orderNode: BinaryNode | undefined = getBinaryNodeChild(node, 'order')
+	const products: OrderProduct[] = getBinaryNodeChildren(orderNode, 'product').map<OrderProduct>(
 		productNode => {
-			const imageNode = getBinaryNodeChild(productNode, 'image')!
+			const imageNode: BinaryNode | undefined = getBinaryNodeChild(productNode, 'image')
 			return {
 				id: getBinaryNodeChildString(productNode, 'id')!,
 				name: getBinaryNodeChildString(productNode, 'name')!,
@@ -60,7 +60,7 @@ export const parseOrderDetailsNode = (node: BinaryNode) => {
 		}
 	)
 
-	const priceNode = getBinaryNodeChild(orderNode, 'price')
+	const priceNode: BinaryNode | undefined = getBinaryNodeChild(orderNode, 'price')
 
 	const orderDetails: OrderDetails = {
 		price: {
@@ -183,11 +183,11 @@ export const toProductNode = (productId: string | undefined, product: ProductCre
 }
 
 export const parseProductNode = (productNode: BinaryNode) => {
-	const isHidden = productNode.attrs.is_hidden === 'true'
-	const id = getBinaryNodeChildString(productNode, 'id')!
+	const isHidden: boolean = productNode.attrs.is_hidden === 'true'
+	const id: string = getBinaryNodeChildString(productNode, 'id')!
 
-	const mediaNode = getBinaryNodeChild(productNode, 'media')!
-	const statusInfoNode = getBinaryNodeChild(productNode, 'status_info')!
+	const mediaNode: BinaryNode = getBinaryNodeChild(productNode, 'media')!
+	const statusInfoNode: BinaryNode = getBinaryNodeChild(productNode, 'status_info')!
 
 	const product: Product = {
 		id,
@@ -232,22 +232,22 @@ export const uploadingNecessaryImages = async(
 			async img => {
 
 				if('url' in img) {
-					const url = img.url.toString()
+					const url: string = img.url.toString()
 					if(url.includes('.whatsapp.net')) {
 						return { url }
 					}
 				}
 
 				const { stream } = await getStream(img)
-				const hasher = createHash('sha256')
-				const filePath = join(tmpdir(), 'img' + generateMessageIDV2())
-				const encFileWriteStream = createWriteStream(filePath)
+				const hasher: Hash = createHash('sha256')
+				const filePath: string = join(tmpdir(), 'img' + generateMessageIDV2())
+				const encFileWriteStream: WriteStream = createWriteStream(filePath)
 				for await (const block of stream) {
 					hasher.update(block)
 					encFileWriteStream.write(block)
 				}
 
-				const sha = hasher.digest('base64')
+				const sha: string = hasher.digest('base64')
 
 				const { directPath } = await waUploadToServer(
 					filePath,
@@ -268,7 +268,7 @@ export const uploadingNecessaryImages = async(
 }
 
 const parseImageUrls = (mediaNode: BinaryNode) => {
-	const imgNode = getBinaryNodeChild(mediaNode, 'image')
+	const imgNode: BinaryNode | undefined = getBinaryNodeChild(mediaNode, 'image')
 	return {
 		requested: getBinaryNodeChildString(imgNode, 'request_image_url')!,
 		original: getBinaryNodeChildString(imgNode, 'original_image_url')!
@@ -276,7 +276,7 @@ const parseImageUrls = (mediaNode: BinaryNode) => {
 }
 
 const parseStatusInfo = (mediaNode: BinaryNode): CatalogStatus => {
-	const node = getBinaryNodeChild(mediaNode, 'status_info')
+	const node: BinaryNode | undefined = getBinaryNodeChild(mediaNode, 'status_info')
 	return {
 		status: getBinaryNodeChildString(node, 'status')!,
 		canAppeal: getBinaryNodeChildString(node, 'can_appeal') === 'true',

@@ -1,6 +1,7 @@
 import type { SignalKeyStoreWithTransaction } from '../Types'
 import logger from '../Utils/logger'
-import { isJidUser, isLidUser, jidDecode } from '../WABinary'
+import { FullJid, isJidUser, isLidUser, jidDecode } from '../WABinary'
+import { DecodedJid, LIDMappingResult } from './types'
 
 const LID_MAPPING_CONSTANTS = {
 	STORAGE_KEY: 'lid-mapping' as const,
@@ -9,22 +10,6 @@ const LID_MAPPING_CONSTANTS = {
 	LID_DOMAIN: '@lid' as const,
 	WHATSAPP_DOMAIN: '@s.whatsapp.net' as const
 } as const
-
-export interface LIDMapping {
-	pnUser: string
-	lidUser: string
-}
-
-export interface LIDMappingResult {
-	success: boolean
-	mapping?: LIDMapping
-	error?: string
-}
-
-export interface DecodedJid {
-	user: string
-	device?: number
-}
 
 export class LIDMappingStore {
 	private readonly keys: SignalKeyStoreWithTransaction
@@ -37,14 +22,14 @@ export class LIDMappingStore {
 	 * Validate and decode JID with enhanced error handling
 	 */
 	private validateAndDecodeJid(jid: string, expectedType: 'lid' | 'pn'): DecodedJid | null {
-		const isValidType = expectedType === 'lid' ? isLidUser(jid) : isJidUser(jid)
+		const isValidType: boolean | undefined = expectedType === 'lid' ? isLidUser(jid) : isJidUser(jid)
 
 		if(!isValidType) {
 			logger.warn({ jid }, `Invalid JID type for ${expectedType}`)
 			return null
 		}
 
-		const decoded = jidDecode(jid)
+		const decoded: FullJid | undefined = jidDecode(jid)
 		if(!decoded?.user) {
 			logger.warn({ jid }, 'Failed to decode JID')
 			return null
@@ -104,8 +89,8 @@ export class LIDMappingStore {
 
 			const { lidJid, pnJid } = validationResult
 
-			const lidDecoded = this.validateAndDecodeJid(lidJid, 'lid')
-			const pnDecoded = this.validateAndDecodeJid(pnJid, 'pn')
+			const lidDecoded: DecodedJid | null = this.validateAndDecodeJid(lidJid, 'lid')
+			const pnDecoded: DecodedJid | null = this.validateAndDecodeJid(pnJid, 'pn')
 
 			if(!lidDecoded || !pnDecoded) {
 				return { success: false, error: 'Failed to decode JID parameters' }
@@ -125,7 +110,7 @@ export class LIDMappingStore {
 				})
 			})
 
-			logger.info({ pnUser, lidUser }, 'USER LID mapping stored successfully')
+			logger.debug({ pnUser, lidUser }, 'USER LID mapping stored successfully')
 
 			return {
 				success: true,
@@ -151,7 +136,7 @@ export class LIDMappingStore {
 				return null
 			}
 
-			const decoded = this.validateAndDecodeJid(pn, 'pn')
+			const decoded: DecodedJid | null = this.validateAndDecodeJid(pn, 'pn')
 			if(!decoded) {
 				return null
 			}
@@ -159,14 +144,14 @@ export class LIDMappingStore {
 			const { user: pnUser, device: pnDevice = LID_MAPPING_CONSTANTS.DEFAULT_DEVICE } = decoded
 
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [pnUser])
-			const lidUser = stored[pnUser]
+			const lidUser: string = stored[pnUser]
 
 			if(!lidUser || typeof lidUser !== 'string') {
 				logger.trace({ pnUser }, 'No LID mapping found for PN user')
 				return null
 			}
 
-			const deviceSpecificLid = this.createDeviceSpecificLid(lidUser, pnDevice)
+			const deviceSpecificLid: string = this.createDeviceSpecificLid(lidUser, pnDevice)
 
 			logger.trace({ pn, deviceSpecificLid, pnDevice }, 'getLIDForPN: Mapping found')
 			return deviceSpecificLid
@@ -189,7 +174,7 @@ export class LIDMappingStore {
 				return null
 			}
 
-			const decoded = this.validateAndDecodeJid(lid, 'lid')
+			const decoded: DecodedJid | null = this.validateAndDecodeJid(lid, 'lid')
 			if(!decoded) {
 				return null
 			}
@@ -198,14 +183,14 @@ export class LIDMappingStore {
 			const reverseKey = `${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
 
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
-			const pnUser = stored[reverseKey]
+			const pnUser: string = stored[reverseKey]
 
 			if(!pnUser || typeof pnUser !== 'string') {
 				logger.trace({ lidUser }, 'No reverse mapping found for LID user')
 				return null
 			}
 
-			const pnJid = this.createDeviceSpecificPN(pnUser, lidDevice)
+			const pnJid: string = this.createDeviceSpecificPN(pnUser, lidDevice)
 
 			logger.trace({ lid, pnJid }, 'Found reverse mapping')
 			return pnJid
@@ -229,12 +214,12 @@ export class LIDMappingStore {
 			}
 
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [userIdentifier])
-			const mappedUser = stored[userIdentifier]
+			const mappedUser: string = stored[userIdentifier]
 
 			if(!mappedUser) {
 				const reverseKey = `${userIdentifier}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
 				const reverseStored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
-				const reverseMappedUser = reverseStored[reverseKey]
+				const reverseMappedUser: string = reverseStored[reverseKey]
 
 				if(!reverseMappedUser) {
 					logger.trace({ userIdentifier, reverseMappedUser }, 'No mapping found for user')
@@ -281,7 +266,7 @@ export class LIDMappingStore {
 			}
 
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [userIdentifier])
-			const mappedUser = stored[userIdentifier]
+			const mappedUser: string = stored[userIdentifier]
 
 			if(mappedUser) {
 				return true

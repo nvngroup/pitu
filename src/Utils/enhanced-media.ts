@@ -1,14 +1,10 @@
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosResponse } from 'axios'
+import { Transform } from 'stream'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
 import { downloadEncryptedContent as originalDownloadEncryptedContent } from '../Utils/messages-media'
 import logger from './logger'
-
-export type MediaDownloadOptions = {
-  startByte?: number
-  endByte?: number
-  options?: AxiosRequestConfig<{}>
-}
+import { MediaDownloadOptions } from './types'
 
 /**
  * Versão modificada da função downloadEncryptedContent que tenta usar
@@ -24,7 +20,7 @@ export const enhancedDownloadEncryptedContent = async(
 	} catch(error) {
 		logger.error({ error }, 'Error in original decryption, trying alternative method')
 
-		const response = await axios.get(downloadUrl, {
+		const response: AxiosResponse = await axios.get(downloadUrl, {
 			responseType: 'arraybuffer',
 			...options.options
 		})
@@ -36,7 +32,7 @@ export const enhancedDownloadEncryptedContent = async(
 		const { cipherKey, iv } = keys
 
 		const { Readable } = await import('stream')
-		const buffer = Buffer.from(response.data)
+		const buffer: Buffer = Buffer.from(response.data)
 		const nodeReadable = new Readable()
 
 		nodeReadable._read = function() { }
@@ -44,10 +40,10 @@ export const enhancedDownloadEncryptedContent = async(
 		nodeReadable.push(buffer)
 		nodeReadable.push(null)
 
-		const startByte = options.startByte || 0
-		const firstBlockIsIV = startByte > 0
+		const startByte: number = options.startByte || 0
+		const firstBlockIsIV: boolean = startByte > 0
 
-		const fallbackDecryptor = createFallbackDecryptStream(cipherKey, iv, firstBlockIsIV)
+		const fallbackDecryptor: Transform = createFallbackDecryptStream(cipherKey, iv, firstBlockIsIV)
 		return nodeReadable.pipe(fallbackDecryptor)
 	}
 }

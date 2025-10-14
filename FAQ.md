@@ -30,6 +30,7 @@ O Baileys se conecta diretamente ao WhatsApp Web via WebSocket, simulando um nav
 ### ❓ Posso usar o mesmo número em vários bots?
 
 ❌ **Não!** Um número WhatsApp só pode estar ativo em um bot por vez. Se tentar usar em vários:
+
 - Os bots irão se desconectar mutuamente
 - Pode resultar em ban temporário
 - Funcionalidades podem parar de funcionar
@@ -37,6 +38,7 @@ O Baileys se conecta diretamente ao WhatsApp Web via WebSocket, simulando um nav
 ### ❓ Preciso manter o WhatsApp mobile online?
 
 ✅ **Sim**, mas com exceções:
+
 - WhatsApp mobile deve estar conectado à internet
 - Não precisa estar com o app aberto
 - Se ficar offline por muito tempo (>14 dias), o bot pode desconectar
@@ -205,12 +207,14 @@ messageQueue.add(() => sock.sendMessage(jid, { text: 'Olá!' }))
 ### ❓ "Connection Closed" - por que acontece?
 
 **Causas comuns**:
+
 - Envio de muitas mensagens muito rápido
 - WhatsApp mobile ficou offline
 - Mudança de IP frequente
 - Uso simultâneo do número
 
 **Soluções**:
+
 ```typescript
 sock.ev.on('connection.update', (update) => {
     if (update.connection === 'close') {
@@ -230,6 +234,7 @@ sock.ev.on('connection.update', (update) => {
 ### ❓ Bot não responde a certas mensagens?
 
 **Verificações**:
+
 ```typescript
 sock.ev.on('messages.upsert', ({ messages }) => {
     for (const msg of messages) {
@@ -248,16 +253,19 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 ### ❓ "Module not found" ao importar?
 
 **Para TypeScript**:
+
 ```typescript
 import makeWASocket from '@nvngroup/pitu'
 ```
 
 **Para JavaScript (CommonJS)**:
+
 ```javascript
 const { default: makeWASocket } = require('@nvngroup/pitu')
 ```
 
 **Para JavaScript (ES Modules)**:
+
 ```javascript
 import makeWASocket from '@nvngroup/pitu'
 ```
@@ -265,6 +273,7 @@ import makeWASocket from '@nvngroup/pitu'
 ### ❓ Erro ao enviar mídia?
 
 **Verificações comuns**:
+
 ```typescript
 // 1. Arquivo existe?
 if (!fs.existsSync('./imagem.jpg')) {
@@ -292,6 +301,7 @@ if (!supportedImages.includes(ext)) {
 ### ❓ Posso usar Baileys comercialmente?
 
 ✅ **Sim**, mas com responsabilidade:
+
 - ✅ Bots de atendimento legítimos
 - ✅ Notificações relevantes
 - ✅ Automação de processos internos
@@ -301,17 +311,20 @@ if (!supportedImages.includes(ext)) {
 ### ❓ Quais são os limites do WhatsApp?
 
 **Limites de velocidade**:
+
 - Máximo 1 mensagem por segundo
 - Máximo 1000 mensagens por dia (número novo)
 - Números antigos têm limites maiores
 
 **Limites de contatos**:
+
 - Máximo 5 grupos novos por dia
 - Máximo 256 participantes por grupo (dependendo da conta)
 
 ### ❓ Como evitar ser banido?
 
 ✅ **Boas práticas**:
+
 - Respeite limites de velocidade
 - Só envie mensagens relevantes
 - Implemente opt-out (descadastro)
@@ -319,6 +332,7 @@ if (!supportedImages.includes(ext)) {
 - Monitore métricas de entrega
 
 ❌ **Evite**:
+
 - Spam ou mensagens em massa
 - Envio para números aleatórios
 - Conteúdo impróprio
@@ -461,6 +475,7 @@ describe('Bot', () => {
 ### ❓ Como deploy em produção?
 
 **Docker**:
+
 ```dockerfile
 FROM node:18-alpine
 
@@ -475,6 +490,7 @@ CMD ["npm", "start"]
 ```
 
 **Docker Compose**:
+
 ```yaml
 version: '3.8'
 services:

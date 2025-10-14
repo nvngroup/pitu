@@ -5,7 +5,7 @@ import { platform, release } from 'os'
 import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
-import { BinaryNode, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
+import { BinaryNode, FullJid, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 import { sha256 } from './crypto'
 import { ILogger } from './logger'
 
@@ -60,8 +60,8 @@ export const getKeyAuthor = (
 )
 
 export const writeRandomPadMax16 = (msg: Uint8Array) => {
-	const pad = randomBytes(1)
-	const padLength = (pad[0] & 0x0f) + 1
+	const pad: Buffer = randomBytes(1)
+	const padLength: number = (pad[0] & 0x0f) + 1
 	return Buffer.concat([msg, Buffer.alloc(padLength, padLength)])
 }
 
@@ -71,7 +71,7 @@ export const unpadRandomMax16 = (e: Uint8Array | Buffer) => {
 		throw new Error('unpadPkcs7 given empty bytes')
 	}
 
-	var r = t[t.length - 1]
+	var r: number = t[t.length - 1]
 	if(r > t.length) {
 		throw new Error(`unpad given ${t.length} bytes, but pad is ${r}`)
 	}
@@ -81,7 +81,7 @@ export const unpadRandomMax16 = (e: Uint8Array | Buffer) => {
 
 export const generateParticipantHashV2 = (participants: string[]): string => {
 	participants.sort()
-	const sha256Hash = sha256(Buffer.from(participants.join(''))).toString('base64')
+	const sha256Hash: string = sha256(Buffer.from(participants.join(''))).toString('base64')
 	return '2:' + sha256Hash.slice(0, 6)
 }
 
@@ -96,7 +96,7 @@ export const generateRegistrationId = (): number => {
 }
 
 export const encodeBigEndian = (e: number, t = 4) => {
-	let r = e
+	let r: number = e
 	const a = new Uint8Array(t)
 	for(let i = t - 1; i >= 0; i--) {
 		a[i] = 255 & r
@@ -134,7 +134,7 @@ export const debouncedTimeout = (intervalMs = 1000, task?: () => void) => {
 export const delay = (ms: number) => delayCancellable (ms).delay
 
 export const delayCancellable = (ms: number) => {
-	const stack = new Error().stack
+	const stack: string | undefined = new Error().stack
 	let timeout: NodeJS.Timeout
 	let reject: (error) => void
 	const delay: Promise<void> = new Promise((resolve, _reject) => {
@@ -161,8 +161,7 @@ export async function promiseTimeout<T>(ms: number | undefined, promise: (resolv
 		return new Promise(promise)
 	}
 
-	const stack = new Error().stack
-	// Create a promise that rejects in <ms> milliseconds
+	const stack: string | undefined = new Error().stack
 	const { delay, cancel } = delayCancellable (ms)
 	const p = new Promise((resolve, reject) => {
 		delay
@@ -204,13 +203,13 @@ export async function promiseTimeoutEnhanced<T>(
 	promise: (resolve: (v: T) => void, reject: (error) => void) => void,
 	customTimeoutMs?: number
 ) {
-	const timeoutMs = getAdaptiveTimeout(operationType, customTimeoutMs)
+	const timeoutMs: number = getAdaptiveTimeout(operationType, customTimeoutMs)
 
 	if(!timeoutMs) {
 		return new Promise(promise)
 	}
 
-	const stack = new Error().stack
+	const stack: string | undefined = new Error().stack
 	const { delay, cancel } = delayCancellable(timeoutMs)
 	const p = new Promise<T>((resolve, reject) => {
 		delay
@@ -235,21 +234,21 @@ export async function promiseTimeoutEnhanced<T>(
 // inspired from whatsmeow code
 // https://github.com/tulir/whatsmeow/blob/64bc969fbe78d31ae0dd443b8d4c80a5d026d07a/send.go#L42
 export const generateMessageIDV2 = (userId?: string): string => {
-	const data = Buffer.alloc(8 + 20 + 16)
+	const data: Buffer = Buffer.alloc(8 + 20 + 16)
 	data.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 1000)))
 
 	if(userId) {
-		const id = jidDecode(userId)
+		const id: FullJid | undefined = jidDecode(userId)
 		if(id?.user) {
 			data.write(id.user, 8)
 			data.write('@c.us', 8 + id.user.length)
 		}
 	}
 
-	const random = randomBytes(16)
+	const random: Buffer = randomBytes(16)
 	random.copy(data, 28)
 
-	const hash = createHash('sha256').update(data).digest()
+	const hash: Buffer = createHash('sha256').update(data).digest()
 	return '3EB0' + hash.toString('hex').toUpperCase().substring(0, 18)
 }
 
@@ -376,7 +375,7 @@ export const fetchLatestWaWebVersion = async(options: AxiosRequestConfig<{}>) =>
 
 /** unique message tag prefix for MD clients */
 export const generateMdTagPrefix = () => {
-	const bytes = randomBytes(4)
+	const bytes: Buffer = randomBytes(4)
 	return `${bytes.readUInt16BE()}.${bytes.readUInt16BE(2)}-`
 }
 
@@ -409,8 +408,8 @@ const CODE_MAP: { [_: string]: DisconnectReason } = {
  */
 export const getErrorCodeFromStreamError = (node: BinaryNode) => {
 	const [reasonNode] = getAllBinaryNodeChildren(node)
-	let reason = reasonNode?.tag || 'unknown'
-	const statusCode = +(node.attrs.code || CODE_MAP[reason] || DisconnectReason.badSession)
+	let reason: string = reasonNode?.tag || 'unknown'
+	const statusCode: number = +(node.attrs.code || CODE_MAP[reason] || DisconnectReason.badSession)
 
 	if(statusCode === DisconnectReason.restartRequired) {
 		reason = 'restart required'
@@ -456,7 +455,7 @@ const UNEXPECTED_SERVER_CODE_TEXT = 'Unexpected server response: '
 export const getCodeFromWSError = (error: Error) => {
 	let statusCode = 500
 	if(error?.message?.includes(UNEXPECTED_SERVER_CODE_TEXT)) {
-		const code = +error?.message.slice(UNEXPECTED_SERVER_CODE_TEXT.length)
+		const code: number = +error?.message.slice(UNEXPECTED_SERVER_CODE_TEXT.length)
 		if(!Number.isNaN(code) && code >= 400) {
 			statusCode = code
 		}

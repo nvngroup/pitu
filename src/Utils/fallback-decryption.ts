@@ -1,4 +1,4 @@
-import { createDecipheriv } from 'crypto'
+import { createDecipheriv, DecipherGCM, Decipheriv } from 'crypto'
 import { Transform } from 'stream'
 import logger from './logger'
 
@@ -12,17 +12,17 @@ export const tryAlternativeDecryption = (
 	iv: Buffer | Uint8Array,
 	additionalData?: Buffer
 ) => {
-	const cipherKeyBuf = Buffer.isBuffer(cipherKey) ? cipherKey : Buffer.from(cipherKey)
-	const ivBuf = Buffer.isBuffer(iv) ? iv : Buffer.from(iv)
+	const cipherKeyBuf: Buffer = Buffer.isBuffer(cipherKey) ? cipherKey : Buffer.from(cipherKey)
+	const ivBuf: Buffer = Buffer.isBuffer(iv) ? iv : Buffer.from(iv)
 
 	try {
-		const decipher = createDecipheriv('aes-256-gcm', cipherKeyBuf, ivBuf)
+		const decipher: DecipherGCM = createDecipheriv('aes-256-gcm', cipherKeyBuf, ivBuf)
 		if(additionalData) {
 			decipher.setAAD(additionalData)
 		}
 
-		const enc = ciphertext.subarray(0, ciphertext.length - 16)
-		const tag = ciphertext.subarray(ciphertext.length - 16)
+		const enc: Buffer = ciphertext.subarray(0, ciphertext.length - 16)
+		const tag: Buffer = ciphertext.subarray(ciphertext.length - 16)
 
 		try {
 			decipher.setAuthTag(tag)
@@ -36,14 +36,14 @@ export const tryAlternativeDecryption = (
 	}
 
 	try {
-		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
+		const decipher: Decipheriv = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 	} catch(error) {
 		logger.error({ error }, 'Second decryption attempt failed: ')
 	}
 
 	try {
-		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
+		const decipher: Decipheriv = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
 	} catch(error) {
 		logger.error({ error }, 'Third decryption attempt failed: ')
@@ -62,24 +62,24 @@ export const createFallbackDecryptStream = (
 	iv: Buffer | Uint8Array,
 	firstBlockIsIV = false
 ) => {
-	const cipherKeyBuf = Buffer.isBuffer(cipherKey) ? cipherKey : Buffer.from(cipherKey)
-	const ivBuf = Buffer.isBuffer(iv) ? iv : Buffer.from(iv)
+	const cipherKeyBuf: Buffer = Buffer.isBuffer(cipherKey) ? cipherKey : Buffer.from(cipherKey)
+	const ivBuf: Buffer = Buffer.isBuffer(iv) ? iv : Buffer.from(iv)
 
-	let remainingBytes = Buffer.from([])
+	let remainingBytes: Buffer = Buffer.from([])
 	let aes: ReturnType<typeof createDecipheriv> | null = null
 
 	return new Transform({
 		transform(chunk, _, callback) {
 			try {
-				let data = Buffer.concat([remainingBytes, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)])
+				let data: Buffer = Buffer.concat([remainingBytes, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)])
 
 				const AES_CHUNK_SIZE = 16
-				const decryptLength = Math.floor(data.length / AES_CHUNK_SIZE) * AES_CHUNK_SIZE
+				const decryptLength: number = Math.floor(data.length / AES_CHUNK_SIZE) * AES_CHUNK_SIZE
 				remainingBytes = data.subarray(decryptLength)
 				data = data.subarray(0, decryptLength)
 
 				if(!aes) {
-					let ivValue = ivBuf
+					let ivValue: Buffer = ivBuf
 					if(firstBlockIsIV) {
 						ivValue = data.subarray(0, AES_CHUNK_SIZE)
 						data = data.subarray(AES_CHUNK_SIZE)

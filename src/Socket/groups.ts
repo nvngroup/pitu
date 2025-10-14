@@ -1,4 +1,4 @@
-import { waproto as proto } from '../../WAProto'
+import { waproto } from '../../WAProto'
 import {
 	type GroupMetadata,
 	type GroupParticipant,
@@ -50,7 +50,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 	)
 
 	const groupMetadata = async(jid: string, timeoutMs?: number) => {
-		const result = await groupQueryEnhanced(
+		const result: BinaryNode = await groupQueryEnhanced(
 			jid,
 			'get',
 			[ { tag: 'query', attrs: { request: 'interactive' } } ],
@@ -73,7 +73,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					throw lastError
 				}
 
-				const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+				const delay: number = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
 				await new Promise(resolve => setTimeout(resolve, delay))
 			}
 		}
@@ -83,7 +83,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 
 
 	const groupFetchAllParticipating = async() => {
-		const result = await query({
+		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
 				to: '@g.us',
@@ -102,11 +102,11 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			]
 		})
 		const data: { [_: string]: GroupMetadata } = { }
-		const groupsChild = getBinaryNodeChild(result, 'groups')
+		const groupsChild: BinaryNode | undefined = getBinaryNodeChild(result, 'groups')
 		if(groupsChild) {
-			const groups = getBinaryNodeChildren(groupsChild, 'group')
+			const groups: BinaryNode[] = getBinaryNodeChildren(groupsChild, 'group')
 			for(const groupNode of groups) {
-				const meta = extractGroupMetadata({
+				const meta: GroupMetadata = extractGroupMetadata({
 					tag: 'result',
 					attrs: { },
 					content: [groupNode]
@@ -122,7 +122,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 
 	async function parseGroupResult(node: BinaryNode) {
 		logger.info({ node }, 'parseGroupResult')
-		const groupNode = getBinaryNodeChild(node, 'group')
+		const groupNode: BinaryNode | undefined = getBinaryNodeChild(node, 'group')
 		if(groupNode) {
 			try {
 				logger.info({ groupNode }, 'groupNode')
@@ -157,8 +157,8 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		groupMetadata,
 		groupMetadataWithRetry,
 		groupCreate: async(subject: string, participants: string[]) => {
-			const key = generateMessageIDV2()
-			const result = await groupQuery(
+			const key: string = generateMessageIDV2()
+			const result: BinaryNode = await groupQuery(
 				'@g.us',
 				'set',
 				[
@@ -206,7 +206,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			)
 		},
 		groupRequestParticipantsList: async(jid: string) => {
-			const result = await groupQuery(
+			const result: BinaryNode = await groupQuery(
 				jid,
 				'get',
 				[
@@ -216,12 +216,12 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					}
 				]
 			)
-			const node = getBinaryNodeChild(result, 'membership_approval_requests')
-			const participants = getBinaryNodeChildren(node, 'membership_approval_request')
+			const node: BinaryNode | undefined = getBinaryNodeChild(result, 'membership_approval_requests')
+			const participants: BinaryNode[] = getBinaryNodeChildren(node, 'membership_approval_request')
 			return participants.map(v => v.attrs)
 		},
 		groupRequestParticipantsUpdate: async(jid: string, participants: string[], action: 'approve' | 'reject') => {
-			const result = await groupQuery(
+			const result: BinaryNode = await groupQuery(
 				jid,
 				'set',
 				[{
@@ -239,9 +239,9 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					]
 				}]
 			)
-			const node = getBinaryNodeChild(result, 'membership_requests_action')
-			const nodeAction = getBinaryNodeChild(node, action)
-			const participantsAffected = getBinaryNodeChildren(nodeAction, 'participant')
+			const node: BinaryNode | undefined = getBinaryNodeChild(result, 'membership_requests_action')
+			const nodeAction: BinaryNode | undefined = getBinaryNodeChild(node, action)
+			const participantsAffected: BinaryNode[] = getBinaryNodeChildren(nodeAction, 'participant')
 			return participantsAffected.map(p => {
 				return { status: p.attrs.error || '200', jid: p.attrs.jid }
 			})
@@ -251,7 +251,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			participants: string[],
 			action: ParticipantAction
 		) => {
-			const result = await groupQuery(
+			const result: BinaryNode = await groupQuery(
 				jid,
 				'set',
 				[
@@ -265,15 +265,15 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 					}
 				]
 			)
-			const node = getBinaryNodeChild(result, action)
-			const participantsAffected = getBinaryNodeChildren(node, 'participant')
+			const node: BinaryNode | undefined = getBinaryNodeChild(result, action)
+			const participantsAffected: BinaryNode[] = getBinaryNodeChildren(node, 'participant')
 			return participantsAffected.map(p => {
 				return { status: p.attrs.error || '200', jid: p.attrs.jid, content: p }
 			})
 		},
 		groupUpdateDescription: async(jid: string, description?: string) => {
-			const metadata = await groupMetadata(jid)
-			const prev = metadata.descId ?? null
+			const metadata: GroupMetadata = await groupMetadata(jid)
+			const prev: string | null = metadata.descId ?? null
 
 			await groupQuery(
 				jid,
@@ -293,18 +293,18 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			)
 		},
 		groupInviteCode: async(jid: string) => {
-			const result = await groupQuery(jid, 'get', [{ tag: 'invite', attrs: {} }])
-			const inviteNode = getBinaryNodeChild(result, 'invite')
+			const result: BinaryNode = await groupQuery(jid, 'get', [{ tag: 'invite', attrs: {} }])
+			const inviteNode: BinaryNode | undefined = getBinaryNodeChild(result, 'invite')
 			return inviteNode?.attrs.code
 		},
 		groupRevokeInvite: async(jid: string) => {
-			const result = await groupQuery(jid, 'set', [{ tag: 'invite', attrs: {} }])
-			const inviteNode = getBinaryNodeChild(result, 'invite')
+			const result: BinaryNode = await groupQuery(jid, 'set', [{ tag: 'invite', attrs: {} }])
+			const inviteNode: BinaryNode | undefined = getBinaryNodeChild(result, 'invite')
 			return inviteNode?.attrs.code
 		},
 		groupAcceptInvite: async(code: string) => {
-			const results = await groupQuery('@g.us', 'set', [{ tag: 'invite', attrs: { code } }])
-			const result = getBinaryNodeChild(results, 'group')
+			const results: BinaryNode = await groupQuery('@g.us', 'set', [{ tag: 'invite', attrs: { code } }])
+			const result: BinaryNode | undefined = getBinaryNodeChild(results, 'group')
 			return result?.attrs.jid
 		},
 
@@ -315,7 +315,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		 * @returns true if successful
 		 */
 		groupRevokeInviteV4: async(groupJid: string, invitedJid: string) => {
-			const result = await groupQuery(groupJid, 'set', [{ tag: 'revoke', attrs: {}, content: [{ tag: 'participant', attrs: { jid: invitedJid } }] }])
+			const result: BinaryNode = await groupQuery(groupJid, 'set', [{ tag: 'revoke', attrs: {}, content: [{ tag: 'participant', attrs: { jid: invitedJid } }] }])
 			return !!result
 		},
 
@@ -324,9 +324,9 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		 * @param key the key of the invite message, or optionally only provide the jid of the person who sent the invite
 		 * @param inviteMessage the message to accept
 		 */
-		groupAcceptInviteV4: ev.createBufferedFunction(async(key: string | WAMessageKey, inviteMessage: proto.Message.IGroupInviteMessage) => {
+		groupAcceptInviteV4: ev.createBufferedFunction(async(key: string | WAMessageKey, inviteMessage: waproto.Message.IGroupInviteMessage) => {
 			key = typeof key === 'string' ? { remoteJid: key } : key
-			const results = await groupQuery(inviteMessage.groupJid!, 'set', [{
+			const results: BinaryNode = await groupQuery(inviteMessage.groupJid!, 'set', [{
 				tag: 'accept',
 				attrs: {
 					code: inviteMessage.inviteCode!,
@@ -336,7 +336,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			}])
 
 			if(key.id) {
-				inviteMessage = proto.Message.GroupInviteMessage.fromObject(inviteMessage)
+				inviteMessage = waproto.Message.GroupInviteMessage.fromObject(inviteMessage)
 				inviteMessage.inviteExpiration = 0
 				inviteMessage.inviteCode = ''
 				ev.emit('messages.update', [
@@ -372,7 +372,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 			return results.attrs.from
 		}),
 		groupGetInviteInfo: async(code: string) => {
-			const results = await groupQuery('@g.us', 'get', [{ tag: 'invite', attrs: { code } }])
+			const results: BinaryNode = await groupQuery('@g.us', 'get', [{ tag: 'invite', attrs: { code } }])
 			return extractGroupMetadata(results)
 		},
 		groupToggleEphemeral: async(jid: string, ephemeralExpiration: number) => {
@@ -395,8 +395,8 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 }
 
 export const extractGroupMetadata = (result: BinaryNode) => {
-	const group = getBinaryNodeChild(result, 'group')!
-	const descChild = getBinaryNodeChild(group, 'description')
+	const group: BinaryNode = getBinaryNodeChild(result, 'group')!
+	const descChild: BinaryNode | undefined = getBinaryNodeChild(group, 'description')
 	let desc: string | undefined
 	let descId: string | undefined
 	let descOwner: string | undefined
@@ -410,9 +410,9 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 		descTime = +descChild.attrs.t
 	}
 
-	const groupId = group.attrs.id.includes('@') ? group.attrs.id : jidEncode(group.attrs.id, 'g.us')
-	const eph = getBinaryNodeChild(group, 'ephemeral')?.attrs.expiration
-	const memberAddMode = getBinaryNodeChildString(group, 'member_add_mode') === 'all_member_add'
+	const groupId: string = group.attrs.id.includes('@') ? group.attrs.id : jidEncode(group.attrs.id, 'g.us')
+	const eph: string | undefined = getBinaryNodeChild(group, 'ephemeral')?.attrs.expiration
+	const memberAddMode: boolean = getBinaryNodeChildString(group, 'member_add_mode') === 'all_member_add'
 	const metadata: GroupMetadata = {
 		id: groupId,
 		addressingMode: group.attrs.addressing_mode as 'pn' | 'lid',

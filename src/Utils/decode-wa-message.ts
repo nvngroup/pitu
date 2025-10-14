@@ -1,74 +1,34 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
+import { LIDMappingStore } from '../Signal/lid-mapping'
 import { SignalRepository, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
+import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
 import { sessionDiagnostics } from './session-diagnostics'
+import { MessageType, NO_MESSAGE_FOUND_ERROR_TEXT } from './types'
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if(!sender.includes('@s.whatsapp.net')) {
 		return sender
 	}
 
-	const lidMapping = repository.getLIDMappingStore()
-	const normalizedSender = jidNormalizedUser(sender)
-	const lidForPN = await lidMapping.getLIDForPN(normalizedSender)
+	const lidMapping: LIDMappingStore = repository.getLIDMappingStore()
+	const normalizedSender: string = jidNormalizedUser(sender)
+	const lidForPN: string | null = await lidMapping.getLIDForPN(normalizedSender)
 
 	if(lidForPN?.includes('@lid')) {
-		const senderDecoded = jidDecode(sender)
-		const deviceId = senderDecoded?.device || 0
+		const senderDecoded: FullJid | undefined = jidDecode(sender)
+		const deviceId: number = senderDecoded?.device || 0
 		return jidEncode(jidDecode(lidForPN)!.user, 'lid', deviceId)
 	}
 
 	return sender
 }
 
-/*
-const storeMappingFromEnvelope = async(
-	stanza: BinaryNode,
-	sender: string,
-	decryptionJid: string,
-	repository: SignalRepository,
-	logger: ILogger
-): Promise<void> => {
-	const { senderAlt } = extractAddressingContext(stanza)
-
-	if(senderAlt && isLidUser(senderAlt) && isJidUser(sender) && decryptionJid === sender) {
-		try {
-			await repository.storeLIDPNMapping(senderAlt, sender)
-			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
-		} catch(error) {
-			logger.warn({ sender, senderAlt, error }, 'Failed to store LID mapping')
-		}
-	}
-}
-*/
-
-export const NO_MESSAGE_FOUND_ERROR_TEXT = 'Message absent from node'
-export const MISSING_KEYS_ERROR_TEXT = 'Key used already or never filled'
-
-export const NACK_REASONS = {
-	ParsingError: 487,
-	UnrecognizedStanza: 488,
-	UnrecognizedStanzaClass: 489,
-	UnrecognizedStanzaType: 490,
-	InvalidProtobuf: 491,
-	InvalidHostedCompanionStanza: 493,
-	MissingMessageSecret: 495,
-	SignalErrorOldCounter: 496,
-	MessageDeletedOnPeer: 499,
-	UnhandledError: 500,
-	UnsupportedAdminRevoke: 550,
-	UnsupportedLIDGroup: 551,
-	DBOperationFailed: 552
-}
-
-type MessageType = 'chat' | 'peer_broadcast' | 'other_broadcast' | 'group' | 'direct_peer_status' | 'other_status' | 'newsletter'
-
 export const extractAddressingContext = (stanza: BinaryNode) => {
-	const addressingMode = stanza.attrs.addressing_mode || 'pn'
+	const addressingMode: string = stanza.attrs.addressing_mode || 'pn'
 	let senderAlt: string | undefined
 	let recipientAlt: string | undefined
 
@@ -113,11 +73,11 @@ const processMessageContent = async(
 	}
 
 	try {
-		const msgBuffer = await decryptMessageContent(tag, attrs, content, sender, author, repository)
+		const msgBuffer: Uint8Array = await decryptMessageContent(tag, attrs, content, sender, author, repository)
 		await processDecryptedMessage(msgBuffer, tag, attrs, fullMessage, author, repository, logger)
 		return { processed: true }
 	} catch(err) {
-		const jid = fullMessage.key?.remoteJid || 'unknown'
+		const jid: string = fullMessage.key?.remoteJid || 'unknown'
 		await handleDecryptionError(err, fullMessage, author, jid, tag, attrs, repository, logger)
 		return { processed: true }
 	}
@@ -131,7 +91,7 @@ const decryptMessageContent = async(
 	author: string,
 	repository: SignalRepository
 ): Promise<Uint8Array> => {
-	const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
+	const e2eType: string | undefined = tag === 'plaintext' ? 'plaintext' : attrs.type
 
 	switch (e2eType) {
 	case 'skmsg':
@@ -142,8 +102,8 @@ const decryptMessageContent = async(
 		})
 	case 'pkmsg':
 	case 'msg':
-		const user = isJidUser(sender) ? sender : author
-		const decryptionJid = await getDecryptionJid(user, repository)
+		const user: string = isJidUser(sender) ? sender : author
+		const decryptionJid: string = await getDecryptionJid(user, repository)
 		return await repository.decryptMessage({
 			jid: decryptionJid,
 			type: e2eType,
@@ -165,7 +125,7 @@ const processDecryptedMessage = async(
 	repository: SignalRepository,
 	logger: ILogger
 ) => {
-	const e2eType = tag === 'plaintext' ? 'plaintext' : attrs.type
+	const e2eType: string | undefined = tag === 'plaintext' ? 'plaintext' : attrs.type
 	let msg: waproto.IMessage = waproto.Message.decode(e2eType !== 'plaintext' ? unpadRandomMax16(msgBuffer) : msgBuffer)
 	msg = msg.deviceSentMessage?.message || msg
 
@@ -197,18 +157,18 @@ export const handleDecryptionError = async(
 	repository: SignalRepository,
 	logger: ILogger
 ) => {
-	const isMacError = macErrorManager.isMACError(err)
-	const isSessionError = isMacError ||
+	const isMacError: boolean = macErrorManager.isMACError(err)
+	const isSessionError: boolean = isMacError ||
 						  err.message?.includes('InvalidMessageException') ||
 						  err.message?.includes('session') ||
 						  err.message?.includes('Bad MAC')
 
-	const isGroupMessage = tag === 'enc' && attrs.type === 'skmsg'
+	const isGroupMessage: boolean = tag === 'enc' && attrs.type === 'skmsg'
 
 	if(isMacError) {
 		macErrorManager.recordMACError(jid, err)
 		const stats = macErrorManager.getErrorStats(jid)
-		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
+		const canRetry: boolean = macErrorManager.shouldAttemptRecovery(jid)
 
 		logger.warn({
 			key: fullMessage.key,
@@ -250,7 +210,7 @@ export const handleDecryptionError = async(
 	fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 
 	if(isMacError) {
-		const canRetry = macErrorManager.shouldAttemptRecovery(jid)
+		const canRetry: boolean = macErrorManager.shouldAttemptRecovery(jid)
 		fullMessage.messageStubParameters = [
 			canRetry
 				? 'MAC verification failed - attempting recovery'
@@ -272,7 +232,6 @@ const attemptMACRecovery = async(
 	logger: ILogger
 ) => {
 	try {
-		// Record the MAC error for diagnostic tracking
 		sessionDiagnostics.recordSessionError(jid, 'mac_error_during_decryption')
 
 		logger.debug({
@@ -282,8 +241,7 @@ const attemptMACRecovery = async(
 			errorStats: sessionDiagnostics.getErrorStats(jid)
 		}, 'Starting MAC recovery with enhanced diagnostics')
 
-		// Try general MAC recovery first
-		const recoverySuccess = await macErrorManager.attemptAutomaticRecovery(
+		const recoverySuccess: boolean = await macErrorManager.attemptAutomaticRecovery(
 			jid,
 			() => performSessionCleanup(jid, author, isGroupMessage, repository, logger)
 		)
@@ -295,7 +253,6 @@ const attemptMACRecovery = async(
 				author: isGroupMessage ? author : undefined
 			}, 'MAC error recovery completed - session will be re-established')
 		} else {
-			// If automatic recovery fails, suggest forced reset
 			logger.warn({
 				key,
 				sender: jid,
@@ -311,7 +268,6 @@ const attemptMACRecovery = async(
 			recoveryError
 		}, 'Failed to perform MAC error recovery')
 
-		// Record the recovery failure for diagnostics
 		sessionDiagnostics.recordSessionError(jid, `mac_recovery_failed: ${recoveryError.message}`)
 	}
 }
@@ -340,7 +296,7 @@ const cleanupGroupSenderKey = async(
 	const { SenderKeyName } = await import('../Signal/Group/sender-key-name')
 	const { jidDecode } = await import('../WABinary')
 
-	const decoded = jidDecode(author)
+	const decoded: FullJid | undefined = jidDecode(author)
 	if(!decoded) {
 		return
 	}
@@ -371,8 +327,8 @@ export function decodeMessageNode(
 	let author: string
 	let fromMe = false
 
-	const msgId = stanza.attrs.id
-	const from = stanza.attrs.from
+	const msgId: string = stanza.attrs.id
+	const from: string = stanza.attrs.from
 	const participant: string | undefined = stanza.attrs.participant
 	const participantLid: string | undefined = stanza.attrs.participant_lid
 	const recipient: string | undefined = stanza.attrs.recipient
@@ -431,7 +387,7 @@ export function decodeMessageNode(
 			throw new Boom('No participant in group message')
 		}
 
-		const isParticipantMe = isMe(participant)
+		const isParticipantMe: boolean = isMe(participant)
 		if(isJidStatusBroadcast(from)) {
 			msgType = isParticipantMe ? 'direct_peer_status' : 'other_status'
 		} else {
@@ -453,7 +409,7 @@ export function decodeMessageNode(
 		throw new Boom('Unknown message type', { data: stanza })
 	}
 
-	const pushname = stanza?.attrs?.notify
+	const pushname: string = stanza?.attrs?.notify
 
 	const key: WAMessageKey = {
 		remoteJid: chatId,

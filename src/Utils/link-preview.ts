@@ -1,4 +1,5 @@
 import { AxiosRequestConfig } from 'axios'
+import { Readable } from 'stream'
 import { WAMediaUploadFunction, WAUrlInfo } from '../Types'
 import { ILogger } from './logger'
 import { prepareWAMessageMedia } from './messages'
@@ -10,7 +11,7 @@ const getCompressedJpegThumbnail = async(
 	url: string,
 	{ thumbnailWidth, fetchOpts }: URLGenerationOptions
 ) => {
-	const stream = await getHttpStream(url, fetchOpts)
+	const stream: Readable = await getHttpStream(url, fetchOpts)
 	const result = await extractImageThumb(stream, thumbnailWidth)
 	return result
 }

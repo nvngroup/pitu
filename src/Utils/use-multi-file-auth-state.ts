@@ -18,7 +18,7 @@ const fileLock = new AsyncLock({ maxPending: Infinity })
  * */
 export const useMultiFileAuthState = async(folder: string): Promise<{ state: AuthenticationState, saveCreds: () => Promise<void> }> => {
 	const writeData = (data: AuthenticationCreds, file: string) => {
-		const filePath = join(folder, fixFileName(file)!)
+		const filePath: string = join(folder, fixFileName(file)!)
 		return fileLock.acquire(
 			filePath,
 			() => writeFile(join(filePath), JSON.stringify(data, BufferJSON.replacer))
@@ -27,7 +27,7 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 
 	const readData = async(file: string) => {
 		try {
-			const filePath = join(folder, fixFileName(file)!)
+			const filePath: string = join(folder, fixFileName(file)!)
 			const data = await fileLock.acquire(
 				filePath,
 				() => readFile(filePath, { encoding: 'utf-8' })
@@ -45,7 +45,7 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 
 	const removeData = async(file: string) => {
 		try {
-			const filePath = join(folder, fixFileName(file)!)
+			const filePath: string = join(folder, fixFileName(file)!)
 			await fileLock.acquire(
 				filePath,
 				() => unlink(filePath)

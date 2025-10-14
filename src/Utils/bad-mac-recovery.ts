@@ -1,16 +1,9 @@
 import { Boom } from '@hapi/boom'
+import { LIDMappingStore } from '../Signal/lid-mapping'
 import type { SignalAuthState, SignalRepository } from '../Types'
-import { jidNormalizedUser } from '../WABinary'
+import { FullJid, jidNormalizedUser } from '../WABinary'
 import logger from './logger'
-
-export interface BadMACError {
-	jid: string
-	type: '1:1' | 'group'
-	authorJid?: string
-	timestamp: number
-	attempt: number
-	stackTrace: string
-}
+import { BadMACError } from './types'
 
 /**
  * Specific handler for libsignal "Bad MAC" errors
@@ -25,8 +18,8 @@ export class BadMACRecoveryManager {
 	 * Detects if an error is specifically libsignal's "Bad MAC"
 	 */
 	isBadMACError(error: Error): boolean {
-		const msg = error.message?.toLowerCase() || ''
-		const stack = error.stack?.toLowerCase() || ''
+		const msg: string = error.message?.toLowerCase() || ''
+		const stack: string = error.stack?.toLowerCase() || ''
 
 		return (
 			msg.includes('bad mac') ||
@@ -45,10 +38,10 @@ export class BadMACRecoveryManager {
 	 * Logs a Bad MAC error
 	 */
 	recordBadMACError(jid: string, error: Error, type: '1:1' | 'group', authorJid?: string): BadMACError {
-		const normalizedJid = jidNormalizedUser(jid)
-		const key = type === 'group' && authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
+		const normalizedJid: string = jidNormalizedUser(jid)
+		const key: string = type === 'group' && authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
 
-		const currentAttempts = this.recoveryAttempts.get(key) || 0
+		const currentAttempts: number = this.recoveryAttempts.get(key) || 0
 		this.recoveryAttempts.set(key, currentAttempts + 1)
 
 		const badMACError: BadMACError = {
@@ -81,14 +74,14 @@ export class BadMACRecoveryManager {
 	 * Checks if automatic recovery should be attempted
 	 */
 	shouldAttemptRecovery(jid: string, authorJid?: string): boolean {
-		const normalizedJid = jidNormalizedUser(jid)
-		const key = authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
+		const normalizedJid: string = jidNormalizedUser(jid)
+		const key: string = authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
 
-		const attempts = this.recoveryAttempts.get(key) || 0
-		const lastErrors = this.errorHistory.get(key) || []
+		const attempts: number = this.recoveryAttempts.get(key) || 0
+		const lastErrors: BadMACError[] = this.errorHistory.get(key) || []
 
 		if(lastErrors.length > 0) {
-			const lastError = lastErrors[lastErrors.length - 1]
+			const lastError: BadMACError = lastErrors[lastErrors.length - 1]
 			if(Date.now() - lastError.timestamp < this.cooldownPeriod) {
 				return attempts < this.maxRetries
 			}
@@ -108,8 +101,8 @@ export class BadMACRecoveryManager {
 		type: '1:1' | 'group',
 		authorJid?: string
 	): Promise<boolean> {
-		const normalizedJid = jidNormalizedUser(jid)
-		const normalizedAuthorJid = authorJid ? jidNormalizedUser(authorJid) : undefined
+		const normalizedJid: string = jidNormalizedUser(jid)
+		const normalizedAuthorJid: string | undefined = authorJid ? jidNormalizedUser(authorJid) : undefined
 
 		if(!this.shouldAttemptRecovery(normalizedJid, normalizedAuthorJid)) {
 			logger.warn({
@@ -158,19 +151,17 @@ export class BadMACRecoveryManager {
 	private async recover1to1Session(jid: string, authState: SignalAuthState, repository: SignalRepository): Promise<void> {
 		logger.info({ jid }, 'Starting comprehensive 1:1 session recovery for Bad MAC error')
 
-		// Step 1: Handle LID/PN mapping if applicable
 		if(jid.includes('@s.whatsapp.net')) {
-			const lidMapping = repository.getLIDMappingStore()
-			const lidForPN = await lidMapping.getLIDForPN(jid)
+			const lidMapping: LIDMappingStore = repository.getLIDMappingStore()
+			const lidForPN: string | null = await lidMapping.getLIDForPN(jid)
 
 			if(lidForPN?.includes('@lid')) {
-				const pnAddr = repository.jidToSignalProtocolAddress(jid)
-				const lidAddr = repository.jidToSignalProtocolAddress(lidForPN)
+				const pnAddr: string = repository.jidToSignalProtocolAddress(jid)
+				const lidAddr: string = repository.jidToSignalProtocolAddress(lidForPN)
 
 				logger.debug({ jid, lidForPN, pnAddr: pnAddr.toString(), lidAddr: lidAddr.toString() },
 					'Clearing both PN and LID sessions due to Bad MAC error')
 
-				// Clear both sessions
 				await authState.keys.set({
 					session: {
 						[pnAddr.toString()]: null,
@@ -178,7 +169,6 @@ export class BadMACRecoveryManager {
 					}
 				})
 
-				// Clear identity keys for both addresses
 				await authState.keys.set({
 					'pre-key': {
 						[pnAddr.toString()]: null,
@@ -190,23 +180,19 @@ export class BadMACRecoveryManager {
 			}
 		}
 
-		// Step 2: Clear regular session
-		const addr = repository.jidToSignalProtocolAddress(jid)
+		const addr: string = repository.jidToSignalProtocolAddress(jid)
 		logger.debug({ jid, address: addr.toString() }, 'Clearing session data for Bad MAC recovery')
 
 		await authState.keys.set({
 			session: { [addr.toString()]: null }
 		})
 
-		// Clear identity key for this address
 		await authState.keys.set({
 			session: { [addr.toString()]: null }
 		})
 
-		// Step 3: Aggressive pre-key cleanup
 		logger.debug({ jid }, 'Performing aggressive pre-key cleanup for Bad MAC recovery')
 
-		// Get all pre-keys and clear them
 		const { 'pre-key': existingPreKeys } = await authState.keys.get('pre-key', [])
 		if(existingPreKeys && Object.keys(existingPreKeys).length > 0) {
 			logger.debug({ jid, preKeyCount: Object.keys(existingPreKeys).length },
@@ -217,7 +203,6 @@ export class BadMACRecoveryManager {
 			session: { [addr.toString()]: null }
 		})
 
-		// Step 4: Clear signed pre-key to force regeneration
 		await authState.keys.set({
 			'pre-key': {}
 		})
@@ -233,7 +218,7 @@ export class BadMACRecoveryManager {
 		const { SenderKeyName } = await import('../Signal/Group/sender-key-name')
 		const { jidDecode } = await import('../WABinary')
 
-		const decoded = jidDecode(authorJid)
+		const decoded: FullJid | undefined = jidDecode(authorJid)
 		if(!decoded) {
 			throw new Error(`Invalid JID format: ${authorJid}`)
 		}
@@ -245,7 +230,7 @@ export class BadMACRecoveryManager {
 		}
 
 		const senderKeyName = new SenderKeyName(groupJid, sender)
-		const keyId = senderKeyName.toString()
+		const keyId: string = senderKeyName.toString()
 
 		await authState.keys.set({
 			'sender-key': { [keyId]: null }
@@ -258,11 +243,11 @@ export class BadMACRecoveryManager {
 	 * Clears old error history
 	 */
 	cleanup(): void {
-		const cutoff = Date.now() - (this.cooldownPeriod * 10)
+		const cutoff: number = Date.now() - (this.cooldownPeriod * 10)
 		let cleaned = 0
 
 		this.errorHistory.forEach((errors, key) => {
-			const recentErrors = errors.filter(err => err.timestamp > cutoff)
+			const recentErrors: BadMACError[] = errors.filter(err => err.timestamp > cutoff)
 
 			if(recentErrors.length === 0) {
 				this.errorHistory.delete(key)
@@ -283,10 +268,10 @@ export class BadMACRecoveryManager {
 	 */
 	getStats(jid?: string, authorJid?: string) {
 		if(jid) {
-			const normalizedJid = jidNormalizedUser(jid)
-			const key = authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
-			const errors = this.errorHistory.get(key) || []
-			const attempts = this.recoveryAttempts.get(key) || 0
+			const normalizedJid: string = jidNormalizedUser(jid)
+			const key: string = authorJid ? `${normalizedJid}:${jidNormalizedUser(authorJid)}` : normalizedJid
+			const errors: BadMACError[] = this.errorHistory.get(key) || []
+			const attempts: number = this.recoveryAttempts.get(key) || 0
 
 			return {
 				jid: normalizedJid,
@@ -304,7 +289,7 @@ export class BadMACRecoveryManager {
 
 		this.errorHistory.forEach((errors, key) => {
 			totalErrors += errors.length
-			const attempts = this.recoveryAttempts.get(key) || 0
+			const attempts: number = this.recoveryAttempts.get(key) || 0
 			totalAttempts += attempts
 
 			if(attempts > 0) {
@@ -338,11 +323,11 @@ export async function handleBadMACError(
 	repository: SignalRepository,
 	authorJid?: string
 ): Promise<never> {
-	const type = authorJid ? 'group' : '1:1'
+	const type: 'group' | '1:1' = authorJid ? 'group' : '1:1'
 
-	const errorInfo = badMACRecovery.recordBadMACError(jid, error, type, authorJid)
+	const errorInfo: BadMACError = badMACRecovery.recordBadMACError(jid, error, type, authorJid)
 
-	const recovered = await badMACRecovery.attemptRecovery(jid, authState, repository, type, authorJid)
+	const recovered: boolean = await badMACRecovery.attemptRecovery(jid, authState, repository, type, authorJid)
 
 	const boom = new Boom(
 		`Bad MAC error ${recovered ? 'with automatic recovery' : 'requiring manual intervention'}`,

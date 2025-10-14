@@ -1,22 +1,6 @@
 import { BufferJSON } from '../../Utils/generics'
 import { SenderKeyState } from './sender-key-state'
-import { GROUP_CONSTANTS } from './types'
-
-export interface SenderKeyStateStructure {
-  senderKeyId: number
-  senderChainKey: {
-    iteration: number
-    seed: Uint8Array
-  }
-  senderSigningKey: {
-    public: Uint8Array
-    private?: Uint8Array
-  }
-  senderMessageKeys: Array<{
-    iteration: number
-    seed: Uint8Array
-  }>
-}
+import { GROUP_CONSTANTS, SenderKeyStateStructure } from './types'
 
 export class SenderKeyRecord {
 	private readonly MAX_STATES = GROUP_CONSTANTS.MAX_SENDER_KEY_STATES

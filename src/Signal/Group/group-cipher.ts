@@ -40,7 +40,7 @@ export class GroupCipher {
 			const iteration: number = senderKeyState.getSenderChainKey().getIteration()
 			const senderKey: SenderMessageKey = this.getSenderKey(senderKeyState, iteration === 0 ? 0 : iteration + 1)
 
-			const ciphertext = await this.getCipherText(senderKey.getIv(), senderKey.getCipherKey(), paddedPlaintext)
+			const ciphertext: Buffer = await this.getCipherText(senderKey.getIv(), senderKey.getCipherKey(), paddedPlaintext)
 
 			const senderKeyMessage = new SenderKeyMessage(
 				senderKeyState.getKeyId(),
@@ -74,7 +74,7 @@ export class GroupCipher {
 			senderKeyMessage.verifySignature(senderKeyState.getSigningKeyPublic())
 			const senderKey: SenderMessageKey = this.getSenderKey(senderKeyState, senderKeyMessage.getIteration())
 
-			const plaintext = await this.getPlainText(
+			const plaintext: Uint8Array = await this.getPlainText(
 				senderKey.getIv(),
 				senderKey.getCipherKey(),
 				senderKeyMessage.getCipherText()
@@ -135,9 +135,9 @@ export class GroupCipher {
 		plaintext: Uint8Array | string
 	): Promise<Buffer> {
 		try {
-			const ivBuffer = typeof iv === 'string' ? Buffer.from(iv, 'base64') : iv
-			const keyBuffer = typeof key === 'string' ? Buffer.from(key, 'base64') : key
-			const plaintextBuffer = typeof plaintext === 'string' ? Buffer.from(plaintext) : plaintext
+			const ivBuffer: Uint8Array | Buffer = typeof iv === 'string' ? Buffer.from(iv, 'base64') : iv
+			const keyBuffer: Uint8Array | Buffer = typeof key === 'string' ? Buffer.from(key, 'base64') : key
+			const plaintextBuffer: Uint8Array | Buffer = typeof plaintext === 'string' ? Buffer.from(plaintext) : plaintext
 			return encrypt(keyBuffer, plaintextBuffer, ivBuffer)
 		} catch(e) {
 			logger.error(e)

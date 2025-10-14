@@ -1,8 +1,4 @@
-interface Sender {
-  id: string
-  deviceId: number
-  toString(): string
-}
+import { Sender } from './types'
 
 function isNull(str: string | null): boolean {
 	return str === null || str === ''

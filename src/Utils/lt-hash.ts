@@ -37,13 +37,13 @@ class d {
 	}
 	async _addSingle(e, t) {
 		var r = this
-		const n = new Uint8Array(await hkdf(Buffer.from(t), o, { info: r.salt })).buffer
+		const n: ArrayBuffer = new Uint8Array(await hkdf(Buffer.from(t), o, { info: r.salt })).buffer
 		return r.performPointwiseWithOverflow(await e, n, ((e, t) => e + t))
 	}
 	async _subtractSingle(e, t) {
 		var r = this
 
-		const n = new Uint8Array(await hkdf(Buffer.from(t), o, { info: r.salt })).buffer
+		const n: ArrayBuffer = new Uint8Array(await hkdf(Buffer.from(t), o, { info: r.salt })).buffer
 		return r.performPointwiseWithOverflow(await e, n, ((e, t) => e - t))
 	}
 	performPointwiseWithOverflow(e, t, r) {
