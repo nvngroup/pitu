@@ -194,7 +194,7 @@ export const handleDecryptionError = async(
 			await attemptMACRecovery(jid, author, isGroupMessage, repository, fullMessage.key, logger)
 		}
 	} else if(isSessionError) {
-		logger.warn({
+		logger.trace({
 			key: fullMessage.key,
 			sender: jid,
 			author: isGroupMessage ? author : undefined,
