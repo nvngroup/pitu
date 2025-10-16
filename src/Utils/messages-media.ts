@@ -607,15 +607,19 @@ export const downloadEncryptedContent = async(
 				}
 
 				try {
+					if(remainingBytes.length > 0) {
+						pushBytes(aes.update(remainingBytes), b => this.push(b))
+					}
+
 					pushBytes(aes.final(), b => this.push(b))
 					callback()
 				} catch(error) {
 					logger.error(error)
-					callback(null)
+					callback(error)
 				}
 			} catch(error) {
 				logger.error(error)
-				callback(null)
+				callback(error)
 			}
 		},
 	})
