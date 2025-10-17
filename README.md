@@ -4,7 +4,7 @@
 
 ![NVN.PLUS Logo](https://github.com/user-attachments/assets/8cd401e2-a783-4b69-a3b2-ab371fac711a)
 
-[![Versão](https://img.shields.io/badge/versão-0.1.13-blue.svg)](https://nvn.plus)
+[![Versão](https://img.shields.io/badge/versão-0.1.14-blue.svg)](https://nvn.plus)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/nvngroup/pitu/total)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)
 ![GitHub License](https://img.shields.io/github/license/nvngroup/pitu)
