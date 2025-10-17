@@ -105,7 +105,7 @@ const decryptMessageContent = async(
 	case 'msmsg':
 		const user: string = isJidUser(sender) ? sender : author
 		const decryptionJid: string = await getDecryptionJid(user, repository)
-		const signalType: 'pkmsg' | 'msg' = e2eType === 'msmsg' ? 'msg' : (e2eType as 'pkmsg' | 'msg')
+		const signalType: 'pkmsg' | 'msg' = e2eType === 'msmsg' ? 'msg' : (e2eType)
 		return await repository.decryptMessage({
 			jid: decryptionJid,
 			type: signalType,

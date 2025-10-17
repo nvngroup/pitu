@@ -608,10 +608,23 @@ export const downloadEncryptedContent = async(
 
 				try {
 					if(remainingBytes.length > 0) {
-						pushBytes(aes.update(remainingBytes), b => this.push(b))
+						if(endByte && remainingBytes.length % AES_CHUNK_SIZE !== 0) {
+							const paddedLength: number = Math.ceil(remainingBytes.length / AES_CHUNK_SIZE) * AES_CHUNK_SIZE
+							const paddedBuffer: Buffer = Buffer.alloc(paddedLength)
+							remainingBytes.copy(paddedBuffer)
+							pushBytes(aes.update(paddedBuffer).subarray(0, remainingBytes.length), b => this.push(b))
+						} else {
+							pushBytes(aes.update(remainingBytes), b => this.push(b))
+						}
 					}
 
-					pushBytes(aes.final(), b => this.push(b))
+					if(!endByte || remainingBytes.length === 0 || remainingBytes.length % AES_CHUNK_SIZE === 0) {
+						const finalData: Buffer = aes.final()
+						if(finalData.length > 0) {
+							pushBytes(finalData, b => this.push(b))
+						}
+					}
+
 					callback()
 				} catch(error) {
 					logger.error(error)
