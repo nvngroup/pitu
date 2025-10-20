@@ -607,12 +607,25 @@ export const downloadEncryptedContent = async(
 				}
 
 				try {
-					if(remainingBytes.length > 0) {
-						pushBytes(aes.update(remainingBytes), b => this.push(b))
+					let dataToDecrypt: Buffer = remainingBytes
+
+					if(!endByte && remainingBytes.length >= 10) {
+						dataToDecrypt = remainingBytes.subarray(0, -10)
+					}
+
+					if(dataToDecrypt.length > 0) {
+						pushBytes(aes.update(dataToDecrypt), b => this.push(b))
 					}
 
 					if(!endByte) {
-						pushBytes(aes.final(), b => this.push(b))
+						try {
+							const finalData: Buffer = aes.final()
+							if(finalData.length > 0) {
+								pushBytes(finalData, b => this.push(b))
+							}
+						} catch(finalError) {
+							logger.debug({ finalError }, 'Erro ao finalizar descriptografia, possivelmente já processado')
+						}
 					}
 
 					callback()

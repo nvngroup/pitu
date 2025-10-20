@@ -1,4 +1,4 @@
-import { CipherGCM, Cipheriv, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, Decipheriv, randomBytes } from 'crypto'
+import { CipherGCM, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, randomBytes } from 'crypto'
 import * as libsignal from 'libsignal'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { KeyPair } from '../Types'

@@ -1,4 +1,4 @@
-import { createDecipheriv, DecipherGCM, Decipheriv } from 'crypto'
+import { createDecipheriv, DecipherGCM } from 'crypto'
 import { Transform } from 'stream'
 import logger from './logger'
 
