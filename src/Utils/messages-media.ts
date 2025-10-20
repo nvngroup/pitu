@@ -548,7 +548,7 @@ export const downloadEncryptedContent = async(
 	let remainingBytes: Buffer = Buffer.from([])
 
 	let aes: Crypto.Decipheriv
-	let hmac
+	let hmac: Crypto.Hmac | undefined
 	const encryptedChunks: Buffer[] = []
 
 	if(macKey && !endByte) {
