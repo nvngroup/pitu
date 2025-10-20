@@ -506,7 +506,7 @@ export const downloadContentFromMessage = async(
  * */
 export const downloadEncryptedContent = async(
 	downloadUrl: string,
-	{ cipherKey, iv }: MediaDecryptionKeyInfo,
+	{ cipherKey, iv, macKey }: MediaDecryptionKeyInfo,
 	{ startByte, endByte, options }: MediaDownloadOptions = {}
 ) => {
 	let bytesFetched = 0
@@ -548,6 +548,12 @@ export const downloadEncryptedContent = async(
 	let remainingBytes: Buffer = Buffer.from([])
 
 	let aes: Crypto.Decipheriv
+	let hmac
+	const encryptedChunks: Buffer[] = []
+
+	if(macKey && !endByte) {
+		hmac = Crypto.createHmac('sha256', macKey).update(iv)
+	}
 
 	const pushBytes = (bytes: Buffer, push: (bytes: Buffer) => void) => {
 		if(startByte || endByte) {
@@ -566,6 +572,10 @@ export const downloadEncryptedContent = async(
 		transform(chunk, _, callback) {
 			try {
 				let data: Buffer = Buffer.concat([remainingBytes, chunk])
+
+				if(hmac) {
+					encryptedChunks.push(chunk)
+				}
 
 				const decryptLength: number = toSmallestChunkSize(data.length)
 				remainingBytes = data.subarray(decryptLength)
@@ -608,8 +618,10 @@ export const downloadEncryptedContent = async(
 
 				try {
 					let dataToDecrypt: Buffer = remainingBytes
+					let receivedMac: Buffer | undefined
 
 					if(!endByte && remainingBytes.length >= 10) {
+						receivedMac = remainingBytes.subarray(-10)
 						dataToDecrypt = remainingBytes.subarray(0, -10)
 					}
 
@@ -625,6 +637,21 @@ export const downloadEncryptedContent = async(
 							}
 						} catch(finalError) {
 							logger.debug({ finalError }, 'Erro ao finalizar descriptografia, possivelmente já processado')
+						}
+
+						if(hmac && receivedMac) {
+							const allEncryptedData: Buffer = Buffer.concat(encryptedChunks)
+							const encryptedDataWithoutMac: Buffer = allEncryptedData.subarray(0, -10)
+
+							hmac.update(encryptedDataWithoutMac)
+							const calculatedMac: Buffer = hmac.digest().subarray(0, 10)
+
+							if(!calculatedMac.equals(receivedMac)) {
+								callback(new Error('Falha na verificação do MAC: dados podem estar corrompidos'))
+								return
+							}
+
+							logger.debug({}, 'MAC verificado com sucesso')
 						}
 					}
 
