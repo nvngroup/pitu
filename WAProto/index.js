@@ -11956,6 +11956,7 @@ $root.waproto = (function() {
                     case 44:
                     case 45:
                     case 46:
+                    case 47:
                         break;
                     }
             }
@@ -12173,6 +12174,10 @@ $root.waproto = (function() {
                     case 46:
                         message.capabilities[i] = 46;
                         break;
+                    case "AI_RESPONSE_MODEL_BRANDING":
+                    case 47:
+                        message.capabilities[i] = 47;
+                        break;
                     }
             }
             return message;
@@ -12278,6 +12283,7 @@ $root.waproto = (function() {
          * @property {number} RICH_RESPONSE_UR_MEDIA_GRID_ENABLED=44 RICH_RESPONSE_UR_MEDIA_GRID_ENABLED value
          * @property {number} RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER=45 RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER value
          * @property {number} RICH_RESPONSE_IN_APP_SURVEY=46 RICH_RESPONSE_IN_APP_SURVEY value
+         * @property {number} AI_RESPONSE_MODEL_BRANDING=47 AI_RESPONSE_MODEL_BRANDING value
          */
         BotCapabilityMetadata.BotCapabilityType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -12328,6 +12334,7 @@ $root.waproto = (function() {
             values[valuesById[44] = "RICH_RESPONSE_UR_MEDIA_GRID_ENABLED"] = 44;
             values[valuesById[45] = "RICH_RESPONSE_UR_TIMESTAMP_PLACEHOLDER"] = 45;
             values[valuesById[46] = "RICH_RESPONSE_IN_APP_SURVEY"] = 46;
+            values[valuesById[47] = "AI_RESPONSE_MODEL_BRANDING"] = 47;
             return values;
         })();
 
@@ -12988,6 +12995,7 @@ $root.waproto = (function() {
              * @property {boolean|null} [isSelectedResponsePrimary] SideBySideSurveyMetadata isSelectedResponsePrimary
              * @property {string|null} [messageIdToEdit] SideBySideSurveyMetadata messageIdToEdit
              * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISideBySideSurveyAnalyticsData|null} [analyticsData] SideBySideSurveyMetadata analyticsData
+             * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData|null} [metaAiAnalyticsData] SideBySideSurveyMetadata metaAiAnalyticsData
              */
 
             /**
@@ -13069,6 +13077,14 @@ $root.waproto = (function() {
              */
             SideBySideSurveyMetadata.prototype.analyticsData = null;
 
+            /**
+             * SideBySideSurveyMetadata metaAiAnalyticsData.
+             * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData|null|undefined} metaAiAnalyticsData
+             * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata
+             * @instance
+             */
+            SideBySideSurveyMetadata.prototype.metaAiAnalyticsData = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -13120,6 +13136,12 @@ $root.waproto = (function() {
                 set: $util.oneOfSetter($oneOfFields)
             });
 
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SideBySideSurveyMetadata.prototype, "_metaAiAnalyticsData", {
+                get: $util.oneOfGetter($oneOfFields = ["metaAiAnalyticsData"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
             /**
              * Creates a new SideBySideSurveyMetadata instance using the specified properties.
              * @function create
@@ -13160,6 +13182,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 7, wireType 2 =*/58).string(message.messageIdToEdit);
                 if (message.analyticsData != null && Object.hasOwnProperty.call(message, "analyticsData"))
                     $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.encode(message.analyticsData, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                if (message.metaAiAnalyticsData != null && Object.hasOwnProperty.call(message, "metaAiAnalyticsData"))
+                    $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.encode(message.metaAiAnalyticsData, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                 return writer;
             };
 
@@ -13224,6 +13248,10 @@ $root.waproto = (function() {
                         }
                     case 8: {
                             message.analyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 9: {
+                            message.metaAiAnalyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.decode(reader, reader.uint32());
                             break;
                         }
                     default:
@@ -13305,6 +13333,14 @@ $root.waproto = (function() {
                             return "analyticsData." + error;
                     }
                 }
+                if (message.metaAiAnalyticsData != null && message.hasOwnProperty("metaAiAnalyticsData")) {
+                    properties._metaAiAnalyticsData = 1;
+                    {
+                        var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.verify(message.metaAiAnalyticsData);
+                        if (error)
+                            return "metaAiAnalyticsData." + error;
+                    }
+                }
                 return null;
             };
 
@@ -13338,6 +13374,11 @@ $root.waproto = (function() {
                     if (typeof object.analyticsData !== "object")
                         throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.analyticsData: object expected");
                     message.analyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.fromObject(object.analyticsData);
+                }
+                if (object.metaAiAnalyticsData != null) {
+                    if (typeof object.metaAiAnalyticsData !== "object")
+                        throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.metaAiAnalyticsData: object expected");
+                    message.metaAiAnalyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.fromObject(object.metaAiAnalyticsData);
                 }
                 return message;
             };
@@ -13394,6 +13435,11 @@ $root.waproto = (function() {
                     object.analyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SideBySideSurveyAnalyticsData.toObject(message.analyticsData, options);
                     if (options.oneofs)
                         object._analyticsData = "analyticsData";
+                }
+                if (message.metaAiAnalyticsData != null && message.hasOwnProperty("metaAiAnalyticsData")) {
+                    object.metaAiAnalyticsData = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.toObject(message.metaAiAnalyticsData, options);
+                    if (options.oneofs)
+                        object._metaAiAnalyticsData = "metaAiAnalyticsData";
                 }
                 return object;
             };
@@ -13671,6 +13717,1588 @@ $root.waproto = (function() {
                 };
 
                 return SideBySideSurveyAnalyticsData;
+            })();
+
+            SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData = (function() {
+
+                /**
+                 * Properties of a SidebySideSurveyMetaAiAnalyticsData.
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata
+                 * @interface ISidebySideSurveyMetaAiAnalyticsData
+                 * @property {number|null} [surveyId] SidebySideSurveyMetaAiAnalyticsData surveyId
+                 * @property {string|null} [primaryResponseId] SidebySideSurveyMetaAiAnalyticsData primaryResponseId
+                 * @property {string|null} [testArmName] SidebySideSurveyMetaAiAnalyticsData testArmName
+                 * @property {string|null} [timestampMsString] SidebySideSurveyMetaAiAnalyticsData timestampMsString
+                 * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData|null} [ctaImpressionEvent] SidebySideSurveyMetaAiAnalyticsData ctaImpressionEvent
+                 * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData|null} [ctaClickEvent] SidebySideSurveyMetaAiAnalyticsData ctaClickEvent
+                 * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData|null} [cardImpressionEvent] SidebySideSurveyMetaAiAnalyticsData cardImpressionEvent
+                 * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData|null} [responseEvent] SidebySideSurveyMetaAiAnalyticsData responseEvent
+                 * @property {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData|null} [abandonEvent] SidebySideSurveyMetaAiAnalyticsData abandonEvent
+                 */
+
+                /**
+                 * Constructs a new SidebySideSurveyMetaAiAnalyticsData.
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata
+                 * @classdesc Represents a SidebySideSurveyMetaAiAnalyticsData.
+                 * @implements ISidebySideSurveyMetaAiAnalyticsData
+                 * @constructor
+                 * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData=} [properties] Properties to set
+                 */
+                function SidebySideSurveyMetaAiAnalyticsData(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData surveyId.
+                 * @member {number|null|undefined} surveyId
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.surveyId = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData primaryResponseId.
+                 * @member {string|null|undefined} primaryResponseId
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.primaryResponseId = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData testArmName.
+                 * @member {string|null|undefined} testArmName
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.testArmName = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData timestampMsString.
+                 * @member {string|null|undefined} timestampMsString
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.timestampMsString = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData ctaImpressionEvent.
+                 * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData|null|undefined} ctaImpressionEvent
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.ctaImpressionEvent = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData ctaClickEvent.
+                 * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData|null|undefined} ctaClickEvent
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.ctaClickEvent = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData cardImpressionEvent.
+                 * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData|null|undefined} cardImpressionEvent
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.cardImpressionEvent = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData responseEvent.
+                 * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData|null|undefined} responseEvent
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.responseEvent = null;
+
+                /**
+                 * SidebySideSurveyMetaAiAnalyticsData abandonEvent.
+                 * @member {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData|null|undefined} abandonEvent
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.abandonEvent = null;
+
+                // OneOf field names bound to virtual getters and setters
+                var $oneOfFields;
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_surveyId", {
+                    get: $util.oneOfGetter($oneOfFields = ["surveyId"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_primaryResponseId", {
+                    get: $util.oneOfGetter($oneOfFields = ["primaryResponseId"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_testArmName", {
+                    get: $util.oneOfGetter($oneOfFields = ["testArmName"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_timestampMsString", {
+                    get: $util.oneOfGetter($oneOfFields = ["timestampMsString"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_ctaImpressionEvent", {
+                    get: $util.oneOfGetter($oneOfFields = ["ctaImpressionEvent"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_ctaClickEvent", {
+                    get: $util.oneOfGetter($oneOfFields = ["ctaClickEvent"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_cardImpressionEvent", {
+                    get: $util.oneOfGetter($oneOfFields = ["cardImpressionEvent"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_responseEvent", {
+                    get: $util.oneOfGetter($oneOfFields = ["responseEvent"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                Object.defineProperty(SidebySideSurveyMetaAiAnalyticsData.prototype, "_abandonEvent", {
+                    get: $util.oneOfGetter($oneOfFields = ["abandonEvent"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Creates a new SidebySideSurveyMetaAiAnalyticsData instance using the specified properties.
+                 * @function create
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData=} [properties] Properties to set
+                 * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData} SidebySideSurveyMetaAiAnalyticsData instance
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.create = function create(properties) {
+                    return new SidebySideSurveyMetaAiAnalyticsData(properties);
+                };
+
+                /**
+                 * Encodes the specified SidebySideSurveyMetaAiAnalyticsData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.verify|verify} messages.
+                 * @function encode
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData} message SidebySideSurveyMetaAiAnalyticsData message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.surveyId != null && Object.hasOwnProperty.call(message, "surveyId"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.surveyId);
+                    if (message.primaryResponseId != null && Object.hasOwnProperty.call(message, "primaryResponseId"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.primaryResponseId);
+                    if (message.testArmName != null && Object.hasOwnProperty.call(message, "testArmName"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.testArmName);
+                    if (message.timestampMsString != null && Object.hasOwnProperty.call(message, "timestampMsString"))
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.timestampMsString);
+                    if (message.ctaImpressionEvent != null && Object.hasOwnProperty.call(message, "ctaImpressionEvent"))
+                        $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.encode(message.ctaImpressionEvent, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                    if (message.ctaClickEvent != null && Object.hasOwnProperty.call(message, "ctaClickEvent"))
+                        $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.encode(message.ctaClickEvent, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                    if (message.cardImpressionEvent != null && Object.hasOwnProperty.call(message, "cardImpressionEvent"))
+                        $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.encode(message.cardImpressionEvent, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                    if (message.responseEvent != null && Object.hasOwnProperty.call(message, "responseEvent"))
+                        $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.encode(message.responseEvent, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                    if (message.abandonEvent != null && Object.hasOwnProperty.call(message, "abandonEvent"))
+                        $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.encode(message.abandonEvent, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Encodes the specified SidebySideSurveyMetaAiAnalyticsData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.ISidebySideSurveyMetaAiAnalyticsData} message SidebySideSurveyMetaAiAnalyticsData message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+
+                /**
+                 * Decodes a SidebySideSurveyMetaAiAnalyticsData message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData} SidebySideSurveyMetaAiAnalyticsData
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1: {
+                                message.surveyId = reader.uint32();
+                                break;
+                            }
+                        case 2: {
+                                message.primaryResponseId = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.testArmName = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.timestampMsString = reader.string();
+                                break;
+                            }
+                        case 5: {
+                                message.ctaImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 6: {
+                                message.ctaClickEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 7: {
+                                message.cardImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 8: {
+                                message.responseEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 9: {
+                                message.abandonEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.decode(reader, reader.uint32());
+                                break;
+                            }
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                /**
+                 * Decodes a SidebySideSurveyMetaAiAnalyticsData message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData} SidebySideSurveyMetaAiAnalyticsData
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+
+                /**
+                 * Verifies a SidebySideSurveyMetaAiAnalyticsData message.
+                 * @function verify
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    var properties = {};
+                    if (message.surveyId != null && message.hasOwnProperty("surveyId")) {
+                        properties._surveyId = 1;
+                        if (!$util.isInteger(message.surveyId))
+                            return "surveyId: integer expected";
+                    }
+                    if (message.primaryResponseId != null && message.hasOwnProperty("primaryResponseId")) {
+                        properties._primaryResponseId = 1;
+                        if (!$util.isString(message.primaryResponseId))
+                            return "primaryResponseId: string expected";
+                    }
+                    if (message.testArmName != null && message.hasOwnProperty("testArmName")) {
+                        properties._testArmName = 1;
+                        if (!$util.isString(message.testArmName))
+                            return "testArmName: string expected";
+                    }
+                    if (message.timestampMsString != null && message.hasOwnProperty("timestampMsString")) {
+                        properties._timestampMsString = 1;
+                        if (!$util.isString(message.timestampMsString))
+                            return "timestampMsString: string expected";
+                    }
+                    if (message.ctaImpressionEvent != null && message.hasOwnProperty("ctaImpressionEvent")) {
+                        properties._ctaImpressionEvent = 1;
+                        {
+                            var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.verify(message.ctaImpressionEvent);
+                            if (error)
+                                return "ctaImpressionEvent." + error;
+                        }
+                    }
+                    if (message.ctaClickEvent != null && message.hasOwnProperty("ctaClickEvent")) {
+                        properties._ctaClickEvent = 1;
+                        {
+                            var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.verify(message.ctaClickEvent);
+                            if (error)
+                                return "ctaClickEvent." + error;
+                        }
+                    }
+                    if (message.cardImpressionEvent != null && message.hasOwnProperty("cardImpressionEvent")) {
+                        properties._cardImpressionEvent = 1;
+                        {
+                            var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.verify(message.cardImpressionEvent);
+                            if (error)
+                                return "cardImpressionEvent." + error;
+                        }
+                    }
+                    if (message.responseEvent != null && message.hasOwnProperty("responseEvent")) {
+                        properties._responseEvent = 1;
+                        {
+                            var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.verify(message.responseEvent);
+                            if (error)
+                                return "responseEvent." + error;
+                        }
+                    }
+                    if (message.abandonEvent != null && message.hasOwnProperty("abandonEvent")) {
+                        properties._abandonEvent = 1;
+                        {
+                            var error = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.verify(message.abandonEvent);
+                            if (error)
+                                return "abandonEvent." + error;
+                        }
+                    }
+                    return null;
+                };
+
+                /**
+                 * Creates a SidebySideSurveyMetaAiAnalyticsData message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData} SidebySideSurveyMetaAiAnalyticsData
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.fromObject = function fromObject(object) {
+                    if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData)
+                        return object;
+                    var message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData();
+                    if (object.surveyId != null)
+                        message.surveyId = object.surveyId >>> 0;
+                    if (object.primaryResponseId != null)
+                        message.primaryResponseId = String(object.primaryResponseId);
+                    if (object.testArmName != null)
+                        message.testArmName = String(object.testArmName);
+                    if (object.timestampMsString != null)
+                        message.timestampMsString = String(object.timestampMsString);
+                    if (object.ctaImpressionEvent != null) {
+                        if (typeof object.ctaImpressionEvent !== "object")
+                            throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ctaImpressionEvent: object expected");
+                        message.ctaImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.fromObject(object.ctaImpressionEvent);
+                    }
+                    if (object.ctaClickEvent != null) {
+                        if (typeof object.ctaClickEvent !== "object")
+                            throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ctaClickEvent: object expected");
+                        message.ctaClickEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.fromObject(object.ctaClickEvent);
+                    }
+                    if (object.cardImpressionEvent != null) {
+                        if (typeof object.cardImpressionEvent !== "object")
+                            throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.cardImpressionEvent: object expected");
+                        message.cardImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.fromObject(object.cardImpressionEvent);
+                    }
+                    if (object.responseEvent != null) {
+                        if (typeof object.responseEvent !== "object")
+                            throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.responseEvent: object expected");
+                        message.responseEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.fromObject(object.responseEvent);
+                    }
+                    if (object.abandonEvent != null) {
+                        if (typeof object.abandonEvent !== "object")
+                            throw TypeError(".waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.abandonEvent: object expected");
+                        message.abandonEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.fromObject(object.abandonEvent);
+                    }
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a SidebySideSurveyMetaAiAnalyticsData message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData} message SidebySideSurveyMetaAiAnalyticsData
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (message.surveyId != null && message.hasOwnProperty("surveyId")) {
+                        object.surveyId = message.surveyId;
+                        if (options.oneofs)
+                            object._surveyId = "surveyId";
+                    }
+                    if (message.primaryResponseId != null && message.hasOwnProperty("primaryResponseId")) {
+                        object.primaryResponseId = message.primaryResponseId;
+                        if (options.oneofs)
+                            object._primaryResponseId = "primaryResponseId";
+                    }
+                    if (message.testArmName != null && message.hasOwnProperty("testArmName")) {
+                        object.testArmName = message.testArmName;
+                        if (options.oneofs)
+                            object._testArmName = "testArmName";
+                    }
+                    if (message.timestampMsString != null && message.hasOwnProperty("timestampMsString")) {
+                        object.timestampMsString = message.timestampMsString;
+                        if (options.oneofs)
+                            object._timestampMsString = "timestampMsString";
+                    }
+                    if (message.ctaImpressionEvent != null && message.hasOwnProperty("ctaImpressionEvent")) {
+                        object.ctaImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.toObject(message.ctaImpressionEvent, options);
+                        if (options.oneofs)
+                            object._ctaImpressionEvent = "ctaImpressionEvent";
+                    }
+                    if (message.ctaClickEvent != null && message.hasOwnProperty("ctaClickEvent")) {
+                        object.ctaClickEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.toObject(message.ctaClickEvent, options);
+                        if (options.oneofs)
+                            object._ctaClickEvent = "ctaClickEvent";
+                    }
+                    if (message.cardImpressionEvent != null && message.hasOwnProperty("cardImpressionEvent")) {
+                        object.cardImpressionEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.toObject(message.cardImpressionEvent, options);
+                        if (options.oneofs)
+                            object._cardImpressionEvent = "cardImpressionEvent";
+                    }
+                    if (message.responseEvent != null && message.hasOwnProperty("responseEvent")) {
+                        object.responseEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.toObject(message.responseEvent, options);
+                        if (options.oneofs)
+                            object._responseEvent = "responseEvent";
+                    }
+                    if (message.abandonEvent != null && message.hasOwnProperty("abandonEvent")) {
+                        object.abandonEvent = $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.toObject(message.abandonEvent, options);
+                        if (options.oneofs)
+                            object._abandonEvent = "abandonEvent";
+                    }
+                    return object;
+                };
+
+                /**
+                 * Converts this SidebySideSurveyMetaAiAnalyticsData to JSON.
+                 * @function toJSON
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the default type url for SidebySideSurveyMetaAiAnalyticsData
+                 * @function getTypeUrl
+                 * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                SidebySideSurveyMetaAiAnalyticsData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData";
+                };
+
+                SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData = (function() {
+
+                    /**
+                     * Properties of a SideBySideSurveyAbandonEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @interface ISideBySideSurveyAbandonEventData
+                     * @property {string|null} [abandonDwellTimeMsString] SideBySideSurveyAbandonEventData abandonDwellTimeMsString
+                     */
+
+                    /**
+                     * Constructs a new SideBySideSurveyAbandonEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @classdesc Represents a SideBySideSurveyAbandonEventData.
+                     * @implements ISideBySideSurveyAbandonEventData
+                     * @constructor
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData=} [properties] Properties to set
+                     */
+                    function SideBySideSurveyAbandonEventData(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+
+                    /**
+                     * SideBySideSurveyAbandonEventData abandonDwellTimeMsString.
+                     * @member {string|null|undefined} abandonDwellTimeMsString
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @instance
+                     */
+                    SideBySideSurveyAbandonEventData.prototype.abandonDwellTimeMsString = null;
+
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+
+                    // Virtual OneOf for proto3 optional field
+                    Object.defineProperty(SideBySideSurveyAbandonEventData.prototype, "_abandonDwellTimeMsString", {
+                        get: $util.oneOfGetter($oneOfFields = ["abandonDwellTimeMsString"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+
+                    /**
+                     * Creates a new SideBySideSurveyAbandonEventData instance using the specified properties.
+                     * @function create
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData=} [properties] Properties to set
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData} SideBySideSurveyAbandonEventData instance
+                     */
+                    SideBySideSurveyAbandonEventData.create = function create(properties) {
+                        return new SideBySideSurveyAbandonEventData(properties);
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyAbandonEventData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.verify|verify} messages.
+                     * @function encode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData} message SideBySideSurveyAbandonEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyAbandonEventData.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.abandonDwellTimeMsString != null && Object.hasOwnProperty.call(message, "abandonDwellTimeMsString"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.abandonDwellTimeMsString);
+                        return writer;
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyAbandonEventData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyAbandonEventData} message SideBySideSurveyAbandonEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyAbandonEventData.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyAbandonEventData message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData} SideBySideSurveyAbandonEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyAbandonEventData.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.abandonDwellTimeMsString = reader.string();
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyAbandonEventData message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData} SideBySideSurveyAbandonEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyAbandonEventData.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+
+                    /**
+                     * Verifies a SideBySideSurveyAbandonEventData message.
+                     * @function verify
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    SideBySideSurveyAbandonEventData.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.abandonDwellTimeMsString != null && message.hasOwnProperty("abandonDwellTimeMsString")) {
+                            properties._abandonDwellTimeMsString = 1;
+                            if (!$util.isString(message.abandonDwellTimeMsString))
+                                return "abandonDwellTimeMsString: string expected";
+                        }
+                        return null;
+                    };
+
+                    /**
+                     * Creates a SideBySideSurveyAbandonEventData message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData} SideBySideSurveyAbandonEventData
+                     */
+                    SideBySideSurveyAbandonEventData.fromObject = function fromObject(object) {
+                        if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData)
+                            return object;
+                        var message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData();
+                        if (object.abandonDwellTimeMsString != null)
+                            message.abandonDwellTimeMsString = String(object.abandonDwellTimeMsString);
+                        return message;
+                    };
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyAbandonEventData message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData} message SideBySideSurveyAbandonEventData
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    SideBySideSurveyAbandonEventData.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.abandonDwellTimeMsString != null && message.hasOwnProperty("abandonDwellTimeMsString")) {
+                            object.abandonDwellTimeMsString = message.abandonDwellTimeMsString;
+                            if (options.oneofs)
+                                object._abandonDwellTimeMsString = "abandonDwellTimeMsString";
+                        }
+                        return object;
+                    };
+
+                    /**
+                     * Converts this SideBySideSurveyAbandonEventData to JSON.
+                     * @function toJSON
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    SideBySideSurveyAbandonEventData.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyAbandonEventData
+                     * @function getTypeUrl
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SideBySideSurveyAbandonEventData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyAbandonEventData";
+                    };
+
+                    return SideBySideSurveyAbandonEventData;
+                })();
+
+                SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData = (function() {
+
+                    /**
+                     * Properties of a SideBySideSurveyCTAClickEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @interface ISideBySideSurveyCTAClickEventData
+                     * @property {boolean|null} [isSurveyExpired] SideBySideSurveyCTAClickEventData isSurveyExpired
+                     * @property {string|null} [clickDwellTimeMsString] SideBySideSurveyCTAClickEventData clickDwellTimeMsString
+                     */
+
+                    /**
+                     * Constructs a new SideBySideSurveyCTAClickEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @classdesc Represents a SideBySideSurveyCTAClickEventData.
+                     * @implements ISideBySideSurveyCTAClickEventData
+                     * @constructor
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData=} [properties] Properties to set
+                     */
+                    function SideBySideSurveyCTAClickEventData(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+
+                    /**
+                     * SideBySideSurveyCTAClickEventData isSurveyExpired.
+                     * @member {boolean|null|undefined} isSurveyExpired
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @instance
+                     */
+                    SideBySideSurveyCTAClickEventData.prototype.isSurveyExpired = null;
+
+                    /**
+                     * SideBySideSurveyCTAClickEventData clickDwellTimeMsString.
+                     * @member {string|null|undefined} clickDwellTimeMsString
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @instance
+                     */
+                    SideBySideSurveyCTAClickEventData.prototype.clickDwellTimeMsString = null;
+
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+
+                    // Virtual OneOf for proto3 optional field
+                    Object.defineProperty(SideBySideSurveyCTAClickEventData.prototype, "_isSurveyExpired", {
+                        get: $util.oneOfGetter($oneOfFields = ["isSurveyExpired"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+
+                    // Virtual OneOf for proto3 optional field
+                    Object.defineProperty(SideBySideSurveyCTAClickEventData.prototype, "_clickDwellTimeMsString", {
+                        get: $util.oneOfGetter($oneOfFields = ["clickDwellTimeMsString"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+
+                    /**
+                     * Creates a new SideBySideSurveyCTAClickEventData instance using the specified properties.
+                     * @function create
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData=} [properties] Properties to set
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData} SideBySideSurveyCTAClickEventData instance
+                     */
+                    SideBySideSurveyCTAClickEventData.create = function create(properties) {
+                        return new SideBySideSurveyCTAClickEventData(properties);
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCTAClickEventData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.verify|verify} messages.
+                     * @function encode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData} message SideBySideSurveyCTAClickEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCTAClickEventData.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.isSurveyExpired != null && Object.hasOwnProperty.call(message, "isSurveyExpired"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).bool(message.isSurveyExpired);
+                        if (message.clickDwellTimeMsString != null && Object.hasOwnProperty.call(message, "clickDwellTimeMsString"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.clickDwellTimeMsString);
+                        return writer;
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCTAClickEventData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAClickEventData} message SideBySideSurveyCTAClickEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCTAClickEventData.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCTAClickEventData message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData} SideBySideSurveyCTAClickEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCTAClickEventData.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.isSurveyExpired = reader.bool();
+                                    break;
+                                }
+                            case 2: {
+                                    message.clickDwellTimeMsString = reader.string();
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCTAClickEventData message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData} SideBySideSurveyCTAClickEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCTAClickEventData.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+
+                    /**
+                     * Verifies a SideBySideSurveyCTAClickEventData message.
+                     * @function verify
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    SideBySideSurveyCTAClickEventData.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.isSurveyExpired != null && message.hasOwnProperty("isSurveyExpired")) {
+                            properties._isSurveyExpired = 1;
+                            if (typeof message.isSurveyExpired !== "boolean")
+                                return "isSurveyExpired: boolean expected";
+                        }
+                        if (message.clickDwellTimeMsString != null && message.hasOwnProperty("clickDwellTimeMsString")) {
+                            properties._clickDwellTimeMsString = 1;
+                            if (!$util.isString(message.clickDwellTimeMsString))
+                                return "clickDwellTimeMsString: string expected";
+                        }
+                        return null;
+                    };
+
+                    /**
+                     * Creates a SideBySideSurveyCTAClickEventData message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData} SideBySideSurveyCTAClickEventData
+                     */
+                    SideBySideSurveyCTAClickEventData.fromObject = function fromObject(object) {
+                        if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData)
+                            return object;
+                        var message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData();
+                        if (object.isSurveyExpired != null)
+                            message.isSurveyExpired = Boolean(object.isSurveyExpired);
+                        if (object.clickDwellTimeMsString != null)
+                            message.clickDwellTimeMsString = String(object.clickDwellTimeMsString);
+                        return message;
+                    };
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyCTAClickEventData message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData} message SideBySideSurveyCTAClickEventData
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    SideBySideSurveyCTAClickEventData.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.isSurveyExpired != null && message.hasOwnProperty("isSurveyExpired")) {
+                            object.isSurveyExpired = message.isSurveyExpired;
+                            if (options.oneofs)
+                                object._isSurveyExpired = "isSurveyExpired";
+                        }
+                        if (message.clickDwellTimeMsString != null && message.hasOwnProperty("clickDwellTimeMsString")) {
+                            object.clickDwellTimeMsString = message.clickDwellTimeMsString;
+                            if (options.oneofs)
+                                object._clickDwellTimeMsString = "clickDwellTimeMsString";
+                        }
+                        return object;
+                    };
+
+                    /**
+                     * Converts this SideBySideSurveyCTAClickEventData to JSON.
+                     * @function toJSON
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    SideBySideSurveyCTAClickEventData.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyCTAClickEventData
+                     * @function getTypeUrl
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SideBySideSurveyCTAClickEventData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAClickEventData";
+                    };
+
+                    return SideBySideSurveyCTAClickEventData;
+                })();
+
+                SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData = (function() {
+
+                    /**
+                     * Properties of a SideBySideSurveyCTAImpressionEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @interface ISideBySideSurveyCTAImpressionEventData
+                     * @property {boolean|null} [isSurveyExpired] SideBySideSurveyCTAImpressionEventData isSurveyExpired
+                     */
+
+                    /**
+                     * Constructs a new SideBySideSurveyCTAImpressionEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @classdesc Represents a SideBySideSurveyCTAImpressionEventData.
+                     * @implements ISideBySideSurveyCTAImpressionEventData
+                     * @constructor
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData=} [properties] Properties to set
+                     */
+                    function SideBySideSurveyCTAImpressionEventData(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+
+                    /**
+                     * SideBySideSurveyCTAImpressionEventData isSurveyExpired.
+                     * @member {boolean|null|undefined} isSurveyExpired
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @instance
+                     */
+                    SideBySideSurveyCTAImpressionEventData.prototype.isSurveyExpired = null;
+
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+
+                    // Virtual OneOf for proto3 optional field
+                    Object.defineProperty(SideBySideSurveyCTAImpressionEventData.prototype, "_isSurveyExpired", {
+                        get: $util.oneOfGetter($oneOfFields = ["isSurveyExpired"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+
+                    /**
+                     * Creates a new SideBySideSurveyCTAImpressionEventData instance using the specified properties.
+                     * @function create
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData=} [properties] Properties to set
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData} SideBySideSurveyCTAImpressionEventData instance
+                     */
+                    SideBySideSurveyCTAImpressionEventData.create = function create(properties) {
+                        return new SideBySideSurveyCTAImpressionEventData(properties);
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCTAImpressionEventData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.verify|verify} messages.
+                     * @function encode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData} message SideBySideSurveyCTAImpressionEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCTAImpressionEventData.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.isSurveyExpired != null && Object.hasOwnProperty.call(message, "isSurveyExpired"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).bool(message.isSurveyExpired);
+                        return writer;
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCTAImpressionEventData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCTAImpressionEventData} message SideBySideSurveyCTAImpressionEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCTAImpressionEventData.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCTAImpressionEventData message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData} SideBySideSurveyCTAImpressionEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCTAImpressionEventData.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.isSurveyExpired = reader.bool();
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCTAImpressionEventData message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData} SideBySideSurveyCTAImpressionEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCTAImpressionEventData.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+
+                    /**
+                     * Verifies a SideBySideSurveyCTAImpressionEventData message.
+                     * @function verify
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    SideBySideSurveyCTAImpressionEventData.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.isSurveyExpired != null && message.hasOwnProperty("isSurveyExpired")) {
+                            properties._isSurveyExpired = 1;
+                            if (typeof message.isSurveyExpired !== "boolean")
+                                return "isSurveyExpired: boolean expected";
+                        }
+                        return null;
+                    };
+
+                    /**
+                     * Creates a SideBySideSurveyCTAImpressionEventData message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData} SideBySideSurveyCTAImpressionEventData
+                     */
+                    SideBySideSurveyCTAImpressionEventData.fromObject = function fromObject(object) {
+                        if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData)
+                            return object;
+                        var message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData();
+                        if (object.isSurveyExpired != null)
+                            message.isSurveyExpired = Boolean(object.isSurveyExpired);
+                        return message;
+                    };
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyCTAImpressionEventData message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData} message SideBySideSurveyCTAImpressionEventData
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    SideBySideSurveyCTAImpressionEventData.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.isSurveyExpired != null && message.hasOwnProperty("isSurveyExpired")) {
+                            object.isSurveyExpired = message.isSurveyExpired;
+                            if (options.oneofs)
+                                object._isSurveyExpired = "isSurveyExpired";
+                        }
+                        return object;
+                    };
+
+                    /**
+                     * Converts this SideBySideSurveyCTAImpressionEventData to JSON.
+                     * @function toJSON
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    SideBySideSurveyCTAImpressionEventData.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyCTAImpressionEventData
+                     * @function getTypeUrl
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SideBySideSurveyCTAImpressionEventData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCTAImpressionEventData";
+                    };
+
+                    return SideBySideSurveyCTAImpressionEventData;
+                })();
+
+                SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData = (function() {
+
+                    /**
+                     * Properties of a SideBySideSurveyCardImpressionEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @interface ISideBySideSurveyCardImpressionEventData
+                     */
+
+                    /**
+                     * Constructs a new SideBySideSurveyCardImpressionEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @classdesc Represents a SideBySideSurveyCardImpressionEventData.
+                     * @implements ISideBySideSurveyCardImpressionEventData
+                     * @constructor
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData=} [properties] Properties to set
+                     */
+                    function SideBySideSurveyCardImpressionEventData(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+
+                    /**
+                     * Creates a new SideBySideSurveyCardImpressionEventData instance using the specified properties.
+                     * @function create
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData=} [properties] Properties to set
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData} SideBySideSurveyCardImpressionEventData instance
+                     */
+                    SideBySideSurveyCardImpressionEventData.create = function create(properties) {
+                        return new SideBySideSurveyCardImpressionEventData(properties);
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCardImpressionEventData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.verify|verify} messages.
+                     * @function encode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData} message SideBySideSurveyCardImpressionEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCardImpressionEventData.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyCardImpressionEventData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyCardImpressionEventData} message SideBySideSurveyCardImpressionEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyCardImpressionEventData.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCardImpressionEventData message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData} SideBySideSurveyCardImpressionEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCardImpressionEventData.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyCardImpressionEventData message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData} SideBySideSurveyCardImpressionEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyCardImpressionEventData.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+
+                    /**
+                     * Verifies a SideBySideSurveyCardImpressionEventData message.
+                     * @function verify
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    SideBySideSurveyCardImpressionEventData.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+
+                    /**
+                     * Creates a SideBySideSurveyCardImpressionEventData message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData} SideBySideSurveyCardImpressionEventData
+                     */
+                    SideBySideSurveyCardImpressionEventData.fromObject = function fromObject(object) {
+                        if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData)
+                            return object;
+                        return new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData();
+                    };
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyCardImpressionEventData message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData} message SideBySideSurveyCardImpressionEventData
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    SideBySideSurveyCardImpressionEventData.toObject = function toObject() {
+                        return {};
+                    };
+
+                    /**
+                     * Converts this SideBySideSurveyCardImpressionEventData to JSON.
+                     * @function toJSON
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    SideBySideSurveyCardImpressionEventData.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyCardImpressionEventData
+                     * @function getTypeUrl
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SideBySideSurveyCardImpressionEventData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyCardImpressionEventData";
+                    };
+
+                    return SideBySideSurveyCardImpressionEventData;
+                })();
+
+                SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData = (function() {
+
+                    /**
+                     * Properties of a SideBySideSurveyResponseEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @interface ISideBySideSurveyResponseEventData
+                     * @property {string|null} [responseDwellTimeMsString] SideBySideSurveyResponseEventData responseDwellTimeMsString
+                     */
+
+                    /**
+                     * Constructs a new SideBySideSurveyResponseEventData.
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData
+                     * @classdesc Represents a SideBySideSurveyResponseEventData.
+                     * @implements ISideBySideSurveyResponseEventData
+                     * @constructor
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData=} [properties] Properties to set
+                     */
+                    function SideBySideSurveyResponseEventData(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+
+                    /**
+                     * SideBySideSurveyResponseEventData responseDwellTimeMsString.
+                     * @member {string|null|undefined} responseDwellTimeMsString
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @instance
+                     */
+                    SideBySideSurveyResponseEventData.prototype.responseDwellTimeMsString = null;
+
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+
+                    // Virtual OneOf for proto3 optional field
+                    Object.defineProperty(SideBySideSurveyResponseEventData.prototype, "_responseDwellTimeMsString", {
+                        get: $util.oneOfGetter($oneOfFields = ["responseDwellTimeMsString"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+
+                    /**
+                     * Creates a new SideBySideSurveyResponseEventData instance using the specified properties.
+                     * @function create
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData=} [properties] Properties to set
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData} SideBySideSurveyResponseEventData instance
+                     */
+                    SideBySideSurveyResponseEventData.create = function create(properties) {
+                        return new SideBySideSurveyResponseEventData(properties);
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyResponseEventData message. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.verify|verify} messages.
+                     * @function encode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData} message SideBySideSurveyResponseEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyResponseEventData.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.responseDwellTimeMsString != null && Object.hasOwnProperty.call(message, "responseDwellTimeMsString"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.responseDwellTimeMsString);
+                        return writer;
+                    };
+
+                    /**
+                     * Encodes the specified SideBySideSurveyResponseEventData message, length delimited. Does not implicitly {@link waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.ISideBySideSurveyResponseEventData} message SideBySideSurveyResponseEventData message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    SideBySideSurveyResponseEventData.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyResponseEventData message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData} SideBySideSurveyResponseEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyResponseEventData.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.responseDwellTimeMsString = reader.string();
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+
+                    /**
+                     * Decodes a SideBySideSurveyResponseEventData message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData} SideBySideSurveyResponseEventData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    SideBySideSurveyResponseEventData.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+
+                    /**
+                     * Verifies a SideBySideSurveyResponseEventData message.
+                     * @function verify
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    SideBySideSurveyResponseEventData.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.responseDwellTimeMsString != null && message.hasOwnProperty("responseDwellTimeMsString")) {
+                            properties._responseDwellTimeMsString = 1;
+                            if (!$util.isString(message.responseDwellTimeMsString))
+                                return "responseDwellTimeMsString: string expected";
+                        }
+                        return null;
+                    };
+
+                    /**
+                     * Creates a SideBySideSurveyResponseEventData message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData} SideBySideSurveyResponseEventData
+                     */
+                    SideBySideSurveyResponseEventData.fromObject = function fromObject(object) {
+                        if (object instanceof $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData)
+                            return object;
+                        var message = new $root.waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData();
+                        if (object.responseDwellTimeMsString != null)
+                            message.responseDwellTimeMsString = String(object.responseDwellTimeMsString);
+                        return message;
+                    };
+
+                    /**
+                     * Creates a plain object from a SideBySideSurveyResponseEventData message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData} message SideBySideSurveyResponseEventData
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    SideBySideSurveyResponseEventData.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.responseDwellTimeMsString != null && message.hasOwnProperty("responseDwellTimeMsString")) {
+                            object.responseDwellTimeMsString = message.responseDwellTimeMsString;
+                            if (options.oneofs)
+                                object._responseDwellTimeMsString = "responseDwellTimeMsString";
+                        }
+                        return object;
+                    };
+
+                    /**
+                     * Converts this SideBySideSurveyResponseEventData to JSON.
+                     * @function toJSON
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    SideBySideSurveyResponseEventData.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+
+                    /**
+                     * Gets the default type url for SideBySideSurveyResponseEventData
+                     * @function getTypeUrl
+                     * @memberof waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SideBySideSurveyResponseEventData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/waproto.BotFeedbackMessage.SideBySideSurveyMetadata.SidebySideSurveyMetaAiAnalyticsData.SideBySideSurveyResponseEventData";
+                    };
+
+                    return SideBySideSurveyResponseEventData;
+                })();
+
+                return SidebySideSurveyMetaAiAnalyticsData;
             })();
 
             return SideBySideSurveyMetadata;
@@ -18911,6 +20539,7 @@ $root.waproto = (function() {
          * @interface IBotModelMetadata
          * @property {waproto.BotModelMetadata.ModelType|null} [modelType] BotModelMetadata modelType
          * @property {waproto.BotModelMetadata.PremiumModelStatus|null} [premiumModelStatus] BotModelMetadata premiumModelStatus
+         * @property {string|null} [modelNameOverride] BotModelMetadata modelNameOverride
          */
 
         /**
@@ -18944,6 +20573,14 @@ $root.waproto = (function() {
          */
         BotModelMetadata.prototype.premiumModelStatus = null;
 
+        /**
+         * BotModelMetadata modelNameOverride.
+         * @member {string|null|undefined} modelNameOverride
+         * @memberof waproto.BotModelMetadata
+         * @instance
+         */
+        BotModelMetadata.prototype.modelNameOverride = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -18956,6 +20593,12 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(BotModelMetadata.prototype, "_premiumModelStatus", {
             get: $util.oneOfGetter($oneOfFields = ["premiumModelStatus"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotModelMetadata.prototype, "_modelNameOverride", {
+            get: $util.oneOfGetter($oneOfFields = ["modelNameOverride"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -18987,6 +20630,8 @@ $root.waproto = (function() {
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.modelType);
             if (message.premiumModelStatus != null && Object.hasOwnProperty.call(message, "premiumModelStatus"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.premiumModelStatus);
+            if (message.modelNameOverride != null && Object.hasOwnProperty.call(message, "modelNameOverride"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.modelNameOverride);
             return writer;
         };
 
@@ -19027,6 +20672,10 @@ $root.waproto = (function() {
                     }
                 case 2: {
                         message.premiumModelStatus = reader.int32();
+                        break;
+                    }
+                case 3: {
+                        message.modelNameOverride = reader.string();
                         break;
                     }
                 default:
@@ -19087,6 +20736,11 @@ $root.waproto = (function() {
                     break;
                 }
             }
+            if (message.modelNameOverride != null && message.hasOwnProperty("modelNameOverride")) {
+                properties._modelNameOverride = 1;
+                if (!$util.isString(message.modelNameOverride))
+                    return "modelNameOverride: string expected";
+            }
             return null;
         };
 
@@ -19142,6 +20796,8 @@ $root.waproto = (function() {
                 message.premiumModelStatus = 2;
                 break;
             }
+            if (object.modelNameOverride != null)
+                message.modelNameOverride = String(object.modelNameOverride);
             return message;
         };
 
@@ -19167,6 +20823,11 @@ $root.waproto = (function() {
                 object.premiumModelStatus = options.enums === String ? $root.waproto.BotModelMetadata.PremiumModelStatus[message.premiumModelStatus] === undefined ? message.premiumModelStatus : $root.waproto.BotModelMetadata.PremiumModelStatus[message.premiumModelStatus] : message.premiumModelStatus;
                 if (options.oneofs)
                     object._premiumModelStatus = "premiumModelStatus";
+            }
+            if (message.modelNameOverride != null && message.hasOwnProperty("modelNameOverride")) {
+                object.modelNameOverride = message.modelNameOverride;
+                if (options.oneofs)
+                    object._modelNameOverride = "modelNameOverride";
             }
             return object;
         };
@@ -128790,6 +130451,8 @@ $root.waproto = (function() {
          * @property {waproto.IPollEncValue|null} [encPollVote] MsgOpaqueData encPollVote
          * @property {boolean|null} [isSentCagPollCreation] MsgOpaqueData isSentCagPollCreation
          * @property {waproto.MsgOpaqueData.PollContentType|null} [pollContentType] MsgOpaqueData pollContentType
+         * @property {waproto.MsgOpaqueData.PollType|null} [pollType] MsgOpaqueData pollType
+         * @property {number|null} [correctOptionIndex] MsgOpaqueData correctOptionIndex
          * @property {waproto.MsgOpaqueData.IPollVotesSnapshot|null} [pollVotesSnapshot] MsgOpaqueData pollVotesSnapshot
          * @property {string|null} [encReactionTargetMessageKey] MsgOpaqueData encReactionTargetMessageKey
          * @property {Uint8Array|null} [encReactionEncPayload] MsgOpaqueData encReactionEncPayload
@@ -129009,6 +130672,22 @@ $root.waproto = (function() {
          * @instance
          */
         MsgOpaqueData.prototype.pollContentType = null;
+
+        /**
+         * MsgOpaqueData pollType.
+         * @member {waproto.MsgOpaqueData.PollType|null|undefined} pollType
+         * @memberof waproto.MsgOpaqueData
+         * @instance
+         */
+        MsgOpaqueData.prototype.pollType = null;
+
+        /**
+         * MsgOpaqueData correctOptionIndex.
+         * @member {number|null|undefined} correctOptionIndex
+         * @memberof waproto.MsgOpaqueData
+         * @instance
+         */
+        MsgOpaqueData.prototype.correctOptionIndex = null;
 
         /**
          * MsgOpaqueData pollVotesSnapshot.
@@ -129290,6 +130969,18 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
+        Object.defineProperty(MsgOpaqueData.prototype, "_pollType", {
+            get: $util.oneOfGetter($oneOfFields = ["pollType"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(MsgOpaqueData.prototype, "_correctOptionIndex", {
+            get: $util.oneOfGetter($oneOfFields = ["correctOptionIndex"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
         Object.defineProperty(MsgOpaqueData.prototype, "_pollVotesSnapshot", {
             get: $util.oneOfGetter($oneOfFields = ["pollVotesSnapshot"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -129502,6 +131193,10 @@ $root.waproto = (function() {
                 writer.uint32(/* id 44, wireType 0 =*/352).bool(message.eventIsScheduledCall);
             if (message.eventExtraGuestsAllowed != null && Object.hasOwnProperty.call(message, "eventExtraGuestsAllowed"))
                 writer.uint32(/* id 45, wireType 0 =*/360).bool(message.eventExtraGuestsAllowed);
+            if (message.pollType != null && Object.hasOwnProperty.call(message, "pollType"))
+                writer.uint32(/* id 46, wireType 0 =*/368).int32(message.pollType);
+            if (message.correctOptionIndex != null && Object.hasOwnProperty.call(message, "correctOptionIndex"))
+                writer.uint32(/* id 47, wireType 0 =*/376).int32(message.correctOptionIndex);
             if (message.originalSelfAuthor != null && Object.hasOwnProperty.call(message, "originalSelfAuthor"))
                 writer.uint32(/* id 51, wireType 2 =*/410).string(message.originalSelfAuthor);
             return writer;
@@ -129630,6 +131325,14 @@ $root.waproto = (function() {
                     }
                 case 42: {
                         message.pollContentType = reader.int32();
+                        break;
+                    }
+                case 46: {
+                        message.pollType = reader.int32();
+                        break;
+                    }
+                case 47: {
+                        message.correctOptionIndex = reader.int32();
                         break;
                     }
                 case 41: {
@@ -129868,6 +131571,21 @@ $root.waproto = (function() {
                     break;
                 }
             }
+            if (message.pollType != null && message.hasOwnProperty("pollType")) {
+                properties._pollType = 1;
+                switch (message.pollType) {
+                default:
+                    return "pollType: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            }
+            if (message.correctOptionIndex != null && message.hasOwnProperty("correctOptionIndex")) {
+                properties._correctOptionIndex = 1;
+                if (!$util.isInteger(message.correctOptionIndex))
+                    return "correctOptionIndex: integer expected";
+            }
             if (message.pollVotesSnapshot != null && message.hasOwnProperty("pollVotesSnapshot")) {
                 properties._pollVotesSnapshot = 1;
                 {
@@ -130067,6 +131785,24 @@ $root.waproto = (function() {
                 message.pollContentType = 2;
                 break;
             }
+            switch (object.pollType) {
+            default:
+                if (typeof object.pollType === "number") {
+                    message.pollType = object.pollType;
+                    break;
+                }
+                break;
+            case "POLL":
+            case 0:
+                message.pollType = 0;
+                break;
+            case "QUIZ":
+            case 1:
+                message.pollType = 1;
+                break;
+            }
+            if (object.correctOptionIndex != null)
+                message.correctOptionIndex = object.correctOptionIndex | 0;
             if (object.pollVotesSnapshot != null) {
                 if (typeof object.pollVotesSnapshot !== "object")
                     throw TypeError(".waproto.MsgOpaqueData.pollVotesSnapshot: object expected");
@@ -130367,6 +132103,16 @@ $root.waproto = (function() {
                 object.eventExtraGuestsAllowed = message.eventExtraGuestsAllowed;
                 if (options.oneofs)
                     object._eventExtraGuestsAllowed = "eventExtraGuestsAllowed";
+            }
+            if (message.pollType != null && message.hasOwnProperty("pollType")) {
+                object.pollType = options.enums === String ? $root.waproto.MsgOpaqueData.PollType[message.pollType] === undefined ? message.pollType : $root.waproto.MsgOpaqueData.PollType[message.pollType] : message.pollType;
+                if (options.oneofs)
+                    object._pollType = "pollType";
+            }
+            if (message.correctOptionIndex != null && message.hasOwnProperty("correctOptionIndex")) {
+                object.correctOptionIndex = message.correctOptionIndex;
+                if (options.oneofs)
+                    object._correctOptionIndex = "correctOptionIndex";
             }
             if (message.originalSelfAuthor != null && message.hasOwnProperty("originalSelfAuthor")) {
                 object.originalSelfAuthor = message.originalSelfAuthor;
@@ -131049,6 +132795,20 @@ $root.waproto = (function() {
             };
 
             return PollOption;
+        })();
+
+        /**
+         * PollType enum.
+         * @name waproto.MsgOpaqueData.PollType
+         * @enum {number}
+         * @property {number} POLL=0 POLL value
+         * @property {number} QUIZ=1 QUIZ value
+         */
+        MsgOpaqueData.PollType = (function() {
+            var valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "POLL"] = 0;
+            values[valuesById[1] = "QUIZ"] = 1;
+            return values;
         })();
 
         MsgOpaqueData.PollVoteSnapshot = (function() {
@@ -140947,6 +142707,258 @@ $root.waproto = (function() {
         };
 
         return Pushname;
+    })();
+
+    waproto.QuarantinedMessage = (function() {
+
+        /**
+         * Properties of a QuarantinedMessage.
+         * @memberof waproto
+         * @interface IQuarantinedMessage
+         * @property {Uint8Array|null} [originalData] QuarantinedMessage originalData
+         * @property {string|null} [extractedText] QuarantinedMessage extractedText
+         */
+
+        /**
+         * Constructs a new QuarantinedMessage.
+         * @memberof waproto
+         * @classdesc Represents a QuarantinedMessage.
+         * @implements IQuarantinedMessage
+         * @constructor
+         * @param {waproto.IQuarantinedMessage=} [properties] Properties to set
+         */
+        function QuarantinedMessage(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * QuarantinedMessage originalData.
+         * @member {Uint8Array|null|undefined} originalData
+         * @memberof waproto.QuarantinedMessage
+         * @instance
+         */
+        QuarantinedMessage.prototype.originalData = null;
+
+        /**
+         * QuarantinedMessage extractedText.
+         * @member {string|null|undefined} extractedText
+         * @memberof waproto.QuarantinedMessage
+         * @instance
+         */
+        QuarantinedMessage.prototype.extractedText = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(QuarantinedMessage.prototype, "_originalData", {
+            get: $util.oneOfGetter($oneOfFields = ["originalData"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(QuarantinedMessage.prototype, "_extractedText", {
+            get: $util.oneOfGetter($oneOfFields = ["extractedText"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new QuarantinedMessage instance using the specified properties.
+         * @function create
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {waproto.IQuarantinedMessage=} [properties] Properties to set
+         * @returns {waproto.QuarantinedMessage} QuarantinedMessage instance
+         */
+        QuarantinedMessage.create = function create(properties) {
+            return new QuarantinedMessage(properties);
+        };
+
+        /**
+         * Encodes the specified QuarantinedMessage message. Does not implicitly {@link waproto.QuarantinedMessage.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {waproto.IQuarantinedMessage} message QuarantinedMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        QuarantinedMessage.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.originalData != null && Object.hasOwnProperty.call(message, "originalData"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.originalData);
+            if (message.extractedText != null && Object.hasOwnProperty.call(message, "extractedText"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.extractedText);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified QuarantinedMessage message, length delimited. Does not implicitly {@link waproto.QuarantinedMessage.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {waproto.IQuarantinedMessage} message QuarantinedMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        QuarantinedMessage.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a QuarantinedMessage message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.QuarantinedMessage} QuarantinedMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        QuarantinedMessage.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.QuarantinedMessage();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.originalData = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.extractedText = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a QuarantinedMessage message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.QuarantinedMessage} QuarantinedMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        QuarantinedMessage.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a QuarantinedMessage message.
+         * @function verify
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        QuarantinedMessage.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.originalData != null && message.hasOwnProperty("originalData")) {
+                properties._originalData = 1;
+                if (!(message.originalData && typeof message.originalData.length === "number" || $util.isString(message.originalData)))
+                    return "originalData: buffer expected";
+            }
+            if (message.extractedText != null && message.hasOwnProperty("extractedText")) {
+                properties._extractedText = 1;
+                if (!$util.isString(message.extractedText))
+                    return "extractedText: string expected";
+            }
+            return null;
+        };
+
+        /**
+         * Creates a QuarantinedMessage message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.QuarantinedMessage} QuarantinedMessage
+         */
+        QuarantinedMessage.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.QuarantinedMessage)
+                return object;
+            var message = new $root.waproto.QuarantinedMessage();
+            if (object.originalData != null)
+                if (typeof object.originalData === "string")
+                    $util.base64.decode(object.originalData, message.originalData = $util.newBuffer($util.base64.length(object.originalData)), 0);
+                else if (object.originalData.length >= 0)
+                    message.originalData = object.originalData;
+            if (object.extractedText != null)
+                message.extractedText = String(object.extractedText);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a QuarantinedMessage message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {waproto.QuarantinedMessage} message QuarantinedMessage
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        QuarantinedMessage.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.originalData != null && message.hasOwnProperty("originalData")) {
+                object.originalData = options.bytes === String ? $util.base64.encode(message.originalData, 0, message.originalData.length) : options.bytes === Array ? Array.prototype.slice.call(message.originalData) : message.originalData;
+                if (options.oneofs)
+                    object._originalData = "originalData";
+            }
+            if (message.extractedText != null && message.hasOwnProperty("extractedText")) {
+                object.extractedText = message.extractedText;
+                if (options.oneofs)
+                    object._extractedText = "extractedText";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this QuarantinedMessage to JSON.
+         * @function toJSON
+         * @memberof waproto.QuarantinedMessage
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        QuarantinedMessage.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for QuarantinedMessage
+         * @function getTypeUrl
+         * @memberof waproto.QuarantinedMessage
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        QuarantinedMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.QuarantinedMessage";
+        };
+
+        return QuarantinedMessage;
     })();
 
     waproto.Reaction = (function() {
@@ -151666,7 +153678,6 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.IContactAction|null} [contactAction] SyncActionValue contactAction
          * @property {waproto.SyncActionValue.IMuteAction|null} [muteAction] SyncActionValue muteAction
          * @property {waproto.SyncActionValue.IPinAction|null} [pinAction] SyncActionValue pinAction
-         * @property {waproto.SyncActionValue.ISecurityNotificationSetting|null} [securityNotificationSetting] SyncActionValue securityNotificationSetting
          * @property {waproto.SyncActionValue.IPushNameSetting|null} [pushNameSetting] SyncActionValue pushNameSetting
          * @property {waproto.SyncActionValue.IQuickReplyAction|null} [quickReplyAction] SyncActionValue quickReplyAction
          * @property {waproto.SyncActionValue.IRecentEmojiWeightsAction|null} [recentEmojiWeightsAction] SyncActionValue recentEmojiWeightsAction
@@ -151727,6 +153738,7 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.IMusicUserIdAction|null} [musicUserIdAction] SyncActionValue musicUserIdAction
          * @property {waproto.SyncActionValue.IStatusPostOptInNotificationPreferencesAction|null} [statusPostOptInNotificationPreferencesAction] SyncActionValue statusPostOptInNotificationPreferencesAction
          * @property {waproto.SyncActionValue.IAvatarUpdatedAction|null} [avatarUpdatedAction] SyncActionValue avatarUpdatedAction
+         * @property {waproto.SyncActionValue.IPrivateProcessingSettingAction|null} [privateProcessingSettingAction] SyncActionValue privateProcessingSettingAction
          */
 
         /**
@@ -151783,14 +153795,6 @@ $root.waproto = (function() {
          * @instance
          */
         SyncActionValue.prototype.pinAction = null;
-
-        /**
-         * SyncActionValue securityNotificationSetting.
-         * @member {waproto.SyncActionValue.ISecurityNotificationSetting|null|undefined} securityNotificationSetting
-         * @memberof waproto.SyncActionValue
-         * @instance
-         */
-        SyncActionValue.prototype.securityNotificationSetting = null;
 
         /**
          * SyncActionValue pushNameSetting.
@@ -152272,6 +154276,14 @@ $root.waproto = (function() {
          */
         SyncActionValue.prototype.avatarUpdatedAction = null;
 
+        /**
+         * SyncActionValue privateProcessingSettingAction.
+         * @member {waproto.SyncActionValue.IPrivateProcessingSettingAction|null|undefined} privateProcessingSettingAction
+         * @memberof waproto.SyncActionValue
+         * @instance
+         */
+        SyncActionValue.prototype.privateProcessingSettingAction = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -152302,12 +154314,6 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(SyncActionValue.prototype, "_pinAction", {
             get: $util.oneOfGetter($oneOfFields = ["pinAction"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        // Virtual OneOf for proto3 optional field
-        Object.defineProperty(SyncActionValue.prototype, "_securityNotificationSetting", {
-            get: $util.oneOfGetter($oneOfFields = ["securityNotificationSetting"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -152671,6 +154677,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SyncActionValue.prototype, "_privateProcessingSettingAction", {
+            get: $util.oneOfGetter($oneOfFields = ["privateProcessingSettingAction"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new SyncActionValue instance using the specified properties.
          * @function create
@@ -152705,8 +154717,6 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.MuteAction.encode(message.muteAction, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.pinAction != null && Object.hasOwnProperty.call(message, "pinAction"))
                 $root.waproto.SyncActionValue.PinAction.encode(message.pinAction, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-            if (message.securityNotificationSetting != null && Object.hasOwnProperty.call(message, "securityNotificationSetting"))
-                $root.waproto.SyncActionValue.SecurityNotificationSetting.encode(message.securityNotificationSetting, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             if (message.pushNameSetting != null && Object.hasOwnProperty.call(message, "pushNameSetting"))
                 $root.waproto.SyncActionValue.PushNameSetting.encode(message.pushNameSetting, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
             if (message.quickReplyAction != null && Object.hasOwnProperty.call(message, "quickReplyAction"))
@@ -152827,6 +154837,8 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.StatusPostOptInNotificationPreferencesAction.encode(message.statusPostOptInNotificationPreferencesAction, writer.uint32(/* id 71, wireType 2 =*/570).fork()).ldelim();
             if (message.avatarUpdatedAction != null && Object.hasOwnProperty.call(message, "avatarUpdatedAction"))
                 $root.waproto.SyncActionValue.AvatarUpdatedAction.encode(message.avatarUpdatedAction, writer.uint32(/* id 72, wireType 2 =*/578).fork()).ldelim();
+            if (message.privateProcessingSettingAction != null && Object.hasOwnProperty.call(message, "privateProcessingSettingAction"))
+                $root.waproto.SyncActionValue.PrivateProcessingSettingAction.encode(message.privateProcessingSettingAction, writer.uint32(/* id 74, wireType 2 =*/594).fork()).ldelim();
             return writer;
         };
 
@@ -152879,10 +154891,6 @@ $root.waproto = (function() {
                     }
                 case 5: {
                         message.pinAction = $root.waproto.SyncActionValue.PinAction.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 6: {
-                        message.securityNotificationSetting = $root.waproto.SyncActionValue.SecurityNotificationSetting.decode(reader, reader.uint32());
                         break;
                     }
                 case 7: {
@@ -153125,6 +155133,10 @@ $root.waproto = (function() {
                         message.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.decode(reader, reader.uint32());
                         break;
                     }
+                case 74: {
+                        message.privateProcessingSettingAction = $root.waproto.SyncActionValue.PrivateProcessingSettingAction.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -153196,14 +155208,6 @@ $root.waproto = (function() {
                     var error = $root.waproto.SyncActionValue.PinAction.verify(message.pinAction);
                     if (error)
                         return "pinAction." + error;
-                }
-            }
-            if (message.securityNotificationSetting != null && message.hasOwnProperty("securityNotificationSetting")) {
-                properties._securityNotificationSetting = 1;
-                {
-                    var error = $root.waproto.SyncActionValue.SecurityNotificationSetting.verify(message.securityNotificationSetting);
-                    if (error)
-                        return "securityNotificationSetting." + error;
                 }
             }
             if (message.pushNameSetting != null && message.hasOwnProperty("pushNameSetting")) {
@@ -153686,6 +155690,14 @@ $root.waproto = (function() {
                         return "avatarUpdatedAction." + error;
                 }
             }
+            if (message.privateProcessingSettingAction != null && message.hasOwnProperty("privateProcessingSettingAction")) {
+                properties._privateProcessingSettingAction = 1;
+                {
+                    var error = $root.waproto.SyncActionValue.PrivateProcessingSettingAction.verify(message.privateProcessingSettingAction);
+                    if (error)
+                        return "privateProcessingSettingAction." + error;
+                }
+            }
             return null;
         };
 
@@ -153729,11 +155741,6 @@ $root.waproto = (function() {
                 if (typeof object.pinAction !== "object")
                     throw TypeError(".waproto.SyncActionValue.pinAction: object expected");
                 message.pinAction = $root.waproto.SyncActionValue.PinAction.fromObject(object.pinAction);
-            }
-            if (object.securityNotificationSetting != null) {
-                if (typeof object.securityNotificationSetting !== "object")
-                    throw TypeError(".waproto.SyncActionValue.securityNotificationSetting: object expected");
-                message.securityNotificationSetting = $root.waproto.SyncActionValue.SecurityNotificationSetting.fromObject(object.securityNotificationSetting);
             }
             if (object.pushNameSetting != null) {
                 if (typeof object.pushNameSetting !== "object")
@@ -154035,6 +156042,11 @@ $root.waproto = (function() {
                     throw TypeError(".waproto.SyncActionValue.avatarUpdatedAction: object expected");
                 message.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.fromObject(object.avatarUpdatedAction);
             }
+            if (object.privateProcessingSettingAction != null) {
+                if (typeof object.privateProcessingSettingAction !== "object")
+                    throw TypeError(".waproto.SyncActionValue.privateProcessingSettingAction: object expected");
+                message.privateProcessingSettingAction = $root.waproto.SyncActionValue.PrivateProcessingSettingAction.fromObject(object.privateProcessingSettingAction);
+            }
             return message;
         };
 
@@ -154078,11 +156090,6 @@ $root.waproto = (function() {
                 object.pinAction = $root.waproto.SyncActionValue.PinAction.toObject(message.pinAction, options);
                 if (options.oneofs)
                     object._pinAction = "pinAction";
-            }
-            if (message.securityNotificationSetting != null && message.hasOwnProperty("securityNotificationSetting")) {
-                object.securityNotificationSetting = $root.waproto.SyncActionValue.SecurityNotificationSetting.toObject(message.securityNotificationSetting, options);
-                if (options.oneofs)
-                    object._securityNotificationSetting = "securityNotificationSetting";
             }
             if (message.pushNameSetting != null && message.hasOwnProperty("pushNameSetting")) {
                 object.pushNameSetting = $root.waproto.SyncActionValue.PushNameSetting.toObject(message.pushNameSetting, options);
@@ -154383,6 +156390,11 @@ $root.waproto = (function() {
                 object.avatarUpdatedAction = $root.waproto.SyncActionValue.AvatarUpdatedAction.toObject(message.avatarUpdatedAction, options);
                 if (options.oneofs)
                     object._avatarUpdatedAction = "avatarUpdatedAction";
+            }
+            if (message.privateProcessingSettingAction != null && message.hasOwnProperty("privateProcessingSettingAction")) {
+                object.privateProcessingSettingAction = $root.waproto.SyncActionValue.PrivateProcessingSettingAction.toObject(message.privateProcessingSettingAction, options);
+                if (options.oneofs)
+                    object._privateProcessingSettingAction = "privateProcessingSettingAction";
             }
             return object;
         };
@@ -161444,7 +163456,6 @@ $root.waproto = (function() {
              * @property {string|null} [fullName] LidContactAction fullName
              * @property {string|null} [firstName] LidContactAction firstName
              * @property {string|null} [username] LidContactAction username
-             * @property {boolean|null} [saveOnPrimaryAddressbook] LidContactAction saveOnPrimaryAddressbook
              */
 
             /**
@@ -161486,14 +163497,6 @@ $root.waproto = (function() {
              */
             LidContactAction.prototype.username = null;
 
-            /**
-             * LidContactAction saveOnPrimaryAddressbook.
-             * @member {boolean|null|undefined} saveOnPrimaryAddressbook
-             * @memberof waproto.SyncActionValue.LidContactAction
-             * @instance
-             */
-            LidContactAction.prototype.saveOnPrimaryAddressbook = null;
-
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -161512,12 +163515,6 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(LidContactAction.prototype, "_username", {
                 get: $util.oneOfGetter($oneOfFields = ["username"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(LidContactAction.prototype, "_saveOnPrimaryAddressbook", {
-                get: $util.oneOfGetter($oneOfFields = ["saveOnPrimaryAddressbook"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -161551,8 +163548,6 @@ $root.waproto = (function() {
                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.firstName);
                 if (message.username != null && Object.hasOwnProperty.call(message, "username"))
                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.username);
-                if (message.saveOnPrimaryAddressbook != null && Object.hasOwnProperty.call(message, "saveOnPrimaryAddressbook"))
-                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.saveOnPrimaryAddressbook);
                 return writer;
             };
 
@@ -161597,10 +163592,6 @@ $root.waproto = (function() {
                         }
                     case 3: {
                             message.username = reader.string();
-                            break;
-                        }
-                    case 4: {
-                            message.saveOnPrimaryAddressbook = reader.bool();
                             break;
                         }
                     default:
@@ -161654,11 +163645,6 @@ $root.waproto = (function() {
                     if (!$util.isString(message.username))
                         return "username: string expected";
                 }
-                if (message.saveOnPrimaryAddressbook != null && message.hasOwnProperty("saveOnPrimaryAddressbook")) {
-                    properties._saveOnPrimaryAddressbook = 1;
-                    if (typeof message.saveOnPrimaryAddressbook !== "boolean")
-                        return "saveOnPrimaryAddressbook: boolean expected";
-                }
                 return null;
             };
 
@@ -161680,8 +163666,6 @@ $root.waproto = (function() {
                     message.firstName = String(object.firstName);
                 if (object.username != null)
                     message.username = String(object.username);
-                if (object.saveOnPrimaryAddressbook != null)
-                    message.saveOnPrimaryAddressbook = Boolean(object.saveOnPrimaryAddressbook);
                 return message;
             };
 
@@ -161712,11 +163696,6 @@ $root.waproto = (function() {
                     object.username = message.username;
                     if (options.oneofs)
                         object._username = "username";
-                }
-                if (message.saveOnPrimaryAddressbook != null && message.hasOwnProperty("saveOnPrimaryAddressbook")) {
-                    object.saveOnPrimaryAddressbook = message.saveOnPrimaryAddressbook;
-                    if (options.oneofs)
-                        object._saveOnPrimaryAddressbook = "saveOnPrimaryAddressbook";
                 }
                 return object;
             };
@@ -167061,6 +169040,255 @@ $root.waproto = (function() {
             return PrivacySettingRelayAllCalls;
         })();
 
+        SyncActionValue.PrivateProcessingSettingAction = (function() {
+
+            /**
+             * Properties of a PrivateProcessingSettingAction.
+             * @memberof waproto.SyncActionValue
+             * @interface IPrivateProcessingSettingAction
+             * @property {waproto.SyncActionValue.PrivateProcessingSettingAction.PrivateProcessingStatus|null} [privateProcessingStatus] PrivateProcessingSettingAction privateProcessingStatus
+             */
+
+            /**
+             * Constructs a new PrivateProcessingSettingAction.
+             * @memberof waproto.SyncActionValue
+             * @classdesc Represents a PrivateProcessingSettingAction.
+             * @implements IPrivateProcessingSettingAction
+             * @constructor
+             * @param {waproto.SyncActionValue.IPrivateProcessingSettingAction=} [properties] Properties to set
+             */
+            function PrivateProcessingSettingAction(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * PrivateProcessingSettingAction privateProcessingStatus.
+             * @member {waproto.SyncActionValue.PrivateProcessingSettingAction.PrivateProcessingStatus|null|undefined} privateProcessingStatus
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @instance
+             */
+            PrivateProcessingSettingAction.prototype.privateProcessingStatus = null;
+
+            // OneOf field names bound to virtual getters and setters
+            var $oneOfFields;
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(PrivateProcessingSettingAction.prototype, "_privateProcessingStatus", {
+                get: $util.oneOfGetter($oneOfFields = ["privateProcessingStatus"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new PrivateProcessingSettingAction instance using the specified properties.
+             * @function create
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {waproto.SyncActionValue.IPrivateProcessingSettingAction=} [properties] Properties to set
+             * @returns {waproto.SyncActionValue.PrivateProcessingSettingAction} PrivateProcessingSettingAction instance
+             */
+            PrivateProcessingSettingAction.create = function create(properties) {
+                return new PrivateProcessingSettingAction(properties);
+            };
+
+            /**
+             * Encodes the specified PrivateProcessingSettingAction message. Does not implicitly {@link waproto.SyncActionValue.PrivateProcessingSettingAction.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {waproto.SyncActionValue.IPrivateProcessingSettingAction} message PrivateProcessingSettingAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            PrivateProcessingSettingAction.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.privateProcessingStatus != null && Object.hasOwnProperty.call(message, "privateProcessingStatus"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.privateProcessingStatus);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified PrivateProcessingSettingAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.PrivateProcessingSettingAction.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {waproto.SyncActionValue.IPrivateProcessingSettingAction} message PrivateProcessingSettingAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            PrivateProcessingSettingAction.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes a PrivateProcessingSettingAction message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.SyncActionValue.PrivateProcessingSettingAction} PrivateProcessingSettingAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            PrivateProcessingSettingAction.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.PrivateProcessingSettingAction();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.privateProcessingStatus = reader.int32();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Decodes a PrivateProcessingSettingAction message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.SyncActionValue.PrivateProcessingSettingAction} PrivateProcessingSettingAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            PrivateProcessingSettingAction.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies a PrivateProcessingSettingAction message.
+             * @function verify
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            PrivateProcessingSettingAction.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                var properties = {};
+                if (message.privateProcessingStatus != null && message.hasOwnProperty("privateProcessingStatus")) {
+                    properties._privateProcessingStatus = 1;
+                    switch (message.privateProcessingStatus) {
+                    default:
+                        return "privateProcessingStatus: enum value expected";
+                    case 0:
+                    case 1:
+                        break;
+                    }
+                }
+                return null;
+            };
+
+            /**
+             * Creates a PrivateProcessingSettingAction message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.SyncActionValue.PrivateProcessingSettingAction} PrivateProcessingSettingAction
+             */
+            PrivateProcessingSettingAction.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.SyncActionValue.PrivateProcessingSettingAction)
+                    return object;
+                var message = new $root.waproto.SyncActionValue.PrivateProcessingSettingAction();
+                switch (object.privateProcessingStatus) {
+                default:
+                    if (typeof object.privateProcessingStatus === "number") {
+                        message.privateProcessingStatus = object.privateProcessingStatus;
+                        break;
+                    }
+                    break;
+                case "ENABLED":
+                case 0:
+                    message.privateProcessingStatus = 0;
+                    break;
+                case "DISABLED":
+                case 1:
+                    message.privateProcessingStatus = 1;
+                    break;
+                }
+                return message;
+            };
+
+            /**
+             * Creates a plain object from a PrivateProcessingSettingAction message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {waproto.SyncActionValue.PrivateProcessingSettingAction} message PrivateProcessingSettingAction
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            PrivateProcessingSettingAction.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (message.privateProcessingStatus != null && message.hasOwnProperty("privateProcessingStatus")) {
+                    object.privateProcessingStatus = options.enums === String ? $root.waproto.SyncActionValue.PrivateProcessingSettingAction.PrivateProcessingStatus[message.privateProcessingStatus] === undefined ? message.privateProcessingStatus : $root.waproto.SyncActionValue.PrivateProcessingSettingAction.PrivateProcessingStatus[message.privateProcessingStatus] : message.privateProcessingStatus;
+                    if (options.oneofs)
+                        object._privateProcessingStatus = "privateProcessingStatus";
+                }
+                return object;
+            };
+
+            /**
+             * Converts this PrivateProcessingSettingAction to JSON.
+             * @function toJSON
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            PrivateProcessingSettingAction.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for PrivateProcessingSettingAction
+             * @function getTypeUrl
+             * @memberof waproto.SyncActionValue.PrivateProcessingSettingAction
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            PrivateProcessingSettingAction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.SyncActionValue.PrivateProcessingSettingAction";
+            };
+
+            /**
+             * PrivateProcessingStatus enum.
+             * @name waproto.SyncActionValue.PrivateProcessingSettingAction.PrivateProcessingStatus
+             * @enum {number}
+             * @property {number} ENABLED=0 ENABLED value
+             * @property {number} DISABLED=1 DISABLED value
+             */
+            PrivateProcessingSettingAction.PrivateProcessingStatus = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "ENABLED"] = 0;
+                values[valuesById[1] = "DISABLED"] = 1;
+                return values;
+            })();
+
+            return PrivateProcessingSettingAction;
+        })();
+
         SyncActionValue.PushNameSetting = (function() {
 
             /**
@@ -168082,222 +170310,6 @@ $root.waproto = (function() {
             return RemoveRecentStickerAction;
         })();
 
-        SyncActionValue.SecurityNotificationSetting = (function() {
-
-            /**
-             * Properties of a SecurityNotificationSetting.
-             * @memberof waproto.SyncActionValue
-             * @interface ISecurityNotificationSetting
-             * @property {boolean|null} [showNotification] SecurityNotificationSetting showNotification
-             */
-
-            /**
-             * Constructs a new SecurityNotificationSetting.
-             * @memberof waproto.SyncActionValue
-             * @classdesc Represents a SecurityNotificationSetting.
-             * @implements ISecurityNotificationSetting
-             * @constructor
-             * @param {waproto.SyncActionValue.ISecurityNotificationSetting=} [properties] Properties to set
-             */
-            function SecurityNotificationSetting(properties) {
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * SecurityNotificationSetting showNotification.
-             * @member {boolean|null|undefined} showNotification
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @instance
-             */
-            SecurityNotificationSetting.prototype.showNotification = null;
-
-            // OneOf field names bound to virtual getters and setters
-            var $oneOfFields;
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(SecurityNotificationSetting.prototype, "_showNotification", {
-                get: $util.oneOfGetter($oneOfFields = ["showNotification"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            /**
-             * Creates a new SecurityNotificationSetting instance using the specified properties.
-             * @function create
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {waproto.SyncActionValue.ISecurityNotificationSetting=} [properties] Properties to set
-             * @returns {waproto.SyncActionValue.SecurityNotificationSetting} SecurityNotificationSetting instance
-             */
-            SecurityNotificationSetting.create = function create(properties) {
-                return new SecurityNotificationSetting(properties);
-            };
-
-            /**
-             * Encodes the specified SecurityNotificationSetting message. Does not implicitly {@link waproto.SyncActionValue.SecurityNotificationSetting.verify|verify} messages.
-             * @function encode
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {waproto.SyncActionValue.ISecurityNotificationSetting} message SecurityNotificationSetting message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            SecurityNotificationSetting.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.showNotification != null && Object.hasOwnProperty.call(message, "showNotification"))
-                    writer.uint32(/* id 1, wireType 0 =*/8).bool(message.showNotification);
-                return writer;
-            };
-
-            /**
-             * Encodes the specified SecurityNotificationSetting message, length delimited. Does not implicitly {@link waproto.SyncActionValue.SecurityNotificationSetting.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {waproto.SyncActionValue.ISecurityNotificationSetting} message SecurityNotificationSetting message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            SecurityNotificationSetting.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-
-            /**
-             * Decodes a SecurityNotificationSetting message from the specified reader or buffer.
-             * @function decode
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {waproto.SyncActionValue.SecurityNotificationSetting} SecurityNotificationSetting
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            SecurityNotificationSetting.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.SecurityNotificationSetting();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.showNotification = reader.bool();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-
-            /**
-             * Decodes a SecurityNotificationSetting message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {waproto.SyncActionValue.SecurityNotificationSetting} SecurityNotificationSetting
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            SecurityNotificationSetting.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-
-            /**
-             * Verifies a SecurityNotificationSetting message.
-             * @function verify
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            SecurityNotificationSetting.verify = function verify(message) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                var properties = {};
-                if (message.showNotification != null && message.hasOwnProperty("showNotification")) {
-                    properties._showNotification = 1;
-                    if (typeof message.showNotification !== "boolean")
-                        return "showNotification: boolean expected";
-                }
-                return null;
-            };
-
-            /**
-             * Creates a SecurityNotificationSetting message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {waproto.SyncActionValue.SecurityNotificationSetting} SecurityNotificationSetting
-             */
-            SecurityNotificationSetting.fromObject = function fromObject(object) {
-                if (object instanceof $root.waproto.SyncActionValue.SecurityNotificationSetting)
-                    return object;
-                var message = new $root.waproto.SyncActionValue.SecurityNotificationSetting();
-                if (object.showNotification != null)
-                    message.showNotification = Boolean(object.showNotification);
-                return message;
-            };
-
-            /**
-             * Creates a plain object from a SecurityNotificationSetting message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {waproto.SyncActionValue.SecurityNotificationSetting} message SecurityNotificationSetting
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            SecurityNotificationSetting.toObject = function toObject(message, options) {
-                if (!options)
-                    options = {};
-                var object = {};
-                if (message.showNotification != null && message.hasOwnProperty("showNotification")) {
-                    object.showNotification = message.showNotification;
-                    if (options.oneofs)
-                        object._showNotification = "showNotification";
-                }
-                return object;
-            };
-
-            /**
-             * Converts this SecurityNotificationSetting to JSON.
-             * @function toJSON
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            SecurityNotificationSetting.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-
-            /**
-             * Gets the default type url for SecurityNotificationSetting
-             * @function getTypeUrl
-             * @memberof waproto.SyncActionValue.SecurityNotificationSetting
-             * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
-             */
-            SecurityNotificationSetting.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/waproto.SyncActionValue.SecurityNotificationSetting";
-            };
-
-            return SecurityNotificationSetting;
-        })();
-
         SyncActionValue.StarAction = (function() {
 
             /**
@@ -168898,6 +170910,7 @@ $root.waproto = (function() {
                     case 0:
                     case 1:
                     case 2:
+                    case 3:
                         break;
                     }
                 }
@@ -168941,6 +170954,10 @@ $root.waproto = (function() {
                 case "CONTACTS":
                 case 2:
                     message.mode = 2;
+                    break;
+                case "CLOSE_FRIENDS":
+                case 3:
+                    message.mode = 3;
                     break;
                 }
                 if (object.userJid) {
@@ -169014,12 +171031,14 @@ $root.waproto = (function() {
              * @property {number} ALLOW_LIST=0 ALLOW_LIST value
              * @property {number} DENY_LIST=1 DENY_LIST value
              * @property {number} CONTACTS=2 CONTACTS value
+             * @property {number} CLOSE_FRIENDS=3 CLOSE_FRIENDS value
              */
             StatusPrivacyAction.StatusDistributionMode = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
                 values[valuesById[0] = "ALLOW_LIST"] = 0;
                 values[valuesById[1] = "DENY_LIST"] = 1;
                 values[valuesById[2] = "CONTACTS"] = 2;
+                values[valuesById[3] = "CLOSE_FRIENDS"] = 3;
                 return values;
             })();
 
@@ -171788,6 +173807,8 @@ $root.waproto = (function() {
                     default:
                         return "linkState: enum value expected";
                     case 0:
+                    case 1:
+                    case 2:
                         break;
                     }
                 }
@@ -171816,6 +173837,14 @@ $root.waproto = (function() {
                 case "ACTIVE":
                 case 0:
                     message.linkState = 0;
+                    break;
+                case "PAUSED":
+                case 1:
+                    message.linkState = 1;
+                    break;
+                case "UNLINKED":
+                case 2:
+                    message.linkState = 2;
                     break;
                 }
                 return message;
@@ -171873,10 +173902,14 @@ $root.waproto = (function() {
              * @name waproto.SyncActionValue.WaffleAccountLinkStateAction.AccountLinkState
              * @enum {number}
              * @property {number} ACTIVE=0 ACTIVE value
+             * @property {number} PAUSED=1 PAUSED value
+             * @property {number} UNLINKED=2 UNLINKED value
              */
             WaffleAccountLinkStateAction.AccountLinkState = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
                 values[valuesById[0] = "ACTIVE"] = 0;
+                values[valuesById[1] = "PAUSED"] = 1;
+                values[valuesById[2] = "UNLINKED"] = 2;
                 return values;
             })();
 
@@ -181944,6 +183977,7 @@ $root.waproto = (function() {
          * @property {waproto.IGroupHistoryIndividualMessageInfo|null} [groupHistoryIndividualMessageInfo] WebMessageInfo groupHistoryIndividualMessageInfo
          * @property {waproto.IGroupHistoryBundleInfo|null} [groupHistoryBundleInfo] WebMessageInfo groupHistoryBundleInfo
          * @property {waproto.IInteractiveMessageAdditionalMetadata|null} [interactiveMessageAdditionalMetadata] WebMessageInfo interactiveMessageAdditionalMetadata
+         * @property {waproto.IQuarantinedMessage|null} [quarantinedMessage] WebMessageInfo quarantinedMessage
          */
 
         /**
@@ -182491,6 +184525,14 @@ $root.waproto = (function() {
          */
         WebMessageInfo.prototype.interactiveMessageAdditionalMetadata = null;
 
+        /**
+         * WebMessageInfo quarantinedMessage.
+         * @member {waproto.IQuarantinedMessage|null|undefined} quarantinedMessage
+         * @memberof waproto.WebMessageInfo
+         * @instance
+         */
+        WebMessageInfo.prototype.quarantinedMessage = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -182818,6 +184860,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(WebMessageInfo.prototype, "_quarantinedMessage", {
+            get: $util.oneOfGetter($oneOfFields = ["quarantinedMessage"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new WebMessageInfo instance using the specified properties.
          * @function create
@@ -182981,6 +185029,8 @@ $root.waproto = (function() {
                 $root.waproto.GroupHistoryBundleInfo.encode(message.groupHistoryBundleInfo, writer.uint32(/* id 75, wireType 2 =*/602).fork()).ldelim();
             if (message.interactiveMessageAdditionalMetadata != null && Object.hasOwnProperty.call(message, "interactiveMessageAdditionalMetadata"))
                 $root.waproto.InteractiveMessageAdditionalMetadata.encode(message.interactiveMessageAdditionalMetadata, writer.uint32(/* id 76, wireType 2 =*/610).fork()).ldelim();
+            if (message.quarantinedMessage != null && Object.hasOwnProperty.call(message, "quarantinedMessage"))
+                $root.waproto.QuarantinedMessage.encode(message.quarantinedMessage, writer.uint32(/* id 77, wireType 2 =*/618).fork()).ldelim();
             return writer;
         };
 
@@ -183293,6 +185343,10 @@ $root.waproto = (function() {
                     }
                 case 76: {
                         message.interactiveMessageAdditionalMetadata = $root.waproto.InteractiveMessageAdditionalMetadata.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 77: {
+                        message.quarantinedMessage = $root.waproto.QuarantinedMessage.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -183640,6 +185694,7 @@ $root.waproto = (function() {
                 case 217:
                 case 218:
                 case 219:
+                case 220:
                     break;
                 }
             }
@@ -183987,6 +186042,14 @@ $root.waproto = (function() {
                     var error = $root.waproto.InteractiveMessageAdditionalMetadata.verify(message.interactiveMessageAdditionalMetadata);
                     if (error)
                         return "interactiveMessageAdditionalMetadata." + error;
+                }
+            }
+            if (message.quarantinedMessage != null && message.hasOwnProperty("quarantinedMessage")) {
+                properties._quarantinedMessage = 1;
+                {
+                    var error = $root.waproto.QuarantinedMessage.verify(message.quarantinedMessage);
+                    if (error)
+                        return "quarantinedMessage." + error;
                 }
             }
             return null;
@@ -184972,6 +187035,10 @@ $root.waproto = (function() {
             case 219:
                 message.messageStubType = 219;
                 break;
+            case "QUARANTINED_MESSAGE":
+            case 220:
+                message.messageStubType = 220;
+                break;
             }
             if (object.clearMedia != null)
                 message.clearMedia = Boolean(object.clearMedia);
@@ -185246,6 +187313,11 @@ $root.waproto = (function() {
                 if (typeof object.interactiveMessageAdditionalMetadata !== "object")
                     throw TypeError(".waproto.WebMessageInfo.interactiveMessageAdditionalMetadata: object expected");
                 message.interactiveMessageAdditionalMetadata = $root.waproto.InteractiveMessageAdditionalMetadata.fromObject(object.interactiveMessageAdditionalMetadata);
+            }
+            if (object.quarantinedMessage != null) {
+                if (typeof object.quarantinedMessage !== "object")
+                    throw TypeError(".waproto.WebMessageInfo.quarantinedMessage: object expected");
+                message.quarantinedMessage = $root.waproto.QuarantinedMessage.fromObject(object.quarantinedMessage);
             }
             return message;
         };
@@ -185614,6 +187686,11 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._interactiveMessageAdditionalMetadata = "interactiveMessageAdditionalMetadata";
             }
+            if (message.quarantinedMessage != null && message.hasOwnProperty("quarantinedMessage")) {
+                object.quarantinedMessage = $root.waproto.QuarantinedMessage.toObject(message.quarantinedMessage, options);
+                if (options.oneofs)
+                    object._quarantinedMessage = "quarantinedMessage";
+            }
             return object;
         };
 
@@ -185907,6 +187984,7 @@ $root.waproto = (function() {
          * @property {number} GROUP_MEMBER_LINK_MODE=217 GROUP_MEMBER_LINK_MODE value
          * @property {number} BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE=218 BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE value
          * @property {number} PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE=219 PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE value
+         * @property {number} QUARANTINED_MESSAGE=220 QUARANTINED_MESSAGE value
          */
         WebMessageInfo.StubType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -186130,6 +188208,7 @@ $root.waproto = (function() {
             values[valuesById[217] = "GROUP_MEMBER_LINK_MODE"] = 217;
             values[valuesById[218] = "BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE"] = 218;
             values[valuesById[219] = "PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE"] = 219;
+            values[valuesById[220] = "QUARANTINED_MESSAGE"] = 220;
             return values;
         })();
 
