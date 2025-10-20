@@ -36,14 +36,14 @@ export const tryAlternativeDecryption = (
 	}
 
 	try {
-		const decipher: Decipheriv = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
+		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 	} catch(error) {
 		logger.error({ error }, 'Second decryption attempt failed: ')
 	}
 
 	try {
-		const decipher: Decipheriv = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
+		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
 	} catch(error) {
 		logger.error({ error }, 'Third decryption attempt failed: ')

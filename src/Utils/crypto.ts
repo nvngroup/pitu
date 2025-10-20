@@ -84,12 +84,12 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 }
 
 export function aesEncryptCTR(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const cipher: Cipheriv = createCipheriv('aes-256-ctr', key, iv)
+	const cipher = createCipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([cipher.update(plaintext), cipher.final()])
 }
 
 export function aesDecryptCTR(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const decipher: Decipheriv = createDecipheriv('aes-256-ctr', key, iv)
+	const decipher = createDecipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 }
 
@@ -98,18 +98,18 @@ export function aesDecrypt(buffer: Buffer, key: Buffer) {
 }
 
 export function aesDecryptWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes: Decipheriv = createDecipheriv('aes-256-cbc', key, IV)
+	const aes = createDecipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([aes.update(buffer), aes.final()])
 }
 
 export function aesEncrypt(buffer: Buffer | Uint8Array, key: Buffer) {
 	const IV: Buffer = randomBytes(16)
-	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
+	const aes = createCipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([IV, aes.update(buffer), aes.final()])
 }
 
 export function aesEncrypWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
+	const aes = createCipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([aes.update(buffer), aes.final()])
 }
 
