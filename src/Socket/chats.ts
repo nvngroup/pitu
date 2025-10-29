@@ -8,7 +8,7 @@ import { chatModificationToAppPatch, decodePatches, decodeSyncdSnapshot, encodeS
 import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
 import { ChatMutationMap } from '../Utils/types'
-import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
+import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, isLidUser, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import { makeUSyncSocket } from './usync'
@@ -147,20 +147,32 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		})
 	}
 
-	const onWhatsApp = async(...jids: string[]) => {
-		const cacheKey: string = jids.sort().join(',')
+	const onWhatsApp = async (...phoneNumber: string[]) => {
+		const cacheKey: string = phoneNumber.sort().join(',')
 		const cached = onWhatsAppCache.get(cacheKey)
 		if(cached) {
 			return cached
 		}
 
-		const usyncQuery = new USyncQuery()
-			.withContactProtocol()
-			.withLIDProtocol()
+		let usyncQuery = new USyncQuery()
 
-		for(const jid of jids) {
+		let contactEnabled = false
+		for (const jid of phoneNumber) {
+			if (isLidUser(jid)) {
+				logger?.warn({ jid }, 'LIDs are not supported with onWhatsApp')
+				continue
+			} else {
+				if (!contactEnabled) {
+					contactEnabled = true
+					usyncQuery = usyncQuery.withContactProtocol()
+				}
+			}
 			const phone = `+${jid.replace('+', '').split('@')[0].split(':')[0]}`
 			usyncQuery.withUser(new USyncUser().withPhone(phone))
+		}
+
+		if (usyncQuery.users.length === 0) {
+			return []
 		}
 
 		const results = await sock.executeUSyncQuery(usyncQuery)
