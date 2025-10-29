@@ -95,7 +95,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 
 		if(!!errorCode) {
-		  stanza.attrs.error = errorCode.toString()
+			stanza.attrs.error = errorCode.toString()
 		}
 
 		if(!!attrs.participant) {
@@ -201,13 +201,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				from: authState.creds.me!.id,
 			},
 			content: [{
-			    tag: 'reject',
-			    attrs: {
+				tag: 'reject',
+				attrs: {
 					'call-id': callId,
 					'call-creator': callFrom,
 					count: '0',
-			    },
-			    content: undefined,
+				},
+				content: undefined,
 			}],
 		})
 		await query(stanza)
@@ -258,7 +258,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						},
 						{
 							tag: 'registration',
-							attrs: { },
+							attrs: {},
 							content: encodeBigEndian(authState.creds.registrationId)
 						}
 					]
@@ -281,13 +281,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					const content = receipt.content! as BinaryNode[]
 					content.push({
 						tag: 'keys',
-						attrs: { },
+						attrs: {},
 						content: [
-							{ tag: 'type', attrs: { }, content: Buffer.from(KEY_BUNDLE_TYPE) },
-							{ tag: 'identity', attrs: { }, content: identityKey.public },
+							{ tag: 'type', attrs: {}, content: Buffer.from(KEY_BUNDLE_TYPE) },
+							{ tag: 'identity', attrs: {}, content: identityKey.public },
 							xmppPreKey(key, +keyId),
 							xmppSignedPreKey(signedPreKey),
-							{ tag: 'device-identity', attrs: { }, content: deviceIdentity }
+							{ tag: 'device-identity', attrs: {}, content: deviceIdentity }
 						]
 					})
 
@@ -381,32 +381,32 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			break
 		case 'subject':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_SUBJECT
-			msg.messageStubParameters = [ child.attrs.subject ]
+			msg.messageStubParameters = [child.attrs.subject]
 			break
 		case 'description':
 			const description: string | undefined = getBinaryNodeChild(child, 'body')?.content?.toString()
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_DESCRIPTION
-			msg.messageStubParameters = description ? [ description ] : undefined
+			msg.messageStubParameters = description ? [description] : undefined
 			break
 		case 'announcement':
 		case 'not_announcement':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_ANNOUNCE
-			msg.messageStubParameters = [ (child.tag === 'announcement') ? 'on' : 'off' ]
+			msg.messageStubParameters = [(child.tag === 'announcement') ? 'on' : 'off']
 			break
 		case 'locked':
 		case 'unlocked':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_RESTRICT
-			msg.messageStubParameters = [ (child.tag === 'locked') ? 'on' : 'off' ]
+			msg.messageStubParameters = [(child.tag === 'locked') ? 'on' : 'off']
 			break
 		case 'invite':
 			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_INVITE_LINK
-			msg.messageStubParameters = [ child.attrs.code ]
+			msg.messageStubParameters = [child.attrs.code]
 			break
 		case 'member_add_mode':
 			const addMode = child.content
 			if(addMode) {
 				msg.messageStubType = WAMessageStubType.GROUP_MEMBER_ADD_MODE
-				msg.messageStubParameters = [ addMode.toString() ]
+				msg.messageStubParameters = [addMode.toString()]
 			}
 
 			break
@@ -414,24 +414,24 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const approvalMode: BinaryNode | undefined = getBinaryNodeChild(child, 'group_join')
 			if(approvalMode) {
 				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE
-				msg.messageStubParameters = [ approvalMode.attrs.state ]
+				msg.messageStubParameters = [approvalMode.attrs.state]
 			}
 
 			break
 		case 'created_membership_requests':
 			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [ participantJid, 'created', child.attrs.request_method ]
+			msg.messageStubParameters = [participantJid, 'created', child.attrs.request_method]
 			break
 		case 'revoked_membership_requests':
 			const isDenied: boolean = areJidsSameUser(participantJid, participant)
 			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [ participantJid, isDenied ? 'revoked' : 'rejected' ]
+			msg.messageStubParameters = [participantJid, isDenied ? 'revoked' : 'rejected']
 			break
 		}
 	}
 
 	const processNotification = async(node: BinaryNode) => {
-		const result: Partial<waproto.IWebMessageInfo> = { }
+		const result: Partial<waproto.IWebMessageInfo> = {}
 		const [child] = getAllBinaryNodeChildren(node)
 		const nodeType: string = node.attrs.type
 		const from: string = jidNormalizedUser(node.attrs.from)
@@ -1222,7 +1222,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			.catch(error => onUnexpectedError(error, 'handling bad ack'))
 	})
 
-	ev.on('call', ([ call ]) => {
+	ev.on('call', ([call]) => {
 		if(call.status === 'timeout' || (call.status === 'offer' && call.isGroup)) {
 			const msg: waproto.IWebMessageInfo = {
 				key: {

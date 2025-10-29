@@ -147,7 +147,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		})
 	}
 
-	const onWhatsApp = async (...phoneNumber: string[]) => {
+	const onWhatsApp = async(...phoneNumber: string[]) => {
 		const cacheKey: string = phoneNumber.sort().join(',')
 		const cached = onWhatsAppCache.get(cacheKey)
 		if(cached) {
@@ -157,21 +157,22 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		let usyncQuery = new USyncQuery()
 
 		let contactEnabled = false
-		for (const jid of phoneNumber) {
-			if (isLidUser(jid)) {
+		for(const jid of phoneNumber) {
+			if(isLidUser(jid)) {
 				logger?.warn({ jid }, 'LIDs are not supported with onWhatsApp')
 				continue
 			} else {
-				if (!contactEnabled) {
+				if(!contactEnabled) {
 					contactEnabled = true
 					usyncQuery = usyncQuery.withContactProtocol()
 				}
 			}
+
 			const phone = `+${jid.replace('+', '').split('@')[0].split(':')[0]}`
 			usyncQuery.withUser(new USyncUser().withPhone(phone))
 		}
 
-		if (usyncQuery.users.length === 0) {
+		if(usyncQuery.users.length === 0) {
 			return []
 		}
 

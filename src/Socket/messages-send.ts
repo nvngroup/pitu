@@ -1038,7 +1038,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.warn({}, 'cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
-				if (
+				if(
 					getContentType(fullMsg.message!) === 'templateMessage' ||
 					getContentType(fullMsg.message!) === 'interactiveMessage'
 				) {
