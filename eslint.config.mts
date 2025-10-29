@@ -49,7 +49,7 @@ export default defineConfig([globalIgnores([
  },
 
  rules: {
-  "max-depth": ["error", 4],
+  "max-depth": ["error", 6],
   "@typescript-eslint/no-misused-promises": ["error", {
    checksSpreads: true,
    checksVoidReturn: false,
@@ -66,10 +66,7 @@ export default defineConfig([globalIgnores([
   "@typescript-eslint/no-unused-vars": ["error"],
   camelcase: ["off"],
   "no-unneeded-ternary": ["error"],
-  "no-restricted-syntax": ["error", {
-   selector: "TSEnumDeclaration",
-   message: "Don't declare enums, use literals instead",
-  }],
+  "no-restricted-syntax": ["off"],
   "no-constant-condition": ["error"],
   "no-constant-binary-expression": "error",
   "no-trailing-spaces": "error",

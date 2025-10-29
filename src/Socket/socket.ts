@@ -42,6 +42,7 @@ import {
 	getBinaryNodeChild,
 	getBinaryNodeChildren,
 	jidEncode,
+	jidNormalizedUser,
 	S_WHATSAPP_NET
 } from '../WABinary'
 import { WebSocketClient } from './Client'
@@ -282,14 +283,14 @@ export const makeSocket = (config: SocketConfig) => {
 
 		logger.trace({ browser, helloMsg }, 'connected to WA')
 
-		const init = waproto.HandshakeMessage.encode(helloMsg).finish()
+		const init: Uint8Array = waproto.HandshakeMessage.encode(helloMsg).finish()
 
-		const result = await awaitNextMessage<Uint8Array>(init)
+		const result: Uint8Array = await awaitNextMessage<Uint8Array>(init)
 		const handshake = waproto.HandshakeMessage.decode(result)
 
 		logger.trace({ handshake }, 'handshake recv from WA')
 
-		const keyEnc = await noise.processHandshake(handshake, creds.noiseKey)
+		const keyEnc: Buffer = await noise.processHandshake(handshake, creds.noiseKey)
 
 		let node: waproto.IClientPayload
 		if(!creds.me) {
@@ -300,7 +301,7 @@ export const makeSocket = (config: SocketConfig) => {
 			logger.trace({ node }, 'logging in...')
 		}
 
-		const payloadEnc = noise.encrypt(
+		const payloadEnc: Buffer = noise.encrypt(
 			waproto.ClientPayload.encode(node).finish()
 		)
 		await sendRawMessage(
@@ -826,7 +827,7 @@ export const makeSocket = (config: SocketConfig) => {
 					await signalRepository.storeLIDPNMapping(myLID, myPN)
 					await signalRepository.migrateSession(myPN, myLID)
 
-					logger.info({ myPN, myLID }, 'Own LID session created successfully')
+					logger.info({ myPN: jidNormalizedUser(myPN), myLID: jidNormalizedUser(myLID) }, 'Own LID session created successfully')
 				} catch(error) {
 					logger.error({ error, lid: myLID }, 'Failed to create own LID session')
 				}
