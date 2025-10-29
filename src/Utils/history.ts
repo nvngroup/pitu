@@ -50,12 +50,12 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 
 			const msgs: waproto.IHistorySyncMsg[] = chat.messages || []
 			delete chat.messages
-			delete chat.archived
-			delete chat.muteEndTime
-			delete chat.pinned
+			chat.archived
+			chat.muteEndTime
+			chat.pinned
 
 			for(const item of msgs) {
-				const message: waproto.IWebMessageInfo | null | undefined = item.message
+				const message: waproto.IWebMessageInfo = item.message!
 				messages.push(message)
 
 				if(!chat.messages?.length) {
@@ -80,7 +80,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 			}
 
 			if(isJidUser(chat.id) && chat.readOnly && chat.archived) {
-				delete chat.readOnly
+				chat.readOnly
 			}
 
 			chats.push({ ...chat })
