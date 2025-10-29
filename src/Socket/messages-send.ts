@@ -1038,7 +1038,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.warn({}, 'cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
-				// logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')
+				if (
+					getContentType(fullMsg.message!) === 'templateMessage' ||
+					getContentType(fullMsg.message!) === 'interactiveMessage'
+				) {
+					logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')
+				}
 
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
