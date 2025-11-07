@@ -646,10 +646,10 @@ export const makeSocket = (config: SocketConfig) => {
 		end(new Boom(msg || 'Intentional Logout', { statusCode: DisconnectReason.loggedOut }))
 	}
 
-	const requestPairingCode = async(phoneNumber: string, customPairingCode?: string): Promise<string> => {
-		const pairingCode = customPairingCode ?? bytesToCrockford(randomBytes(5))
+	const requestPairingCode = async (phoneNumber: string, customPairingCode?: string): Promise<string> => {
+		const pairingCode: string = customPairingCode ?? bytesToCrockford(randomBytes(5))
 
-		if(customPairingCode && customPairingCode?.length !== 8) {
+		if (customPairingCode && customPairingCode?.length !== 8) {
 			throw new Error('Custom pairing code must be exactly 8 chars')
 		}
 
@@ -709,10 +709,10 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	async function generatePairingKey() {
-		const salt = randomBytes(32)
-		const randomIv = randomBytes(16)
-		const key = await derivePairingCodeKey(authState.creds.pairingCode!, salt)
-		const ciphered = aesEncryptCTR(authState.creds.pairingEphemeralKeyPair.public, key, randomIv)
+		const salt: Buffer = randomBytes(32)
+		const randomIv: Buffer = randomBytes(16)
+		const key: Buffer = await derivePairingCodeKey(authState.creds.pairingCode!, salt)
+		const ciphered: Buffer = aesEncryptCTR(authState.creds.pairingEphemeralKeyPair.public, key, randomIv)
 		return Buffer.concat([salt, randomIv, ciphered])
 	}
 

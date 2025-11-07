@@ -166,7 +166,7 @@ export const configureSuccessfulPairing = (
 
 	const deviceIdentity: waproto.ADVDeviceIdentity = waproto.ADVDeviceIdentity.decode(deviceDetails!)
 
-	const accountSignaturePrefix =
+	const accountSignaturePrefix: Buffer =
 		deviceIdentity.deviceType === waproto.ADVEncryptionType.HOSTED
 			? WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX
 			: WA_ADV_ACCOUNT_SIG_PREFIX
