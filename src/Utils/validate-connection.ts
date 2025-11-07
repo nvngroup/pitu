@@ -39,7 +39,7 @@ const PLATFORM_MAP = {
 
 const getWebInfo = (config: SocketConfig): waproto.ClientPayload.IWebInfo => {
 	let webSubPlatform = waproto.ClientPayload.WebInfo.WebSubPlatform.WEB_BROWSER
-	if(config.syncFullHistory && PLATFORM_MAP[config.browser[0]]) {
+	if (config.syncFullHistory && PLATFORM_MAP[config.browser[0]]) {
 		webSubPlatform = PLATFORM_MAP[config.browser[0]]
 	}
 
@@ -141,7 +141,7 @@ export const configureSuccessfulPairing = (
 	const deviceNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'device')
 	const businessNode: BinaryNode | undefined = getBinaryNodeChild(pairSuccessNode, 'biz')
 
-	if(!deviceIdentityNode || !deviceNode) {
+	if (!deviceIdentityNode || !deviceNode) {
 		throw new Boom('Missing device-identity or device in pair success node', { data: stanza })
 	}
 
@@ -152,12 +152,12 @@ export const configureSuccessfulPairing = (
 	const { details, hmac, accountType } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
 
 	let hmacPrefix: Buffer = Buffer.from([])
-	if(accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED) {
+	if (accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED) {
 		hmacPrefix = WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX
 	}
 
 	const advSign: Buffer = hmacSign(Buffer.concat([hmacPrefix, details!]), Buffer.from(advSecretKey, 'base64'))
-	if(Buffer.compare(hmac!, advSign) !== 0) {
+	if (Buffer.compare(hmac!, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
 
@@ -171,7 +171,7 @@ export const configureSuccessfulPairing = (
 			? WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX
 			: WA_ADV_ACCOUNT_SIG_PREFIX
 	const accountMsg: Buffer = Buffer.concat([accountSignaturePrefix, deviceDetails!, signedIdentityKey.public])
-	if(!Curve.verify(accountSignatureKey!, accountMsg, accountSignature!)) {
+	if (!Curve.verify(accountSignatureKey!, accountMsg, accountSignature!)) {
 		throw new Boom('Failed to verify account signature')
 	}
 
@@ -229,7 +229,7 @@ export const encodeSignedDeviceIdentity = (
 	includeSignatureKey: boolean
 ) => {
 	account = { ...account }
-	if(!includeSignatureKey || !account.accountSignatureKey?.length) {
+	if (!includeSignatureKey || !account.accountSignatureKey?.length) {
 		account.accountSignatureKey = null
 	}
 

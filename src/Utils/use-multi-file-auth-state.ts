@@ -33,8 +33,8 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 				() => readFile(filePath, { encoding: 'utf-8' })
 			)
 			return JSON.parse(data, BufferJSON.reviver)
-		} catch(error) {
-			if(error && (error.code === 'ENOENT' || error.errno === -4058)) {
+		} catch (error) {
+			if (error && (error.code === 'ENOENT' || error.errno === -4058)) {
 				return null
 			}
 
@@ -50,14 +50,14 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 				filePath,
 				() => unlink(filePath)
 			)
-		} catch{
+		} catch {
 
 		}
 	}
 
 	const folderInfo = await stat(folder).catch(() => { })
-	if(folderInfo) {
-		if(!folderInfo.isDirectory()) {
+	if (folderInfo) {
+		if (!folderInfo.isDirectory()) {
 			throw new Error(`found something that is not a directory at ${folder}, either delete it or specify a different location`)
 		}
 	} else {
@@ -78,7 +78,7 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 						ids.map(
 							async id => {
 								let value = await readData(`${type}-${id}.json`)
-								if(type === 'app-state-sync-key' && value) {
+								if (type === 'app-state-sync-key' && value) {
 									value = waproto.Message.AppStateSyncKeyData.fromObject(value)
 								}
 
@@ -91,8 +91,8 @@ export const useMultiFileAuthState = async(folder: string): Promise<{ state: Aut
 				},
 				set: async(data) => {
 					const tasks: Promise<void>[] = []
-					for(const category in data) {
-						for(const id in data[category]) {
+					for (const category in data) {
+						for (const id in data[category]) {
 							const value = data[category][id]
 							const file = `${category}-${id}.json`
 							tasks.push(value ? writeData(value, file) : removeData(file))

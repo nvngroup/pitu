@@ -21,7 +21,7 @@ export class SenderKeyMessage extends CiphertextMessage {
 	) {
 		super()
 
-		if(serialized) {
+		if (serialized) {
 			const version: number = serialized[0]
 			const message: Uint8Array = serialized.slice(1, serialized.length - this.SIGNATURE_LENGTH)
 			const signature: Uint8Array = serialized.slice(-1 * this.SIGNATURE_LENGTH)
@@ -74,7 +74,7 @@ export class SenderKeyMessage extends CiphertextMessage {
 		const part1: Uint8Array = this.serialized.slice(0, this.serialized.length - this.SIGNATURE_LENGTH)
 		const part2: Uint8Array = this.serialized.slice(-1 * this.SIGNATURE_LENGTH)
 		const res: boolean = verifySignature(signatureKey, part1, part2)
-		if(!res) {
+		if (!res) {
 			throw new Error('Invalid signature!')
 		}
 	}

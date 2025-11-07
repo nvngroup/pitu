@@ -46,7 +46,7 @@ export const getUrlInfo = async(
 
 		const { getLinkPreview } = await import('link-preview-js')
 		let previewLink = text
-		if(!text.startsWith('https://') && !text.startsWith('http://')) {
+		if (!text.startsWith('https://') && !text.startsWith('http://')) {
 			previewLink = 'https://' + previewLink
 		}
 
@@ -56,11 +56,11 @@ export const getUrlInfo = async(
 			handleRedirects: (baseURL: string, forwardedURL: string) => {
 				const urlObj = new URL(baseURL)
 				const forwardedURLObj = new URL(forwardedURL)
-				if(retries >= maxRetry) {
+				if (retries >= maxRetry) {
 					return false
 				}
 
-				if(
+				if (
 					forwardedURLObj.hostname === urlObj.hostname
 					|| forwardedURLObj.hostname === 'www.' + urlObj.hostname
 					|| 'www.' + forwardedURLObj.hostname === urlObj.hostname
@@ -73,7 +73,7 @@ export const getUrlInfo = async(
 			},
 			headers: opts.fetchOpts as {}
 		})
-		if(info && 'title' in info && info.title) {
+		if (info && 'title' in info && info.title) {
 			const [image] = info.images
 
 			const urlInfo: WAUrlInfo = {
@@ -84,7 +84,7 @@ export const getUrlInfo = async(
 				originalThumbnailUrl: image
 			}
 
-			if(opts.uploadImage) {
+			if (opts.uploadImage) {
 				const { imageMessage } = await prepareWAMessageMedia(
 					{ image: { url: image } },
 					{
@@ -102,7 +102,7 @@ export const getUrlInfo = async(
 					urlInfo.jpegThumbnail = image
 						? (await getCompressedJpegThumbnail(image, opts)).buffer
 						: undefined
-				} catch(error) {
+				} catch (error) {
 					opts.logger?.error(
 						{ err: error.stack, url: previewLink },
 						'error in generating thumbnail'
@@ -112,8 +112,8 @@ export const getUrlInfo = async(
 
 			return urlInfo
 		}
-	} catch(error) {
-		if(!error.message.includes('receive a valid')) {
+	} catch (error) {
+		if (!error.message.includes('receive a valid')) {
 			throw error
 		}
 	}

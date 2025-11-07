@@ -12,7 +12,7 @@ export class SessionDiagnostics {
 	private sessionErrors = new Map<string, { count: number; lastError: Date; errorTypes: string[] }>()
 
 	static getInstance(): SessionDiagnostics {
-		if(!SessionDiagnostics.instance) {
+		if (!SessionDiagnostics.instance) {
 			SessionDiagnostics.instance = new SessionDiagnostics()
 		}
 
@@ -43,14 +43,14 @@ export class SessionDiagnostics {
 			let recommendation = 'Session appears healthy'
 			let canRecover = true
 
-			if(!hasSession) {
+			if (!hasSession) {
 				recommendation = 'Session missing - requires key exchange'
 				canRecover = false
-			} else if(hasRecentErrors && errorInfo.count >= 3) {
+			} else if (hasRecentErrors && errorInfo.count >= 3) {
 				recommendation = 'Frequent errors detected - recommend session reset'
-			} else if(hasRecentErrors) {
+			} else if (hasRecentErrors) {
 				recommendation = 'Recent errors detected - monitor closely'
-			} else if(!hasPreKeys) {
+			} else if (!hasPreKeys) {
 				recommendation = 'No pre-keys available - may affect future sessions'
 			}
 
@@ -72,7 +72,7 @@ export class SessionDiagnostics {
 				recommendation,
 				canRecover
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.error({ jid: normalizedJid, error }, 'Failed to diagnose session')
 
 			return {
@@ -96,7 +96,7 @@ export class SessionDiagnostics {
 		try {
 			const { session: allSessions } = await authState.keys.get('session', [])
 
-			if(!allSessions) {
+			if (!allSessions) {
 				return {
 					healthy: 0,
 					corrupted: 0,
@@ -111,21 +111,21 @@ export class SessionDiagnostics {
 			let corrupted = 0
 			let missing = 0
 
-			for(const sessionKey of sessionKeys) {
+			for (const sessionKey of sessionKeys) {
 				const sessionData = allSessions[sessionKey]
 
-				if(!sessionData) {
+				if (!sessionData) {
 					missing++
 					continue
 				}
 
 				// Extract JID from session key
 				const parts: string[] = sessionKey.split('.')
-				if(parts.length >= 2) {
+				if (parts.length >= 2) {
 					const jid = `${parts[0]}@s.whatsapp.net`
 					const errorInfo = this.sessionErrors.get(jid)
 
-					if(errorInfo && errorInfo.count >= 3) {
+					if (errorInfo && errorInfo.count >= 3) {
 						corrupted++
 					} else {
 						healthy++
@@ -147,7 +147,7 @@ export class SessionDiagnostics {
 			}, 'Session health check completed')
 
 			return { healthy, corrupted, missing, total, score }
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error }, 'Failed to perform session health check')
 
 			return {
@@ -176,7 +176,7 @@ export class SessionDiagnostics {
 		existing.errorTypes.push(errorType)
 
 		// Keep only last 10 error types
-		if(existing.errorTypes.length > 10) {
+		if (existing.errorTypes.length > 10) {
 			existing.errorTypes = existing.errorTypes.slice(-10)
 		}
 
@@ -209,16 +209,16 @@ export class SessionDiagnostics {
 
 			await this.clearSessionData(normalizedJid, authState, repository)
 
-			if(options.clearPreKeys) {
+			if (options.clearPreKeys) {
 				await authState.keys.set({ 'pre-key': {} })
 				logger.debug({ jid: normalizedJid }, 'Pre-keys cleared during forced reset')
 			}
 
-			if(options.clearSenderKeys && normalizedJid.includes('@g.us')) {
+			if (options.clearSenderKeys && normalizedJid.includes('@g.us')) {
 				await this.clearGroupSenderKeys(normalizedJid, authState)
 			}
 
-			if(options.clearLIDMapping && normalizedJid.includes('@s.whatsapp.net')) {
+			if (options.clearLIDMapping && normalizedJid.includes('@s.whatsapp.net')) {
 				await this.clearLIDMapping(normalizedJid, repository)
 			}
 
@@ -226,7 +226,7 @@ export class SessionDiagnostics {
 
 			logger.info({ jid: normalizedJid }, 'Forced session reset completed successfully')
 			return true
-		} catch(error) {
+		} catch (error) {
 			logger.error({ jid: normalizedJid, error }, 'Failed to force session reset')
 			return false
 		}
@@ -255,19 +255,19 @@ export class SessionDiagnostics {
 	private async clearGroupSenderKeys(groupJid: string, authState: SignalAuthState): Promise<void> {
 		const { 'sender-key': allSenderKeys } = await authState.keys.get('sender-key', [])
 
-		if(!allSenderKeys) {
+		if (!allSenderKeys) {
 			return
 		}
 
 		const keysToDelete: Record<string, null> = {}
 
-		for(const keyId of Object.keys(allSenderKeys)) {
-			if(keyId.includes(groupJid)) {
+		for (const keyId of Object.keys(allSenderKeys)) {
+			if (keyId.includes(groupJid)) {
 				keysToDelete[keyId] = null
 			}
 		}
 
-		if(Object.keys(keysToDelete).length > 0) {
+		if (Object.keys(keysToDelete).length > 0) {
 			await authState.keys.set({ 'sender-key': keysToDelete })
 			logger.debug({ groupJid, clearedKeys: Object.keys(keysToDelete).length }, 'Group sender keys cleared')
 		}
@@ -281,10 +281,10 @@ export class SessionDiagnostics {
 			const lidMapping: LIDMappingStore = repository.getLIDMappingStore()
 			const lidForPN: string | null = await lidMapping.getLIDForPN(jid)
 
-			if(lidForPN) {
+			if (lidForPN) {
 				logger.debug({ jid, lidForPN }, 'LID mapping found but clearing not implemented in current SignalRepository interface')
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.debug({ jid, error }, 'No LID mapping found or failed to clear')
 		}
 	}	/**
@@ -294,7 +294,7 @@ export class SessionDiagnostics {
 		const normalizedJid: string = jidNormalizedUser(jid)
 		const errorInfo = this.sessionErrors.get(normalizedJid)
 
-		if(!errorInfo) {
+		if (!errorInfo) {
 			return {
 				jid: normalizedJid,
 				errorCount: 0,
@@ -318,14 +318,14 @@ export class SessionDiagnostics {
 		const cutoff: number = Date.now() - (24 * 60 * 60 * 1000) // 24 hours
 		let cleaned = 0
 
-		for(const [jid, errorInfo] of this.sessionErrors.entries()) {
-			if(errorInfo.lastError.getTime() < cutoff) {
+		for (const [jid, errorInfo] of this.sessionErrors.entries()) {
+			if (errorInfo.lastError.getTime() < cutoff) {
 				this.sessionErrors.delete(jid)
 				cleaned++
 			}
 		}
 
-		if(cleaned > 0) {
+		if (cleaned > 0) {
 			logger.debug({ cleaned }, 'Cleaned up old session error data')
 		}
 	}

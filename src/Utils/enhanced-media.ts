@@ -17,7 +17,7 @@ export const enhancedDownloadEncryptedContent = async(
 ) => {
 	try {
 		return await originalDownloadEncryptedContent(downloadUrl, keys, options)
-	} catch(error) {
+	} catch (error) {
 		logger.error({ error }, 'Error in original decryption, trying alternative method')
 
 		const response: AxiosResponse = await axios.get(downloadUrl, {
@@ -25,7 +25,7 @@ export const enhancedDownloadEncryptedContent = async(
 			...options.options
 		})
 
-		if(response.status !== 200) {
+		if (response.status !== 200) {
 			throw new Error(`Falha ao baixar o conteúdo: ${response.status}`)
 		}
 

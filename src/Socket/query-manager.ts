@@ -25,20 +25,20 @@ export class QueryManager {
 		const config = { ...this.defaultRetryConfig, ...retryConfig }
 		let lastError: Error | undefined
 
-		for(let attempt = 0; attempt <= config.maxRetries; attempt++) {
+		for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
 			try {
 				return await queryFn(node, timeoutMs)
-			} catch(error) {
+			} catch (error) {
 				lastError = error as Error
 
-				if(error instanceof Boom) {
+				if (error instanceof Boom) {
 					const statusCode: number = error.output?.statusCode
-					if(statusCode === 401 || statusCode === 403 || statusCode === 404) {
+					if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
 						throw error
 					}
 				}
 
-				if(attempt === config.maxRetries) {
+				if (attempt === config.maxRetries) {
 					break
 				}
 
@@ -59,7 +59,7 @@ export class QueryManager {
 			config.maxDelayMs
 		)
 
-		if(config.jitter) {
+		if (config.jitter) {
 			const jitterRange: number = exponentialDelay * 0.25
 			return exponentialDelay + (Math.random() - 0.5) * 2 * jitterRange
 		}

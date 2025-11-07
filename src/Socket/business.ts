@@ -34,7 +34,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 			},
 		]
 
-		if(cursor) {
+		if (cursor) {
 			queryParamNodes.push({
 				tag: 'after',
 				attrs: { },

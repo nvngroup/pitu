@@ -13,7 +13,7 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 	} = sock
 
 	const executeUSyncQuery = async(usyncQuery: USyncQuery) => {
-		if(usyncQuery.protocols.length === 0) {
+		if (usyncQuery.protocols.length === 0) {
 			throw new Boom('USyncQuery must have at least one protocol')
 		}
 

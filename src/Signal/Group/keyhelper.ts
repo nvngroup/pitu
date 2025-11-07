@@ -17,7 +17,7 @@ export interface SigningKeyPair {
 }
 
 export function generateSenderSigningKey(key?: KeyPairType): SigningKeyPair {
-	if(!key) {
+	if (!key) {
 		key = generateKeyPair()
 	}
 

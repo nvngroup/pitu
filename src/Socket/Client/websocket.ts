@@ -20,7 +20,7 @@ export class WebSocketClient extends AbstractSocketClient {
 	}
 
 	async connect(): Promise<void> {
-		if(this.socket) {
+		if (this.socket) {
 			return
 		}
 
@@ -36,13 +36,13 @@ export class WebSocketClient extends AbstractSocketClient {
 
 		const events = ['close', 'error', 'upgrade', 'message', 'open', 'ping', 'pong', 'unexpected-response']
 
-		for(const event of events) {
+		for (const event of events) {
 			this.socket?.on(event, (...args: any[]) => this.emit(event, ...args))
 		}
 	}
 
 	async close(): Promise<void> {
-		if(!this.socket) {
+		if (!this.socket) {
 			return
 		}
 
@@ -50,7 +50,7 @@ export class WebSocketClient extends AbstractSocketClient {
 		this.socket = null
 	}
 	async restart(): Promise<void> {
-		if(this.socket) {
+		if (this.socket) {
 			await new Promise(resolve => {
 				this.socket!.once('close', resolve)
 				this.socket!.terminate()

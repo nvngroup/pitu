@@ -61,9 +61,9 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 		})
 		const data: { [_: string]: GroupMetadata } = {}
 		const communitiesChild: BinaryNode | undefined = getBinaryNodeChild(result, 'communities')
-		if(communitiesChild) {
+		if (communitiesChild) {
 			const communities: BinaryNode[] = getBinaryNodeChildren(communitiesChild, 'community')
-			for(const communityNode of communities) {
+			for (const communityNode of communities) {
 				const meta: GroupMetadata = extractCommunityMetadata({
 					tag: 'result',
 					attrs: {},
@@ -81,12 +81,12 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 	async function parseCommunityResult(node: BinaryNode) {
 		logger.info({ node }, 'parseCommunityResult')
 		const communityNode: BinaryNode | undefined = getBinaryNodeChild(node, 'community')
-		if(communityNode) {
+		if (communityNode) {
 			try {
 				logger.info({ communityNode }, 'communityNode')
 				const metadata: GroupMetadata = await communityMetadata(`${communityNode.attrs.id}@g.us`)
 				return metadata ? metadata : Optional.empty()
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error }, 'Error parsing community metadata:')
 				return Optional.empty()
 			}
@@ -102,7 +102,7 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 
 	sock.ws.on('CB:ib,,dirty', async(node: BinaryNode) => {
 		const { attrs } = getBinaryNodeChild(node, 'dirty')!
-		if(attrs.type !== 'communities') {
+		if (attrs.type !== 'communities') {
 			return
 		}
 
@@ -283,7 +283,7 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 					}
 				])
 
-				if(key.id) {
+				if (key.id) {
 					inviteMessage = waproto.Message.GroupInviteMessage.fromObject(inviteMessage)
 					inviteMessage.inviteExpiration = 0
 					inviteMessage.inviteCode = ''
@@ -354,7 +354,7 @@ export const extractCommunityMetadata = (result: BinaryNode) => {
 	let descOwner: string | undefined
 	let descOwnerJid: string | undefined
 	let descTime: number | undefined
-	if(descChild) {
+	if (descChild) {
 		desc = getBinaryNodeChildString(descChild, 'body')
 		descId = descChild.attrs.id
 		descOwner = descChild.attrs.participant ? jidNormalizedUser(descChild.attrs.participant) : undefined

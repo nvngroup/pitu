@@ -27,7 +27,7 @@ export const makeNoiseHandler = ({
 	logger = logger.child({ class: 'ns' })
 
 	const authenticate = (data: Uint8Array) => {
-		if(!isFinished) {
+		if (!isFinished) {
 			hash = sha256(Buffer.concat([hash, data]))
 		}
 	}
@@ -42,14 +42,14 @@ export const makeNoiseHandler = ({
 	}
 
 	const decrypt = (ciphertext: Uint8Array) => {
-		if(!ciphertext || ciphertext.length === 0) {
+		if (!ciphertext || ciphertext.length === 0) {
 			throw new Error('Invalid ciphertext: empty or null')
 		}
 
 		const iv: Uint8Array = generateIV(isFinished ? readCounter : writeCounter)
 		const result: Buffer = aesDecryptGCM(ciphertext, decKey, iv, hash)
 
-		if(isFinished) {
+		if (isFinished) {
 			readCounter += 1
 		} else {
 			writeCounter += 1
@@ -117,7 +117,7 @@ export const makeNoiseHandler = ({
 
 			const { issuerSerial } = waproto.CertChain.NoiseCertificate.Details.decode(certIntermediate!.details!)
 
-			if(issuerSerial !== WA_CERT_DETAILS.SERIAL) {
+			if (issuerSerial !== WA_CERT_DETAILS.SERIAL) {
 				throw new Boom('certification match failed', { statusCode: 400 })
 			}
 
@@ -127,13 +127,13 @@ export const makeNoiseHandler = ({
 			return keyEnc
 		},
 		encodeFrame: (data: Buffer | Uint8Array) => {
-			if(isFinished) {
+			if (isFinished) {
 				data = encrypt(data)
 			}
 
 			let header: Buffer
 
-			if(routingInfo) {
+			if (routingInfo) {
 				header = Buffer.alloc(7)
 				header.write('ED', 0, 'utf8')
 				header.writeUint8(0, 2)
@@ -148,7 +148,7 @@ export const makeNoiseHandler = ({
 			const introSize: number = sentIntro ? 0 : header.length
 			const frame: Buffer = Buffer.alloc(introSize + 3 + data.byteLength)
 
-			if(!sentIntro) {
+			if (!sentIntro) {
 				frame.set(header)
 				sentIntro = true
 			}
@@ -161,10 +161,10 @@ export const makeNoiseHandler = ({
 		},
 		decodeFrame: async(newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
 			const getBytesSize = () => {
-				if(inBytes.length >= 3) {
+				if (inBytes.length >= 3) {
 					try {
 						return (inBytes.readUInt8() << 16) | inBytes.readUInt16BE(1)
-					} catch(error) {
+					} catch (error) {
 						logger.error({ error }, 'Failed to read bytes size from buffer')
 						return undefined
 					}
@@ -178,13 +178,13 @@ export const makeNoiseHandler = ({
 			logger.trace({ newData, inBytes }, `recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
 
 			let size: number | undefined = getBytesSize()
-			while(size && size > 0 && inBytes.length >= size + 3) {
+			while (size && size > 0 && inBytes.length >= size + 3) {
 				let frame: Uint8Array | BinaryNode = inBytes.subarray(3, size + 3)
 				inBytes = inBytes.subarray(size + 3)
 
-				if(isFinished) {
+				if (isFinished) {
 					const result: Buffer = decrypt(frame)
-					if(!result || result.length === 0) {
+					if (!result || result.length === 0) {
 						logger.warn({}, 'Received empty or null decrypted frame, skipping')
 						size = getBytesSize()
 						continue
@@ -192,7 +192,7 @@ export const makeNoiseHandler = ({
 
 					try {
 						frame = await decodeBinaryNode(result)
-					} catch(error) {
+					} catch (error) {
 						logger.error({ error }, 'Failed to decode binary node')
 						size = getBytesSize()
 						continue

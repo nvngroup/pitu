@@ -43,13 +43,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
-	if(!config.placeholderResendCache) {
+	if (!config.placeholderResendCache) {
 		config.placeholderResendCache = placeholderResendCache
 	}
 
 	const onWhatsAppCache: CacheStore = config.onWhatsAppCache || CacheManager.getInstance('ON_WHATSAPP')
 
-	if(!config.onWhatsAppCache) {
+	if (!config.onWhatsAppCache) {
 		config.onWhatsAppCache = onWhatsAppCache
 	}
 
@@ -59,7 +59,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	}
 
 	const fetchPrivacySettings = async(force = false) => {
-		if(!privacySettings || force) {
+		if (!privacySettings || force) {
 			const { content } = await query({
 				tag: 'iq',
 				attrs: {
@@ -150,19 +150,19 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	const onWhatsApp = async(...phoneNumber: string[]) => {
 		const cacheKey: string = phoneNumber.sort().join(',')
 		const cached = onWhatsAppCache.get(cacheKey)
-		if(cached) {
+		if (cached) {
 			return cached
 		}
 
 		let usyncQuery = new USyncQuery()
 
 		let contactEnabled = false
-		for(const jid of phoneNumber) {
-			if(isLidUser(jid)) {
+		for (const jid of phoneNumber) {
+			if (isLidUser(jid)) {
 				logger?.warn({ jid }, 'LIDs are not supported with onWhatsApp')
 				continue
 			} else {
-				if(!contactEnabled) {
+				if (!contactEnabled) {
 					contactEnabled = true
 					usyncQuery = usyncQuery.withContactProtocol()
 				}
@@ -172,13 +172,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			usyncQuery.withUser(new USyncUser().withPhone(phone))
 		}
 
-		if(usyncQuery.users.length === 0) {
+		if (usyncQuery.users.length === 0) {
 			return []
 		}
 
 		const results = await sock.executeUSyncQuery(usyncQuery)
 
-		if(results) {
+		if (results) {
 			const filtered = results.list
 				.filter(a => !!a.contact)
 				.map(({ contact, id, lid }) => ({ jid: id, exists: contact, lid }))
@@ -191,12 +191,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const usyncQuery = new USyncQuery()
 			.withStatusProtocol()
 
-		for(const jid of jids) {
+		for (const jid of jids) {
 			usyncQuery.withUser(new USyncUser().withId(jid))
 		}
 
 		const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(usyncQuery)
-		if(result) {
+		if (result) {
 			return result.list
 		}
 	}
@@ -205,23 +205,23 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const usyncQuery = new USyncQuery()
 			.withDisappearingModeProtocol()
 
-		for(const jid of jids) {
+		for (const jid of jids) {
 			usyncQuery.withUser(new USyncUser().withId(jid))
 		}
 
 		const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(usyncQuery)
-		if(result) {
+		if (result) {
 			return result.list
 		}
 	}
 
 	const updateProfilePicture = async(jid: string, content: WAMediaUpload, dimensions?: { w: number; h: number }) => {
 		let targetJid
-		if(!jid) {
+		if (!jid) {
 			throw new Boom('Illegal no-jid profile update. Please specify either your ID or the ID of the chat you wish to update')
 		}
 
-		if(jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
+		if (jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
 			targetJid = jidNormalizedUser(jid)
 		}
 
@@ -246,11 +246,11 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	const removeProfilePicture = async(jid: string) => {
 		let targetJid
-		if(!jid) {
+		if (!jid) {
 			throw new Boom('Illegal no-jid profile update. Please specify either your ID or the ID of the chat you wish to update')
 		}
 
-		if(jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
+		if (jidNormalizedUser(jid) !== jidNormalizedUser(authState.creds.me!.id)) {
 			targetJid = jidNormalizedUser(jid)
 		}
 
@@ -342,7 +342,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		const profileNode: BinaryNode | undefined = getBinaryNodeChild(results, 'business_profile')
 		const profiles: BinaryNode | undefined = getBinaryNodeChild(profileNode, 'profile')
-		if(profiles) {
+		if (profiles) {
 			const address: BinaryNode | undefined = getBinaryNodeChild(profiles, 'address')
 			const description: BinaryNode | undefined = getBinaryNodeChild(profiles, 'description')
 			const website: BinaryNode | undefined = getBinaryNodeChild(profiles, 'website')
@@ -412,16 +412,16 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			async() => {
 				const collectionsToHandle = new Set<string>(collections)
 				const attemptsMap: { [T in WAPatchName]?: number } = {}
-				while(collectionsToHandle.size) {
+				while (collectionsToHandle.size) {
 					const states = {} as { [T in WAPatchName]: LTHashState }
 					const nodes: BinaryNode[] = []
 
-					for(const name of collectionsToHandle) {
+					for (const name of collectionsToHandle) {
 						const result = await authState.keys.get('app-state-sync-version', [name])
 						let state: LTHashState = result[name]
 
-						if(state) {
-							if(typeof initialVersionMap[name] === 'undefined') {
+						if (state) {
+							if (typeof initialVersionMap[name] === 'undefined') {
 								initialVersionMap[name] = state.version
 							}
 						} else {
@@ -459,11 +459,11 @@ export const makeChatsSocket = (config: SocketConfig) => {
 					})
 
 					const decoded = await extractSyncdPatches(result, config?.options)
-					for(const key in decoded) {
+					for (const key in decoded) {
 						const name = key as WAPatchName
 						const { patches, hasMorePatches, snapshot } = decoded[name]
 						try {
-							if(snapshot) {
+							if (snapshot) {
 								const { state: newState, mutationMap } = await decodeSyncdSnapshot(
 									name,
 									snapshot,
@@ -479,7 +479,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								await authState.keys.set({ 'app-state-sync-version': { [name]: newState } })
 							}
 
-							if(patches.length) {
+							if (patches.length) {
 								const { state: newState, mutationMap } = await decodePatches(
 									name,
 									patches,
@@ -499,12 +499,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 								Object.assign(globalMutationMap, mutationMap)
 							}
 
-							if(hasMorePatches) {
+							if (hasMorePatches) {
 								logger.trace({ name }, `${name} has more patches...`)
 							} else {
 								collectionsToHandle.delete(name)
 							}
-						} catch(error) {
+						} catch (error) {
 							const isIrrecoverableError: boolean = attemptsMap[name]! >= MAX_SYNC_ATTEMPTS
 								|| error.output?.statusCode === 404
 								|| error.name === 'TypeError'
@@ -515,7 +515,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 							await authState.keys.set({ 'app-state-sync-version': { [name]: null } })
 							attemptsMap[name] = (attemptsMap[name] || 0) + 1
 
-							if(isIrrecoverableError) {
+							if (isIrrecoverableError) {
 								collectionsToHandle.delete(name)
 							}
 						}
@@ -525,7 +525,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		)
 
 		const { onMutation } = newAppStateChunkHandler(isInitialSync)
-		for(const key in globalMutationMap) {
+		for (const key in globalMutationMap) {
 			onMutation(globalMutationMap[key])
 		}
 	})
@@ -577,8 +577,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 	const sendPresenceUpdate = async(type: WAPresence, toJid?: string) => {
 		const me: Contact = authState.creds.me!
-		if(type === 'available' || type === 'unavailable') {
-			if(!me.name) {
+		if (type === 'available' || type === 'unavailable') {
+			if (!me.name) {
 				logger.warn({}, 'no name present, ignoring presence update request...')
 				return
 			}
@@ -640,23 +640,23 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const jid: string = attrs.from
 		const participant: string = attrs.participant || attrs.from
 
-		if(shouldIgnoreJid(jid) && jid !== '@s.whatsapp.net') {
+		if (shouldIgnoreJid(jid) && jid !== '@s.whatsapp.net') {
 			return
 		}
 
-		if(tag === 'presence') {
+		if (tag === 'presence') {
 			presence = {
 				lastKnownPresence: attrs.type === 'unavailable' ? 'unavailable' : 'available',
 				lastSeen: attrs.last && attrs.last !== 'deny' ? +attrs.last : undefined
 			}
-		} else if(Array.isArray(content)) {
+		} else if (Array.isArray(content)) {
 			const [firstChild] = content
 			let type: WAPresence = firstChild.tag as WAPresence
-			if(type === 'paused') {
+			if (type === 'paused') {
 				type = 'available'
 			}
 
-			if(firstChild.attrs?.media === 'audio') {
+			if (firstChild.attrs?.media === 'audio') {
 				type = 'recording'
 			}
 
@@ -665,7 +665,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			logger.error({ tag, attrs, content }, 'recv invalid presence node')
 		}
 
-		if(presence) {
+		if (presence) {
 			ev.emit('presence.update', { id: jid, presences: { [participant]: presence } })
 		}
 	}
@@ -673,7 +673,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	const appPatch = async(patchCreate: WAPatchCreate) => {
 		const name = patchCreate.type
 		const myAppStateKeyId = authState.creds.myAppStateKeyId
-		if(!myAppStateKeyId) {
+		if (!myAppStateKeyId) {
 			throw new Boom('App state key not present!', { statusCode: 400 })
 		}
 
@@ -738,7 +738,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			}
 		)
 
-		if(config.emitOwnEvents) {
+		if (config.emitOwnEvents) {
 			const { onMutation } = newAppStateChunkHandler(false)
 			const { mutationMap } = await decodePatches(
 				name,
@@ -749,7 +749,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				undefined,
 				logger,
 			)
-			for(const key in mutationMap) {
+			for (const key in mutationMap) {
 				onMutation(mutationMap[key])
 			}
 		}
@@ -775,8 +775,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 
 		let props: { [_: string]: string } = {}
-		if(propsNode) {
-			if(propsNode.attrs?.hash) {
+		if (propsNode) {
+			if (propsNode.attrs?.hash) {
 				authState.creds.lastPropHash = propsNode?.attrs?.hash
 				ev.emit('creds.update', authState.creds)
 			}
@@ -924,15 +924,15 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	const upsertMessage = ev.createBufferedFunction(async(msg: WAMessage, type: MessageUpsertType) => {
 		ev.emit('messages.upsert', { messages: [msg], type })
 
-		if(!!msg.pushName) {
+		if (!!msg.pushName) {
 			let jid = msg.key.fromMe ? authState.creds.me!.id : (msg.key.participant || msg.key.remoteJid)
 			jid = jidNormalizedUser(jid!)
 
-			if(!msg.key.fromMe) {
+			if (!msg.key.fromMe) {
 				ev.emit('contacts.update', [{ id: jid, notify: msg.pushName, verifiedName: msg.verifiedBizName! }])
 			}
 
-			if(msg.key.fromMe && msg.pushName && authState.creds.me?.name !== msg.pushName) {
+			if (msg.key.fromMe && msg.pushName && authState.creds.me?.name !== msg.pushName) {
 				ev.emit('creds.update', { me: { ...authState.creds.me!, name: msg.pushName } })
 			}
 		}
@@ -945,13 +945,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			)
 			: false
 
-		if(historyMsg && syncState === SyncState.AwaitingInitialSync) {
-			if(awaitingSyncTimeout) {
+		if (historyMsg && syncState === SyncState.AwaitingInitialSync) {
+			if (awaitingSyncTimeout) {
 				clearTimeout(awaitingSyncTimeout)
 				awaitingSyncTimeout = undefined
 			}
 
-			if(shouldProcessHistoryMsg) {
+			if (shouldProcessHistoryMsg) {
 				syncState = SyncState.Syncing
 				logger.info({}, 'Transitioned to Syncing state')
 			} else {
@@ -962,7 +962,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 
 		const doAppStateSync = async() => {
-			if(syncState === SyncState.Syncing) {
+			if (syncState === SyncState.Syncing) {
 				logger.info({}, 'Doing app state sync')
 				await resyncAppState(ALL_WA_PATCH_NAMES, true)
 
@@ -977,7 +977,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		await Promise.all([
 			(async() => {
-				if(shouldProcessHistoryMsg) {
+				if (shouldProcessHistoryMsg) {
 					await doAppStateSync()
 				}
 			})(),
@@ -996,7 +996,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			)
 		])
 
-		if(msg.message?.protocolMessage?.appStateSyncKeyShare && syncState === SyncState.Syncing) {
+		if (msg.message?.protocolMessage?.appStateSyncKeyShare && syncState === SyncState.Syncing) {
 			logger.info({}, 'App state sync key arrived, triggering app state sync')
 			await doAppStateSync()
 		}
@@ -1010,9 +1010,9 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const type = attrs.type
 		switch (type) {
 		case 'account_sync':
-			if(attrs.timestamp) {
+			if (attrs.timestamp) {
 				let { lastAccountSyncTimestamp } = authState.creds
-				if(lastAccountSyncTimestamp) {
+				if (lastAccountSyncTimestamp) {
 					await cleanDirtyBits('account_sync', lastAccountSyncTimestamp)
 				}
 
@@ -1030,8 +1030,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	})
 
 	ev.on('connection.update', ({ connection }) => {
-		if(connection === 'open') {
-			if(fireInitQueries) {
+		if (connection === 'open') {
+			if (fireInitQueries) {
 				executeInitQueries()
 					.catch(
 						error => onUnexpectedError(error, 'init queries')
@@ -1044,7 +1044,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 				)
 		}
 
-		if(syncState !== SyncState.Connecting) {
+		if (syncState !== SyncState.Connecting) {
 			return
 		}
 
@@ -1058,7 +1058,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			})
 		)
 
-		if(!willSyncHistory) {
+		if (!willSyncHistory) {
 			logger.info({}, 'History sync is disabled by config, not waiting for notification. Transitioning to Online.')
 			syncState = SyncState.Online
 			setTimeout(() => ev.flush(), 0)
@@ -1067,12 +1067,12 @@ export const makeChatsSocket = (config: SocketConfig) => {
 
 		logger.info({}, 'History sync is enabled, awaiting notification with a 20s timeout.')
 
-		if(awaitingSyncTimeout) {
+		if (awaitingSyncTimeout) {
 			clearTimeout(awaitingSyncTimeout)
 		}
 
 		awaitingSyncTimeout = setTimeout(() => {
-			if(syncState === SyncState.AwaitingInitialSync) {
+			if (syncState === SyncState.AwaitingInitialSync) {
 				logger.warn({}, 'Timeout in AwaitingInitialSync, forcing state to Online and flushing buffer')
 				syncState = SyncState.Online
 				ev.flush()

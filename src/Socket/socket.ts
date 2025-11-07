@@ -72,11 +72,11 @@ export const makeSocket = (config: SocketConfig) => {
 	const url = typeof waWebSocketUrl === 'string' ? new URL(waWebSocketUrl) : waWebSocketUrl
 
 
-	if(config.mobile || url.protocol === 'tcp:') {
+	if (config.mobile || url.protocol === 'tcp:') {
 		throw new Boom('Mobile API is not supported anymore', { statusCode: DisconnectReason.loggedOut })
 	}
 
-	if(url.protocol === 'wss' && authState?.creds?.routingInfo) {
+	if (url.protocol === 'wss' && authState?.creds?.routingInfo) {
 		url.searchParams.append('ED', authState.creds.routingInfo.toString('base64url'))
 	}
 
@@ -109,7 +109,7 @@ export const makeSocket = (config: SocketConfig) => {
 	const sendPromise = promisify(ws.send)
 
 	const sendRawMessage = async(data: Uint8Array | Buffer) => {
-		if(!ws.isOpen) {
+		if (!ws.isOpen) {
 			throw new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed })
 		}
 
@@ -120,7 +120,7 @@ export const makeSocket = (config: SocketConfig) => {
 				try {
 					await sendPromise.call(ws, bytes)
 					resolve()
-				} catch(error) {
+				} catch (error) {
 					reject(error)
 				}
 			}
@@ -128,7 +128,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	const sendNode = (frame: BinaryNode) => {
-		if(logger.level === 'trace') {
+		if (logger.level === 'trace') {
 			logger.trace({ xml: binaryNodeToString(frame), msg: 'xml send' })
 		}
 
@@ -144,7 +144,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	const awaitNextMessage = async<T>(sendMsg?: Uint8Array) => {
-		if(!ws.isOpen) {
+		if (!ws.isOpen) {
 			throw new Boom('Connection Closed', {
 				statusCode: DisconnectReason.connectionClosed
 			})
@@ -166,7 +166,7 @@ export const makeSocket = (config: SocketConfig) => {
 				ws.off('error', onClose)
 			})
 
-		if(sendMsg) {
+		if (sendMsg) {
 			sendRawMessage(sendMsg).catch(onClose!)
 		}
 
@@ -236,7 +236,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	const query = async(node: BinaryNode, timeoutMs?: number) => {
-		if(!node.attrs.id) {
+		if (!node.attrs.id) {
 			node.attrs.id = generateMessageTag()
 		}
 
@@ -246,7 +246,7 @@ export const makeSocket = (config: SocketConfig) => {
 		await sendNode(node)
 
 		const result = await (wait as Promise<BinaryNode>)
-		if('tag' in result) {
+		if ('tag' in result) {
 			assertNodeErrorFree(result)
 		}
 
@@ -258,7 +258,7 @@ export const makeSocket = (config: SocketConfig) => {
 		operationType: 'group-metadata' | 'send-message' | 'query' | 'default' = 'query',
 		customTimeoutMs?: number
 	) => {
-		if(!node.attrs.id) {
+		if (!node.attrs.id) {
 			node.attrs.id = generateMessageTag()
 		}
 
@@ -268,7 +268,7 @@ export const makeSocket = (config: SocketConfig) => {
 		await sendNode(node)
 
 		const result = await (wait as Promise<BinaryNode>)
-		if('tag' in result) {
+		if ('tag' in result) {
 			assertNodeErrorFree(result)
 		}
 
@@ -293,7 +293,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const keyEnc: Buffer = await noise.processHandshake(handshake, creds.noiseKey)
 
 		let node: waproto.IClientPayload
-		if(!creds.me) {
+		if (!creds.me) {
 			node = generateRegistrationNode(creds, config)
 			logger.trace({ node }, 'not logged in, attempting registration...')
 		} else {
@@ -338,27 +338,27 @@ export const makeSocket = (config: SocketConfig) => {
 	let uploadDebounceTimer: NodeJS.Timeout | null = null
 
 	const uploadPreKeys = async(count = INITIAL_PREKEY_COUNT, retryCount = 0) => {
-		if(uploadDebounceTimer) {
+		if (uploadDebounceTimer) {
 			clearTimeout(uploadDebounceTimer)
 		}
 
 		return new Promise<void>((resolve, reject) => {
 			uploadDebounceTimer = setTimeout(async() => {
-				if(retryCount === 0) {
+				if (retryCount === 0) {
 					const timeSinceLastUpload = Date.now() - lastUploadTime
-					if(timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
+					if (timeSinceLastUpload < MIN_UPLOAD_INTERVAL) {
 						logger.debug({}, `Skipping upload, only ${timeSinceLastUpload}ms since last upload`)
 						resolve()
 						return
 					}
 				}
 
-				if(uploadPreKeysPromise) {
+				if (uploadPreKeysPromise) {
 					logger.debug({}, 'Pre-key upload already in progress, waiting for completion')
 					try {
 						await uploadPreKeysPromise
 						resolve()
-					} catch(error) {
+					} catch (error) {
 						reject(error)
 					}
 
@@ -379,10 +379,10 @@ export const makeSocket = (config: SocketConfig) => {
 						await query(node)
 						logger.info({ count }, 'uploaded pre-keys successfully')
 						lastUploadTime = Date.now()
-					} catch(uploadError) {
+					} catch (uploadError) {
 						logger.error({ uploadError, count }, 'Failed to upload pre-keys to server')
 
-						if(retryCount < 3) {
+						if (retryCount < 3) {
 							const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
 							logger.info({}, `Retrying pre-key upload in ${backoffDelay}ms`)
 							await new Promise(resolve => setTimeout(resolve, backoffDelay))
@@ -402,7 +402,7 @@ export const makeSocket = (config: SocketConfig) => {
 				try {
 					await uploadPreKeysPromise
 					resolve()
-				} catch(error) {
+				} catch (error) {
 					reject(error)
 				} finally {
 					uploadPreKeysPromise = null
@@ -414,7 +414,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	const verifyCurrentPreKeyExists = async() => {
 		const currentPreKeyId = creds.nextPreKeyId - 1
-		if(currentPreKeyId <= 0) {
+		if (currentPreKeyId <= 0) {
 			return { exists: false, currentPreKeyId: 0 }
 		}
 
@@ -437,13 +437,13 @@ export const makeSocket = (config: SocketConfig) => {
 
 			const shouldUpload = lowServerCount || missingCurrentPreKey
 
-			if(shouldUpload) {
+			if (shouldUpload) {
 				const reasons: string[] = []
-				if(lowServerCount) {
+				if (lowServerCount) {
 					reasons.push(`server count low (${preKeyCount})`)
 				}
 
-				if(missingCurrentPreKey) {
+				if (missingCurrentPreKey) {
 					reasons.push(`current prekey ${currentPreKeyId} missing from storage`)
 				}
 
@@ -452,7 +452,7 @@ export const makeSocket = (config: SocketConfig) => {
 			} else {
 				logger.info({ preKeyCount, currentPreKeyId }, `PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error }, 'Failed to check/upload pre-keys during initialization')
 		}
 	}
@@ -464,10 +464,10 @@ export const makeSocket = (config: SocketConfig) => {
 			let anyTriggered = false
 
 			anyTriggered = ws.emit('frame', frame)
-			if(!(frame instanceof Uint8Array)) {
+			if (!(frame instanceof Uint8Array)) {
 				const msgId = frame.attrs.id
 
-				if(logger.level === 'trace') {
+				if (logger.level === 'trace') {
 					logger.trace({ xml: binaryNodeToString(frame), msg: 'recv xml' })
 				}
 
@@ -476,7 +476,7 @@ export const makeSocket = (config: SocketConfig) => {
 				const l1 = frame.attrs || {}
 				const l2 = Array.isArray(frame.content) ? frame.content[0]?.tag : ''
 
-				for(const key of Object.keys(l1)) {
+				for (const key of Object.keys(l1)) {
 					anyTriggered = ws.emit(`${DEF_CALLBACK_PREFIX}${l0},${key}:${l1[key]},${l2}`, frame) || anyTriggered
 					anyTriggered = ws.emit(`${DEF_CALLBACK_PREFIX}${l0},${key}:${l1[key]}`, frame) || anyTriggered
 					anyTriggered = ws.emit(`${DEF_CALLBACK_PREFIX}${l0},${key}`, frame) || anyTriggered
@@ -485,7 +485,7 @@ export const makeSocket = (config: SocketConfig) => {
 				anyTriggered = ws.emit(`${DEF_CALLBACK_PREFIX}${l0},,${l2}`, frame) || anyTriggered
 				anyTriggered = ws.emit(`${DEF_CALLBACK_PREFIX}${l0}`, frame) || anyTriggered
 
-				if(!anyTriggered && logger.level === 'debug') {
+				if (!anyTriggered && logger.level === 'debug') {
 					logger.debug({ unhandled: true, msgId, fromMe: false, frame }, 'communication recv')
 				}
 			}
@@ -493,7 +493,7 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	const end = (error: Error | undefined) => {
-		if(closed) {
+		if (closed) {
 			logger.trace({ trace: error?.stack }, 'connection already closed')
 			return
 		}
@@ -512,10 +512,10 @@ export const makeSocket = (config: SocketConfig) => {
 		ws.removeAllListeners('open')
 		ws.removeAllListeners('message')
 
-		if(!ws.isClosed && !ws.isClosing) {
+		if (!ws.isClosed && !ws.isClosing) {
 			try {
 				ws.close()
-			} catch{ }
+			} catch { }
 		}
 
 		ev.emit('connection.update', {
@@ -529,11 +529,11 @@ export const makeSocket = (config: SocketConfig) => {
 	}
 
 	const waitForSocketOpen = async() => {
-		if(ws.isOpen) {
+		if (ws.isOpen) {
 			return
 		}
 
-		if(ws.isClosed || ws.isClosing) {
+		if (ws.isClosed || ws.isClosing) {
 			throw new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed })
 		}
 
@@ -558,7 +558,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const MAX_FAILURES = 3
 
 		return (keepAliveReq = setInterval(() => {
-			if(!lastDateRecv) {
+			if (!lastDateRecv) {
 				lastDateRecv = new Date()
 			}
 
@@ -567,9 +567,9 @@ export const makeSocket = (config: SocketConfig) => {
 				check if it's been a suspicious amount of time since the server responded with our last seen
 				it could be that the network is down
 			*/
-			if(diff > keepAliveIntervalMs + 5000) {
+			if (diff > keepAliveIntervalMs + 5000) {
 				end(new Boom('Connection was lost', { statusCode: DisconnectReason.connectionLost }))
-			} else if(ws.isOpen) {
+			} else if (ws.isOpen) {
 				query(
 					{
 						tag: 'iq',
@@ -593,7 +593,7 @@ export const makeSocket = (config: SocketConfig) => {
 							maxFailures: MAX_FAILURES
 						}, 'error in sending keep alive')
 
-						if(consecutiveFailures >= MAX_FAILURES) {
+						if (consecutiveFailures >= MAX_FAILURES) {
 							logger.warn({}, 'Too many keep-alive failures, ending connection')
 							end(new Boom('Keep-alive failures exceeded threshold', {
 								statusCode: DisconnectReason.connectionLost
@@ -622,7 +622,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	const logout = async(msg?: string) => {
 		const jid = authState.creds.me?.id
-		if(jid) {
+		if (jid) {
 			await sendNode({
 				tag: 'iq',
 				attrs: {
@@ -646,7 +646,7 @@ export const makeSocket = (config: SocketConfig) => {
 		end(new Boom(msg || 'Intentional Logout', { statusCode: DisconnectReason.loggedOut }))
 	}
 
-	const requestPairingCode = async (phoneNumber: string, customPairingCode?: string): Promise<string> => {
+	const requestPairingCode = async(phoneNumber: string, customPairingCode?: string): Promise<string> => {
 		const pairingCode: string = customPairingCode ?? bytesToCrockford(randomBytes(5))
 
 		if (customPairingCode && customPairingCode?.length !== 8) {
@@ -739,7 +739,7 @@ export const makeSocket = (config: SocketConfig) => {
 	ws.on('open', async() => {
 		try {
 			await validateConnection()
-		} catch(err) {
+		} catch (err) {
 			logger.error({ err }, 'error in validating connection')
 			end(err)
 		}
@@ -766,12 +766,12 @@ export const makeSocket = (config: SocketConfig) => {
 
 		let qrMs = qrTimeout || 60_000
 		const genPairQR = () => {
-			if(!ws.isOpen) {
+			if (!ws.isOpen) {
 				return
 			}
 
 			const refNode = refNodes.shift()
-			if(!refNode) {
+			if (!refNode) {
 				end(new Boom('QR refs attempts ended', { statusCode: DisconnectReason.timedOut }))
 				return
 			}
@@ -801,7 +801,7 @@ export const makeSocket = (config: SocketConfig) => {
 			ev.emit('connection.update', { isNewLogin: true, qr: undefined })
 
 			await sendNode(reply)
-		} catch(error) {
+		} catch (error) {
 			logger.error({ trace: error.stack }, 'error in pairing')
 			end(error)
 		}
@@ -818,7 +818,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 		ev.emit('connection.update', { connection: 'open' })
 
-		if(node.attrs.lid && authState.creds.me?.id) {
+		if (node.attrs.lid && authState.creds.me?.id) {
 			const myLID = node.attrs.lid
 			process.nextTick(async() => {
 				try {
@@ -828,7 +828,7 @@ export const makeSocket = (config: SocketConfig) => {
 					await signalRepository.migrateSession(myPN, myLID)
 
 					logger.info({ myPN: jidNormalizedUser(myPN), myLID: jidNormalizedUser(myLID) }, 'Own LID session created successfully')
-				} catch(error) {
+				} catch (error) {
 					logger.error({ error, lid: myLID }, 'Failed to create own LID session')
 				}
 			})
@@ -863,7 +863,7 @@ export const makeSocket = (config: SocketConfig) => {
 	ws.on('CB:ib,,edge_routing', (node: BinaryNode) => {
 		const edgeRoutingNode = getBinaryNodeChild(node, 'edge_routing')
 		const routingInfo = getBinaryNodeChild(edgeRoutingNode, 'routing_info')
-		if(routingInfo?.content) {
+		if (routingInfo?.content) {
 			authState.creds.routingInfo = Buffer.from(routingInfo?.content as Uint8Array)
 			ev.emit('creds.update', authState.creds)
 		}
@@ -871,7 +871,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	let didStartBuffer = false
 	process.nextTick(() => {
-		if(creds.me?.id) {
+		if (creds.me?.id) {
 			ev.buffer()
 			didStartBuffer = true
 		}
@@ -884,7 +884,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const offlineNotifs = +(child?.attrs.count || 0)
 
 		logger.trace({ offlineNotifs }, `handled ${offlineNotifs} offline messages/notifications`)
-		if(didStartBuffer) {
+		if (didStartBuffer) {
 			ev.flush()
 			logger.trace({}, 'flushed events for initial buffer')
 		}
@@ -894,7 +894,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 	ev.on('creds.update', update => {
 		const name = update.me?.name
-		if(creds.me?.name !== name) {
+		if (creds.me?.name !== name) {
 			logger.debug({ name }, 'updated pushName')
 			sendNode({
 				tag: 'presence',
@@ -908,7 +908,7 @@ export const makeSocket = (config: SocketConfig) => {
 		Object.assign(creds, update)
 	})
 
-	if(printQRInTerminal) {
+	if (printQRInTerminal) {
 		printQRIfNecessaryListener(ev, logger)
 	}
 

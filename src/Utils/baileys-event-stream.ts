@@ -45,7 +45,7 @@ export const readAndEmitEventStream = (filename: string, delayIntervalMs = 0) =>
 			crlfDelay: Infinity
 		})
 		for await (const line of rl) {
-			if(line) {
+			if (line) {
 				const { event, data } = JSON.parse(line)
 				ev.emit(event, data)
 				delayIntervalMs && await delay(delayIntervalMs)

@@ -17,7 +17,7 @@ export const tryAlternativeDecryption = (
 
 	try {
 		const decipher: DecipherGCM = createDecipheriv('aes-256-gcm', cipherKeyBuf, ivBuf)
-		if(additionalData) {
+		if (additionalData) {
 			decipher.setAAD(additionalData)
 		}
 
@@ -27,25 +27,25 @@ export const tryAlternativeDecryption = (
 		try {
 			decipher.setAuthTag(tag)
 			return Buffer.concat([decipher.update(enc), decipher.final()])
-		} catch(error) {
+		} catch (error) {
 			logger.error(error, 'GCM decryption failed with tag, trying without verification')
 			return decipher.update(enc)
 		}
-	} catch(error) {
+	} catch (error) {
 		logger.error({ error }, 'First decryption attempt failed: ')
 	}
 
 	try {
 		const decipher = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext), decipher.final()])
-	} catch(error) {
+	} catch (error) {
 		logger.error({ error }, 'Second decryption attempt failed: ')
 	}
 
 	try {
 		const decipher = createDecipheriv('aes-256-ctr', cipherKeyBuf, ivBuf)
 		return Buffer.concat([decipher.update(ciphertext)])
-	} catch(error) {
+	} catch (error) {
 		logger.error({ error }, 'Third decryption attempt failed: ')
 	}
 
@@ -78,16 +78,16 @@ export const createFallbackDecryptStream = (
 				remainingBytes = data.subarray(decryptLength)
 				data = data.subarray(0, decryptLength)
 
-				if(!aes) {
+				if (!aes) {
 					let ivValue: Buffer = ivBuf
-					if(firstBlockIsIV) {
+					if (firstBlockIsIV) {
 						ivValue = data.subarray(0, AES_CHUNK_SIZE)
 						data = data.subarray(AES_CHUNK_SIZE)
 					}
 
 					try {
 						aes = createDecipheriv('aes-256-cbc', cipherKeyBuf, ivValue)
-					} catch(error) {
+					} catch (error) {
 						logger.error({ error }, 'Error creating CBC decryption')
 						callback(null)
 						return
@@ -97,11 +97,11 @@ export const createFallbackDecryptStream = (
 				try {
 					this.push(aes.update(data))
 					callback()
-				} catch(error) {
+				} catch (error) {
 					logger.error({ error }, 'Error in decryption (update)')
 					callback(null)
 				}
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error }, 'General decryption error')
 				callback(null)
 			}
@@ -109,16 +109,16 @@ export const createFallbackDecryptStream = (
 
 		final(callback) {
 			try {
-				if(aes) {
+				if (aes) {
 					try {
 						this.push(aes.final())
-					} catch(error) {
+					} catch (error) {
 						logger.error({ error }, 'Error in final decryption')
 					}
 				}
 
 				callback()
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error }, 'Error in final decryption')
 				callback()
 			}

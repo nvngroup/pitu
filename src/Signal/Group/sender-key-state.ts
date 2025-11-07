@@ -16,7 +16,7 @@ export class SenderKeyState {
 		signatureKeyPrivate?: Uint8Array | null,
 		senderKeyStateStructure?: SenderKeyStateStructure | null
 	) {
-		if(senderKeyStateStructure) {
+		if (senderKeyStateStructure) {
 			this.senderKeyStateStructure = {
 				...senderKeyStateStructure,
 				senderMessageKeys: senderKeyStateStructure.senderMessageKeys || []
@@ -28,7 +28,7 @@ export class SenderKeyState {
 			validateKeyId(keyId)
 			validateIteration(iter)
 
-			if(signatureKeyPair) {
+			if (signatureKeyPair) {
 				signatureKeyPublic = signatureKeyPair.public
 				signatureKeyPrivate = signatureKeyPair.private
 			}
@@ -42,7 +42,7 @@ export class SenderKeyState {
 				public: ensureBuffer(signatureKeyPublic)
 			}
 
-			if(signatureKeyPrivate) {
+			if (signatureKeyPrivate) {
 				signingKeyStructure.private = ensureBuffer(signatureKeyPrivate)
 			}
 
@@ -92,7 +92,7 @@ export class SenderKeyState {
 			seed: senderMessageKey.getSeed()
 		})
 
-		if(this.senderKeyStateStructure.senderMessageKeys.length > this.MAX_MESSAGE_KEYS) {
+		if (this.senderKeyStateStructure.senderMessageKeys.length > this.MAX_MESSAGE_KEYS) {
 			this.senderKeyStateStructure.senderMessageKeys.shift()
 		}
 	}
@@ -100,7 +100,7 @@ export class SenderKeyState {
 	public removeSenderMessageKey(iteration: number): SenderMessageKey | null {
 		const index: number = this.senderKeyStateStructure.senderMessageKeys.findIndex(key => key.iteration === iteration)
 
-		if(index !== -1) {
+		if (index !== -1) {
 			const messageKey: SenderMessageKeyStructure = this.senderKeyStateStructure.senderMessageKeys[index]
 			this.senderKeyStateStructure.senderMessageKeys.splice(index, 1)
 			return new SenderMessageKey(messageKey.iteration, messageKey.seed)

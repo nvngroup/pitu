@@ -62,14 +62,14 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 	const groupMetadataWithRetry = async(jid: string, maxRetries = 3, timeoutMs?: number) => {
 		let lastError: Error | undefined
 
-		for(let attempt = 1; attempt <= maxRetries; attempt++) {
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
 				const currentTimeout = timeoutMs || (attempt === 1 ? undefined : 60_000)
 				return await groupMetadata(jid, currentTimeout)
-			} catch(error) {
+			} catch (error) {
 				lastError = error as Error
 
-				if(attempt === maxRetries) {
+				if (attempt === maxRetries) {
 					throw lastError
 				}
 
@@ -103,9 +103,9 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 		})
 		const data: { [_: string]: GroupMetadata } = { }
 		const groupsChild: BinaryNode | undefined = getBinaryNodeChild(result, 'groups')
-		if(groupsChild) {
+		if (groupsChild) {
 			const groups: BinaryNode[] = getBinaryNodeChildren(groupsChild, 'group')
-			for(const groupNode of groups) {
+			for (const groupNode of groups) {
 				const meta: GroupMetadata = extractGroupMetadata({
 					tag: 'result',
 					attrs: { },
@@ -123,12 +123,12 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 	async function parseGroupResult(node: BinaryNode) {
 		logger.info({ node }, 'parseGroupResult')
 		const groupNode: BinaryNode | undefined = getBinaryNodeChild(node, 'group')
-		if(groupNode) {
+		if (groupNode) {
 			try {
 				logger.info({ groupNode }, 'groupNode')
 				const metadata: GroupMetadata = await groupMetadata(`${groupNode.attrs.id}@g.us`)
 				return metadata ? metadata : Optional.empty()
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error }, 'Error parsing group metadata:')
 				return Optional.empty()
 			}
@@ -144,7 +144,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 
 	sock.ws.on('CB:ib,,dirty', async(node: BinaryNode) => {
 		const { attrs } = getBinaryNodeChild(node, 'dirty')!
-		if(attrs.type !== 'groups') {
+		if (attrs.type !== 'groups') {
 			return
 		}
 
@@ -335,7 +335,7 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 				}
 			}])
 
-			if(key.id) {
+			if (key.id) {
 				inviteMessage = waproto.Message.GroupInviteMessage.fromObject(inviteMessage)
 				inviteMessage.inviteExpiration = 0
 				inviteMessage.inviteCode = ''
@@ -402,7 +402,7 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 	let descOwner: string | undefined
 	let descOwnerJid: string | undefined
 	let descTime: number | undefined
-	if(descChild) {
+	if (descChild) {
 		desc = getBinaryNodeChildString(descChild, 'body')
 		descId = descChild.attrs.id
 		descOwner = descChild.attrs.participant ? jidNormalizedUser(descChild.attrs.participant) : undefined

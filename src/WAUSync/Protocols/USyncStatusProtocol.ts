@@ -21,17 +21,17 @@ export class USyncStatusProtocol implements USyncQueryProtocol {
 	}
 
 	parser(node: BinaryNode): StatusData | undefined {
-		if(node.tag === 'status') {
+		if (node.tag === 'status') {
 			assertNodeErrorFree(node)
 			let status: string | null = node?.content!.toString()
 			const setAt = new Date(+(node?.attrs.t || 0) * 1000)
-			if(!status) {
-				if(+node.attrs?.code === 401) {
+			if (!status) {
+				if (+node.attrs?.code === 401) {
 					status = ''
 				} else {
 					status = null
 				}
-			} else if(typeof status === 'string' && status.length === 0) {
+			} else if (typeof status === 'string' && status.length === 0) {
 				status = null
 			}
 

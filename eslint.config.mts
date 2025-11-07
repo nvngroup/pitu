@@ -86,19 +86,19 @@ export default defineConfig([globalIgnores([
   "keyword-spacing": ["error", {
    overrides: {
     if: {
-     after: false,
+     after: true,
     },
 
     for: {
-     after: false,
+      after: true,
     },
 
     while: {
-     after: false,
+      after: true,
     },
 
     catch: {
-     after: false,
+      after: true,
     },
    },
   }],

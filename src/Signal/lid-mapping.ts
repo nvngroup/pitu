@@ -24,13 +24,13 @@ export class LIDMappingStore {
 	private validateAndDecodeJid(jid: string, expectedType: 'lid' | 'pn'): DecodedJid | null {
 		const isValidType: boolean | undefined = expectedType === 'lid' ? isLidUser(jid) : isJidUser(jid)
 
-		if(!isValidType) {
+		if (!isValidType) {
 			logger.warn({ jid }, `Invalid JID type for ${expectedType}`)
 			return null
 		}
 
 		const decoded: FullJid | undefined = jidDecode(jid)
-		if(!decoded?.user) {
+		if (!decoded?.user) {
 			logger.warn({ jid }, 'Failed to decode JID')
 			return null
 		}
@@ -45,7 +45,7 @@ export class LIDMappingStore {
 	 * Validate LID-PN mapping parameters
 	 */
 	private validateMappingParams(lid: string, pn: string): { lidJid: string; pnJid: string } | null {
-		if(!((isLidUser(lid) && isJidUser(pn)) || (isJidUser(lid) && isLidUser(pn)))) {
+		if (!((isLidUser(lid) && isJidUser(pn)) || (isJidUser(lid) && isLidUser(pn)))) {
 			logger.error({ lid, pn }, 'Invalid LID-PN mapping parameters')
 			return null
 		}
@@ -76,14 +76,14 @@ export class LIDMappingStore {
 	 */
 	async storeLIDPNMapping(lid: string, pn: string): Promise<LIDMappingResult> {
 		try {
-			if(!lid?.trim() || !pn?.trim()) {
+			if (!lid?.trim() || !pn?.trim()) {
 				const error = 'LID and PN parameters cannot be empty'
 				logger.error({ error })
 				return { success: false, error }
 			}
 
 			const validationResult = this.validateMappingParams(lid, pn)
-			if(!validationResult) {
+			if (!validationResult) {
 				return { success: false, error: 'Invalid LID-PN mapping parameters' }
 			}
 
@@ -92,7 +92,7 @@ export class LIDMappingStore {
 			const lidDecoded: DecodedJid | null = this.validateAndDecodeJid(lidJid, 'lid')
 			const pnDecoded: DecodedJid | null = this.validateAndDecodeJid(pnJid, 'pn')
 
-			if(!lidDecoded || !pnDecoded) {
+			if (!lidDecoded || !pnDecoded) {
 				return { success: false, error: 'Failed to decode JID parameters' }
 			}
 
@@ -117,7 +117,7 @@ export class LIDMappingStore {
 				mapping: { pnUser, lidUser }
 			}
 
-		} catch(error) {
+		} catch (error) {
 			const errorMessage = `Failed to store LID-PN mapping: ${error instanceof Error ? error.message : 'Unknown error'}`
 			logger.error({ error, lid, pn }, errorMessage)
 			return { success: false, error: errorMessage }
@@ -131,13 +131,13 @@ export class LIDMappingStore {
 	 */
 	async getLIDForPN(pn: string): Promise<string | null> {
 		try {
-			if(!pn?.trim()) {
+			if (!pn?.trim()) {
 				logger.warn({ pn }, 'getLIDForPN: Empty PN parameter')
 				return null
 			}
 
 			const decoded: DecodedJid | null = this.validateAndDecodeJid(pn, 'pn')
-			if(!decoded) {
+			if (!decoded) {
 				return null
 			}
 
@@ -146,7 +146,7 @@ export class LIDMappingStore {
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [pnUser])
 			const lidUser: string = stored[pnUser]
 
-			if(!lidUser || typeof lidUser !== 'string') {
+			if (!lidUser || typeof lidUser !== 'string') {
 				logger.trace({ pnUser }, 'No LID mapping found for PN user')
 				return null
 			}
@@ -156,7 +156,7 @@ export class LIDMappingStore {
 			logger.trace({ pn, deviceSpecificLid, pnDevice }, 'getLIDForPN: Mapping found')
 			return deviceSpecificLid
 
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, pn }, 'Failed to get LID for PN')
 			return null
 		}
@@ -169,13 +169,13 @@ export class LIDMappingStore {
 	 */
 	async getPNForLID(lid: string): Promise<string | null> {
 		try {
-			if(!lid?.trim()) {
+			if (!lid?.trim()) {
 				logger.warn({ lid }, 'getPNForLID: Empty LID parameter')
 				return null
 			}
 
 			const decoded: DecodedJid | null = this.validateAndDecodeJid(lid, 'lid')
-			if(!decoded) {
+			if (!decoded) {
 				return null
 			}
 
@@ -185,7 +185,7 @@ export class LIDMappingStore {
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
 			const pnUser: string = stored[reverseKey]
 
-			if(!pnUser || typeof pnUser !== 'string') {
+			if (!pnUser || typeof pnUser !== 'string') {
 				logger.trace({ lidUser }, 'No reverse mapping found for LID user')
 				return null
 			}
@@ -195,7 +195,7 @@ export class LIDMappingStore {
 			logger.trace({ lid, pnJid }, 'Found reverse mapping')
 			return pnJid
 
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, lid }, 'Failed to get PN for LID')
 			return null
 		}
@@ -208,7 +208,7 @@ export class LIDMappingStore {
 	 */
 	async removeLIDPNMapping(userIdentifier: string): Promise<boolean> {
 		try {
-			if(!userIdentifier?.trim()) {
+			if (!userIdentifier?.trim()) {
 				logger.warn({ userIdentifier }, 'removeLIDPNMapping: Empty user identifier')
 				return false
 			}
@@ -216,12 +216,12 @@ export class LIDMappingStore {
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [userIdentifier])
 			const mappedUser: string = stored[userIdentifier]
 
-			if(!mappedUser) {
+			if (!mappedUser) {
 				const reverseKey = `${userIdentifier}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
 				const reverseStored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
 				const reverseMappedUser: string = reverseStored[reverseKey]
 
-				if(!reverseMappedUser) {
+				if (!reverseMappedUser) {
 					logger.trace({ userIdentifier, reverseMappedUser }, 'No mapping found for user')
 					return false
 				}
@@ -248,7 +248,7 @@ export class LIDMappingStore {
 			logger.info({ userIdentifier }, 'LID-PN mapping removed for user')
 			return true
 
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, userIdentifier }, 'Failed to remove LID-PN mapping')
 			return false
 		}
@@ -261,14 +261,14 @@ export class LIDMappingStore {
 	 */
 	async hasMappingForUser(userIdentifier: string): Promise<boolean> {
 		try {
-			if(!userIdentifier?.trim()) {
+			if (!userIdentifier?.trim()) {
 				return false
 			}
 
 			const stored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [userIdentifier])
 			const mappedUser: string = stored[userIdentifier]
 
-			if(mappedUser) {
+			if (mappedUser) {
 				return true
 			}
 
@@ -276,7 +276,7 @@ export class LIDMappingStore {
 			const reverseStored = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [reverseKey])
 			return !!reverseStored[reverseKey]
 
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, userIdentifier }, 'Failed to check mapping existence')
 			return false
 		}
@@ -293,7 +293,7 @@ export class LIDMappingStore {
 				totalMappings: 0,
 				users: []
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error }, 'Failed to get mapping statistics')
 			return { totalMappings: 0, users: [] }
 		}

@@ -18,7 +18,7 @@ class LTHash {
 
 	add(hash: ArrayBuffer | Promise<ArrayBuffer>, items: string[] | ArrayBuffer[]) {
 		let result = hash
-		for(const item of items) {
+		for (const item of items) {
 			result = this._addSingle(result, item)
 		}
 
@@ -27,7 +27,7 @@ class LTHash {
 
 	subtract(hash: ArrayBuffer | Promise<ArrayBuffer>, items: string[] | ArrayBuffer[]) {
 		let result = hash
-		for(const item of items) {
+		for (const item of items) {
 			result = this._subtractSingle(result, item)
 		}
 
@@ -60,7 +60,7 @@ class LTHash {
 		const resultBuffer = new ArrayBuffer(view1.byteLength)
 		const resultView = new DataView(resultBuffer)
 
-		for(let index = 0; index < view1.byteLength; index += 2) {
+		for (let index = 0; index < view1.byteLength; index += 2) {
 			resultView.setUint16(
 				index,
 				operation(view1.getUint16(index, true), view2.getUint16(index, true)),

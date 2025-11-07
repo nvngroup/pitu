@@ -18,7 +18,7 @@ export class SenderKeyDistributionMessage extends CiphertextMessage {
 	) {
 		super()
 
-		if(serialized) {
+		if (serialized) {
 			try {
 				const message: Uint8Array = serialized.slice(1)
 				const distributionMessage = waproto.SenderKeyDistributionMessage.decode(
@@ -36,7 +36,7 @@ export class SenderKeyDistributionMessage extends CiphertextMessage {
           typeof distributionMessage.signingKey === 'string'
           	? Buffer.from(distributionMessage.signingKey, 'base64')
           	: distributionMessage.signingKey
-			} catch(e) {
+			} catch (e) {
 				throw new Error(String(e))
 			}
 		} else {

@@ -34,16 +34,16 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid!)
 	message.key.participant = message.key.participant ? jidNormalizedUser(message.key.participant) : undefined
 	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
-	if(content?.reactionMessage) {
+	if (content?.reactionMessage) {
 		normaliseKey(content.reactionMessage.key!)
 	}
 
-	if(content?.pollUpdateMessage) {
+	if (content?.pollUpdateMessage) {
 		normaliseKey(content.pollUpdateMessage.pollCreationMessageKey!)
 	}
 
 	function normaliseKey(msgKey: waproto.IMessageKey) {
-		if(!message.key.fromMe) {
+		if (!message.key.fromMe) {
 			msgKey.fromMe = !msgKey.fromMe
 				? areJidsSameUser(msgKey.participant || msgKey.remoteJid!, meId)
 				: false
@@ -79,7 +79,7 @@ export const shouldIncrementChatUnread = (message: waproto.IWebMessageInfo) => (
  * Typically -- that'll be the remoteJid, but for broadcasts, it'll be the participant
  */
 export const getChatId = ({ remoteJid, participant, fromMe }: waproto.IMessageKey) => {
-	if(
+	if (
 		isJidBroadcast(remoteJid!)
 		&& !isJidStatusBroadcast(remoteJid!)
 		&& !fromMe
@@ -153,17 +153,17 @@ const processMessage = async(
 	const chat: Partial<Chat> = { id: jidNormalizedUser(getChatId(message.key)) }
 	const isRealMsg: boolean | undefined = isRealMessage(message, meId)
 
-	if(isRealMsg) {
+	if (isRealMsg) {
 		chat.messages = [{ message }]
 		chat.conversationTimestamp = toNumber(message.messageTimestamp)
-		if(shouldIncrementChatUnread(message)) {
+		if (shouldIncrementChatUnread(message)) {
 			chat.unreadCount = (chat.unreadCount || 0) + 1
 		}
 	}
 
 	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
 
-	if(
+	if (
 		(isRealMsg || content?.reactionMessage?.key?.fromMe)
 		&& accountSettings?.unarchiveChats
 	) {
@@ -172,7 +172,7 @@ const processMessage = async(
 	}
 
 	const protocolMsg: waproto.Message.IProtocolMessage | null | undefined = content?.protocolMessage
-	if(protocolMsg) {
+	if (protocolMsg) {
 		switch (protocolMsg.type) {
 		case waproto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION:
 			const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
@@ -186,8 +186,8 @@ const processMessage = async(
 				isLatest,
 			}, 'got history notification')
 
-			if(process) {
-				if(histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND) {
+			if (process) {
+				if (histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND) {
 					ev.emit('creds.update', {
 						processedHistoryMessages: [
 							...(creds.processedHistoryMessages || []),
@@ -220,12 +220,12 @@ const processMessage = async(
 			break
 		case waproto.Message.ProtocolMessage.Type.APP_STATE_SYNC_KEY_SHARE:
 			const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
-			if(keys?.length) {
+			if (keys?.length) {
 				let newAppStateSyncKeyId = ''
 				await keyStore.transaction(
 					async() => {
 						const newKeys: string[] = []
-						for(const { keyData, keyId } of keys) {
+						for (const { keyData, keyId } of keys) {
 							const strKeyId: string = Buffer.from(keyId!.keyId!).toString('base64')
 							newKeys.push(strKeyId)
 
@@ -266,13 +266,13 @@ const processMessage = async(
 			break
 		case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
 			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
-			if(response) {
+			if (response) {
 				placeholderResendCache?.del(response.stanzaId!)
 				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
 				const { peerDataOperationResult } = response
-				for(const result of peerDataOperationResult!) {
+				for (const result of peerDataOperationResult!) {
 					const { placeholderMessageResendResponse: retryResponse } = result
-					if(retryResponse) {
+					if (retryResponse) {
 						const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
 						setTimeout(() => {
 							ev.emit('messages.upsert', {
@@ -306,7 +306,7 @@ const processMessage = async(
 			)
 			break
 		}
-	} else if(content?.reactionMessage) {
+	} else if (content?.reactionMessage) {
 		const reaction: waproto.IReaction = {
 			...content.reactionMessage,
 			key: message.key,
@@ -315,7 +315,7 @@ const processMessage = async(
 			reaction,
 			key: content.reactionMessage?.key!,
 		}])
-	} else if(message.messageStubType) {
+	} else if (message.messageStubType) {
 		const jid: string = message.key?.remoteJid!
 		let participants: string[]
 		const emitParticipantsUpdate = (action: ParticipantAction) => (
@@ -340,7 +340,7 @@ const processMessage = async(
 		case WAMessageStubType.GROUP_PARTICIPANT_REMOVE:
 			participants = message.messageStubParameters || []
 			emitParticipantsUpdate('remove')
-			if(participantsIncludesMe()) {
+			if (participantsIncludesMe()) {
 				chat.readOnly = true
 			}
 
@@ -349,7 +349,7 @@ const processMessage = async(
 		case WAMessageStubType.GROUP_PARTICIPANT_INVITE:
 		case WAMessageStubType.GROUP_PARTICIPANT_ADD_REQUEST_JOIN:
 			participants = message.messageStubParameters || []
-			if(participantsIncludesMe()) {
+			if (participantsIncludesMe()) {
 				chat.readOnly = false
 			}
 
@@ -401,10 +401,10 @@ const processMessage = async(
 			break
 		}
 
-	} else if(content?.pollUpdateMessage) {
+	} else if (content?.pollUpdateMessage) {
 		const creationMsgKey: waproto.IMessageKey = content.pollUpdateMessage.pollCreationMessageKey!
 		const pollMsg: waproto.IMessage | undefined = await getMessage(creationMsgKey)
-		if(pollMsg) {
+		if (pollMsg) {
 			const meIdNormalised: string = jidNormalizedUser(meId)
 			const pollCreatorJid: string = getKeyAuthor(creationMsgKey, meIdNormalised)
 			const voterJid: string = getKeyAuthor(message.key, meIdNormalised)
@@ -434,7 +434,7 @@ const processMessage = async(
 						}
 					}
 				])
-			} catch(err) {
+			} catch (err) {
 				logger?.error(
 					{ err, creationMsgKey },
 					'failed to decrypt poll vote'
@@ -448,7 +448,7 @@ const processMessage = async(
 		}
 	}
 
-	if(Object.keys(chat).length > 1) {
+	if (Object.keys(chat).length > 1) {
 		ev.emit('chats.update', [chat])
 	}
 }

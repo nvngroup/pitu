@@ -15,11 +15,11 @@ export class USyncContactProtocol implements USyncQueryProtocol {
 	getUserElement(user: USyncUser): BinaryNode {
 		// Implementa os campos type e username se disponíveis
 		const attrs: Record<string, string> = {}
-		if(user.type) {
+		if (user.type) {
 			attrs.type = user.type
 		}
 
-		if(user.username) {
+		if (user.username) {
 			attrs.username = user.username
 		}
 
@@ -31,7 +31,7 @@ export class USyncContactProtocol implements USyncQueryProtocol {
 	}
 
 	parser(node: BinaryNode): boolean {
-		if(node.tag === 'contact') {
+		if (node.tag === 'contact') {
 			assertNodeErrorFree(node)
 			return node?.attrs?.type === 'in'
 		}

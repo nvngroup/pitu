@@ -32,21 +32,21 @@ export function makeCacheableSignalKeyStore(
 		async get(type, ids) {
 			const data: { [_: string]: SignalDataTypeMap[typeof type] } = {}
 			const idsToFetch: string[] = []
-			for(const id of ids) {
+			for (const id of ids) {
 				const item = (await cache.get<SignalDataTypeMap[typeof type]>(getUniqueId(type, id))) as SignalDataTypeMap[typeof type]
-				if(typeof item !== 'undefined') {
+				if (typeof item !== 'undefined') {
 					data[id] = item
 				} else {
 					idsToFetch.push(id)
 				}
 			}
 
-			if(idsToFetch.length) {
+			if (idsToFetch.length) {
 				logger.trace({ items: idsToFetch.length }, 'loading from store')
 				const fetched = await store.get(type, idsToFetch)
-				for(const id of idsToFetch) {
+				for (const id of idsToFetch) {
 					const item: SignalDataTypeMap[typeof type] | undefined = fetched[id]
-					if(item) {
+					if (item) {
 						data[id] = item
 						cache.set(getUniqueId(type, id), item)
 					}
@@ -57,8 +57,8 @@ export function makeCacheableSignalKeyStore(
 		},
 		async set(data) {
 			let keys = 0
-			for(const type in data) {
-				for(const id in data[type]) {
+			for (const type in data) {
+				for (const id in data[type]) {
 					cache.set(getUniqueId(type, id), data[type][id])
 					keys += 1
 				}
@@ -95,12 +95,12 @@ export const addTransactionCapability = (
 
 	return {
 		get: async(type, ids) => {
-			if(isInTransaction()) {
+			if (isInTransaction()) {
 				const dict: SignalDataSet[typeof type] = transactionCache[type]
 				const idsRequiringFetch: string[] = dict
 					? ids.filter(item => typeof dict[item] === 'undefined')
 					: ids
-				if(idsRequiringFetch.length) {
+				if (idsRequiringFetch.length) {
 					dbQueriesInTransaction += 1
 					const result = await state.get(type, idsRequiringFetch)
 
@@ -114,7 +114,7 @@ export const addTransactionCapability = (
 				return ids.reduce(
 					(dict, id) => {
 						const value: SignalDataTypeMap[typeof type] | null | undefined = transactionCache[type]?.[id]
-						if(value) {
+						if (value) {
 							dict[id] = value
 						}
 
@@ -126,9 +126,9 @@ export const addTransactionCapability = (
 			}
 		},
 		set: data => {
-			if(isInTransaction()) {
+			if (isInTransaction()) {
 				logger.trace({ types: Object.keys(data) }, 'caching in transaction')
-				for(const key in data) {
+				for (const key in data) {
 					transactionCache[key] = transactionCache[key] || { }
 					Object.assign(transactionCache[key], data[key])
 
@@ -143,23 +143,23 @@ export const addTransactionCapability = (
 		async transaction(work) {
 			let result: Awaited<ReturnType<typeof work>>
 			transactionsInProgress += 1
-			if(transactionsInProgress === 1) {
+			if (transactionsInProgress === 1) {
 				logger.trace({}, 'entering transaction')
 			}
 
 			try {
 				result = await work()
-				if(transactionsInProgress === 1) {
-					if(Object.keys(mutations).length) {
+				if (transactionsInProgress === 1) {
+					if (Object.keys(mutations).length) {
 						logger.trace({}, 'committing transaction')
 						let tries: number = maxCommitRetries
-						while(tries) {
+						while (tries) {
 							tries -= 1
 							try {
 								await state.set(mutations)
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')
 								break
-							} catch(error) {
+							} catch (error) {
 								logger.error({ mutations, error }, `failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
 								logger.trace({ error }, 'error while committing transaction')
 								await delay(delayBetweenTriesMs)
@@ -171,7 +171,7 @@ export const addTransactionCapability = (
 				}
 			} finally {
 				transactionsInProgress -= 1
-				if(transactionsInProgress === 0) {
+				if (transactionsInProgress === 0) {
 					transactionCache = { }
 					mutations = { }
 					dbQueriesInTransaction = 0

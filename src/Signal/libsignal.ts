@@ -45,7 +45,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	const validateAndDecodeJid = (jid: string): { user: string; device: number } | null => {
 		try {
 			const decoded: FullJid | undefined = jidDecode(jid)
-			if(!decoded?.user) {
+			if (!decoded?.user) {
 				logger.warn({ jid }, 'Invalid JID format')
 				return null
 			}
@@ -54,7 +54,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				user: decoded.user,
 				device: decoded.device || SIGNAL_CONSTANTS.DEFAULT_DEVICE
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, jid }, 'Failed to decode JID')
 			return null
 		}
@@ -71,33 +71,33 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	 * Get the optimal encryption JID (prefers LID if available)
 	 */
 	const getOptimalEncryptionJid = async(jid: string): Promise<string> => {
-		if(!shouldUseLID(jid)) {
+		if (!shouldUseLID(jid)) {
 			return jid
 		}
 
 		try {
 			const lidForPN: string | null = await lidMapping.getLIDForPN(jid)
-			if(!lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
+			if (!lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 				return jid
 			}
 
 			const lidAddr = jidToSignalProtocolAddress(lidForPN)
 			const { [lidAddr.toString()]: lidSession } = await auth.keys.get('session', [lidAddr.toString()])
 
-			if(lidSession) {
+			if (lidSession) {
 				return lidForPN
 			}
 
 			const pnAddr = jidToSignalProtocolAddress(jid)
 			const { [pnAddr.toString()]: pnSession } = await auth.keys.get('session', [pnAddr.toString()])
 
-			if(pnSession) {
+			if (pnSession) {
 				await repository.migrateSession(jid, lidForPN)
 				return lidForPN
 			}
 
 			return jid
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, jid }, 'Failed to get optimal encryption JID')
 			return jid
 		}
@@ -110,10 +110,10 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 			try {
 				return cipher.decrypt(msg)
-			} catch(error) {
-				if(badMACRecovery.isBadMACError(error)) {
+			} catch (error) {
+				if (badMACRecovery.isBadMACError(error)) {
 					handleBadMACError(group, error, auth, repository, authorJid)
-				} else if(macErrorManager.isMACError(error)) {
+				} else if (macErrorManager.isMACError(error)) {
 					handleMACError(
 						`${group}:${authorJid}`,
 						error,
@@ -129,7 +129,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		},
 		async processSenderKeyDistributionMessage({ item, authorJid }) {
 			const builder = new GroupSessionBuilder(storage)
-			if(!item.groupId) {
+			if (!item.groupId) {
 				throw new Error('Group ID is required for sender key distribution message')
 			}
 
@@ -138,7 +138,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const senderMsg = new SenderKeyDistributionMessage(null, null, null, null, item.axolotlSenderKeyDistributionMessage)
 			const senderNameStr: string = senderName.toString()
 			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
-			if(!senderKey) {
+			if (!senderKey) {
 				await storage.storeSenderKey(senderName, new SenderKeyRecord())
 			}
 
@@ -160,10 +160,10 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				default:
 					throw new Error(`Unknown message type: ${type}`)
 				}
-			} catch(error) {
-				if(badMACRecovery.isBadMACError(error)) {
+			} catch (error) {
+				if (badMACRecovery.isBadMACError(error)) {
 					await handleBadMACError(jid, error, auth, repository)
-				} else if(macErrorManager.isMACError(error)) {
+				} else if (macErrorManager.isMACError(error)) {
 					await handleMACError(
 						jid,
 						error,
@@ -182,7 +182,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const originalJid = jid
 			try {
 				const decoded = validateAndDecodeJid(jid)
-				if(!decoded) {
+				if (!decoded) {
 					throw new Error(`Invalid JID format: ${jid}`)
 				}
 
@@ -192,7 +192,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const addr = jidToSignalProtocolAddress(encryptionJid)
 
 				const sessionValidation = await repository.validateSession(encryptionJid)
-				if(!sessionValidation.exists) {
+				if (!sessionValidation.exists) {
 					logger.warn(
 						{ jid: encryptionJid, reason: sessionValidation.reason, originalJid },
 						'No valid session for encryption'
@@ -211,7 +211,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					type,
 					ciphertext: Buffer.from(body, 'binary')
 				}
-			} catch(error) {
+			} catch (error) {
 				logger.error(
 					{
 						error,
@@ -231,7 +231,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const senderNameStr: string = senderName.toString()
 			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
 
-			if(!senderKey) {
+			if (!senderKey) {
 				await storage.storeSenderKey(senderName, new SenderKeyRecord())
 			}
 
@@ -265,12 +265,12 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			try {
 				const cacheKey = `validation:${jid}`
 				const cached = sessionValidationCache.get(cacheKey) as SessionValidationResult | undefined
-				if(cached) {
+				if (cached) {
 					return cached
 				}
 
 				const decoded = validateAndDecodeJid(jid)
-				if(!decoded) {
+				if (!decoded) {
 					const result = { exists: false, reason: 'invalid jid format' }
 					sessionValidationCache.set(cacheKey, result)
 					return result
@@ -279,13 +279,13 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const addr = jidToSignalProtocolAddress(jid)
 				const session = await (storage as any).loadSession(addr.toString())
 
-				if(!session) {
+				if (!session) {
 					const result = { exists: false, reason: 'no session' }
 					sessionValidationCache.set(cacheKey, result)
 					return result
 				}
 
-				if(!session.haveOpenSession()) {
+				if (!session.haveOpenSession()) {
 					const result = { exists: false, reason: 'no open session' }
 					sessionValidationCache.set(cacheKey, result)
 					return result
@@ -295,7 +295,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				sessionValidationCache.set(cacheKey, result)
 				return result
 
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, jid }, 'Session validation error')
 				const result = { exists: false, reason: 'validation error' }
 				return result
@@ -305,7 +305,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		async deleteSession(jid: string): Promise<void> {
 			try {
 				const decoded = validateAndDecodeJid(jid)
-				if(!decoded) {
+				if (!decoded) {
 					logger.warn({ jid }, 'Cannot delete session for invalid JID')
 					return
 				}
@@ -319,7 +319,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				sessionValidationCache.del(`validation:${jid}`)
 
 				logger.info({ jid }, 'Session deleted for')
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, jid }, 'Failed to delete session')
 				throw error
 			}
@@ -327,8 +327,8 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 		async migrateSession(fromJid: string, toJid: string, options: SessionMigrationOptions = {}): Promise<void> {
 			try {
-				if(!options.skipValidation) {
-					if(!fromJid.includes(SIGNAL_CONSTANTS.WHATSAPP_DOMAIN) || !toJid.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
+				if (!options.skipValidation) {
+					if (!fromJid.includes(SIGNAL_CONSTANTS.WHATSAPP_DOMAIN) || !toJid.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 						logger.warn({ fromJid, toJid }, 'Invalid migration direction')
 						return
 					}
@@ -337,7 +337,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const fromDecoded = validateAndDecodeJid(fromJid)
 				const toDecoded = validateAndDecodeJid(toJid)
 
-				if(!fromDecoded || !toDecoded) {
+				if (!fromDecoded || !toDecoded) {
 					logger.error({ fromJid, toJid }, 'Failed to decode JIDs for migration')
 					return
 				}
@@ -345,7 +345,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const deviceId: number = fromDecoded.device
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
-				if(!options.force && recentMigrations.has(migrationKey)) {
+				if (!options.force && recentMigrations.has(migrationKey)) {
 					logger.trace({ migrationKey }, 'Migration already processed')
 					return
 				}
@@ -353,7 +353,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const lidAddr = jidToSignalProtocolAddress(toJid)
 				const { [lidAddr.toString()]: lidExists } = await auth.keys.get('session', [lidAddr.toString()])
 
-				if(lidExists && !options.force) {
+				if (lidExists && !options.force) {
 					logger.trace({ toJid }, 'LID session already exists')
 					recentMigrations.set(migrationKey, true)
 					return
@@ -365,13 +365,13 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
-					if(!fromSession?.haveOpenSession()) {
+					if (!fromSession?.haveOpenSession()) {
 						logger.debug({ fromJid, toJid }, 'No valid session found for migration')
 						return
 					}
 
 					const mappingResult: LIDMappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
-					if(!mappingResult.success) {
+					if (!mappingResult.success) {
 						logger.error({ error: mappingResult.error, fromJid, toJid }, 'Failed to store LID mapping')
 						return
 					}
@@ -386,13 +386,13 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					logger.info({ fromJid, toJid }, 'Session migrated successfully')
 				})
 
-				if(migrationSuccessful) {
+				if (migrationSuccessful) {
 					recentMigrations.set(migrationKey, true)
 					sessionValidationCache.del(`validation:${fromJid}`)
 					sessionValidationCache.del(`validation:${toJid}`)
 				}
 
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, fromJid, toJid }, 'Session migration failed')
 				throw error
 			}
@@ -409,7 +409,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				sessionValidationCache.flushAll()
 
 				logger.trace({}, 'LibSignal repository destroyed and caches cleared')
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error }, 'Error during repository destruction')
 			}
 		}
@@ -435,7 +435,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		try {
 			let actualId: string = id
 
-			if(id.includes('.') && !id.includes('_1')) {
+			if (id.includes('.') && !id.includes('_1')) {
 				const parts: string[] = id.split('.')
 				const device: string = parts[1] || '0'
 				const pnJid: string = device === '0'
@@ -443,24 +443,24 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 					: `${parts[0]}:${device}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
 
 				const lidForPN: string | null = await lidMapping.getLIDForPN(pnJid)
-				if(lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
+				if (lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
 					const lidAddr = jidToSignalProtocolAddress(lidForPN)
 					const lidId = lidAddr.toString()
 
 					const { [lidId]: lidSession } = await keys.get('session', [lidId])
-					if(lidSession) {
+					if (lidSession) {
 						actualId = lidId
 					}
 				}
 			}
 
 			const { [actualId]: sess } = await keys.get('session', [actualId])
-			if(sess) {
+			if (sess) {
 				return libsignal.SessionRecord.deserialize(sess)
 			}
 
 			return null
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error, id }, 'Failed to load session')
 			return null
 		}
@@ -473,7 +473,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			try {
 				await keys.set({ 'session': { [id]: session.serialize() } })
 				logger.trace({ id }, 'Session stored for')
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, id }, 'Failed to store session')
 				throw error
 			}
@@ -487,7 +487,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			try {
 				const keyId: string = id.toString()
 				const { [keyId]: key } = await keys.get('pre-key', [keyId])
-				if(key) {
+				if (key) {
 					return {
 						privKey: Buffer.from(key.private),
 						pubKey: Buffer.from(key.public)
@@ -495,7 +495,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 				}
 
 				return undefined
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, id }, 'Failed to load pre-key')
 				return undefined
 			}
@@ -505,7 +505,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			try {
 				await keys.set({ 'pre-key': { [id]: null } })
 				logger.trace({ id }, 'Pre-key removed')
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, id }, 'Failed to remove pre-key')
 				throw error
 			}
@@ -523,12 +523,12 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			try {
 				const keyId: string = senderKeyName.toString()
 				const { [keyId]: key } = await keys.get('sender-key', [keyId])
-				if(key) {
+				if (key) {
 					return SenderKeyRecord.deserialize(key)
 				}
 
 				return new SenderKeyRecord()
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, senderKeyName: senderKeyName.toString() }, 'Failed to load sender key')
 				return new SenderKeyRecord()
 			}
@@ -544,7 +544,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 					}
 				})
 				logger.trace({ keyId }, 'Sender key stored')
-			} catch(error) {
+			} catch (error) {
 				logger.error({ error, senderKeyName: senderKeyName.toString() }, 'Failed to store sender key')
 				throw error
 			}

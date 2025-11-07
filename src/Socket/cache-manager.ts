@@ -15,7 +15,7 @@ export class CacheManager {
 	static getInstance(type: keyof typeof DEFAULT_CACHE_TTLS, customTTL?: number): CacheStore {
 		const cacheKey = `${type}_${customTTL || DEFAULT_CACHE_TTLS[type]}`
 
-		if(!this.instances.has(cacheKey)) {
+		if (!this.instances.has(cacheKey)) {
 			const cache = new NodeCache({
 				stdTTL: customTTL || DEFAULT_CACHE_TTLS[type],
 				useClones: false,
@@ -50,7 +50,7 @@ export class CacheManager {
 					keys: nodeCache.keys?.() || [],
 					stats: nodeCache.getStats?.() || {}
 				}
-			} catch{
+			} catch {
 				stats[key] = { error: 'Unable to retrieve stats' }
 			}
 		})

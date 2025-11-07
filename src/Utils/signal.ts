@@ -20,7 +20,7 @@ export const createSignalIdentity = (
 
 export const getPreKeys = async({ get }: SignalKeyStore, min: number, limit: number) => {
 	const idList: string[] = []
-	for(let id = min; id < limit;id++) {
+	for (let id = min; id < limit;id++) {
 		idList.push(id.toString())
 	}
 
@@ -32,8 +32,8 @@ export const generateOrGetPreKeys = (creds: AuthenticationCreds, range: number) 
 	const remaining: number = range - avaliable
 	const lastPreKeyId: number = creds.nextPreKeyId + remaining - 1
 	const newPreKeys: { [id: number]: KeyPair } = { }
-	if(remaining > 0) {
-		for(let i = creds.nextPreKeyId;i <= lastPreKeyId;i++) {
+	if (remaining > 0) {
+		for (let i = creds.nextPreKeyId;i <= lastPreKeyId;i++) {
 			newPreKeys[i] = Curve.generateKeyPair()
 		}
 	}
@@ -83,13 +83,13 @@ export const parseAndInjectE2ESessions = async(
 		}) : undefined
 	)
 	const nodes = getBinaryNodeChildren(getBinaryNodeChild(node, 'list'), 'user')
-	for(const node of nodes) {
+	for (const node of nodes) {
 		assertNodeErrorFree(node)
 	}
 
 	const chunkSize = 100
 	const chunks = chunk(nodes, chunkSize)
-	for(const nodesChunk of chunks) {
+	for (const nodesChunk of chunks) {
 		await Promise.all(
 			nodesChunk.map(
 				async node => {
@@ -121,21 +121,21 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 	const extracted: JidWithDevice[] = []
 
 
-	for(const userResult of result) {
+	for (const userResult of result) {
 		const { devices, id } = userResult as { devices: ParsedDeviceInfo, id: string }
 		const { user } = jidDecode(id)!
 		const deviceList = devices?.deviceList as DeviceListData[]
-		if(Array.isArray(deviceList)) {
-			for(const { id: device, keyIndex } of deviceList) {
+		if (Array.isArray(deviceList)) {
+			for (const { id: device, keyIndex } of deviceList) {
 				const shouldExcludeZero: boolean = excludeZeroDevices && device === 0
 				const isSameDevice: boolean = myUser === user && myDevice === device
 				const hasKeyIndex: boolean = device === 0 || !!keyIndex
 
-				if(!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
+				if (!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
 					extracted.push({ user, device })
 				}
 			}
-		} else if(!devices) {
+		} else if (!devices) {
 			console.warn(`No device list found for user ${user}`)
 		}
 	}

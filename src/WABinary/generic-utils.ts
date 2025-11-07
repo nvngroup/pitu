@@ -3,7 +3,7 @@ import { waproto } from '../../WAProto'
 import { BinaryNode } from './types'
 
 export const getBinaryNodeChildren = (node: BinaryNode | undefined, childTag: string) => {
-	if(Array.isArray(node?.content)) {
+	if (Array.isArray(node?.content)) {
 		return node.content.filter(item => item.tag === childTag)
 	}
 
@@ -11,7 +11,7 @@ export const getBinaryNodeChildren = (node: BinaryNode | undefined, childTag: st
 }
 
 export const getAllBinaryNodeChildren = ({ content }: BinaryNode) => {
-	if(Array.isArray(content)) {
+	if (Array.isArray(content)) {
 		return content
 	}
 
@@ -19,37 +19,37 @@ export const getAllBinaryNodeChildren = ({ content }: BinaryNode) => {
 }
 
 export const getBinaryNodeChild = (node: BinaryNode | undefined, childTag: string) => {
-	if(Array.isArray(node?.content)) {
+	if (Array.isArray(node?.content)) {
 		return node?.content.find(item => item.tag === childTag)
 	}
 }
 
 export const getBinaryNodeChildBuffer = (node: BinaryNode | undefined, childTag: string) => {
 	const child = getBinaryNodeChild(node, childTag)?.content
-	if(Buffer.isBuffer(child) || child instanceof Uint8Array) {
+	if (Buffer.isBuffer(child) || child instanceof Uint8Array) {
 		return child
 	}
 }
 
 export const getBinaryNodeChildString = (node: BinaryNode | undefined, childTag: string) => {
 	const child = getBinaryNodeChild(node, childTag)?.content
-	if(Buffer.isBuffer(child) || child instanceof Uint8Array) {
+	if (Buffer.isBuffer(child) || child instanceof Uint8Array) {
 		return Buffer.from(child).toString('utf-8')
-	} else if(typeof child === 'string') {
+	} else if (typeof child === 'string') {
 		return child
 	}
 }
 
 export const getBinaryNodeChildUInt = (node: BinaryNode, childTag: string, length: number) => {
 	const buff = getBinaryNodeChildBuffer(node, childTag)
-	if(buff) {
+	if (buff) {
 		return bufferToUInt(buff, length)
 	}
 }
 
 export const assertNodeErrorFree = (node: BinaryNode) => {
 	const errNode = getBinaryNodeChild(node, 'error')
-	if(errNode) {
+	if (errNode) {
 		throw new Boom(errNode.attrs.text || 'Unknown error', { data: +errNode.attrs.code })
 	}
 }
@@ -67,9 +67,9 @@ export const reduceBinaryNodeToDictionary = (node: BinaryNode, tag: string) => {
 
 export const getBinaryNodeMessages = ({ content }: BinaryNode) => {
 	const msgs: waproto.WebMessageInfo[] = []
-	if(Array.isArray(content)) {
-		for(const item of content) {
-			if(item.tag === 'message') {
+	if (Array.isArray(content)) {
+		for (const item of content) {
+			if (item.tag === 'message') {
 				msgs.push(waproto.WebMessageInfo.decode(item.content as Buffer))
 			}
 		}
@@ -80,7 +80,7 @@ export const getBinaryNodeMessages = ({ content }: BinaryNode) => {
 
 function bufferToUInt(e: Uint8Array | Buffer, t: number) {
 	let a = 0
-	for(let i = 0; i < t; i++) {
+	for (let i = 0; i < t; i++) {
 		a = 256 * a + e[i]
 	}
 
@@ -90,19 +90,19 @@ function bufferToUInt(e: Uint8Array | Buffer, t: number) {
 const tabs = (n: number) => '\t'.repeat(n)
 
 export function binaryNodeToString(node: BinaryNode | BinaryNode['content'], i = 0) {
-	if(!node) {
+	if (!node) {
 		return node
 	}
 
-	if(typeof node === 'string') {
+	if (typeof node === 'string') {
 		return tabs(i) + node
 	}
 
-	if(node instanceof Uint8Array) {
+	if (node instanceof Uint8Array) {
 		return tabs(i) + Buffer.from(node).toString('hex')
 	}
 
-	if(Array.isArray(node)) {
+	if (Array.isArray(node)) {
 		return node.map((x) => tabs(i + 1) + binaryNodeToString(x, i + 1)).join('\n')
 	}
 

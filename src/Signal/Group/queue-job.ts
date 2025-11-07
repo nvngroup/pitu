@@ -11,18 +11,18 @@ const queueAsyncBuckets = new Map<string | number, Array<QueueJob<unknown>>>()
 
 async function _asyncQueueExecutor(queue: Array<QueueJob<unknown>>, cleanup: () => void): Promise<void> {
 	let offset = 0
-	while(offset < queue.length) {
+	while (offset < queue.length) {
 		const limit: number = Math.min(queue.length, offset + GROUP_CONSTANTS.QUEUE_GC_LIMIT)
-		for(let i = offset; i < limit; i++) {
+		for (let i = offset; i < limit; i++) {
 			const job = queue[i]
 			try {
 				job.resolve(await job.awaitable())
-			} catch(e) {
+			} catch (e) {
 				job.reject(e)
 			}
 		}
 
-		if(limit < queue.length) {
+		if (limit < queue.length) {
 			queue.splice(0, limit)
 			offset = 0
 		} else {
@@ -34,12 +34,12 @@ async function _asyncQueueExecutor(queue: Array<QueueJob<unknown>>, cleanup: () 
 }
 
 export default function queueJob<T>(bucket: string | number, awaitable: () => Promise<T>): Promise<T> {
-	if(typeof bucket !== 'string') {
+	if (typeof bucket !== 'string') {
 		logger.warn({ bucket }, 'Unhandled bucket type (for naming)')
 	}
 
 	let inactive = false
-	if(!queueAsyncBuckets.has(bucket)) {
+	if (!queueAsyncBuckets.has(bucket)) {
 		queueAsyncBuckets.set(bucket, [])
 		inactive = true
 	}
@@ -53,7 +53,7 @@ export default function queueJob<T>(bucket: string | number, awaitable: () => Pr
 		})
 	})
 
-	if(inactive) {
+	if (inactive) {
 		_asyncQueueExecutor(queue, () => queueAsyncBuckets.delete(bucket))
 	}
 

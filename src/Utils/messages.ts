@@ -41,11 +41,11 @@ export const extractUrlFromText = (text: string) => text.match(URL_REGEX)?.[0]
 
 export const generateLinkPreviewIfRequired = async(text: string, getUrlInfo: MessageGenerationOptions['getUrlInfo'], logger: MessageGenerationOptions['logger']) => {
 	const url: string | undefined = extractUrlFromText(text)
-	if(!!getUrlInfo && url) {
+	if (!!getUrlInfo && url) {
 		try {
 			const urlInfo: WAUrlInfo | undefined = await getUrlInfo(url)
 			return urlInfo
-		} catch(error) {
+		} catch (error) {
 			logger?.error({ trace: error.stack }, 'url generation failed')
 		}
 	}
@@ -53,11 +53,11 @@ export const generateLinkPreviewIfRequired = async(text: string, getUrlInfo: Mes
 
 const assertColor = async(color) => {
 	let assertedColor
-	if(typeof color === 'number') {
+	if (typeof color === 'number') {
 		assertedColor = color > 0 ? color : 0xffffffff + Number(color) + 1
 	} else {
 		let hex = color.trim().replace('#', '')
-		if(hex.length <= 6) {
+		if (hex.length <= 6) {
 			hex = 'FF' + hex.padStart(6, '0')
 		}
 
@@ -73,13 +73,13 @@ export const prepareWAMessageMedia = async(
 	const logger: ILogger | undefined = options.logger
 
 	let mediaType: typeof MEDIA_KEYS[number] | undefined
-	for(const key of MEDIA_KEYS) {
-		if(key in message) {
+	for (const key of MEDIA_KEYS) {
+		if (key in message) {
 			mediaType = key
 		}
 	}
 
-	if(!mediaType) {
+	if (!mediaType) {
 		throw new Boom('Invalid media type', { statusCode: 400 })
 	}
 
@@ -95,17 +95,17 @@ export const prepareWAMessageMedia = async(
 		mediaType + ':' + uploadData.media.url.toString()
 	)
 
-	if(mediaType === 'document' && !uploadData.fileName) {
+	if (mediaType === 'document' && !uploadData.fileName) {
 		uploadData.fileName = 'file'
 	}
 
-	if(!uploadData.mimetype) {
+	if (!uploadData.mimetype) {
 		uploadData.mimetype = MIMETYPE_MAP[mediaType]
 	}
 
-	if(cacheableKey) {
+	if (cacheableKey) {
 		const mediaBuff: Buffer | undefined = options.mediaCache!.get<Buffer>(cacheableKey)
-		if(mediaBuff) {
+		if (mediaBuff) {
 			logger?.debug({ cacheableKey }, 'got media cache hit')
 
 			const obj = waproto.Message.decode(mediaBuff)
@@ -118,7 +118,7 @@ export const prepareWAMessageMedia = async(
 	}
 
 	const isNewsletter: boolean | undefined = !!options.jid && isJidNewsletter(options.jid)
-	if(isNewsletter) {
+	if (isNewsletter) {
 		logger?.info({ key: cacheableKey }, 'Preparing raw media for newsletter')
 		const { filePath, fileSha256, fileLength } = await getRawMediaUploadData(
 			uploadData.media,
@@ -146,12 +146,12 @@ export const prepareWAMessageMedia = async(
 			})
 		})
 
-		if(uploadData.ptv) {
+		if (uploadData.ptv) {
 			obj.ptvMessage = obj.videoMessage
 			delete obj.videoMessage
 		}
 
-		if(cacheableKey) {
+		if (cacheableKey) {
 			logger?.debug({ cacheableKey }, 'set cache')
 			options.mediaCache!.set(cacheableKey, WAProto.Message.encode(obj).finish())
 		}
@@ -194,13 +194,13 @@ export const prepareWAMessageMedia = async(
 		})(),
 		(async() => {
 			try {
-				if(requiresThumbnailComputation) {
+				if (requiresThumbnailComputation) {
 					const {
 						thumbnail,
 						originalImageDimensions
 					} = await generateThumbnail(originalFilePath!, mediaType as 'image' | 'video', options)
 					uploadData.jpegThumbnail = thumbnail
-					if(!uploadData.width && originalImageDimensions) {
+					if (!uploadData.width && originalImageDimensions) {
 						uploadData.width = originalImageDimensions.width
 						uploadData.height = originalImageDimensions.height
 						logger?.debug({}, 'set dimensions')
@@ -209,21 +209,21 @@ export const prepareWAMessageMedia = async(
 					logger?.debug({}, 'generated thumbnail')
 				}
 
-				if(requiresDurationComputation) {
+				if (requiresDurationComputation) {
 					uploadData.seconds = await getAudioDuration(originalFilePath!)
 					logger?.debug({}, 'computed audio duration')
 				}
 
-				if(requiresWaveformProcessing) {
+				if (requiresWaveformProcessing) {
 					uploadData.waveform = await getAudioWaveform(originalFilePath!, logger)
 					logger?.debug({}, 'processed waveform')
 				}
 
-				if(requiresAudioBackground) {
+				if (requiresAudioBackground) {
 					uploadData.backgroundArgb = await assertColor(options.backgroundColor)
 					logger?.debug({}, 'computed backgroundColor audio status')
 				}
-			} catch(error) {
+			} catch (error) {
 				logger?.error({ trace: error.stack }, 'failed to obtain extra info')
 			}
 		})(),
@@ -232,12 +232,12 @@ export const prepareWAMessageMedia = async(
 			async() => {
 				try {
 					await fs.unlink(encFilePath)
-					if(originalFilePath) {
+					if (originalFilePath) {
 						await fs.unlink(originalFilePath)
 					}
 
 					logger?.debug({}, 'removed tmp files')
-				} catch(error) {
+				} catch (error) {
 					logger?.error(error, 'failed to remove tmp files')
 				}
 			}
@@ -259,16 +259,16 @@ export const prepareWAMessageMedia = async(
 		)
 	})
 
-	if(uploadData.ptv) {
+	if (uploadData.ptv) {
 		obj.ptvMessage = obj.videoMessage
 		delete obj.videoMessage
 	}
 
-	if(obj.stickerMessage) {
+	if (obj.stickerMessage) {
 		obj.stickerMessage.stickerSentTs = Date.now()
 	}
 
-	if(cacheableKey) {
+	if (cacheableKey) {
 		logger?.debug({ cacheableKey }, 'set cache')
 		options.mediaCache!.set(cacheableKey, waproto.Message.encode(obj).finish())
 	}
@@ -301,7 +301,7 @@ export const generateForwardMessageContent = (
 	forceForward?: boolean
 ) => {
 	let content = message.message
-	if(!content) {
+	if (!content) {
 		throw new Boom('no content in message', { statusCode: 400 })
 	}
 
@@ -312,14 +312,14 @@ export const generateForwardMessageContent = (
 
 	let score = content[key].contextInfo?.forwardingScore || 0
 	score += message.key.fromMe && !forceForward ? 0 : 1
-	if(key === 'conversation') {
+	if (key === 'conversation') {
 		content.extendedTextMessage = { text: content[key] }
 		delete content.conversation
 
 		key = 'extendedTextMessage'
 	}
 
-	if(score > 0) {
+	if (score > 0) {
 		content[key].contextInfo = { forwardingScore: score, isForwarded: true }
 	} else {
 		content[key].contextInfo = {}
@@ -333,15 +333,15 @@ export const generateWAMessageContent = async(
 	options: MessageContentGenerationOptions
 ) => {
 	let m: WAMessageContent = {}
-	if('text' in message) {
+	if ('text' in message) {
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo: WAUrlInfo | null | undefined = message.linkPreview
-		if(typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
+		if (typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
 
-		if(urlInfo) {
+		if (urlInfo) {
 			extContent.matchedText = urlInfo['matched-text']
 			extContent.jpegThumbnail = urlInfo.jpegThumbnail
 			extContent.description = urlInfo.description
@@ -349,7 +349,7 @@ export const generateWAMessageContent = async(
 			extContent.previewType = 0
 
 			const img: waproto.Message.IImageMessage | undefined = urlInfo.highQualityThumbnail
-			if(img) {
+			if (img) {
 				extContent.thumbnailDirectPath = img.directPath
 				extContent.mediaKey = img.mediaKey
 				extContent.mediaKeyTimestamp = img.mediaKeyTimestamp
@@ -360,50 +360,50 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if(options.backgroundColor) {
+		if (options.backgroundColor) {
 			extContent.backgroundArgb = await assertColor(options.backgroundColor)
 		}
 
-		if(options.font) {
+		if (options.font) {
 			extContent.font = options.font
 		}
 
 		m.extendedTextMessage = extContent
-	} else if('contacts' in message) {
+	} else if ('contacts' in message) {
 		const contactLen: number = message.contacts.contacts.length
-		if(!contactLen) {
+		if (!contactLen) {
 			throw new Boom('require atleast 1 contact', { statusCode: 400 })
 		}
 
-		if(contactLen === 1) {
+		if (contactLen === 1) {
 			m.contactMessage = waproto.Message.ContactMessage.fromObject(message.contacts.contacts[0])
 		} else {
 			m.contactsArrayMessage = waproto.Message.ContactsArrayMessage.fromObject(message.contacts)
 		}
-	} else if('location' in message) {
+	} else if ('location' in message) {
 		m.locationMessage = waproto.Message.LocationMessage.fromObject(message.location)
-	} else if('react' in message) {
-		if(!message.react.senderTimestampMs) {
+	} else if ('react' in message) {
+		if (!message.react.senderTimestampMs) {
 			message.react.senderTimestampMs = Date.now()
 		}
 
 		m.reactionMessage = waproto.Message.ReactionMessage.fromObject(message.react)
-	} else if('delete' in message) {
+	} else if ('delete' in message) {
 		m.protocolMessage = {
 			key: message.delete,
 			type: waproto.Message.ProtocolMessage.Type.REVOKE
 		}
-	} else if('forward' in message) {
+	} else if ('forward' in message) {
 		m = generateForwardMessageContent(
 			message.forward,
 			message.force
 		)
-	} else if('disappearingMessagesInChat' in message) {
+	} else if ('disappearingMessagesInChat' in message) {
 		const exp: number = typeof message.disappearingMessagesInChat === 'boolean' ?
 			(message.disappearingMessagesInChat ? WA_DEFAULT_EPHEMERAL : 0) :
 			message.disappearingMessagesInChat
 		m = prepareDisappearingMessageSettingContent(exp)
-	} else if('groupInvite' in message) {
+	} else if ('groupInvite' in message) {
 		m.groupInviteMessage = {}
 		m.groupInviteMessage.inviteCode = message.groupInvite.inviteCode
 		m.groupInviteMessage.inviteExpiration = message.groupInvite.inviteExpiration
@@ -413,16 +413,16 @@ export const generateWAMessageContent = async(
 		m.groupInviteMessage.groupName = message.groupInvite.subject
 
 		//TODO: use built-in interface and get disappearing mode info etc.
-		if(options.getProfilePicUrl) {
+		if (options.getProfilePicUrl) {
 			const pfpUrl: string | undefined = await options.getProfilePicUrl(message.groupInvite.jid, 'preview')
-			if(pfpUrl) {
+			if (pfpUrl) {
 				const resp = await axios.get(pfpUrl, { responseType: 'arraybuffer' })
-				if(resp.status === 200) {
+				if (resp.status === 200) {
 					m.groupInviteMessage.jpegThumbnail = resp.data
 				}
 			}
 		}
-	} else if('pin' in message) {
+	} else if ('pin' in message) {
 		m.pinInChatMessage = {}
 		m.messageContextInfo = {}
 
@@ -431,7 +431,7 @@ export const generateWAMessageContent = async(
 		m.pinInChatMessage.senderTimestampMs = Date.now()
 
 		m.messageContextInfo.messageAddOnDurationInSecs = message.type === 1 ? message.time || 86400 : 0
-	} else if('buttonReply' in message) {
+	} else if ('buttonReply' in message) {
 		switch (message.type) {
 		case 'list':
 			const buttonReplyList = message.buttonReply as { title?: string; description?: string; rowId: string }
@@ -478,13 +478,13 @@ export const generateWAMessageContent = async(
 			}
 			break
 		}
-	} else if('ptv' in message && message.ptv) {
+	} else if ('ptv' in message && message.ptv) {
 		const { videoMessage } = await prepareWAMessageMedia(
 			{ video: message.video },
 			options
 		)
 		m.ptvMessage = videoMessage
-	} else if('product' in message) {
+	} else if ('product' in message) {
 		const { imageMessage } = await prepareWAMessageMedia(
 			{ image: message.product.productImage },
 			options
@@ -496,13 +496,13 @@ export const generateWAMessageContent = async(
 				productImage: imageMessage,
 			}
 		})
-	} else if('listReply' in message) {
+	} else if ('listReply' in message) {
 		m.listResponseMessage = { ...message.listReply }
-	} else if('event' in message) {
+	} else if ('event' in message) {
 		m.eventMessage = {}
 		const startTime: number = Math.floor(message.event.startDate.getTime() / 1000)
 
-		if(message.event.call && options.getCallLink) {
+		if (message.event.call && options.getCallLink) {
 			const token: string | undefined = await options.getCallLink(message.event.call, { startTime })
 			m.eventMessage.joinLink = (message.event.call === 'audio' ? CALL_AUDIO_PREFIX : CALL_VIDEO_PREFIX) + token
 		}
@@ -519,15 +519,15 @@ export const generateWAMessageContent = async(
 		m.eventMessage.extraGuestsAllowed = message.event.extraGuestsAllowed
 		m.eventMessage.isScheduleCall = message.event.isScheduleCall ?? false
 		m.eventMessage.location = message.event.location
-	} else if('poll' in message) {
+	} else if ('poll' in message) {
 		message.poll.selectableCount ||= 0
 		message.poll.toAnnouncementGroup ||= false
 
-		if(!Array.isArray(message.poll.values)) {
+		if (!Array.isArray(message.poll.values)) {
 			throw new Boom('Invalid poll values', { statusCode: 400 })
 		}
 
-		if(
+		if (
 			message.poll.selectableCount < 0
 			|| message.poll.selectableCount > message.poll.values.length
 		) {
@@ -548,20 +548,20 @@ export const generateWAMessageContent = async(
 			options: message.poll.values.map(optionName => ({ optionName })),
 		}
 
-		if(message.poll.toAnnouncementGroup) {
+		if (message.poll.toAnnouncementGroup) {
 			m.pollCreationMessageV2 = pollCreationMessage
 		} else {
-			if(message.poll.selectableCount === 1) {
+			if (message.poll.selectableCount === 1) {
 				m.pollCreationMessageV3 = pollCreationMessage
 			} else {
 				m.pollCreationMessage = pollCreationMessage
 			}
 		}
-	} else if('sharePhoneNumber' in message) {
+	} else if ('sharePhoneNumber' in message) {
 		m.protocolMessage = {
 			type: waproto.Message.ProtocolMessage.Type.SHARE_PHONE_NUMBER
 		}
-	} else if('requestPhoneNumber' in message) {
+	} else if ('requestPhoneNumber' in message) {
 		m.requestPhoneNumberMessage = {}
 	} else if ('limitSharing' in message) {
 		m.protocolMessage = {
@@ -573,7 +573,7 @@ export const generateWAMessageContent = async(
 				initiatedByMe: true
 			}
 		}
-	} else if('buttons' in message && !!message.buttons) {
+	} else if ('buttons' in message && !!message.buttons) {
 		const buttonsMessage: any = {
 			buttons: message.buttons.map(b => ({
 				...b,
@@ -581,27 +581,27 @@ export const generateWAMessageContent = async(
 			}))
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			buttonsMessage.contentText = message.text
 			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.EMPTY
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				buttonsMessage.contentText = message.caption
 			}
 
 			const messageKeys: string[] = Object.keys(m)
-			if(messageKeys.length > 0) {
+			if (messageKeys.length > 0) {
 				const type: string = messageKeys[0].replace('Message', '').toUpperCase()
 				buttonsMessage.headerType = (waproto.Message.ButtonsMessage.HeaderType)[type] || waproto.Message.ButtonsMessage.HeaderType.EMPTY
 				Object.assign(buttonsMessage, m)
 			}
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			buttonsMessage.footerText = message.footer
 		}
 
-		if('title' in message && !!message.title) {
+		if ('title' in message && !!message.title) {
 			buttonsMessage.text = message.title
 			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.TEXT
 		}
@@ -613,22 +613,22 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { buttonsMessage }
-	} else if('templateButtons' in message && !!message.templateButtons) {
+	} else if ('templateButtons' in message && !!message.templateButtons) {
 		const hydratedTemplate: any = {
 			hydratedButtons: message.templateButtons
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			hydratedTemplate.hydratedContentText = message.text
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				hydratedTemplate.hydratedContentText = message.caption
 			}
 
 			Object.assign(hydratedTemplate, m)
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			hydratedTemplate.hydratedFooterText = message.footer
 		}
 
@@ -639,14 +639,14 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { templateMessage: { hydratedTemplate } }
-	} else if('interactiveButtons' in message && !!message.interactiveButtons) {
+	} else if ('interactiveButtons' in message && !!message.interactiveButtons) {
 		const interactiveMessage: any = {
 			nativeFlowMessage: {
 				buttons: message.interactiveButtons
 			}
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			interactiveMessage.body = {
 				text: message.text
 			}
@@ -656,7 +656,7 @@ export const generateWAMessageContent = async(
 				hasMediaAttachment: false
 			}
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				interactiveMessage.body = {
 					text: message.caption
 				}
@@ -670,7 +670,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			interactiveMessage.footer = {
 				text: message.footer
 			}
@@ -683,7 +683,7 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { interactiveMessage }
-	} else if('shop' in message && !!message.shop) {
+	} else if ('shop' in message && !!message.shop) {
 		const msgAny = message as any
 		const interactiveMessage: any = {
 			shopStorefrontMessage: {
@@ -692,7 +692,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			interactiveMessage.body = {
 				text: msgAny.text
 			}
@@ -702,7 +702,7 @@ export const generateWAMessageContent = async(
 				hasMediaAttachment: false
 			}
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				interactiveMessage.body = {
 					text: msgAny.caption
 				}
@@ -716,7 +716,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in msgAny && !!msgAny.footer) {
 			interactiveMessage.footer = {
 				text: msgAny.footer
 			}
@@ -729,7 +729,7 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { interactiveMessage }
-	} else if('collection' in message && !!message.collection) {
+	} else if ('collection' in message && !!message.collection) {
 		const msgAny = message as any
 		const interactiveMessage: any = {
 			collectionMessage: {
@@ -739,7 +739,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			interactiveMessage.body = {
 				text: msgAny.text
 			}
@@ -749,7 +749,7 @@ export const generateWAMessageContent = async(
 				hasMediaAttachment: false
 			}
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				interactiveMessage.body = {
 					text: msgAny.caption
 				}
@@ -763,7 +763,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in msgAny && !!msgAny.footer) {
 			interactiveMessage.footer = {
 				text: msgAny.footer
 			}
@@ -776,13 +776,13 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { interactiveMessage }
-	} else if('cards' in message && !!message.cards) {
+	} else if ('cards' in message && !!message.cards) {
 		const msgAny = message as any
 		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
 			const { image, video, product, title, body, footer, buttons } = slide
 			let header: any
 
-			if(product) {
+			if (product) {
 				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
 				header = {
 					productMessage: {
@@ -792,9 +792,9 @@ export const generateWAMessageContent = async(
 						}
 					}
 				}
-			} else if(image) {
+			} else if (image) {
 				header = await prepareWAMessageMedia({ image: image }, options)
-			} else if(video) {
+			} else if (video) {
 				header = await prepareWAMessageMedia({ video: video }, options)
 			}
 
@@ -824,7 +824,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			interactiveMessage.body = {
 				text: msgAny.text
 			}
@@ -835,7 +835,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in msgAny && !!msgAny.footer) {
 			interactiveMessage.footer = {
 				text: msgAny.footer
 			}
@@ -848,7 +848,7 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { interactiveMessage }
-	} else if('sections' in message && !!message.sections) {
+	} else if ('sections' in message && !!message.sections) {
 		const msgAny = message as any
 		const listMessage: any = {
 			title: msgAny.title,
@@ -866,13 +866,13 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { listMessage }
-	} else if('cards' in message && !!message.cards) {
+	} else if ('cards' in message && !!message.cards) {
 		const msgAny = message as any
 		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
 			const { image, video, product, title, body, footer, buttons } = slide
 			let header: any
 
-			if(product) {
+			if (product) {
 				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
 				header = {
 					productMessage: {
@@ -882,9 +882,9 @@ export const generateWAMessageContent = async(
 						}
 					}
 				}
-			} else if(image) {
+			} else if (image) {
 				header = await prepareWAMessageMedia({ image: image }, options)
-			} else if(video) {
+			} else if (video) {
 				header = await prepareWAMessageMedia({ video: video }, options)
 			}
 
@@ -914,7 +914,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			interactiveMessage.body = {
 				text: msgAny.text
 			}
@@ -925,7 +925,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		if('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in msgAny && !!msgAny.footer) {
 			interactiveMessage.footer = {
 				text: msgAny.footer
 			}
@@ -938,7 +938,7 @@ export const generateWAMessageContent = async(
 		}
 
 		m = { interactiveMessage }
-	} else if('payment' in message) {
+	} else if ('payment' in message) {
 		const msgAny = message as any
 		const requestPaymentMessage = {
 			amount: {
@@ -976,15 +976,15 @@ export const generateWAMessageContent = async(
 		)
 	}
 
-	if('buttons' in message && !!message.buttons) {
+	if ('buttons' in message && !!message.buttons) {
 		const buttonsMessage: waproto.Message.IButtonsMessage = {
 			buttons: message.buttons.map(b => ({ ...b, type: waproto.Message.ButtonsMessage.Button.Type.RESPONSE }))
 		}
-		if('text' in message) {
+		if ('text' in message) {
 			buttonsMessage.contentText = message.text
 			buttonsMessage.headerType = ButtonType.EMPTY
 		} else {
-			if('caption' in message) {
+			if ('caption' in message) {
 				buttonsMessage.contentText = message.caption
 			}
 
@@ -994,28 +994,28 @@ export const generateWAMessageContent = async(
 			Object.assign(buttonsMessage, m)
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			buttonsMessage.footerText = message.footer
 		}
 
 		m = { buttonsMessage }
-	} else if('templateButtons' in message && !!message.templateButtons) {
+	} else if ('templateButtons' in message && !!message.templateButtons) {
 		const msg: waproto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
 		}
 
-		if('text' in message) {
+		if ('text' in message) {
 			msg.hydratedContentText = message.text
 		} else {
 
-			if('caption' in message) {
+			if ('caption' in message) {
 				msg.hydratedContentText = message.caption
 			}
 
 			Object.assign(msg, m)
 		}
 
-		if('footer' in message && !!message.footer) {
+		if ('footer' in message && !!message.footer) {
 			msg.hydratedFooterText = message.footer
 		}
 
@@ -1027,7 +1027,7 @@ export const generateWAMessageContent = async(
 		}
 	}
 
-	if('sections' in message && !!message.sections) {
+	if ('sections' in message && !!message.sections) {
 		const msgAny = message as any
 		const listMessage: waproto.Message.IListMessage = {
 			sections: msgAny.sections,
@@ -1041,23 +1041,23 @@ export const generateWAMessageContent = async(
 		m = { listMessage }
 	}
 
-	if('viewOnce' in message && !!message.viewOnce) {
+	if ('viewOnce' in message && !!message.viewOnce) {
 		m = { viewOnceMessage: { message: m } }
 	}
 
-	if('mentions' in message && message.mentions?.length) {
+	if ('mentions' in message && message.mentions?.length) {
 		const messageType = Object.keys(m)[0] as Extract<keyof waproto.IMessage, MessageWithContextInfo>
 		const key = m[messageType]
-		if('contextInfo' in key! && !!key.contextInfo) {
+		if ('contextInfo' in key! && !!key.contextInfo) {
 			key.contextInfo.mentionedJid = message.mentions
-		} else if(key!) {
+		} else if (key!) {
 			key.contextInfo = {
 				mentionedJid: message.mentions
 			}
 		}
 	}
 
-	if('edit' in message) {
+	if ('edit' in message) {
 		m = {
 			protocolMessage: {
 				key: message.edit,
@@ -1068,12 +1068,12 @@ export const generateWAMessageContent = async(
 		}
 	}
 
-	if('contextInfo' in message && !!message.contextInfo) {
+	if ('contextInfo' in message && !!message.contextInfo) {
 		const messageType = Object.keys(m)[0] as Extract<keyof waproto.IMessage, MessageWithContextInfo>
 		const key = m[messageType]
-		if('contextInfo' in key! && !!key.contextInfo) {
+		if ('contextInfo' in key! && !!key.contextInfo) {
 			key.contextInfo = { ...key.contextInfo, ...message.contextInfo }
-		} else if(key!) {
+		} else if (key!) {
 			key.contextInfo = message.contextInfo
 		}
 	}
@@ -1086,7 +1086,7 @@ export const generateWAMessageFromContent = (
 	message: WAMessageContent,
 	options: MessageGenerationOptionsFromContent
 ) => {
-	if(!options.timestamp) {
+	if (!options.timestamp) {
 		options.timestamp = new Date()
 	}
 
@@ -1095,7 +1095,7 @@ export const generateWAMessageFromContent = (
 	const timestamp: number = unixTimestampSeconds(options.timestamp)
 	const { quoted, userJid } = options
 
-	if(quoted && !isJidNewsletter(jid)) {
+	if (quoted && !isJidNewsletter(jid)) {
 		const participant: string | null | undefined = quoted.key.fromMe ? userJid : (quoted.participant || quoted.key.participant || quoted.key.remoteJid)
 
 		let quotedMsg: waproto.IMessage = normalizeMessageContent(quoted.message)!
@@ -1103,7 +1103,7 @@ export const generateWAMessageFromContent = (
 		quotedMsg = waproto.Message.fromObject({ [msgType]: quotedMsg[msgType] })
 
 		const quotedContent = quotedMsg[msgType]
-		if(typeof quotedContent === 'object' && quotedContent && 'contextInfo' in quotedContent) {
+		if (typeof quotedContent === 'object' && quotedContent && 'contextInfo' in quotedContent) {
 			delete quotedContent.contextInfo
 		}
 
@@ -1112,14 +1112,14 @@ export const generateWAMessageFromContent = (
 		contextInfo.stanzaId = quoted.key.id
 		contextInfo.quotedMessage = quotedMsg
 
-		if(jid !== quoted.key.remoteJid) {
+		if (jid !== quoted.key.remoteJid) {
 			contextInfo.remoteJid = quoted.key.remoteJid
 		}
 
 		innerMessage[key].contextInfo = contextInfo
 	}
 
-	if(
+	if (
 		!!options?.ephemeralExpiration &&
 		key !== 'protocolMessage' &&
 		key !== 'ephemeralMessage' &&
@@ -1166,7 +1166,7 @@ export const generateWAMessage = async(
 
 /** Get the key to access the true type of content */
 export const getContentType = (content: waproto.IMessage | undefined) => {
-	if(content) {
+	if (content) {
 		const keys: string[] = Object.keys(content)
 		const key: string | undefined = keys.find(k => (k === 'conversation' || k.includes('Message')) && k !== 'senderKeyDistributionMessage')
 		return key as keyof typeof content
@@ -1180,13 +1180,13 @@ export const getContentType = (content: waproto.IMessage | undefined) => {
  * @returns
  */
 export const normalizeMessageContent = (content: WAMessageContent | null | undefined): WAMessageContent | undefined => {
-	 if(!content) {
+	 if (!content) {
 		 return undefined
 	 }
 
-	 for(let i = 0;i < 5;i++) {
+	 for (let i = 0;i < 5;i++) {
 		const inner: waproto.Message.IFutureProofMessage | null | undefined = getFutureProofMessage(content)
-		 if(!inner) {
+		 if (!inner) {
 			 break
 		 }
 
@@ -1213,13 +1213,13 @@ export const normalizeMessageContent = (content: WAMessageContent | null | undef
  */
 export const extractMessageContent = (content: WAMessageContent | undefined | null): WAMessageContent | undefined => {
 	const extractFromTemplateMessage = (msg: waproto.Message.TemplateMessage.IHydratedFourRowTemplate | waproto.Message.IButtonsMessage) => {
-		if(msg.imageMessage) {
+		if (msg.imageMessage) {
 			return { imageMessage: msg.imageMessage }
-		} else if(msg.documentMessage) {
+		} else if (msg.documentMessage) {
 			return { documentMessage: msg.documentMessage }
-		} else if(msg.videoMessage) {
+		} else if (msg.videoMessage) {
 			return { videoMessage: msg.videoMessage }
-		} else if(msg.locationMessage) {
+		} else if (msg.locationMessage) {
 			return { locationMessage: msg.locationMessage }
 		} else {
 			return {
@@ -1233,19 +1233,19 @@ export const extractMessageContent = (content: WAMessageContent | undefined | nu
 
 	content = normalizeMessageContent(content)
 
-	if(content?.buttonsMessage) {
+	if (content?.buttonsMessage) {
 	  return extractFromTemplateMessage(content.buttonsMessage)
 	}
 
-	if(content?.templateMessage?.hydratedFourRowTemplate) {
+	if (content?.templateMessage?.hydratedFourRowTemplate) {
 		return extractFromTemplateMessage(content?.templateMessage?.hydratedFourRowTemplate)
 	}
 
-	if(content?.templateMessage?.hydratedTemplate) {
+	if (content?.templateMessage?.hydratedTemplate) {
 		return extractFromTemplateMessage(content?.templateMessage?.hydratedTemplate)
 	}
 
-	if(content?.templateMessage?.fourRowTemplate) {
+	if (content?.templateMessage?.fourRowTemplate) {
 		return extractFromTemplateMessage(content?.templateMessage?.fourRowTemplate)
 	}
 
@@ -1265,7 +1265,7 @@ export const getDevice = (id: string) => /^3A.{18}$/.test(id) ? 'ios' :
 export const updateMessageWithReceipt = (msg: Pick<WAMessage, 'userReceipt'>, receipt: MessageUserReceipt) => {
 	msg.userReceipt = msg.userReceipt || []
 	const recp: waproto.IUserReceipt | undefined = msg.userReceipt.find(m => m.userJid === receipt.userJid)
-	if(recp) {
+	if (recp) {
 		Object.assign(recp, receipt)
 	} else {
 		msg.userReceipt.push(receipt)
@@ -1293,7 +1293,7 @@ export const updateMessageWithPollUpdate = (
 
 	const reactions: waproto.IPollUpdate[] = (msg.pollUpdates || [])
 		.filter(r => getKeyAuthor(r.pollUpdateMessageKey) !== authorID)
-	if(update.vote?.selectedOptions?.length) {
+	if (update.vote?.selectedOptions?.length) {
 		reactions.push(update)
 	}
 
@@ -1325,16 +1325,16 @@ export function getAggregateVotesInPollMessage(
 		return acc
 	}, {} as { [_: string]: VoteAggregation })
 
-	for(const update of pollUpdates || []) {
+	for (const update of pollUpdates || []) {
 		const { vote } = update
-		if(!vote) {
+		if (!vote) {
 			continue
 		}
 
-		for(const option of vote.selectedOptions || []) {
+		for (const option of vote.selectedOptions || []) {
 			const hash: string = option.toString()
 			let data: VoteAggregation = voteHashMap[hash]
-			if(!data) {
+			if (!data) {
 				voteHashMap[hash] = {
 					name: 'Unknown',
 					voters: []
@@ -1354,10 +1354,10 @@ export function getAggregateVotesInPollMessage(
 /** Given a list of message keys, aggregates them by chat & sender. Useful for sending read receipts in bulk */
 export const aggregateMessageKeysNotFromMe = (keys: waproto.IMessageKey[]) => {
 	const keyMap: { [id: string]: { jid: string, participant: string | undefined, messageIds: string[] } } = { }
-	for(const { remoteJid, id, participant, fromMe } of keys) {
-		if(!fromMe) {
+	for (const { remoteJid, id, participant, fromMe } of keys) {
+		if (!fromMe) {
 			const uqKey = `${remoteJid}:${participant || ''}`
-			if(!keyMap[uqKey]) {
+			if (!keyMap[uqKey]) {
 				keyMap[uqKey] = {
 					jid: remoteJid!,
 					participant: participant!,
@@ -1390,7 +1390,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 ) => {
 	const result: Buffer | Transform = await downloadMsg()
 		.catch(async(error) => {
-			if(ctx && axios.isAxiosError(error) && REUPLOAD_REQUIRED_STATUS.includes(error.response?.status!)) {
+			if (ctx && axios.isAxiosError(error) && REUPLOAD_REQUIRED_STATUS.includes(error.response?.status!)) {
 				ctx.logger.trace({ key: message.key }, 'sending reupload media request...')
 				message = await ctx.reuploadRequest(message)
 				const result: Buffer | Transform = await downloadMsg()
@@ -1404,7 +1404,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 
 	async function downloadMsg() {
 		const mContent = extractMessageContent(message.message)
-		if(!mContent) {
+		if (!mContent) {
 			throw new Boom('No message present', { statusCode: 400, data: message })
 		}
 
@@ -1412,12 +1412,12 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 		let mediaType: 'audio' | 'document' | 'gif' | 'image' | 'ppic' | 'product' | 'ptt' | 'sticker' | 'video' | 'thumbnail-document' | 'thumbnail-image' | 'thumbnail-video' | 'thumbnail-link' | 'md-msg-hist' | 'md-app-state' | 'product-catalog-image' | 'payment-bg-image' | 'ptv' = contentType?.replace('Message', '') as MediaType
 		const media = mContent[contentType!]
 
-		if(!media || typeof media !== 'object' || (!('url' in media) && !('thumbnailDirectPath' in media))) {
+		if (!media || typeof media !== 'object' || (!('url' in media) && !('thumbnailDirectPath' in media))) {
 			throw new Boom(`"${contentType}" message is not a media message`)
 		}
 
 		let download: DownloadableMessage
-		if('thumbnailDirectPath' in media && !('url' in media)) {
+		if ('thumbnailDirectPath' in media && !('url' in media)) {
 			download = {
 				directPath: media.thumbnailDirectPath,
 				mediaKey: media.mediaKey
@@ -1428,7 +1428,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 		}
 
 		const stream: Transform = await downloadContentFromMessage(download, mediaType, options)
-		if(type === 'buffer') {
+		if (type === 'buffer') {
 			const bufferArray: Buffer[] = []
 			for await (const chunk of stream) {
 				bufferArray.push(chunk)
@@ -1449,7 +1449,7 @@ export const assertMediaContent = (content: waproto.IMessage | null | undefined)
 		|| content?.videoMessage
 		|| content?.audioMessage
 		|| content?.stickerMessage
-	if(!mediaContent) {
+	if (!mediaContent) {
 		throw new Boom(
 			'given message is not a media message',
 			{ statusCode: 400, data: content }
@@ -1464,15 +1464,15 @@ export const convertlidDevice = (jid: string, lid: string | null | undefined, me
 	const mejidUser: string | undefined = jidDecode(meid)?.user
 	const jidUser: string | undefined = jidDecode(jid)?.user
 	const jidDevice: number | undefined = jidDecode(jid)?.device
-	if(jidUser === mejidUser) {
+	if (jidUser === mejidUser) {
 		return jidDevice ? `${meLiidiser}:${jidDevice}@lid` : `${meLiidiser}@lid`
 	}
 
-	if(jidUser === melid) {
+	if (jidUser === melid) {
 		return jid
 	}
 
-	if(!lid) {
+	if (!lid) {
 		return jid
 	}
 

@@ -20,20 +20,20 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 	let isBuffering = false
 
 	ev.on('event', (map: BaileysEventData) => {
-		for(const event in map) {
+		for (const event in map) {
 			ev.emit(event, map[event])
 		}
 	})
 
 	function buffer() {
-		if(!isBuffering) {
+		if (!isBuffering) {
 			logger.trace({}, 'Event buffer activated')
 			isBuffering = true
 		}
 	}
 
 	function flush() {
-		if(!isBuffering) {
+		if (!isBuffering) {
 			return false
 		}
 
@@ -43,8 +43,8 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 		const newData: BufferedEventData = makeBufferData()
 		const chatUpdates = Object.values(data.chatUpdates)
 		let conditionalChatUpdatesLeft = 0
-		for(const update of chatUpdates) {
-			if(update.conditional) {
+		for (const update of chatUpdates) {
+			if (update.conditional) {
 				conditionalChatUpdatesLeft += 1
 				newData.chatUpdates[update.id!] = update
 				delete data.chatUpdates[update.id!]
@@ -52,7 +52,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 		}
 
 		const consolidatedData: Partial<BaileysEventMap> = consolidateEvents(data)
-		if(Object.keys(consolidatedData).length) {
+		if (Object.keys(consolidatedData).length) {
 			ev.emit('event', consolidatedData)
 		}
 
@@ -78,7 +78,7 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			}
 		},
 		emit<T extends BaileysEvent>(event: BaileysEvent, evData: BaileysEventMap[T]) {
-			if(isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
+			if (isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
 				append(data, historyCache, event as BufferableEvent, evData, logger)
 				return true
 			}
@@ -136,13 +136,13 @@ function append<E extends BufferableEvent>(
 ) {
 	switch (event) {
 	case 'messaging-history.set':
-		for(const chat of eventData.chats as Chat[]) {
+		for (const chat of eventData.chats as Chat[]) {
 			const existingChat: Chat = data.historySets.chats[chat.id]
-			if(existingChat) {
+			if (existingChat) {
 				existingChat.endOfHistoryTransferType = chat.endOfHistoryTransferType
 			}
 
-			if(!existingChat && !historyCache.has(chat.id)) {
+			if (!existingChat && !historyCache.has(chat.id)) {
 				data.historySets.chats[chat.id] = chat
 				historyCache.add(chat.id)
 
@@ -150,24 +150,24 @@ function append<E extends BufferableEvent>(
 			}
 		}
 
-		for(const contact of eventData.contacts as Contact[]) {
+		for (const contact of eventData.contacts as Contact[]) {
 			const existingContact: Contact = data.historySets.contacts[contact.id]
-			if(existingContact) {
+			if (existingContact) {
 				Object.assign(existingContact, trimUndefined(contact))
 			} else {
 				const historyContactId = `c:${contact.id}`
 				const hasAnyName: string | undefined = contact.notify || contact.name || contact.verifiedName
-				if(!historyCache.has(historyContactId) || hasAnyName) {
+				if (!historyCache.has(historyContactId) || hasAnyName) {
 					data.historySets.contacts[contact.id] = contact
 					historyCache.add(historyContactId)
 				}
 			}
 		}
 
-		for(const message of eventData.messages as WAMessage[]) {
+		for (const message of eventData.messages as WAMessage[]) {
 			const key: string = stringifyMessageKey(message.key)
 			const existingMsg: WAMessage = data.historySets.messages[key]
-			if(!existingMsg && !historyCache.has(key)) {
+			if (!existingMsg && !historyCache.has(key)) {
 				data.historySets.messages[key] = message
 				historyCache.add(key)
 			}
@@ -181,16 +181,16 @@ function append<E extends BufferableEvent>(
 
 		break
 	case 'chats.upsert':
-		for(const chat of eventData as Chat[]) {
+		for (const chat of eventData as Chat[]) {
 			let upsert: Chat = data.chatUpserts[chat.id]
-			if(!upsert) {
+			if (!upsert) {
 				upsert = data.historySets[chat.id]
-				if(upsert) {
+				if (upsert) {
 					logger.debug({ chatId: chat.id }, 'absorbed chat upsert in chat set')
 				}
 			}
 
-			if(upsert) {
+			if (upsert) {
 				upsert = concatChats(upsert, chat)
 			} else {
 				upsert = chat
@@ -199,75 +199,75 @@ function append<E extends BufferableEvent>(
 
 			absorbingChatUpdate(upsert)
 
-			if(data.chatDeletes.has(chat.id)) {
+			if (data.chatDeletes.has(chat.id)) {
 				data.chatDeletes.delete(chat.id)
 			}
 		}
 
 		break
 	case 'chats.update':
-		for(const update of eventData as ChatUpdate[]) {
+		for (const update of eventData as ChatUpdate[]) {
 			const chatId: string = update.id!
 			const conditionMatches: boolean | undefined = update.conditional ? update.conditional(data) : true
-			if(conditionMatches) {
+			if (conditionMatches) {
 				delete update.conditional
 
 				const upsert: Chat = data.historySets.chats[chatId] || data.chatUpserts[chatId]
-				if(upsert) {
+				if (upsert) {
 					concatChats(upsert, update)
 				} else {
 					const chatUpdate = data.chatUpdates[chatId] || { }
 					data.chatUpdates[chatId] = concatChats(chatUpdate, update)
 				}
-			} else if(conditionMatches === undefined) {
+			} else if (conditionMatches === undefined) {
 				data.chatUpdates[chatId] = update
 			}
 
-			if(data.chatDeletes.has(chatId)) {
+			if (data.chatDeletes.has(chatId)) {
 				data.chatDeletes.delete(chatId)
 			}
 		}
 
 		break
 	case 'chats.delete':
-		for(const chatId of eventData as string[]) {
-			if(!data.chatDeletes.has(chatId)) {
+		for (const chatId of eventData as string[]) {
+			if (!data.chatDeletes.has(chatId)) {
 				data.chatDeletes.add(chatId)
 			}
 
-			if(data.chatUpdates[chatId]) {
+			if (data.chatUpdates[chatId]) {
 				delete data.chatUpdates[chatId]
 			}
 
-			if(data.chatUpserts[chatId]) {
+			if (data.chatUpserts[chatId]) {
 				delete data.chatUpserts[chatId]
 
 			}
 
-			if(data.historySets.chats[chatId]) {
+			if (data.historySets.chats[chatId]) {
 				delete data.historySets.chats[chatId]
 			}
 		}
 
 		break
 	case 'contacts.upsert':
-		for(const contact of eventData as Contact[]) {
+		for (const contact of eventData as Contact[]) {
 			let upsert: Contact = data.contactUpserts[contact.id]
-			if(!upsert) {
+			if (!upsert) {
 				upsert = data.historySets.contacts[contact.id]
-				if(upsert) {
+				if (upsert) {
 					logger.debug({ contactId: contact.id }, 'absorbed contact upsert in contact set')
 				}
 			}
 
-			if(upsert) {
+			if (upsert) {
 				upsert = Object.assign(upsert, trimUndefined(contact))
 			} else {
 				upsert = contact
 				data.contactUpserts[contact.id] = upsert
 			}
 
-			if(data.contactUpdates[contact.id]) {
+			if (data.contactUpdates[contact.id]) {
 				upsert = Object.assign(data.contactUpdates[contact.id], trimUndefined(contact)) as Contact
 				delete data.contactUpdates[contact.id]
 			}
@@ -276,10 +276,10 @@ function append<E extends BufferableEvent>(
 		break
 	case 'contacts.update':
 		const contactUpdates = eventData as BaileysEventMap['contacts.update']
-		for(const update of contactUpdates) {
+		for (const update of contactUpdates) {
 			const id: string = update.id!
 			const upsert: Contact = data.historySets.contacts[id] || data.contactUpserts[id]
-			if(upsert) {
+			if (upsert) {
 				Object.assign(upsert, update)
 			} else {
 				const contactUpdate: Partial<Contact> = data.contactUpdates[id] || { }
@@ -290,27 +290,27 @@ function append<E extends BufferableEvent>(
 		break
 	case 'messages.upsert':
 		const { messages, type } = eventData as BaileysEventMap['messages.upsert']
-		for(const message of messages) {
+		for (const message of messages) {
 			const key: string = stringifyMessageKey(message.key)
 			let existing: WAMessage = data.messageUpserts[key]?.message
-			if(!existing) {
+			if (!existing) {
 				existing = data.historySets.messages[key]
-				if(existing) {
+				if (existing) {
 					logger.debug({ messageId: key }, 'absorbed message upsert in message set')
 				}
 			}
 
-			if(existing) {
+			if (existing) {
 				message.messageTimestamp = existing.messageTimestamp
 			}
 
-			if(data.messageUpdates[key]) {
+			if (data.messageUpdates[key]) {
 				logger.debug({}, 'absorbed prior message update in message upsert')
 				Object.assign(message, data.messageUpdates[key].update)
 				delete data.messageUpdates[key]
 			}
 
-			if(data.historySets.messages[key]) {
+			if (data.historySets.messages[key]) {
 				data.historySets.messages[key] = message
 			} else {
 				data.messageUpserts[key] = {
@@ -325,12 +325,12 @@ function append<E extends BufferableEvent>(
 		break
 	case 'messages.update':
 		const msgUpdates = eventData as BaileysEventMap['messages.update']
-		for(const { key, update } of msgUpdates) {
+		for (const { key, update } of msgUpdates) {
 			const keyStr: string = stringifyMessageKey(key)
 			const existing: WAMessage = data.historySets.messages[keyStr] || data.messageUpserts[keyStr]?.message
-			if(existing) {
+			if (existing) {
 				Object.assign(existing, update)
-				if(update.status === WAMessageStatus.READ && !key.fromMe) {
+				if (update.status === WAMessageStatus.READ && !key.fromMe) {
 					decrementChatReadCounterIfMsgDidUnread(existing)
 				}
 			} else {
@@ -343,20 +343,20 @@ function append<E extends BufferableEvent>(
 		break
 	case 'messages.delete':
 		const deleteData = eventData as BaileysEventMap['messages.delete']
-		if('keys' in deleteData) {
+		if ('keys' in deleteData) {
 			const { keys } = deleteData
-			for(const key of keys) {
+			for (const key of keys) {
 				const keyStr: string = stringifyMessageKey(key)
-				if(!data.messageDeletes[keyStr]) {
+				if (!data.messageDeletes[keyStr]) {
 					data.messageDeletes[keyStr] = key
 
 				}
 
-				if(data.messageUpserts[keyStr]) {
+				if (data.messageUpserts[keyStr]) {
 					delete data.messageUpserts[keyStr]
 				}
 
-				if(data.messageUpdates[keyStr]) {
+				if (data.messageUpdates[keyStr]) {
 					delete data.messageUpdates[keyStr]
 				}
 			}
@@ -368,10 +368,10 @@ function append<E extends BufferableEvent>(
 		break
 	case 'messages.reaction':
 		const reactions = eventData as BaileysEventMap['messages.reaction']
-		for(const { key, reaction } of reactions) {
+		for (const { key, reaction } of reactions) {
 			const keyStr: string = stringifyMessageKey(key)
 			const existing = data.messageUpserts[keyStr]
-			if(existing) {
+			if (existing) {
 				updateMessageWithReaction(existing.message, reaction)
 			} else {
 				data.messageReactions[keyStr] = data.messageReactions[keyStr]
@@ -383,10 +383,10 @@ function append<E extends BufferableEvent>(
 		break
 	case 'message-receipt.update':
 		const receipts = eventData as BaileysEventMap['message-receipt.update']
-		for(const { key, receipt } of receipts) {
+		for (const { key, receipt } of receipts) {
 			const keyStr: string = stringifyMessageKey(key)
 			const existing = data.messageUpserts[keyStr]
-			if(existing) {
+			if (existing) {
 				updateMessageWithReceipt(existing.message, receipt)
 			} else {
 				data.messageReceipts[keyStr] = data.messageReceipts[keyStr]
@@ -398,10 +398,10 @@ function append<E extends BufferableEvent>(
 		break
 	case 'groups.update':
 		const groupUpdates = eventData as BaileysEventMap['groups.update']
-		for(const update of groupUpdates) {
+		for (const update of groupUpdates) {
 			const id: string = update.id!
 			const groupUpdate: Partial<GroupMetadata> = data.groupUpdates[id] || { }
-			if(!data.groupUpdates[id]) {
+			if (!data.groupUpdates[id]) {
 				data.groupUpdates[id] = Object.assign(groupUpdate, update)
 
 			}
@@ -415,14 +415,14 @@ function append<E extends BufferableEvent>(
 	function absorbingChatUpdate(existing: Chat) {
 		const chatId: string = existing.id
 		const update = data.chatUpdates[chatId]
-		if(update) {
+		if (update) {
 			const conditionMatches = update.conditional ? update.conditional(data) : true
-			if(conditionMatches) {
+			if (conditionMatches) {
 				delete update.conditional
 				logger.debug({ chatId }, 'absorbed chat update in existing chat')
 				Object.assign(existing, concatChats(update as Chat, existing))
 				delete data.chatUpdates[chatId]
-			} else if(conditionMatches === false) {
+			} else if (conditionMatches === false) {
 				logger.debug({ chatId }, 'chat update condition fail, removing')
 				delete data.chatUpdates[chatId]
 			}
@@ -432,7 +432,7 @@ function append<E extends BufferableEvent>(
 	function decrementChatReadCounterIfMsgDidUnread(message: WAMessage) {
 		const chatId: string = message.key.remoteJid!
 		const chat = data.chatUpdates[chatId] || data.chatUpserts[chatId]
-		if(
+		if (
 			isRealMessage(message, '')
 			&& shouldIncrementChatUnread(message)
 			&& typeof chat?.unreadCount === 'number'
@@ -440,7 +440,7 @@ function append<E extends BufferableEvent>(
 		) {
 			logger.debug({ chatId: chat.id }, 'decrementing chat counter')
 			chat.unreadCount -= 1
-			if(chat.unreadCount === 0) {
+			if (chat.unreadCount === 0) {
 				delete chat.unreadCount
 			}
 		}
@@ -450,7 +450,7 @@ function append<E extends BufferableEvent>(
 function consolidateEvents(data: BufferedEventData) {
 	const map: BaileysEventData = { }
 
-	if(!data.historySets.empty) {
+	if (!data.historySets.empty) {
 		map['messaging-history.set'] = {
 			chats: Object.values(data.historySets.chats),
 			messages: Object.values(data.historySets.messages),
@@ -463,22 +463,22 @@ function consolidateEvents(data: BufferedEventData) {
 	}
 
 	const chatUpsertList: Chat[] = Object.values(data.chatUpserts)
-	if(chatUpsertList.length) {
+	if (chatUpsertList.length) {
 		map['chats.upsert'] = chatUpsertList
 	}
 
 	const chatUpdateList = Object.values(data.chatUpdates)
-	if(chatUpdateList.length) {
+	if (chatUpdateList.length) {
 		map['chats.update'] = chatUpdateList
 	}
 
 	const chatDeleteList: string[] = Array.from(data.chatDeletes)
-	if(chatDeleteList.length) {
+	if (chatDeleteList.length) {
 		map['chats.delete'] = chatDeleteList
 	}
 
 	const messageUpsertList = Object.values(data.messageUpserts)
-	if(messageUpsertList.length) {
+	if (messageUpsertList.length) {
 		const type: MessageUpsertType = messageUpsertList[0].type
 		map['messages.upsert'] = {
 			messages: messageUpsertList.map(m => m.message),
@@ -487,41 +487,41 @@ function consolidateEvents(data: BufferedEventData) {
 	}
 
 	const messageUpdateList: WAMessageUpdate[] = Object.values(data.messageUpdates)
-	if(messageUpdateList.length) {
+	if (messageUpdateList.length) {
 		map['messages.update'] = messageUpdateList
 	}
 
 	const messageDeleteList: WAMessageKey[] = Object.values(data.messageDeletes)
-	if(messageDeleteList.length) {
+	if (messageDeleteList.length) {
 		map['messages.delete'] = { keys: messageDeleteList }
 	}
 
 	const messageReactionList = Object.values(data.messageReactions).flatMap(
 		({ key, reactions }) => reactions.flatMap(reaction => ({ key, reaction }))
 	)
-	if(messageReactionList.length) {
+	if (messageReactionList.length) {
 		map['messages.reaction'] = messageReactionList
 	}
 
 	const messageReceiptList = Object.values(data.messageReceipts).flatMap(
 		({ key, userReceipt }) => userReceipt.flatMap(receipt => ({ key, receipt }))
 	)
-	if(messageReceiptList.length) {
+	if (messageReceiptList.length) {
 		map['message-receipt.update'] = messageReceiptList
 	}
 
 	const contactUpsertList: Contact[] = Object.values(data.contactUpserts)
-	if(contactUpsertList.length) {
+	if (contactUpsertList.length) {
 		map['contacts.upsert'] = contactUpsertList
 	}
 
 	const contactUpdateList: Partial<Contact>[] = Object.values(data.contactUpdates)
-	if(contactUpdateList.length) {
+	if (contactUpdateList.length) {
 		map['contacts.update'] = contactUpdateList
 	}
 
 	const groupUpdateList: Partial<GroupMetadata>[] = Object.values(data.groupUpdates)
-	if(groupUpdateList.length) {
+	if (groupUpdateList.length) {
 		map['groups.update'] = groupUpdateList
 	}
 
@@ -529,15 +529,15 @@ function consolidateEvents(data: BufferedEventData) {
 }
 
 function concatChats<C extends Partial<Chat>>(a: C, b: Partial<Chat>) {
-	if(b.unreadCount === null &&
+	if (b.unreadCount === null &&
 		a.unreadCount! < 0) {
 		a.unreadCount = undefined
 		b.unreadCount = undefined
 	}
 
-	if(typeof a.unreadCount === 'number' && typeof b.unreadCount === 'number') {
+	if (typeof a.unreadCount === 'number' && typeof b.unreadCount === 'number') {
 		b = { ...b }
-		if(b.unreadCount! >= 0) {
+		if (b.unreadCount! >= 0) {
 			b.unreadCount = Math.max(b.unreadCount!, 0) + Math.max(a.unreadCount, 0)
 		}
 	}

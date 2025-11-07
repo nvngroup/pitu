@@ -40,7 +40,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 	case waproto.HistorySync.HistorySyncType.RECENT:
 	case waproto.HistorySync.HistorySyncType.FULL:
 	case waproto.HistorySync.HistorySyncType.ON_DEMAND:
-		for(const chat of item.conversations! as Chat[]) {
+		for (const chat of item.conversations! as Chat[]) {
 			contacts.push({
 				id: chat.id,
 				name: chat.name || undefined,
@@ -54,19 +54,19 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 			chat.muteEndTime
 			chat.pinned
 
-			for(const item of msgs) {
+			for (const item of msgs) {
 				const message: waproto.IWebMessageInfo = item.message!
 				messages.push(message)
 
-				if(!chat.messages?.length) {
+				if (!chat.messages?.length) {
 					chat.messages = [{ message }]
 				}
 
-				if(!message.key.fromMe && !chat.lastMessageRecvTimestamp) {
+				if (!message.key.fromMe && !chat.lastMessageRecvTimestamp) {
 					chat.lastMessageRecvTimestamp = toNumber(message.messageTimestamp)
 				}
 
-				if(
+				if (
 					(message.messageStubType === WAMessageStubType.BIZ_PRIVACY_MODE_TO_BSP
 					|| message.messageStubType === WAMessageStubType.BIZ_PRIVACY_MODE_TO_FB
 					)
@@ -79,7 +79,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 				}
 			}
 
-			if(isJidUser(chat.id) && chat.readOnly && chat.archived) {
+			if (isJidUser(chat.id) && chat.readOnly && chat.archived) {
 				chat.readOnly
 			}
 
@@ -88,7 +88,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 
 		break
 	case waproto.HistorySync.HistorySyncType.PUSH_NAME:
-		for(const c of item.pushnames!) {
+		for (const c of item.pushnames!) {
 			contacts.push({ id: c.id!, notify: c.pushname! })
 		}
 

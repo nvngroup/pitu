@@ -35,12 +35,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	} = sock
 
 	const patchMessageRequiresBeforeSending = (msg: waproto.IMessage): waproto.IMessage => {
-		if(msg?.deviceSentMessage?.message?.listMessage) {
+		if (msg?.deviceSentMessage?.message?.listMessage) {
 			msg = JSON.parse(JSON.stringify(msg))
 			msg.deviceSentMessage!.message.listMessage.listType = waproto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
-		if(msg?.listMessage) {
+		if (msg?.listMessage) {
 			msg = JSON.parse(JSON.stringify(msg))
 			msg.listMessage!.listType = waproto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
@@ -53,7 +53,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
 		const media: MediaConnInfo = await mediaConn
-		if(!media || forceGet || (new Date().getTime() - media.fetchDate.getTime()) > media.ttl * 1000) {
+		if (!media || forceGet || (new Date().getTime() - media.fetchDate.getTime()) > media.ttl * 1000) {
 			mediaConn = (async() => {
 				const result: BinaryNode = await query({
 					tag: 'iq',
@@ -96,26 +96,26 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			},
 		}
 		const isReadReceipt: boolean = type === 'read' || type === 'read-self'
-		if(isReadReceipt) {
+		if (isReadReceipt) {
 			node.attrs.t = unixTimestampSeconds().toString()
 		}
 
-		if(type === 'sender' && isJidUser(jid)) {
+		if (type === 'sender' && isJidUser(jid)) {
 			node.attrs.recipient = jid
 			node.attrs.to = participant!
 		} else {
 			node.attrs.to = jid
-			if(participant) {
+			if (participant) {
 				node.attrs.participant = participant
 			}
 		}
 
-		if(type) {
+		if (type) {
 			node.attrs.type = type
 		}
 
 		const remainingMessageIds: string[] = messageIds.slice(1)
-		if(remainingMessageIds.length) {
+		if (remainingMessageIds.length) {
 			node.content = [
 				{
 					tag: 'list',
@@ -134,7 +134,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 	const sendReceipts = async(keys: WAMessageKey[], type: MessageReceiptType) => {
 		const recps = aggregateMessageKeysNotFromMe(keys)
-		for(const { jid, participant, messageIds } of recps) {
+		for (const { jid, participant, messageIds } of recps) {
 			await sendReceipt(jid, participant, messageIds, type)
 		}
 	}
@@ -148,19 +148,19 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const getUSyncDevices = async(jids: string[], useCache: boolean, ignoreZeroDevices: boolean) => {
 		const deviceResults: JidWithDevice[] = []
 
-		if(!useCache) {
+		if (!useCache) {
 			logger.debug({ jids, ignoreZeroDevices }, 'not using cache for devices')
 		}
 
 		const toFetch: string[] = []
 		jids = Array.from(new Set(jids))
 
-		for(let jid of jids) {
+		for (let jid of jids) {
 			const user: string | undefined = jidDecode(jid)?.user
 			jid = jidNormalizedUser(jid)
-			if(useCache) {
+			if (useCache) {
 				const devices: JidWithDevice[] | undefined = userDevicesCache.get<JidWithDevice[]>(user!)
-				if(devices && devices.length > 0) {
+				if (devices && devices.length > 0) {
 					deviceResults.push(...devices)
 					logger.trace({ user, deviceCount: devices.length }, 'using cache for devices')
 				} else {
@@ -172,7 +172,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			}
 		}
 
-		if(!toFetch.length) {
+		if (!toFetch.length) {
 			logger.debug({ cachedDeviceCount: deviceResults.length }, 'using all cached devices')
 			return deviceResults
 		}
@@ -183,38 +183,38 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			.withContext('message')
 			.withDeviceProtocol()
 
-		for(const jid of toFetch) {
+		for (const jid of toFetch) {
 			query.withUser(new USyncUser().withId(jid))
 		}
 
 		try {
 			const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(query)
 
-			if(result) {
+			if (result) {
 				const extracted: JidWithDevice[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
 				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
 
-				if(extracted.length === 0) {
+				if (extracted.length === 0) {
 					logger.warn({ toFetch, ignoreZeroDevices }, 'no devices extracted from USyncQuery result')
 				}
 
 				const deviceMap: { [_: string]: JidWithDevice[] } = {}
 
-				for(const item of extracted) {
+				for (const item of extracted) {
 					deviceMap[item.user] = deviceMap[item.user] || []
 					deviceMap[item.user].push(item)
 
 					deviceResults.push(item)
 				}
 
-				for(const key in deviceMap) {
+				for (const key in deviceMap) {
 					userDevicesCache.set(key, deviceMap[key])
 					logger.debug({ user: key, deviceCount: deviceMap[key].length }, 'cached devices for user')
 				}
 			} else {
 				logger.warn({ toFetch }, 'USyncQuery returned no result')
 			}
-		} catch(error) {
+		} catch (error) {
 			logger.error({ error: error.message, toFetch }, 'error fetching devices from server')
 		}
 
@@ -225,7 +225,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const assertSessions = async(jids: string[], force: boolean) => {
 		let didFetchNewSession = false
 		let jidsRequiringFetch: string[] = []
-		if(force) {
+		if (force) {
 			jidsRequiringFetch = jids
 		} else {
 			const addrs: string[] = jids.map(jid => (
@@ -233,16 +233,16 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					.jidToSignalProtocolAddress(jid)
 			))
 			const sessions = await authState.keys.get('session', addrs)
-			for(const jid of jids) {
+			for (const jid of jids) {
 				const signalId: string = signalRepository
 					.jidToSignalProtocolAddress(jid)
-				if(!sessions[signalId]) {
+				if (!sessions[signalId]) {
 					jidsRequiringFetch.push(jid)
 				}
 			}
 		}
 
-		if(jidsRequiringFetch.length) {
+		if (jidsRequiringFetch.length) {
 			logger.debug({ jidsRequiringFetch }, 'fetching sessions')
 			const result: BinaryNode = await query({
 				tag: 'iq',
@@ -276,7 +276,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		pdoMessage: waproto.Message.IPeerDataOperationRequestMessage
 	): Promise<string> => {
 		//TODO: for later, abstract the logic to send a Peer Message instead of just PDO - useful for App State Key Resync with phone
-		if(!authState.creds.me?.id) {
+		if (!authState.creds.me?.id) {
 			throw new Boom('Not authenticated')
 		}
 
@@ -314,7 +314,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				async jid => {
 					const { type, ciphertext } = await signalRepository
 						.encryptMessage({ jid, data: bytes })
-					if(type === 'pkmsg') {
+					if (type === 'pkmsg') {
 						shouldIncludeDeviceIdentity = true
 					}
 
@@ -375,8 +375,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const normalizedMessage: waproto.IMessage | undefined = normalizeMessageContent(message)
 		const isInteractiveMessage: boolean = getContentType(normalizedMessage) === 'interactiveMessage'
 
-		if(participant && !isInteractiveMessage) {
-			if(!isGroup && !isStatus) {
+		if (participant && !isInteractiveMessage) {
+			if (!isGroup && !isStatus) {
 				additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 			}
 
@@ -384,31 +384,31 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			devices.push({ user, device })
 		}
 
-		if(isInteractiveMessage) {
+		if (isInteractiveMessage) {
 			additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 		}
 
 		await authState.keys.transaction(
 			async() => {
 				const mediaType = getMediaType(message)
-				if(mediaType) {
+				if (mediaType) {
 					extraAttrs['mediatype'] = mediaType
 				}
 
-				if(normalizeMessageContent(message)?.pinInChatMessage) {
+				if (normalizeMessageContent(message)?.pinInChatMessage) {
 					extraAttrs['decrypt-fail'] = 'hide' // TODO: expand for reactions and other types
 				}
 
-				if(isGroup || isStatus) {
+				if (isGroup || isStatus) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async() => {
 							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // TODO: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
-							if(groupData && Array.isArray(groupData?.participants)) {
+							if (groupData && Array.isArray(groupData?.participants)) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
-							} else if(!isStatus) {
+							} else if (!isStatus) {
 								try {
 									groupData = await groupMetadataWithRetry(jid, 3, 300_000)
-								} catch(error) {
+								} catch (error) {
 									logger.warn({ jid, error }, 'failed to get group metadata with retry, falling back to regular call')
 									groupData = await groupMetadata(jid)
 								}
@@ -417,7 +417,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							return groupData
 						})(),
 						(async() => {
-							if(!participant && !isStatus) {
+							if (!participant && !isStatus) {
 								const result = await authState.keys.get('sender-key-memory', [jid]) // TODO: check out what if the sender key memory doesn't include the LID stuff now?
 								return result[jid] || { }
 							}
@@ -426,9 +426,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						})()
 					])
 
-					if(!participant) {
+					if (!participant) {
 						const participantsList: string[] = (groupData && !isStatus) ? groupData.participants.map(p => p.id) : []
-						if(isStatus && statusJidList) {
+						if (isStatus && statusJidList) {
 							participantsList.push(...statusJidList)
 						}
 
@@ -436,7 +436,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						devices.push(...additionalDevices)
 					}
 
-					if(groupData?.ephemeralDuration && groupData.ephemeralDuration > 0) {
+					if (groupData?.ephemeralDuration && groupData.ephemeralDuration > 0) {
 						additionalAttributes = {
 							...additionalAttributes,
 							expiration: groupData.ephemeralDuration.toString()
@@ -456,15 +456,15 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					)
 
 					const senderKeyJids: string[] = []
-					for(const { user, device } of devices) {
+					for (const { user, device } of devices) {
 						const jid: string = jidEncode(user, groupData?.addressingMode === 'lid' ? 'lid' : 's.whatsapp.net', device)
-						if(!senderKeyMap[jid] || !!isRetryResend) {
+						if (!senderKeyMap[jid] || !!isRetryResend) {
 							senderKeyJids.push(jid)
 							senderKeyMap[jid] = true
 						}
 					}
 
-					if(senderKeyJids.length) {
+					if (senderKeyJids.length) {
 						logger.debug({ senderKeyJids }, 'sending new sender key')
 
 						const senderKeyMsg: waproto.IMessage = {
@@ -482,7 +482,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						participants.push(...result.nodes)
 					}
 
-					if(isRetryResend) {
+					if (isRetryResend) {
 						const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
 							data: bytes,
 							jid: participant?.jid!
@@ -509,13 +509,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				} else {
 					const { user: meUser } = jidDecode(meId)!
 
-					if(!participant) {
+					if (!participant) {
 						devices.push({ user })
-						if(user !== meUser) {
+						if (user !== meUser) {
 							devices.push({ user: meUser })
 						}
 
-						if(additionalAttributes?.['category'] !== 'peer') {
+						if (additionalAttributes?.['category'] !== 'peer') {
 							const additionalDevices: JidWithDevice[] = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
 							devices.push(...additionalDevices)
 							logger.debug({ count: additionalDevices.length }, 'fetched additional devices for 1:1 chat')
@@ -526,14 +526,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const meJids: string[] = []
 					const otherJids: string[] = []
 
-					if(devices.length === 0) {
+					if (devices.length === 0) {
 						logger.warn({ jid, participant, isInteractiveMessage }, 'no devices found for message relay')
 					}
 
-					for(const { user, device } of devices) {
+					for (const { user, device } of devices) {
 						const isMe: boolean = user === meUser
 						const jid: string = jidEncode(isMe && isLid ? authState.creds?.me?.lid!.split(':')[0] || user : user, isLid ? 'lid' : 's.whatsapp.net', device)
-						if(isMe) {
+						if (isMe) {
 							meJids.push(jid)
 						} else {
 							otherJids.push(jid)
@@ -559,10 +559,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || s1 || s2
 				}
 
-				if(participants.length) {
-					if(additionalAttributes?.['category'] === 'peer') {
+				if (participants.length) {
+					if (additionalAttributes?.['category'] === 'peer') {
 						const peerNode = participants[0]?.content?.[0] as BinaryNode
-						if(peerNode) {
+						if (peerNode) {
 							binaryNodeContent.push(peerNode)
 						}
 					} else {
@@ -586,11 +586,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					content: binaryNodeContent
 				}
 
-				if(participant) {
-					if(isJidGroup(destinationJid)) {
+				if (participant) {
+					if (isJidGroup(destinationJid)) {
 						stanza.attrs.to = destinationJid
 						stanza.attrs.participant = participant.jid
-					} else if(areJidsSameUser(participant.jid, meId)) {
+					} else if (areJidsSameUser(participant.jid, meId)) {
 						stanza.attrs.to = participant.jid
 						stanza.attrs.recipient = destinationJid
 					} else {
@@ -600,7 +600,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					stanza.attrs.to = destinationJid
 				}
 
-				if(shouldIncludeDeviceIdentity) {
+				if (shouldIncludeDeviceIdentity) {
 					(stanza.content as BinaryNode[]).push({
 						tag: 'device-identity',
 						attrs: { },
@@ -618,14 +618,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const firstButtonName = nativeFlow?.buttons?.[0]?.name
 
 				const buttonType = getButtonType(message)
-				if(buttonType) {
+				if (buttonType) {
 					const bizNode: BinaryNode = { tag: 'biz', attrs: {} }
 
-					if(nativeFlow && (firstButtonName === 'review_and_pay' || firstButtonName === 'payment_info')) {
+					if (nativeFlow && (firstButtonName === 'review_and_pay' || firstButtonName === 'payment_info')) {
 						bizNode.attrs = {
 							native_flow_name: firstButtonName === 'review_and_pay' ? 'order_details' : firstButtonName
 						}
-					} else if(nativeFlow && nativeFlowSpecials.includes(firstButtonName || '')) {
+					} else if (nativeFlow && nativeFlowSpecials.includes(firstButtonName || '')) {
 						bizNode.content = [{
 							tag: 'biz',
 							attrs: {
@@ -654,7 +654,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								}
 							}]
 						}]
-					} else if(nativeFlow || message?.buttonsMessage ||
+					} else if (nativeFlow || message?.buttonsMessage ||
 							   message?.viewOnceMessage?.message?.buttonsMessage ||
 							   message?.viewOnceMessageV2?.message?.buttonsMessage ||
 							   message?.viewOnceMessageV2Extension?.message?.buttonsMessage) {
@@ -677,7 +677,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								}
 							}]
 						}]
-					} else if(message?.listMessage) {
+					} else if (message?.listMessage) {
 						bizNode.content = [{
 							tag: 'list',
 							attrs: {
@@ -700,7 +700,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.debug({ jid }, 'adding business node')
 				}
 
-				if(additionalNodes && additionalNodes.length > 0) {
+				if (additionalNodes && additionalNodes.length > 0) {
 					(stanza.content as BinaryNode[]).push(...additionalNodes)
 				}
 
@@ -714,11 +714,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getMessageType = (message: waproto.IMessage) => {
-		if(message.pollCreationMessage || message.pollCreationMessageV2 || message.pollCreationMessageV3) {
+		if (message.pollCreationMessage || message.pollCreationMessageV2 || message.pollCreationMessageV3) {
 			return 'poll'
 		}
 
-		if(message.eventMessage) {
+		if (message.eventMessage) {
 			return 'event'
 		}
 
@@ -726,57 +726,57 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getMediaType = (message: waproto.IMessage) => {
-		if(message.imageMessage) {
+		if (message.imageMessage) {
 			return 'image'
-		} else if(message.videoMessage) {
+		} else if (message.videoMessage) {
 			return message.videoMessage.gifPlayback ? 'gif' : 'video'
-		} else if(message.audioMessage) {
+		} else if (message.audioMessage) {
 			return message.audioMessage.ptt ? 'ptt' : 'audio'
-		} else if(message.contactMessage) {
+		} else if (message.contactMessage) {
 			return 'vcard'
-		} else if(message.documentMessage) {
+		} else if (message.documentMessage) {
 			return 'document'
-		} else if(message.contactsArrayMessage) {
+		} else if (message.contactsArrayMessage) {
 			return 'contact_array'
-		} else if(message.liveLocationMessage) {
+		} else if (message.liveLocationMessage) {
 			return 'livelocation'
-		} else if(message.stickerMessage) {
+		} else if (message.stickerMessage) {
 			return 'sticker'
-		} else if(message.listMessage) {
+		} else if (message.listMessage) {
 			return 'list'
-		} else if(message.listResponseMessage) {
+		} else if (message.listResponseMessage) {
 			return 'list_response'
-		} else if(message.buttonsResponseMessage) {
+		} else if (message.buttonsResponseMessage) {
 			return 'buttons_response'
-		} else if(message.orderMessage) {
+		} else if (message.orderMessage) {
 			return 'order'
-		} else if(message.productMessage) {
+		} else if (message.productMessage) {
 			return 'product'
-		} else if(message.interactiveResponseMessage) {
+		} else if (message.interactiveResponseMessage) {
 			return 'native_flow_response'
-		} else if(message.groupInviteMessage) {
+		} else if (message.groupInviteMessage) {
 			return 'url'
 		}
 	}
 
 	const getButtonType = (message: waproto.IMessage) => {
-		if(message.buttonsMessage) {
+		if (message.buttonsMessage) {
 			return 'buttons'
-		} else if(message.interactiveMessage?.nativeFlowMessage) {
+		} else if (message.interactiveMessage?.nativeFlowMessage) {
 			return 'interactive'
-		} else if(message.buttonsResponseMessage) {
+		} else if (message.buttonsResponseMessage) {
 			return 'buttons_response'
-		} else if(message.interactiveResponseMessage) {
+		} else if (message.interactiveResponseMessage) {
 			return 'interactive_response'
-		} else if(message.listMessage) {
+		} else if (message.listMessage) {
 			return 'list'
-		} else if(message.listResponseMessage) {
+		} else if (message.listResponseMessage) {
 			return 'list_response'
 		}
 	}
 
 	const getButtonAttrs = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['attrs'] => {
-		if(message.interactiveMessage?.nativeFlowMessage) {
+		if (message.interactiveMessage?.nativeFlowMessage) {
 			switch (nativeFlowSpecial) {
 			case 'review_and_pay':
 			case 'payment_info':
@@ -790,12 +790,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					privacy_mode_ts: unixTimestampSeconds().toString()
 				}
 			}
-		} else if(message.templateMessage) {
+		} else if (message.templateMessage) {
 			// TODO: Add attributes
 			return {}
-		} else if(message.listMessage) {
+		} else if (message.listMessage) {
 			const type: waproto.Message.ListMessage.ListType | null | undefined = message.listMessage.listType
-			if(!type) {
+			if (!type) {
 				throw new Boom('Expected list type inside message')
 			}
 
@@ -806,7 +806,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getButtonContent = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['content'] => {
-		if(message.interactiveMessage?.nativeFlowMessage && nativeFlowSpecial) {
+		if (message.interactiveMessage?.nativeFlowMessage && nativeFlowSpecial) {
 			switch (nativeFlowSpecial) {
 			case 'review_and_pay':
 			case 'payment_info':
@@ -833,7 +833,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 				}]
 			}
-		} else if(message.interactiveMessage?.nativeFlowMessage) {
+		} else if (message.interactiveMessage?.nativeFlowMessage) {
 			return [{
 				tag: 'interactive',
 				attrs: {
@@ -915,13 +915,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					sendNode(node),
 					waitForMsgMediaUpdate(async(update) => {
 						const result = update.find(c => c.key.id === message.key.id)
-						if(result) {
-							if(result.error) {
+						if (result) {
+							if (result.error) {
 								error = result.error
 							} else {
 								try {
 									const media = await decryptMediaRetryData(result.media!, mediaKey, result.key.id!)
-									if(media.result !== waproto.MediaRetryNotification.ResultType.SUCCESS) {
+									if (media.result !== waproto.MediaRetryNotification.ResultType.SUCCESS) {
 										const resultStr: string = waproto.MediaRetryNotification.ResultType[media.result!]
 										throw new Boom(
 											`Media re-upload failed by device (${resultStr})`,
@@ -933,7 +933,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 									content.url = getUrlFromDirectPath(content.directPath!)
 
 									logger.debug({ directPath: media.directPath, key: result.key }, 'media update successful')
-								} catch(err) {
+								} catch (err) {
 									error = err
 								}
 							}
@@ -944,7 +944,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				]
 			)
 
-			if(error) {
+			if (error) {
 				throw error
 			}
 
@@ -960,7 +960,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			options: MiscMessageGenerationOptions = {}
 		) => {
 			const userJid: string = authState.creds.me!.id
-			if(
+			if (
 				typeof content === 'object' &&
 				'disappearingMessagesInChat' in content &&
 				typeof content['disappearingMessagesInChat'] !== 'undefined' &&
@@ -1008,24 +1008,24 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const isPollMessage = 'poll' in content && !!content.poll
 				const additionalAttributes: BinaryNodeAttributes = {}
 				const additionalNodes: BinaryNode[] = []
-				if(isDeleteMsg) {
-					if(isJidGroup(content.delete.remoteJid as string) && !content.delete.fromMe) {
+				if (isDeleteMsg) {
+					if (isJidGroup(content.delete.remoteJid as string) && !content.delete.fromMe) {
 						additionalAttributes.edit = '8'
 					} else {
 						additionalAttributes.edit = '7'
 					}
-				} else if(isEditMsg) {
+				} else if (isEditMsg) {
 					additionalAttributes.edit = '1'
-				} else if(isPinMsg) {
+				} else if (isPinMsg) {
 					additionalAttributes.edit = '2'
-				} else if(isPollMessage) {
+				} else if (isPollMessage) {
 					additionalNodes.push({
 						tag: 'meta',
 						attrs: {
 							polltype: 'creation'
 						},
 					} as BinaryNode)
-				} else if(isEventMsg) {
+				} else if (isEventMsg) {
 					additionalNodes.push({
 						tag: 'meta',
 						attrs: {
@@ -1034,11 +1034,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					} as BinaryNode)
 				}
 
-				if('cachedGroupMetadata' in options) {
+				if ('cachedGroupMetadata' in options) {
 					logger.warn({}, 'cachedGroupMetadata in sendMessage are deprecated, now cachedGroupMetadata is part of the socket config.')
 				}
 
-				if(
+				if (
 					getContentType(fullMsg.message!) === 'templateMessage' ||
 					getContentType(fullMsg.message!) === 'interactiveMessage'
 				) {
@@ -1048,14 +1048,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 
 				try {
-					if(getContentType(fullMsg.message!) === 'listMessage') {
+					if (getContentType(fullMsg.message!) === 'listMessage') {
 						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
 					}
-				} catch(err) {
+				} catch (err) {
 					logger.error(err)
 				}
 
-				if(config.emitOwnEvents) {
+				if (config.emitOwnEvents) {
 					process.nextTick(() => {
 						processingMutex.mutex(() => (
 							upsertMessage(fullMsg, 'append')

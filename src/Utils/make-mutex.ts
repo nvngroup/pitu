@@ -8,7 +8,7 @@ export const makeMutex = () => {
 			task = (async() => {
 				try {
 					await task
-				} catch{ }
+				} catch { }
 
 				try {
 					const result = await code()
@@ -29,7 +29,7 @@ export const makeKeyedMutex = () => {
 
 	return {
 		mutex<T>(key: string, task: () => Promise<T> | T): Promise<T> {
-			if(!map[key]) {
+			if (!map[key]) {
 				map[key] = makeMutex()
 			}
 
