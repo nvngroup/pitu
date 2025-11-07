@@ -132,7 +132,7 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 				const hasKeyIndex: boolean = device === 0 || !!keyIndex
 
 				if (!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
-					extracted.push({ user, device })
+					extracted.push({ user, device, jid: userResult.id })
 				}
 			}
 		} else if (!devices) {
