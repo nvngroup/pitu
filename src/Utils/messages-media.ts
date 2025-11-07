@@ -561,7 +561,6 @@ export const downloadEncryptedContent = async(
 	let hmac: Crypto.Hmac | undefined
 	const encryptedChunks: Buffer[] = []
 	let totalBytesReceived = 0
-	let streamEnded = false
 
 	if(macKey && !endByte) {
 		hmac = Crypto.createHmac('sha256', macKey).update(iv)
