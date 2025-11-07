@@ -495,6 +495,10 @@ export const downloadContentFromMessage = async(
 		throw new Boom('No valid media URL or directPath present in message', { statusCode: 400 })
 	}
 
+	if(!mediaKey) {
+		throw new Boom('Media key is required for decryption', { statusCode: 400 })
+	}
+
 	const keys: MediaDecryptionKeyInfo = await getMediaKeys(mediaKey, type)
 
 	return downloadEncryptedContent(downloadUrl, keys, opts)
@@ -535,21 +539,29 @@ export const downloadEncryptedContent = async(
 		}
 	}
 
-	const fetched: Readable = await getHttpStream(
-		downloadUrl,
-		{
-			...options || {},
-			headers,
-			maxBodyLength: Infinity,
-			maxContentLength: Infinity,
-		}
-	)
+	let fetched: Readable
+	try {
+		fetched = await getHttpStream(
+			downloadUrl,
+			{
+				...options || {},
+				headers,
+				maxBodyLength: Infinity,
+				maxContentLength: Infinity,
+			}
+		)
+	} catch(error) {
+		logger.error({ error, downloadUrl }, 'Falha ao obter stream HTTP para download de mídia')
+		throw new Boom('Falha ao baixar mídia', { statusCode: 500, data: error })
+	}
 
 	let remainingBytes: Buffer = Buffer.from([])
 
 	let aes: Crypto.Decipheriv
 	let hmac: Crypto.Hmac | undefined
 	const encryptedChunks: Buffer[] = []
+	let totalBytesReceived = 0
+	let streamEnded = false
 
 	if(macKey && !endByte) {
 		hmac = Crypto.createHmac('sha256', macKey).update(iv)
@@ -573,9 +585,11 @@ export const downloadEncryptedContent = async(
 			try {
 				let data: Buffer = Buffer.concat([remainingBytes, chunk])
 
-				if(hmac) {
-					encryptedChunks.push(chunk)
+				if(hmac && !startByte && !endByte) {
+					encryptedChunks.push(Buffer.from(chunk))
 				}
+
+				totalBytesReceived += chunk.length
 
 				const decryptLength: number = toSmallestChunkSize(data.length)
 				remainingBytes = data.subarray(decryptLength)
@@ -639,19 +653,41 @@ export const downloadEncryptedContent = async(
 							logger.debug({ finalError }, 'Erro ao finalizar descriptografia, possivelmente já processado')
 						}
 
-						if(hmac && receivedMac) {
-							const allEncryptedData: Buffer = Buffer.concat(encryptedChunks)
-							const encryptedDataWithoutMac: Buffer = allEncryptedData.subarray(0, -10)
+						if(hmac && receivedMac && encryptedChunks.length > 0) {
+							try {
+								const allEncryptedData: Buffer = Buffer.concat(encryptedChunks)
 
-							hmac.update(encryptedDataWithoutMac)
-							const calculatedMac: Buffer = hmac.digest().subarray(0, 10)
+								if(allEncryptedData.length < 10) {
+									logger.warn({
+										encryptedDataLength: allEncryptedData.length,
+										totalBytesReceived
+									}, 'Dados criptografados insuficientes para verificação do MAC')
+									callback()
+									return
+								}
 
-							if(!calculatedMac.equals(receivedMac)) {
-								callback(new Error('Falha na verificação do MAC: dados podem estar corrompidos'))
+								const encryptedDataWithoutMac: Buffer = allEncryptedData.subarray(0, -10)
+
+								hmac.update(encryptedDataWithoutMac)
+								const calculatedMac: Buffer = hmac.digest().subarray(0, 10)
+
+								if(!calculatedMac.equals(receivedMac)) {
+									logger.error({
+										receivedMac: receivedMac.toString('hex'),
+										calculatedMac: calculatedMac.toString('hex'),
+										encryptedDataLength: allEncryptedData.length,
+										totalBytesReceived
+									}, 'Falha na verificação do MAC')
+									callback(new Error('Falha na verificação do MAC: dados podem estar corrompidos'))
+									return
+								}
+
+								logger.debug({}, 'MAC verificado com sucesso')
+							} catch(macError) {
+								logger.error({ macError }, 'Erro ao processar verificação do MAC')
+								callback(macError)
 								return
 							}
-
-							logger.debug({}, 'MAC verificado com sucesso')
 						}
 					}
 
@@ -666,6 +702,17 @@ export const downloadEncryptedContent = async(
 			}
 		},
 	})
+
+	fetched.on('error', (error) => {
+		logger.error({ error }, 'Erro no stream de download')
+		output.destroy(error)
+	})
+
+	output.on('error', (error) => {
+		logger.error({ error }, 'Erro no stream de descriptografia')
+		fetched.destroy()
+	})
+
 	return fetched.pipe(output, { end: true })
 }
 
