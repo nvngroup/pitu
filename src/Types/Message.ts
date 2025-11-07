@@ -343,6 +343,8 @@ export type AnyMessageContent = AnyRegularMessageContent | {
 	delete: WAMessageKey
 } | {
 	disappearingMessagesInChat: boolean | number
+} | {
+    limitSharing: boolean
 }
 
 export type GroupMetadataParticipants = Pick<GroupMetadata, 'participants'>

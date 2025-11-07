@@ -563,6 +563,16 @@ export const generateWAMessageContent = async(
 		}
 	} else if('requestPhoneNumber' in message) {
 		m.requestPhoneNumberMessage = {}
+	} else if ('limitSharing' in message) {
+		m.protocolMessage = {
+			type: waproto.Message.ProtocolMessage.Type.LIMIT_SHARING,
+			limitSharing: {
+				sharingLimited: message.limitSharing === true,
+				trigger: 1,
+				limitSharingSettingTimestamp: Date.now(),
+				initiatedByMe: true
+			}
+		}
 	} else if('buttons' in message && !!message.buttons) {
 		const buttonsMessage: any = {
 			buttons: message.buttons.map(b => ({
