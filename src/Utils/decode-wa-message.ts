@@ -1,13 +1,16 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { LIDMappingStore } from '../Signal/lid-mapping'
-import { SignalRepository, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
+import { CacheManager } from '../Socket'
+import { CacheStore, SignalRepository, WAMessageKey } from '../Types'
+import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaIa, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
 import { sessionDiagnostics } from './session-diagnostics'
 import { MessageType, NO_MESSAGE_FOUND_ERROR_TEXT } from './types'
+
+const lidCache: CacheStore = CacheManager.getInstance('LID_CACHE')
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if (!sender.includes('@s.whatsapp.net')) {
@@ -327,65 +330,84 @@ export function decodeMessageNode(
 	let msgType: MessageType
 	let chatId: string
 	let author: string
-	let fromMe = false
 
 	const msgId: string = stanza.attrs.id
 	const from: string = stanza.attrs.from
+	const senderPn: string | undefined = stanza?.attrs?.sender_pn
+	const senderLid: string | undefined = stanza.attrs.sender_lid
 	const participant: string | undefined = stanza.attrs.participant
+	const participantPn: string | undefined = stanza?.attrs?.participant_pn
 	const participantLid: string | undefined = stanza.attrs.participant_lid
+	const peerRecipientPn: string | undefined = stanza?.attrs?.peer_recipient_pn
+	const peerRecipientLid: string | undefined = stanza?.attrs?.peer_recipient_lid
 	const recipient: string | undefined = stanza.attrs.recipient
-
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
 	const isMeLid = (jid: string) => areJidsSameUser(jid, meLid)
+	const fromMe: boolean = (isLidUser(from) || isLidUser(participant) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
 
-	if (isJidUser(from)) {
-		if (recipient) {
-			if (!isMe(from)) {
+	if (isJidUser(from) || isLidUser(from)) {
+		if (recipient && !isJidMetaIa(recipient)) {
+			if (!isMe(from) && !isMeLid(from)) {
 				throw new Boom('receipient present, but msg not from me', { data: stanza })
-			}
-
-			if (isMe(from) || isMeLid(from)) {
-				fromMe = true
 			}
 
 			chatId = recipient
 		} else {
-			chatId = from
+			chatId = from || senderLid
 		}
 
 		msgType = 'chat'
-		author = from
-	} else if (isLidUser(from)) {
-		if (recipient) {
-			if (!isMeLid(from)) {
-				throw new Boom('receipient present, but msg not from me', { data: stanza })
-			}
 
-			if (isMe(from) || isMeLid(from)) {
-				fromMe = true
-			}
+		const deviceOrigem = jidDecode(from)?.device
 
-			chatId = recipient
+		if (fromMe) {
+			const userDestino = jidDecode(jidNormalizedUser(meLid))?.user
+			author = deviceOrigem
+				? `${userDestino}:${deviceOrigem}@lid`
+				: `${userDestino}@lid`
 		} else {
-			chatId = from
+			if (!senderLid) {
+				author = from
+			} else {
+				const userDestino = jidDecode(senderLid)?.user
+				author = deviceOrigem
+					? `${userDestino}:${deviceOrigem}@lid`
+					: `${userDestino}@lid`
+			}
 		}
 
-		msgType = 'chat'
-		author = from
+		if (senderLid && senderPn) {
+			const verify = lidCache.get<string>(jidNormalizedUser(senderPn))
+			if (!verify) {
+				lidCache.set(jidNormalizedUser(senderPn), jidNormalizedUser(senderLid))
+			}
+		}
 	} else if (isJidGroup(from)) {
 		if (!participant) {
 			throw new Boom('No participant in group message')
 		}
 
-		if (isMe(participant) || isMeLid(participant)) {
-			fromMe = true
+		msgType = 'group'
+		chatId = from || senderLid
+		const deviceOrigem: number | undefined = jidDecode(participant)?.device
+		if (fromMe) {
+			const userDestino: string | undefined = jidDecode(jidNormalizedUser(meLid))?.user
+			author = deviceOrigem
+				? `${userDestino}:${deviceOrigem}@lid`
+				: `${userDestino}@lid`
+		} else {
+			if (!participantLid) {
+				author = participant
+			} else {
+				const userDestino: string | undefined = jidDecode(participantLid)?.user
+				author = deviceOrigem
+					? `${userDestino}:${deviceOrigem}@lid`
+					: `${userDestino}@lid`
+			}
 		}
 
-		msgType = 'group'
-		author = participant
-		chatId = from
 	} else if (isJidBroadcast(from)) {
-		if (!participant) {
+		if (!participant && participantLid) {
 			throw new Boom('No participant in group message')
 		}
 
@@ -396,17 +418,13 @@ export function decodeMessageNode(
 			msgType = isParticipantMe ? 'peer_broadcast' : 'other_broadcast'
 		}
 
-		fromMe = isParticipantMe
 		chatId = from
 		author = participantLid || participant
+
 	} else if (isJidNewsletter(from)) {
 		msgType = 'newsletter'
 		chatId = from
 		author = from
-
-		if (isMe(from) || isMeLid(from)) {
-			fromMe = true
-		}
 	} else {
 		throw new Boom('Unknown message type', { data: stanza })
 	}
@@ -417,13 +435,12 @@ export function decodeMessageNode(
 		remoteJid: chatId,
 		fromMe,
 		id: msgId,
-		senderPn: stanza?.attrs?.sender_pn ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_pn ?? jidNormalizedUser(participant)),
-		senderLid: stanza?.attrs?.sender_lid ?? jidNormalizedUser(!chatId.endsWith('@g.us') ? chatId : stanza?.attrs?.participant_lid ?? jidNormalizedUser(participant)),
-		participant,
-		participantPn: stanza?.attrs?.participant_pn,
-		participantLid: stanza?.attrs?.participant_lid,
-		peerRecipientPn: stanza?.attrs?.peer_recipient_pn,
-		peerRecipientLid: stanza?.attrs?.peer_recipient_lid,
+		...(senderPn && { senderPn }),
+		...(senderLid && { senderLid }),
+		...(participantPn && { participantPn }),
+		...(participantLid && { participantLid }),
+		...(peerRecipientPn && { peerRecipientPn }),
+		...(peerRecipientLid && { peerRecipientLid }),
 	}
 
 	const fullMessage: waproto.IWebMessageInfo = {

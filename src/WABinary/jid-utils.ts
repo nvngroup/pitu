@@ -4,11 +4,12 @@ export const SERVER_JID = 'server@c.us'
 export const PSA_WID = '0@c.us'
 export const STORIES_JID = 'status@broadcast'
 
-export type JidServer = 'c.us' | 'g.us' | 'broadcast' | 's.whatsapp.net' | 'call' | 'lid' | 'newsletter'
+export type JidServer = 'c.us' | 'g.us' | 'broadcast' | 's.whatsapp.net' | 'call' | 'lid' | 'newsletter' | 'bot'
 
 export type JidWithDevice = {
     user: string
-    device?: number
+				device?: number
+				jid?: string
 }
 
 export type FullJid = JidWithDevice & {
@@ -21,16 +22,16 @@ export const jidEncode = (user: string | number | null, server: JidServer, devic
 }
 
 export const jidDecode = (jid: string | undefined): FullJid | undefined => {
-	const sepIdx = typeof jid === 'string' ? jid.indexOf('@') : -1
+	const sepIdx: number = typeof jid === 'string' ? jid.indexOf('@') : -1
 	if (sepIdx < 0) {
 		return undefined
 	}
 
-	const server = jid!.slice(sepIdx + 1)
-	const userCombined = jid!.slice(0, sepIdx)
+	const server: string = jid!.slice(sepIdx + 1)
+	const userCombined: string = jid!.slice(0, sepIdx)
 
 	const [userAgent, device] = userCombined.split(':')
-	const user = userAgent.split('_')[0]
+	const user: string = userAgent.split('_')[0]
 
 	return {
 		server: server as JidServer,
@@ -43,12 +44,16 @@ export const jidDecode = (jid: string | undefined): FullJid | undefined => {
 export const areJidsSameUser = (jid1: string | undefined, jid2: string | undefined) => (
 	jidDecode(jid1)?.user === jidDecode(jid2)?.user
 )
+export const isJidMetaIa = (jid: string | undefined) => jid?.endsWith('@bot')
 export const isJidUser = (jid: string | undefined) => (jid?.endsWith('@s.whatsapp.net'))
 export const isLidUser = (jid: string | undefined) => (jid?.endsWith('@lid'))
 export const isJidBroadcast = (jid: string | undefined) => (jid?.endsWith('@broadcast'))
 export const isJidGroup = (jid: string | undefined) => (jid?.endsWith('@g.us'))
 export const isJidStatusBroadcast = (jid: string) => jid === 'status@broadcast'
 export const isJidNewsletter = (jid: string | undefined) => (jid?.endsWith('@newsletter'))
+
+const botRegexp = /^1313555\d{4}$|^131655500\d{2}$/
+export const isJidBot = (jid: string | undefined) => jid && botRegexp.test(jid.split('@')[0]) && jid.endsWith('@c.us')
 
 export const jidNormalizedUser = (jid: string | undefined) => {
 	const result = jidDecode(jid)
