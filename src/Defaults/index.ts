@@ -14,12 +14,17 @@ export const DEF_CALLBACK_PREFIX = 'CB:'
 export const DEF_TAG_PREFIX = 'TAG:'
 export const PHONE_CONNECTION_CB = 'CB:Pong'
 
+export const WA_ADV_ACCOUNT_SIG_PREFIX: Buffer = Buffer.from([6, 0])
+export const WA_ADV_DEVICE_SIG_PREFIX: Buffer = Buffer.from([6, 1])
+export const WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX: Buffer = Buffer.from([6, 5])
+export const WA_ADV_HOSTED_DEVICE_SIG_PREFIX: Buffer = Buffer.from([6, 6])
+
 export const WA_DEFAULT_EPHEMERAL = 7 * 24 * 60 * 60
 
 export const NOISE_MODE = 'Noise_XX_25519_AESGCM_SHA256\0\0\0\0'
 export const DICT_VERSION = 2
-export const KEY_BUNDLE_TYPE = Buffer.from([5])
-export const NOISE_WA_HEADER = Buffer.from(
+export const KEY_BUNDLE_TYPE: Buffer = Buffer.from([5])
+export const NOISE_WA_HEADER: Buffer = Buffer.from(
 	[ 87, 65, 6, DICT_VERSION ]
 )
 
