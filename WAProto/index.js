@@ -37293,6 +37293,7 @@ $root.waproto = (function() {
                     case 34:
                     case 35:
                     case 36:
+                    case 37:
                         break;
                     }
                 }
@@ -37558,6 +37559,10 @@ $root.waproto = (function() {
                 case "BLUE_VR":
                 case 36:
                     message.platform = 36;
+                    break;
+                case "AR_WRIST":
+                case 37:
+                    message.platform = 37;
                     break;
                 }
                 if (object.appVersion != null) {
@@ -38175,6 +38180,7 @@ $root.waproto = (function() {
              * @property {number} TEST=34 TEST value
              * @property {number} SMART_GLASSES=35 SMART_GLASSES value
              * @property {number} BLUE_VR=36 BLUE_VR value
+             * @property {number} AR_WRIST=37 AR_WRIST value
              */
             UserAgent.Platform = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -38215,6 +38221,7 @@ $root.waproto = (function() {
                 values[valuesById[34] = "TEST"] = 34;
                 values[valuesById[35] = "SMART_GLASSES"] = 35;
                 values[valuesById[36] = "BLUE_VR"] = 36;
+                values[valuesById[37] = "AR_WRIST"] = 37;
                 return values;
             })();
 
@@ -39171,6 +39178,28 @@ $root.waproto = (function() {
         })();
 
         return ClientPayload;
+    })();
+
+    /**
+     * CollectionName enum.
+     * @name waproto.CollectionName
+     * @enum {number}
+     * @property {number} COLLECTION_NAME_UNKNOWN=0 COLLECTION_NAME_UNKNOWN value
+     * @property {number} REGULAR=1 REGULAR value
+     * @property {number} REGULAR_LOW=2 REGULAR_LOW value
+     * @property {number} REGULAR_HIGH=3 REGULAR_HIGH value
+     * @property {number} CRITICAL_BLOCK=4 CRITICAL_BLOCK value
+     * @property {number} CRITICAL_UNBLOCK_LOW=5 CRITICAL_UNBLOCK_LOW value
+     */
+    waproto.CollectionName = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "COLLECTION_NAME_UNKNOWN"] = 0;
+        values[valuesById[1] = "REGULAR"] = 1;
+        values[valuesById[2] = "REGULAR_LOW"] = 2;
+        values[valuesById[3] = "REGULAR_HIGH"] = 3;
+        values[valuesById[4] = "CRITICAL_BLOCK"] = 4;
+        values[valuesById[5] = "CRITICAL_UNBLOCK_LOW"] = 5;
+        return values;
     })();
 
     waproto.CommentMetadata = (function() {
@@ -48955,6 +48984,7 @@ $root.waproto = (function() {
          * @property {waproto.DeviceCapabilities.IBusinessBroadcast|null} [businessBroadcast] DeviceCapabilities businessBroadcast
          * @property {waproto.DeviceCapabilities.IUserHasAvatar|null} [userHasAvatar] DeviceCapabilities userHasAvatar
          * @property {waproto.DeviceCapabilities.MemberNameTagPrimarySupport|null} [memberNameTagPrimarySupport] DeviceCapabilities memberNameTagPrimarySupport
+         * @property {waproto.DeviceCapabilities.IAiThread|null} [aiThread] DeviceCapabilities aiThread
          */
 
         /**
@@ -49012,6 +49042,14 @@ $root.waproto = (function() {
          */
         DeviceCapabilities.prototype.memberNameTagPrimarySupport = null;
 
+        /**
+         * DeviceCapabilities aiThread.
+         * @member {waproto.DeviceCapabilities.IAiThread|null|undefined} aiThread
+         * @memberof waproto.DeviceCapabilities
+         * @instance
+         */
+        DeviceCapabilities.prototype.aiThread = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -49042,6 +49080,12 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(DeviceCapabilities.prototype, "_memberNameTagPrimarySupport", {
             get: $util.oneOfGetter($oneOfFields = ["memberNameTagPrimarySupport"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(DeviceCapabilities.prototype, "_aiThread", {
+            get: $util.oneOfGetter($oneOfFields = ["aiThread"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -49079,6 +49123,8 @@ $root.waproto = (function() {
                 $root.waproto.DeviceCapabilities.UserHasAvatar.encode(message.userHasAvatar, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.memberNameTagPrimarySupport != null && Object.hasOwnProperty.call(message, "memberNameTagPrimarySupport"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.memberNameTagPrimarySupport);
+            if (message.aiThread != null && Object.hasOwnProperty.call(message, "aiThread"))
+                $root.waproto.DeviceCapabilities.AiThread.encode(message.aiThread, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
 
@@ -49131,6 +49177,10 @@ $root.waproto = (function() {
                     }
                 case 5: {
                         message.memberNameTagPrimarySupport = reader.int32();
+                        break;
+                    }
+                case 6: {
+                        message.aiThread = $root.waproto.DeviceCapabilities.AiThread.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -49215,6 +49265,14 @@ $root.waproto = (function() {
                     break;
                 }
             }
+            if (message.aiThread != null && message.hasOwnProperty("aiThread")) {
+                properties._aiThread = 1;
+                {
+                    var error = $root.waproto.DeviceCapabilities.AiThread.verify(message.aiThread);
+                    if (error)
+                        return "aiThread." + error;
+                }
+            }
             return null;
         };
 
@@ -49285,6 +49343,11 @@ $root.waproto = (function() {
                 message.memberNameTagPrimarySupport = 2;
                 break;
             }
+            if (object.aiThread != null) {
+                if (typeof object.aiThread !== "object")
+                    throw TypeError(".waproto.DeviceCapabilities.aiThread: object expected");
+                message.aiThread = $root.waproto.DeviceCapabilities.AiThread.fromObject(object.aiThread);
+            }
             return message;
         };
 
@@ -49326,6 +49389,11 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._memberNameTagPrimarySupport = "memberNameTagPrimarySupport";
             }
+            if (message.aiThread != null && message.hasOwnProperty("aiThread")) {
+                object.aiThread = $root.waproto.DeviceCapabilities.AiThread.toObject(message.aiThread, options);
+                if (options.oneofs)
+                    object._aiThread = "aiThread";
+            }
             return object;
         };
 
@@ -49354,6 +49422,262 @@ $root.waproto = (function() {
             }
             return typeUrlPrefix + "/waproto.DeviceCapabilities";
         };
+
+        DeviceCapabilities.AiThread = (function() {
+
+            /**
+             * Properties of an AiThread.
+             * @memberof waproto.DeviceCapabilities
+             * @interface IAiThread
+             * @property {waproto.DeviceCapabilities.AiThread.SupportLevel|null} [supportLevel] AiThread supportLevel
+             */
+
+            /**
+             * Constructs a new AiThread.
+             * @memberof waproto.DeviceCapabilities
+             * @classdesc Represents an AiThread.
+             * @implements IAiThread
+             * @constructor
+             * @param {waproto.DeviceCapabilities.IAiThread=} [properties] Properties to set
+             */
+            function AiThread(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * AiThread supportLevel.
+             * @member {waproto.DeviceCapabilities.AiThread.SupportLevel|null|undefined} supportLevel
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @instance
+             */
+            AiThread.prototype.supportLevel = null;
+
+            // OneOf field names bound to virtual getters and setters
+            var $oneOfFields;
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(AiThread.prototype, "_supportLevel", {
+                get: $util.oneOfGetter($oneOfFields = ["supportLevel"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new AiThread instance using the specified properties.
+             * @function create
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {waproto.DeviceCapabilities.IAiThread=} [properties] Properties to set
+             * @returns {waproto.DeviceCapabilities.AiThread} AiThread instance
+             */
+            AiThread.create = function create(properties) {
+                return new AiThread(properties);
+            };
+
+            /**
+             * Encodes the specified AiThread message. Does not implicitly {@link waproto.DeviceCapabilities.AiThread.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {waproto.DeviceCapabilities.IAiThread} message AiThread message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AiThread.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.supportLevel != null && Object.hasOwnProperty.call(message, "supportLevel"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.supportLevel);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified AiThread message, length delimited. Does not implicitly {@link waproto.DeviceCapabilities.AiThread.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {waproto.DeviceCapabilities.IAiThread} message AiThread message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AiThread.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes an AiThread message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.DeviceCapabilities.AiThread} AiThread
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AiThread.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.DeviceCapabilities.AiThread();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.supportLevel = reader.int32();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Decodes an AiThread message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.DeviceCapabilities.AiThread} AiThread
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AiThread.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies an AiThread message.
+             * @function verify
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            AiThread.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                var properties = {};
+                if (message.supportLevel != null && message.hasOwnProperty("supportLevel")) {
+                    properties._supportLevel = 1;
+                    switch (message.supportLevel) {
+                    default:
+                        return "supportLevel: enum value expected";
+                    case 0:
+                    case 1:
+                    case 2:
+                        break;
+                    }
+                }
+                return null;
+            };
+
+            /**
+             * Creates an AiThread message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.DeviceCapabilities.AiThread} AiThread
+             */
+            AiThread.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.DeviceCapabilities.AiThread)
+                    return object;
+                var message = new $root.waproto.DeviceCapabilities.AiThread();
+                switch (object.supportLevel) {
+                default:
+                    if (typeof object.supportLevel === "number") {
+                        message.supportLevel = object.supportLevel;
+                        break;
+                    }
+                    break;
+                case "NONE":
+                case 0:
+                    message.supportLevel = 0;
+                    break;
+                case "INFRA":
+                case 1:
+                    message.supportLevel = 1;
+                    break;
+                case "FULL":
+                case 2:
+                    message.supportLevel = 2;
+                    break;
+                }
+                return message;
+            };
+
+            /**
+             * Creates a plain object from an AiThread message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {waproto.DeviceCapabilities.AiThread} message AiThread
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            AiThread.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (message.supportLevel != null && message.hasOwnProperty("supportLevel")) {
+                    object.supportLevel = options.enums === String ? $root.waproto.DeviceCapabilities.AiThread.SupportLevel[message.supportLevel] === undefined ? message.supportLevel : $root.waproto.DeviceCapabilities.AiThread.SupportLevel[message.supportLevel] : message.supportLevel;
+                    if (options.oneofs)
+                        object._supportLevel = "supportLevel";
+                }
+                return object;
+            };
+
+            /**
+             * Converts this AiThread to JSON.
+             * @function toJSON
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            AiThread.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for AiThread
+             * @function getTypeUrl
+             * @memberof waproto.DeviceCapabilities.AiThread
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            AiThread.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.DeviceCapabilities.AiThread";
+            };
+
+            /**
+             * SupportLevel enum.
+             * @name waproto.DeviceCapabilities.AiThread.SupportLevel
+             * @enum {number}
+             * @property {number} NONE=0 NONE value
+             * @property {number} INFRA=1 INFRA value
+             * @property {number} FULL=2 FULL value
+             */
+            AiThread.SupportLevel = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "NONE"] = 0;
+                values[valuesById[1] = "INFRA"] = 1;
+                values[valuesById[2] = "FULL"] = 2;
+                return values;
+            })();
+
+            return AiThread;
+        })();
 
         DeviceCapabilities.BusinessBroadcast = (function() {
 
@@ -69166,7 +69490,6 @@ $root.waproto = (function() {
          * @property {waproto.Message.IStatusStickerInteractionMessage|null} [statusStickerInteractionMessage] Message statusStickerInteractionMessage
          * @property {waproto.Message.IPollCreationMessage|null} [pollCreationMessageV5] Message pollCreationMessageV5
          * @property {waproto.Message.INewsletterFollowerInviteMessage|null} [newsletterFollowerInviteMessageV2] Message newsletterFollowerInviteMessageV2
-         * @property {waproto.Message.IRequestContactInfoMessage|null} [requestContactInfoMessage] Message requestContactInfoMessage
          * @property {waproto.Message.IPollResultSnapshotMessage|null} [pollResultSnapshotMessageV3] Message pollResultSnapshotMessageV3
          */
 
@@ -69938,14 +70261,6 @@ $root.waproto = (function() {
         Message.prototype.newsletterFollowerInviteMessageV2 = null;
 
         /**
-         * Message requestContactInfoMessage.
-         * @member {waproto.Message.IRequestContactInfoMessage|null|undefined} requestContactInfoMessage
-         * @memberof waproto.Message
-         * @instance
-         */
-        Message.prototype.requestContactInfoMessage = null;
-
-        /**
          * Message pollResultSnapshotMessageV3.
          * @member {waproto.Message.IPollResultSnapshotMessage|null|undefined} pollResultSnapshotMessageV3
          * @memberof waproto.Message
@@ -70521,12 +70836,6 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
-        Object.defineProperty(Message.prototype, "_requestContactInfoMessage", {
-            get: $util.oneOfGetter($oneOfFields = ["requestContactInfoMessage"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        // Virtual OneOf for proto3 optional field
         Object.defineProperty(Message.prototype, "_pollResultSnapshotMessageV3", {
             get: $util.oneOfGetter($oneOfFields = ["pollResultSnapshotMessageV3"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -70744,10 +71053,8 @@ $root.waproto = (function() {
                 $root.waproto.Message.PollCreationMessage.encode(message.pollCreationMessageV5, writer.uint32(/* id 111, wireType 2 =*/890).fork()).ldelim();
             if (message.newsletterFollowerInviteMessageV2 != null && Object.hasOwnProperty.call(message, "newsletterFollowerInviteMessageV2"))
                 $root.waproto.Message.NewsletterFollowerInviteMessage.encode(message.newsletterFollowerInviteMessageV2, writer.uint32(/* id 113, wireType 2 =*/906).fork()).ldelim();
-            if (message.requestContactInfoMessage != null && Object.hasOwnProperty.call(message, "requestContactInfoMessage"))
-                $root.waproto.Message.RequestContactInfoMessage.encode(message.requestContactInfoMessage, writer.uint32(/* id 114, wireType 2 =*/914).fork()).ldelim();
             if (message.pollResultSnapshotMessageV3 != null && Object.hasOwnProperty.call(message, "pollResultSnapshotMessageV3"))
-                $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 115, wireType 2 =*/922).fork()).ldelim();
+                $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 114, wireType 2 =*/914).fork()).ldelim();
             return writer;
         };
 
@@ -71159,10 +71466,6 @@ $root.waproto = (function() {
                         break;
                     }
                 case 114: {
-                        message.requestContactInfoMessage = $root.waproto.Message.RequestContactInfoMessage.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 115: {
                         message.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.decode(reader, reader.uint32());
                         break;
                     }
@@ -71951,14 +72254,6 @@ $root.waproto = (function() {
                         return "newsletterFollowerInviteMessageV2." + error;
                 }
             }
-            if (message.requestContactInfoMessage != null && message.hasOwnProperty("requestContactInfoMessage")) {
-                properties._requestContactInfoMessage = 1;
-                {
-                    var error = $root.waproto.Message.RequestContactInfoMessage.verify(message.requestContactInfoMessage);
-                    if (error)
-                        return "requestContactInfoMessage." + error;
-                }
-            }
             if (message.pollResultSnapshotMessageV3 != null && message.hasOwnProperty("pollResultSnapshotMessageV3")) {
                 properties._pollResultSnapshotMessageV3 = 1;
                 {
@@ -72448,11 +72743,6 @@ $root.waproto = (function() {
                 if (typeof object.newsletterFollowerInviteMessageV2 !== "object")
                     throw TypeError(".waproto.Message.newsletterFollowerInviteMessageV2: object expected");
                 message.newsletterFollowerInviteMessageV2 = $root.waproto.Message.NewsletterFollowerInviteMessage.fromObject(object.newsletterFollowerInviteMessageV2);
-            }
-            if (object.requestContactInfoMessage != null) {
-                if (typeof object.requestContactInfoMessage !== "object")
-                    throw TypeError(".waproto.Message.requestContactInfoMessage: object expected");
-                message.requestContactInfoMessage = $root.waproto.Message.RequestContactInfoMessage.fromObject(object.requestContactInfoMessage);
             }
             if (object.pollResultSnapshotMessageV3 != null) {
                 if (typeof object.pollResultSnapshotMessageV3 !== "object")
@@ -72944,11 +73234,6 @@ $root.waproto = (function() {
                 object.newsletterFollowerInviteMessageV2 = $root.waproto.Message.NewsletterFollowerInviteMessage.toObject(message.newsletterFollowerInviteMessageV2, options);
                 if (options.oneofs)
                     object._newsletterFollowerInviteMessageV2 = "newsletterFollowerInviteMessageV2";
-            }
-            if (message.requestContactInfoMessage != null && message.hasOwnProperty("requestContactInfoMessage")) {
-                object.requestContactInfoMessage = $root.waproto.Message.RequestContactInfoMessage.toObject(message.requestContactInfoMessage, options);
-                if (options.oneofs)
-                    object._requestContactInfoMessage = "requestContactInfoMessage";
             }
             if (message.pollResultSnapshotMessageV3 != null && message.hasOwnProperty("pollResultSnapshotMessageV3")) {
                 object.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.toObject(message.pollResultSnapshotMessageV3, options);
@@ -83723,6 +84008,8 @@ $root.waproto = (function() {
              * @property {number|Long|null} [endTime] EventMessage endTime
              * @property {boolean|null} [extraGuestsAllowed] EventMessage extraGuestsAllowed
              * @property {boolean|null} [isScheduleCall] EventMessage isScheduleCall
+             * @property {boolean|null} [hasReminder] EventMessage hasReminder
+             * @property {number|Long|null} [reminderOffsetSec] EventMessage reminderOffsetSec
              */
 
             /**
@@ -83820,6 +84107,22 @@ $root.waproto = (function() {
              */
             EventMessage.prototype.isScheduleCall = null;
 
+            /**
+             * EventMessage hasReminder.
+             * @member {boolean|null|undefined} hasReminder
+             * @memberof waproto.Message.EventMessage
+             * @instance
+             */
+            EventMessage.prototype.hasReminder = null;
+
+            /**
+             * EventMessage reminderOffsetSec.
+             * @member {number|Long|null|undefined} reminderOffsetSec
+             * @memberof waproto.Message.EventMessage
+             * @instance
+             */
+            EventMessage.prototype.reminderOffsetSec = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -83883,6 +84186,18 @@ $root.waproto = (function() {
                 set: $util.oneOfSetter($oneOfFields)
             });
 
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(EventMessage.prototype, "_hasReminder", {
+                get: $util.oneOfGetter($oneOfFields = ["hasReminder"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(EventMessage.prototype, "_reminderOffsetSec", {
+                get: $util.oneOfGetter($oneOfFields = ["reminderOffsetSec"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
             /**
              * Creates a new EventMessage instance using the specified properties.
              * @function create
@@ -83927,6 +84242,10 @@ $root.waproto = (function() {
                     writer.uint32(/* id 9, wireType 0 =*/72).bool(message.extraGuestsAllowed);
                 if (message.isScheduleCall != null && Object.hasOwnProperty.call(message, "isScheduleCall"))
                     writer.uint32(/* id 10, wireType 0 =*/80).bool(message.isScheduleCall);
+                if (message.hasReminder != null && Object.hasOwnProperty.call(message, "hasReminder"))
+                    writer.uint32(/* id 11, wireType 0 =*/88).bool(message.hasReminder);
+                if (message.reminderOffsetSec != null && Object.hasOwnProperty.call(message, "reminderOffsetSec"))
+                    writer.uint32(/* id 12, wireType 0 =*/96).int64(message.reminderOffsetSec);
                 return writer;
             };
 
@@ -83999,6 +84318,14 @@ $root.waproto = (function() {
                         }
                     case 10: {
                             message.isScheduleCall = reader.bool();
+                            break;
+                        }
+                    case 11: {
+                            message.hasReminder = reader.bool();
+                            break;
+                        }
+                    case 12: {
+                            message.reminderOffsetSec = reader.int64();
                             break;
                         }
                     default:
@@ -84093,6 +84420,16 @@ $root.waproto = (function() {
                     if (typeof message.isScheduleCall !== "boolean")
                         return "isScheduleCall: boolean expected";
                 }
+                if (message.hasReminder != null && message.hasOwnProperty("hasReminder")) {
+                    properties._hasReminder = 1;
+                    if (typeof message.hasReminder !== "boolean")
+                        return "hasReminder: boolean expected";
+                }
+                if (message.reminderOffsetSec != null && message.hasOwnProperty("reminderOffsetSec")) {
+                    properties._reminderOffsetSec = 1;
+                    if (!$util.isInteger(message.reminderOffsetSec) && !(message.reminderOffsetSec && $util.isInteger(message.reminderOffsetSec.low) && $util.isInteger(message.reminderOffsetSec.high)))
+                        return "reminderOffsetSec: integer|Long expected";
+                }
                 return null;
             };
 
@@ -84148,6 +84485,17 @@ $root.waproto = (function() {
                     message.extraGuestsAllowed = Boolean(object.extraGuestsAllowed);
                 if (object.isScheduleCall != null)
                     message.isScheduleCall = Boolean(object.isScheduleCall);
+                if (object.hasReminder != null)
+                    message.hasReminder = Boolean(object.hasReminder);
+                if (object.reminderOffsetSec != null)
+                    if ($util.Long)
+                        (message.reminderOffsetSec = $util.Long.fromValue(object.reminderOffsetSec)).unsigned = false;
+                    else if (typeof object.reminderOffsetSec === "string")
+                        message.reminderOffsetSec = parseInt(object.reminderOffsetSec, 10);
+                    else if (typeof object.reminderOffsetSec === "number")
+                        message.reminderOffsetSec = object.reminderOffsetSec;
+                    else if (typeof object.reminderOffsetSec === "object")
+                        message.reminderOffsetSec = new $util.LongBits(object.reminderOffsetSec.low >>> 0, object.reminderOffsetSec.high >>> 0).toNumber();
                 return message;
             };
 
@@ -84219,6 +84567,19 @@ $root.waproto = (function() {
                     object.isScheduleCall = message.isScheduleCall;
                     if (options.oneofs)
                         object._isScheduleCall = "isScheduleCall";
+                }
+                if (message.hasReminder != null && message.hasOwnProperty("hasReminder")) {
+                    object.hasReminder = message.hasReminder;
+                    if (options.oneofs)
+                        object._hasReminder = "hasReminder";
+                }
+                if (message.reminderOffsetSec != null && message.hasOwnProperty("reminderOffsetSec")) {
+                    if (typeof message.reminderOffsetSec === "number")
+                        object.reminderOffsetSec = options.longs === String ? String(message.reminderOffsetSec) : message.reminderOffsetSec;
+                    else
+                        object.reminderOffsetSec = options.longs === String ? $util.Long.prototype.toString.call(message.reminderOffsetSec) : options.longs === Number ? new $util.LongBits(message.reminderOffsetSec.low >>> 0, message.reminderOffsetSec.high >>> 0).toNumber() : message.reminderOffsetSec;
+                    if (options.oneofs)
+                        object._reminderOffsetSec = "reminderOffsetSec";
                 }
                 return object;
             };
@@ -118737,294 +119098,6 @@ $root.waproto = (function() {
             return ReactionMessage;
         })();
 
-        Message.RequestContactInfoMessage = (function() {
-
-            /**
-             * Properties of a RequestContactInfoMessage.
-             * @memberof waproto.Message
-             * @interface IRequestContactInfoMessage
-             * @property {string|null} [text] RequestContactInfoMessage text
-             * @property {string|null} [ctaButtonText] RequestContactInfoMessage ctaButtonText
-             * @property {waproto.IContextInfo|null} [contextInfo] RequestContactInfoMessage contextInfo
-             */
-
-            /**
-             * Constructs a new RequestContactInfoMessage.
-             * @memberof waproto.Message
-             * @classdesc Represents a RequestContactInfoMessage.
-             * @implements IRequestContactInfoMessage
-             * @constructor
-             * @param {waproto.Message.IRequestContactInfoMessage=} [properties] Properties to set
-             */
-            function RequestContactInfoMessage(properties) {
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * RequestContactInfoMessage text.
-             * @member {string|null|undefined} text
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @instance
-             */
-            RequestContactInfoMessage.prototype.text = null;
-
-            /**
-             * RequestContactInfoMessage ctaButtonText.
-             * @member {string|null|undefined} ctaButtonText
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @instance
-             */
-            RequestContactInfoMessage.prototype.ctaButtonText = null;
-
-            /**
-             * RequestContactInfoMessage contextInfo.
-             * @member {waproto.IContextInfo|null|undefined} contextInfo
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @instance
-             */
-            RequestContactInfoMessage.prototype.contextInfo = null;
-
-            // OneOf field names bound to virtual getters and setters
-            var $oneOfFields;
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(RequestContactInfoMessage.prototype, "_text", {
-                get: $util.oneOfGetter($oneOfFields = ["text"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(RequestContactInfoMessage.prototype, "_ctaButtonText", {
-                get: $util.oneOfGetter($oneOfFields = ["ctaButtonText"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(RequestContactInfoMessage.prototype, "_contextInfo", {
-                get: $util.oneOfGetter($oneOfFields = ["contextInfo"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            /**
-             * Creates a new RequestContactInfoMessage instance using the specified properties.
-             * @function create
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {waproto.Message.IRequestContactInfoMessage=} [properties] Properties to set
-             * @returns {waproto.Message.RequestContactInfoMessage} RequestContactInfoMessage instance
-             */
-            RequestContactInfoMessage.create = function create(properties) {
-                return new RequestContactInfoMessage(properties);
-            };
-
-            /**
-             * Encodes the specified RequestContactInfoMessage message. Does not implicitly {@link waproto.Message.RequestContactInfoMessage.verify|verify} messages.
-             * @function encode
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {waproto.Message.IRequestContactInfoMessage} message RequestContactInfoMessage message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            RequestContactInfoMessage.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.text != null && Object.hasOwnProperty.call(message, "text"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.text);
-                if (message.ctaButtonText != null && Object.hasOwnProperty.call(message, "ctaButtonText"))
-                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.ctaButtonText);
-                if (message.contextInfo != null && Object.hasOwnProperty.call(message, "contextInfo"))
-                    $root.waproto.ContextInfo.encode(message.contextInfo, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                return writer;
-            };
-
-            /**
-             * Encodes the specified RequestContactInfoMessage message, length delimited. Does not implicitly {@link waproto.Message.RequestContactInfoMessage.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {waproto.Message.IRequestContactInfoMessage} message RequestContactInfoMessage message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            RequestContactInfoMessage.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-
-            /**
-             * Decodes a RequestContactInfoMessage message from the specified reader or buffer.
-             * @function decode
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {waproto.Message.RequestContactInfoMessage} RequestContactInfoMessage
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            RequestContactInfoMessage.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.Message.RequestContactInfoMessage();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.text = reader.string();
-                            break;
-                        }
-                    case 2: {
-                            message.ctaButtonText = reader.string();
-                            break;
-                        }
-                    case 3: {
-                            message.contextInfo = $root.waproto.ContextInfo.decode(reader, reader.uint32());
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-
-            /**
-             * Decodes a RequestContactInfoMessage message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {waproto.Message.RequestContactInfoMessage} RequestContactInfoMessage
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            RequestContactInfoMessage.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-
-            /**
-             * Verifies a RequestContactInfoMessage message.
-             * @function verify
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            RequestContactInfoMessage.verify = function verify(message) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                var properties = {};
-                if (message.text != null && message.hasOwnProperty("text")) {
-                    properties._text = 1;
-                    if (!$util.isString(message.text))
-                        return "text: string expected";
-                }
-                if (message.ctaButtonText != null && message.hasOwnProperty("ctaButtonText")) {
-                    properties._ctaButtonText = 1;
-                    if (!$util.isString(message.ctaButtonText))
-                        return "ctaButtonText: string expected";
-                }
-                if (message.contextInfo != null && message.hasOwnProperty("contextInfo")) {
-                    properties._contextInfo = 1;
-                    {
-                        var error = $root.waproto.ContextInfo.verify(message.contextInfo);
-                        if (error)
-                            return "contextInfo." + error;
-                    }
-                }
-                return null;
-            };
-
-            /**
-             * Creates a RequestContactInfoMessage message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {waproto.Message.RequestContactInfoMessage} RequestContactInfoMessage
-             */
-            RequestContactInfoMessage.fromObject = function fromObject(object) {
-                if (object instanceof $root.waproto.Message.RequestContactInfoMessage)
-                    return object;
-                var message = new $root.waproto.Message.RequestContactInfoMessage();
-                if (object.text != null)
-                    message.text = String(object.text);
-                if (object.ctaButtonText != null)
-                    message.ctaButtonText = String(object.ctaButtonText);
-                if (object.contextInfo != null) {
-                    if (typeof object.contextInfo !== "object")
-                        throw TypeError(".waproto.Message.RequestContactInfoMessage.contextInfo: object expected");
-                    message.contextInfo = $root.waproto.ContextInfo.fromObject(object.contextInfo);
-                }
-                return message;
-            };
-
-            /**
-             * Creates a plain object from a RequestContactInfoMessage message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {waproto.Message.RequestContactInfoMessage} message RequestContactInfoMessage
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            RequestContactInfoMessage.toObject = function toObject(message, options) {
-                if (!options)
-                    options = {};
-                var object = {};
-                if (message.text != null && message.hasOwnProperty("text")) {
-                    object.text = message.text;
-                    if (options.oneofs)
-                        object._text = "text";
-                }
-                if (message.ctaButtonText != null && message.hasOwnProperty("ctaButtonText")) {
-                    object.ctaButtonText = message.ctaButtonText;
-                    if (options.oneofs)
-                        object._ctaButtonText = "ctaButtonText";
-                }
-                if (message.contextInfo != null && message.hasOwnProperty("contextInfo")) {
-                    object.contextInfo = $root.waproto.ContextInfo.toObject(message.contextInfo, options);
-                    if (options.oneofs)
-                        object._contextInfo = "contextInfo";
-                }
-                return object;
-            };
-
-            /**
-             * Converts this RequestContactInfoMessage to JSON.
-             * @function toJSON
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            RequestContactInfoMessage.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-
-            /**
-             * Gets the default type url for RequestContactInfoMessage
-             * @function getTypeUrl
-             * @memberof waproto.Message.RequestContactInfoMessage
-             * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
-             */
-            RequestContactInfoMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/waproto.Message.RequestContactInfoMessage";
-            };
-
-            return RequestContactInfoMessage;
-        })();
-
         Message.RequestPaymentMessage = (function() {
 
             /**
@@ -135281,6 +135354,162 @@ $root.waproto = (function() {
         return MsgRowOpaqueData;
     })();
 
+    /**
+     * MutationProps enum.
+     * @name waproto.MutationProps
+     * @enum {number}
+     * @property {number} STAR_ACTION=2 STAR_ACTION value
+     * @property {number} CONTACT_ACTION=3 CONTACT_ACTION value
+     * @property {number} MUTE_ACTION=4 MUTE_ACTION value
+     * @property {number} PIN_ACTION=5 PIN_ACTION value
+     * @property {number} SECURITY_NOTIFICATION_SETTING=6 SECURITY_NOTIFICATION_SETTING value
+     * @property {number} PUSH_NAME_SETTING=7 PUSH_NAME_SETTING value
+     * @property {number} QUICK_REPLY_ACTION=8 QUICK_REPLY_ACTION value
+     * @property {number} RECENT_EMOJI_WEIGHTS_ACTION=11 RECENT_EMOJI_WEIGHTS_ACTION value
+     * @property {number} LABEL_MESSAGE_ACTION=13 LABEL_MESSAGE_ACTION value
+     * @property {number} LABEL_EDIT_ACTION=14 LABEL_EDIT_ACTION value
+     * @property {number} LABEL_ASSOCIATION_ACTION=15 LABEL_ASSOCIATION_ACTION value
+     * @property {number} LOCALE_SETTING=16 LOCALE_SETTING value
+     * @property {number} ARCHIVE_CHAT_ACTION=17 ARCHIVE_CHAT_ACTION value
+     * @property {number} DELETE_MESSAGE_FOR_ME_ACTION=18 DELETE_MESSAGE_FOR_ME_ACTION value
+     * @property {number} KEY_EXPIRATION=19 KEY_EXPIRATION value
+     * @property {number} MARK_CHAT_AS_READ_ACTION=20 MARK_CHAT_AS_READ_ACTION value
+     * @property {number} CLEAR_CHAT_ACTION=21 CLEAR_CHAT_ACTION value
+     * @property {number} DELETE_CHAT_ACTION=22 DELETE_CHAT_ACTION value
+     * @property {number} UNARCHIVE_CHATS_SETTING=23 UNARCHIVE_CHATS_SETTING value
+     * @property {number} PRIMARY_FEATURE=24 PRIMARY_FEATURE value
+     * @property {number} ANDROID_UNSUPPORTED_ACTIONS=26 ANDROID_UNSUPPORTED_ACTIONS value
+     * @property {number} AGENT_ACTION=27 AGENT_ACTION value
+     * @property {number} SUBSCRIPTION_ACTION=28 SUBSCRIPTION_ACTION value
+     * @property {number} USER_STATUS_MUTE_ACTION=29 USER_STATUS_MUTE_ACTION value
+     * @property {number} TIME_FORMAT_ACTION=30 TIME_FORMAT_ACTION value
+     * @property {number} NUX_ACTION=31 NUX_ACTION value
+     * @property {number} PRIMARY_VERSION_ACTION=32 PRIMARY_VERSION_ACTION value
+     * @property {number} STICKER_ACTION=33 STICKER_ACTION value
+     * @property {number} REMOVE_RECENT_STICKER_ACTION=34 REMOVE_RECENT_STICKER_ACTION value
+     * @property {number} CHAT_ASSIGNMENT=35 CHAT_ASSIGNMENT value
+     * @property {number} CHAT_ASSIGNMENT_OPENED_STATUS=36 CHAT_ASSIGNMENT_OPENED_STATUS value
+     * @property {number} PN_FOR_LID_CHAT_ACTION=37 PN_FOR_LID_CHAT_ACTION value
+     * @property {number} MARKETING_MESSAGE_ACTION=38 MARKETING_MESSAGE_ACTION value
+     * @property {number} MARKETING_MESSAGE_BROADCAST_ACTION=39 MARKETING_MESSAGE_BROADCAST_ACTION value
+     * @property {number} EXTERNAL_WEB_BETA_ACTION=40 EXTERNAL_WEB_BETA_ACTION value
+     * @property {number} PRIVACY_SETTING_RELAY_ALL_CALLS=41 PRIVACY_SETTING_RELAY_ALL_CALLS value
+     * @property {number} CALL_LOG_ACTION=42 CALL_LOG_ACTION value
+     * @property {number} UGC_BOT=43 UGC_BOT value
+     * @property {number} STATUS_PRIVACY=44 STATUS_PRIVACY value
+     * @property {number} BOT_WELCOME_REQUEST_ACTION=45 BOT_WELCOME_REQUEST_ACTION value
+     * @property {number} DELETE_INDIVIDUAL_CALL_LOG=46 DELETE_INDIVIDUAL_CALL_LOG value
+     * @property {number} LABEL_REORDERING_ACTION=47 LABEL_REORDERING_ACTION value
+     * @property {number} PAYMENT_INFO_ACTION=48 PAYMENT_INFO_ACTION value
+     * @property {number} CUSTOM_PAYMENT_METHODS_ACTION=49 CUSTOM_PAYMENT_METHODS_ACTION value
+     * @property {number} LOCK_CHAT_ACTION=50 LOCK_CHAT_ACTION value
+     * @property {number} CHAT_LOCK_SETTINGS=51 CHAT_LOCK_SETTINGS value
+     * @property {number} WAMO_USER_IDENTIFIER_ACTION=52 WAMO_USER_IDENTIFIER_ACTION value
+     * @property {number} PRIVACY_SETTING_DISABLE_LINK_PREVIEWS_ACTION=53 PRIVACY_SETTING_DISABLE_LINK_PREVIEWS_ACTION value
+     * @property {number} DEVICE_CAPABILITIES=54 DEVICE_CAPABILITIES value
+     * @property {number} NOTE_EDIT_ACTION=55 NOTE_EDIT_ACTION value
+     * @property {number} FAVORITES_ACTION=56 FAVORITES_ACTION value
+     * @property {number} MERCHANT_PAYMENT_PARTNER_ACTION=57 MERCHANT_PAYMENT_PARTNER_ACTION value
+     * @property {number} WAFFLE_ACCOUNT_LINK_STATE_ACTION=58 WAFFLE_ACCOUNT_LINK_STATE_ACTION value
+     * @property {number} USERNAME_CHAT_START_MODE=59 USERNAME_CHAT_START_MODE value
+     * @property {number} NOTIFICATION_ACTIVITY_SETTING_ACTION=60 NOTIFICATION_ACTIVITY_SETTING_ACTION value
+     * @property {number} LID_CONTACT_ACTION=61 LID_CONTACT_ACTION value
+     * @property {number} CTWA_PER_CUSTOMER_DATA_SHARING_ACTION=62 CTWA_PER_CUSTOMER_DATA_SHARING_ACTION value
+     * @property {number} PAYMENT_TOS_ACTION=63 PAYMENT_TOS_ACTION value
+     * @property {number} PRIVACY_SETTING_CHANNELS_PERSONALISED_RECOMMENDATION_ACTION=64 PRIVACY_SETTING_CHANNELS_PERSONALISED_RECOMMENDATION_ACTION value
+     * @property {number} BUSINESS_BROADCAST_ASSOCIATION_ACTION=65 BUSINESS_BROADCAST_ASSOCIATION_ACTION value
+     * @property {number} DETECTED_OUTCOMES_STATUS_ACTION=66 DETECTED_OUTCOMES_STATUS_ACTION value
+     * @property {number} MAIBA_AI_FEATURES_CONTROL_ACTION=68 MAIBA_AI_FEATURES_CONTROL_ACTION value
+     * @property {number} BUSINESS_BROADCAST_LIST_ACTION=69 BUSINESS_BROADCAST_LIST_ACTION value
+     * @property {number} MUSIC_USER_ID_ACTION=70 MUSIC_USER_ID_ACTION value
+     * @property {number} STATUS_POST_OPT_IN_NOTIFICATION_PREFERENCES_ACTION=71 STATUS_POST_OPT_IN_NOTIFICATION_PREFERENCES_ACTION value
+     * @property {number} AVATAR_UPDATED_ACTION=72 AVATAR_UPDATED_ACTION value
+     * @property {number} GALAXY_FLOW_ACTION=73 GALAXY_FLOW_ACTION value
+     * @property {number} PRIVATE_PROCESSING_SETTING_ACTION=74 PRIVATE_PROCESSING_SETTING_ACTION value
+     * @property {number} NEWSLETTER_SAVED_INTERESTS_ACTION=75 NEWSLETTER_SAVED_INTERESTS_ACTION value
+     * @property {number} AI_THREAD_RENAME_ACTION=76 AI_THREAD_RENAME_ACTION value
+     * @property {number} INTERACTIVE_MESSAGE_ACTION=77 INTERACTIVE_MESSAGE_ACTION value
+     * @property {number} SHARE_OWN_PN=10001 SHARE_OWN_PN value
+     * @property {number} BUSINESS_BROADCAST_ACTION=10002 BUSINESS_BROADCAST_ACTION value
+     */
+    waproto.MutationProps = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[2] = "STAR_ACTION"] = 2;
+        values[valuesById[3] = "CONTACT_ACTION"] = 3;
+        values[valuesById[4] = "MUTE_ACTION"] = 4;
+        values[valuesById[5] = "PIN_ACTION"] = 5;
+        values[valuesById[6] = "SECURITY_NOTIFICATION_SETTING"] = 6;
+        values[valuesById[7] = "PUSH_NAME_SETTING"] = 7;
+        values[valuesById[8] = "QUICK_REPLY_ACTION"] = 8;
+        values[valuesById[11] = "RECENT_EMOJI_WEIGHTS_ACTION"] = 11;
+        values[valuesById[13] = "LABEL_MESSAGE_ACTION"] = 13;
+        values[valuesById[14] = "LABEL_EDIT_ACTION"] = 14;
+        values[valuesById[15] = "LABEL_ASSOCIATION_ACTION"] = 15;
+        values[valuesById[16] = "LOCALE_SETTING"] = 16;
+        values[valuesById[17] = "ARCHIVE_CHAT_ACTION"] = 17;
+        values[valuesById[18] = "DELETE_MESSAGE_FOR_ME_ACTION"] = 18;
+        values[valuesById[19] = "KEY_EXPIRATION"] = 19;
+        values[valuesById[20] = "MARK_CHAT_AS_READ_ACTION"] = 20;
+        values[valuesById[21] = "CLEAR_CHAT_ACTION"] = 21;
+        values[valuesById[22] = "DELETE_CHAT_ACTION"] = 22;
+        values[valuesById[23] = "UNARCHIVE_CHATS_SETTING"] = 23;
+        values[valuesById[24] = "PRIMARY_FEATURE"] = 24;
+        values[valuesById[26] = "ANDROID_UNSUPPORTED_ACTIONS"] = 26;
+        values[valuesById[27] = "AGENT_ACTION"] = 27;
+        values[valuesById[28] = "SUBSCRIPTION_ACTION"] = 28;
+        values[valuesById[29] = "USER_STATUS_MUTE_ACTION"] = 29;
+        values[valuesById[30] = "TIME_FORMAT_ACTION"] = 30;
+        values[valuesById[31] = "NUX_ACTION"] = 31;
+        values[valuesById[32] = "PRIMARY_VERSION_ACTION"] = 32;
+        values[valuesById[33] = "STICKER_ACTION"] = 33;
+        values[valuesById[34] = "REMOVE_RECENT_STICKER_ACTION"] = 34;
+        values[valuesById[35] = "CHAT_ASSIGNMENT"] = 35;
+        values[valuesById[36] = "CHAT_ASSIGNMENT_OPENED_STATUS"] = 36;
+        values[valuesById[37] = "PN_FOR_LID_CHAT_ACTION"] = 37;
+        values[valuesById[38] = "MARKETING_MESSAGE_ACTION"] = 38;
+        values[valuesById[39] = "MARKETING_MESSAGE_BROADCAST_ACTION"] = 39;
+        values[valuesById[40] = "EXTERNAL_WEB_BETA_ACTION"] = 40;
+        values[valuesById[41] = "PRIVACY_SETTING_RELAY_ALL_CALLS"] = 41;
+        values[valuesById[42] = "CALL_LOG_ACTION"] = 42;
+        values[valuesById[43] = "UGC_BOT"] = 43;
+        values[valuesById[44] = "STATUS_PRIVACY"] = 44;
+        values[valuesById[45] = "BOT_WELCOME_REQUEST_ACTION"] = 45;
+        values[valuesById[46] = "DELETE_INDIVIDUAL_CALL_LOG"] = 46;
+        values[valuesById[47] = "LABEL_REORDERING_ACTION"] = 47;
+        values[valuesById[48] = "PAYMENT_INFO_ACTION"] = 48;
+        values[valuesById[49] = "CUSTOM_PAYMENT_METHODS_ACTION"] = 49;
+        values[valuesById[50] = "LOCK_CHAT_ACTION"] = 50;
+        values[valuesById[51] = "CHAT_LOCK_SETTINGS"] = 51;
+        values[valuesById[52] = "WAMO_USER_IDENTIFIER_ACTION"] = 52;
+        values[valuesById[53] = "PRIVACY_SETTING_DISABLE_LINK_PREVIEWS_ACTION"] = 53;
+        values[valuesById[54] = "DEVICE_CAPABILITIES"] = 54;
+        values[valuesById[55] = "NOTE_EDIT_ACTION"] = 55;
+        values[valuesById[56] = "FAVORITES_ACTION"] = 56;
+        values[valuesById[57] = "MERCHANT_PAYMENT_PARTNER_ACTION"] = 57;
+        values[valuesById[58] = "WAFFLE_ACCOUNT_LINK_STATE_ACTION"] = 58;
+        values[valuesById[59] = "USERNAME_CHAT_START_MODE"] = 59;
+        values[valuesById[60] = "NOTIFICATION_ACTIVITY_SETTING_ACTION"] = 60;
+        values[valuesById[61] = "LID_CONTACT_ACTION"] = 61;
+        values[valuesById[62] = "CTWA_PER_CUSTOMER_DATA_SHARING_ACTION"] = 62;
+        values[valuesById[63] = "PAYMENT_TOS_ACTION"] = 63;
+        values[valuesById[64] = "PRIVACY_SETTING_CHANNELS_PERSONALISED_RECOMMENDATION_ACTION"] = 64;
+        values[valuesById[65] = "BUSINESS_BROADCAST_ASSOCIATION_ACTION"] = 65;
+        values[valuesById[66] = "DETECTED_OUTCOMES_STATUS_ACTION"] = 66;
+        values[valuesById[68] = "MAIBA_AI_FEATURES_CONTROL_ACTION"] = 68;
+        values[valuesById[69] = "BUSINESS_BROADCAST_LIST_ACTION"] = 69;
+        values[valuesById[70] = "MUSIC_USER_ID_ACTION"] = 70;
+        values[valuesById[71] = "STATUS_POST_OPT_IN_NOTIFICATION_PREFERENCES_ACTION"] = 71;
+        values[valuesById[72] = "AVATAR_UPDATED_ACTION"] = 72;
+        values[valuesById[73] = "GALAXY_FLOW_ACTION"] = 73;
+        values[valuesById[74] = "PRIVATE_PROCESSING_SETTING_ACTION"] = 74;
+        values[valuesById[75] = "NEWSLETTER_SAVED_INTERESTS_ACTION"] = 75;
+        values[valuesById[76] = "AI_THREAD_RENAME_ACTION"] = 76;
+        values[valuesById[77] = "INTERACTIVE_MESSAGE_ACTION"] = 77;
+        values[valuesById[10001] = "SHARE_OWN_PN"] = 10001;
+        values[valuesById[10002] = "BUSINESS_BROADCAST_ACTION"] = 10002;
+        return values;
+    })();
+
     waproto.NoiseCertificate = (function() {
 
         /**
@@ -150540,6 +150769,7 @@ $root.waproto = (function() {
          * @interface ISessionTransparencyMetadata
          * @property {string|null} [disclaimerText] SessionTransparencyMetadata disclaimerText
          * @property {string|null} [hcaId] SessionTransparencyMetadata hcaId
+         * @property {waproto.SessionTransparencyType|null} [sessionTransparencyType] SessionTransparencyMetadata sessionTransparencyType
          */
 
         /**
@@ -150573,6 +150803,14 @@ $root.waproto = (function() {
          */
         SessionTransparencyMetadata.prototype.hcaId = null;
 
+        /**
+         * SessionTransparencyMetadata sessionTransparencyType.
+         * @member {waproto.SessionTransparencyType|null|undefined} sessionTransparencyType
+         * @memberof waproto.SessionTransparencyMetadata
+         * @instance
+         */
+        SessionTransparencyMetadata.prototype.sessionTransparencyType = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -150585,6 +150823,12 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(SessionTransparencyMetadata.prototype, "_hcaId", {
             get: $util.oneOfGetter($oneOfFields = ["hcaId"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SessionTransparencyMetadata.prototype, "_sessionTransparencyType", {
+            get: $util.oneOfGetter($oneOfFields = ["sessionTransparencyType"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -150616,6 +150860,8 @@ $root.waproto = (function() {
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.disclaimerText);
             if (message.hcaId != null && Object.hasOwnProperty.call(message, "hcaId"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.hcaId);
+            if (message.sessionTransparencyType != null && Object.hasOwnProperty.call(message, "sessionTransparencyType"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sessionTransparencyType);
             return writer;
         };
 
@@ -150656,6 +150902,10 @@ $root.waproto = (function() {
                     }
                 case 2: {
                         message.hcaId = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.sessionTransparencyType = reader.int32();
                         break;
                     }
                 default:
@@ -150704,6 +150954,16 @@ $root.waproto = (function() {
                 if (!$util.isString(message.hcaId))
                     return "hcaId: string expected";
             }
+            if (message.sessionTransparencyType != null && message.hasOwnProperty("sessionTransparencyType")) {
+                properties._sessionTransparencyType = 1;
+                switch (message.sessionTransparencyType) {
+                default:
+                    return "sessionTransparencyType: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            }
             return null;
         };
 
@@ -150723,6 +150983,22 @@ $root.waproto = (function() {
                 message.disclaimerText = String(object.disclaimerText);
             if (object.hcaId != null)
                 message.hcaId = String(object.hcaId);
+            switch (object.sessionTransparencyType) {
+            default:
+                if (typeof object.sessionTransparencyType === "number") {
+                    message.sessionTransparencyType = object.sessionTransparencyType;
+                    break;
+                }
+                break;
+            case "UNKNOWN_TYPE":
+            case 0:
+                message.sessionTransparencyType = 0;
+                break;
+            case "NY_AI_SAFETY_DISCLAIMER":
+            case 1:
+                message.sessionTransparencyType = 1;
+                break;
+            }
             return message;
         };
 
@@ -150748,6 +151024,11 @@ $root.waproto = (function() {
                 object.hcaId = message.hcaId;
                 if (options.oneofs)
                     object._hcaId = "hcaId";
+            }
+            if (message.sessionTransparencyType != null && message.hasOwnProperty("sessionTransparencyType")) {
+                object.sessionTransparencyType = options.enums === String ? $root.waproto.SessionTransparencyType[message.sessionTransparencyType] === undefined ? message.sessionTransparencyType : $root.waproto.SessionTransparencyType[message.sessionTransparencyType] : message.sessionTransparencyType;
+                if (options.oneofs)
+                    object._sessionTransparencyType = "sessionTransparencyType";
             }
             return object;
         };
@@ -150779,6 +151060,20 @@ $root.waproto = (function() {
         };
 
         return SessionTransparencyMetadata;
+    })();
+
+    /**
+     * SessionTransparencyType enum.
+     * @name waproto.SessionTransparencyType
+     * @enum {number}
+     * @property {number} UNKNOWN_TYPE=0 UNKNOWN_TYPE value
+     * @property {number} NY_AI_SAFETY_DISCLAIMER=1 NY_AI_SAFETY_DISCLAIMER value
+     */
+    waproto.SessionTransparencyType = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "UNKNOWN_TYPE"] = 0;
+        values[valuesById[1] = "NY_AI_SAFETY_DISCLAIMER"] = 1;
+        return values;
     })();
 
     waproto.SignalMessage = (function() {
@@ -155723,6 +156018,8 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.IAvatarUpdatedAction|null} [avatarUpdatedAction] SyncActionValue avatarUpdatedAction
          * @property {waproto.SyncActionValue.IPrivateProcessingSettingAction|null} [privateProcessingSettingAction] SyncActionValue privateProcessingSettingAction
          * @property {waproto.SyncActionValue.INewsletterSavedInterestsAction|null} [newsletterSavedInterestsAction] SyncActionValue newsletterSavedInterestsAction
+         * @property {waproto.SyncActionValue.IAiThreadRenameAction|null} [aiThreadRenameAction] SyncActionValue aiThreadRenameAction
+         * @property {waproto.SyncActionValue.IInteractiveMessageAction|null} [interactiveMessageAction] SyncActionValue interactiveMessageAction
          */
 
         /**
@@ -156276,6 +156573,22 @@ $root.waproto = (function() {
          */
         SyncActionValue.prototype.newsletterSavedInterestsAction = null;
 
+        /**
+         * SyncActionValue aiThreadRenameAction.
+         * @member {waproto.SyncActionValue.IAiThreadRenameAction|null|undefined} aiThreadRenameAction
+         * @memberof waproto.SyncActionValue
+         * @instance
+         */
+        SyncActionValue.prototype.aiThreadRenameAction = null;
+
+        /**
+         * SyncActionValue interactiveMessageAction.
+         * @member {waproto.SyncActionValue.IInteractiveMessageAction|null|undefined} interactiveMessageAction
+         * @memberof waproto.SyncActionValue
+         * @instance
+         */
+        SyncActionValue.prototype.interactiveMessageAction = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -156681,6 +156994,18 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SyncActionValue.prototype, "_aiThreadRenameAction", {
+            get: $util.oneOfGetter($oneOfFields = ["aiThreadRenameAction"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SyncActionValue.prototype, "_interactiveMessageAction", {
+            get: $util.oneOfGetter($oneOfFields = ["interactiveMessageAction"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new SyncActionValue instance using the specified properties.
          * @function create
@@ -156839,6 +157164,10 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.PrivateProcessingSettingAction.encode(message.privateProcessingSettingAction, writer.uint32(/* id 74, wireType 2 =*/594).fork()).ldelim();
             if (message.newsletterSavedInterestsAction != null && Object.hasOwnProperty.call(message, "newsletterSavedInterestsAction"))
                 $root.waproto.SyncActionValue.NewsletterSavedInterestsAction.encode(message.newsletterSavedInterestsAction, writer.uint32(/* id 75, wireType 2 =*/602).fork()).ldelim();
+            if (message.aiThreadRenameAction != null && Object.hasOwnProperty.call(message, "aiThreadRenameAction"))
+                $root.waproto.SyncActionValue.AiThreadRenameAction.encode(message.aiThreadRenameAction, writer.uint32(/* id 76, wireType 2 =*/610).fork()).ldelim();
+            if (message.interactiveMessageAction != null && Object.hasOwnProperty.call(message, "interactiveMessageAction"))
+                $root.waproto.SyncActionValue.InteractiveMessageAction.encode(message.interactiveMessageAction, writer.uint32(/* id 77, wireType 2 =*/618).fork()).ldelim();
             return writer;
         };
 
@@ -157139,6 +157468,14 @@ $root.waproto = (function() {
                     }
                 case 75: {
                         message.newsletterSavedInterestsAction = $root.waproto.SyncActionValue.NewsletterSavedInterestsAction.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 76: {
+                        message.aiThreadRenameAction = $root.waproto.SyncActionValue.AiThreadRenameAction.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 77: {
+                        message.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -157710,6 +158047,22 @@ $root.waproto = (function() {
                         return "newsletterSavedInterestsAction." + error;
                 }
             }
+            if (message.aiThreadRenameAction != null && message.hasOwnProperty("aiThreadRenameAction")) {
+                properties._aiThreadRenameAction = 1;
+                {
+                    var error = $root.waproto.SyncActionValue.AiThreadRenameAction.verify(message.aiThreadRenameAction);
+                    if (error)
+                        return "aiThreadRenameAction." + error;
+                }
+            }
+            if (message.interactiveMessageAction != null && message.hasOwnProperty("interactiveMessageAction")) {
+                properties._interactiveMessageAction = 1;
+                {
+                    var error = $root.waproto.SyncActionValue.InteractiveMessageAction.verify(message.interactiveMessageAction);
+                    if (error)
+                        return "interactiveMessageAction." + error;
+                }
+            }
             return null;
         };
 
@@ -158063,6 +158416,16 @@ $root.waproto = (function() {
                 if (typeof object.newsletterSavedInterestsAction !== "object")
                     throw TypeError(".waproto.SyncActionValue.newsletterSavedInterestsAction: object expected");
                 message.newsletterSavedInterestsAction = $root.waproto.SyncActionValue.NewsletterSavedInterestsAction.fromObject(object.newsletterSavedInterestsAction);
+            }
+            if (object.aiThreadRenameAction != null) {
+                if (typeof object.aiThreadRenameAction !== "object")
+                    throw TypeError(".waproto.SyncActionValue.aiThreadRenameAction: object expected");
+                message.aiThreadRenameAction = $root.waproto.SyncActionValue.AiThreadRenameAction.fromObject(object.aiThreadRenameAction);
+            }
+            if (object.interactiveMessageAction != null) {
+                if (typeof object.interactiveMessageAction !== "object")
+                    throw TypeError(".waproto.SyncActionValue.interactiveMessageAction: object expected");
+                message.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.fromObject(object.interactiveMessageAction);
             }
             return message;
         };
@@ -158418,6 +158781,16 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._newsletterSavedInterestsAction = "newsletterSavedInterestsAction";
             }
+            if (message.aiThreadRenameAction != null && message.hasOwnProperty("aiThreadRenameAction")) {
+                object.aiThreadRenameAction = $root.waproto.SyncActionValue.AiThreadRenameAction.toObject(message.aiThreadRenameAction, options);
+                if (options.oneofs)
+                    object._aiThreadRenameAction = "aiThreadRenameAction";
+            }
+            if (message.interactiveMessageAction != null && message.hasOwnProperty("interactiveMessageAction")) {
+                object.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.toObject(message.interactiveMessageAction, options);
+                if (options.oneofs)
+                    object._interactiveMessageAction = "interactiveMessageAction";
+            }
             return object;
         };
 
@@ -158727,6 +159100,222 @@ $root.waproto = (function() {
             };
 
             return AgentAction;
+        })();
+
+        SyncActionValue.AiThreadRenameAction = (function() {
+
+            /**
+             * Properties of an AiThreadRenameAction.
+             * @memberof waproto.SyncActionValue
+             * @interface IAiThreadRenameAction
+             * @property {string|null} [newTitle] AiThreadRenameAction newTitle
+             */
+
+            /**
+             * Constructs a new AiThreadRenameAction.
+             * @memberof waproto.SyncActionValue
+             * @classdesc Represents an AiThreadRenameAction.
+             * @implements IAiThreadRenameAction
+             * @constructor
+             * @param {waproto.SyncActionValue.IAiThreadRenameAction=} [properties] Properties to set
+             */
+            function AiThreadRenameAction(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * AiThreadRenameAction newTitle.
+             * @member {string|null|undefined} newTitle
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @instance
+             */
+            AiThreadRenameAction.prototype.newTitle = null;
+
+            // OneOf field names bound to virtual getters and setters
+            var $oneOfFields;
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(AiThreadRenameAction.prototype, "_newTitle", {
+                get: $util.oneOfGetter($oneOfFields = ["newTitle"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new AiThreadRenameAction instance using the specified properties.
+             * @function create
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {waproto.SyncActionValue.IAiThreadRenameAction=} [properties] Properties to set
+             * @returns {waproto.SyncActionValue.AiThreadRenameAction} AiThreadRenameAction instance
+             */
+            AiThreadRenameAction.create = function create(properties) {
+                return new AiThreadRenameAction(properties);
+            };
+
+            /**
+             * Encodes the specified AiThreadRenameAction message. Does not implicitly {@link waproto.SyncActionValue.AiThreadRenameAction.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {waproto.SyncActionValue.IAiThreadRenameAction} message AiThreadRenameAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AiThreadRenameAction.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.newTitle != null && Object.hasOwnProperty.call(message, "newTitle"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.newTitle);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified AiThreadRenameAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.AiThreadRenameAction.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {waproto.SyncActionValue.IAiThreadRenameAction} message AiThreadRenameAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AiThreadRenameAction.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes an AiThreadRenameAction message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.SyncActionValue.AiThreadRenameAction} AiThreadRenameAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AiThreadRenameAction.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.AiThreadRenameAction();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.newTitle = reader.string();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Decodes an AiThreadRenameAction message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.SyncActionValue.AiThreadRenameAction} AiThreadRenameAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AiThreadRenameAction.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies an AiThreadRenameAction message.
+             * @function verify
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            AiThreadRenameAction.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                var properties = {};
+                if (message.newTitle != null && message.hasOwnProperty("newTitle")) {
+                    properties._newTitle = 1;
+                    if (!$util.isString(message.newTitle))
+                        return "newTitle: string expected";
+                }
+                return null;
+            };
+
+            /**
+             * Creates an AiThreadRenameAction message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.SyncActionValue.AiThreadRenameAction} AiThreadRenameAction
+             */
+            AiThreadRenameAction.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.SyncActionValue.AiThreadRenameAction)
+                    return object;
+                var message = new $root.waproto.SyncActionValue.AiThreadRenameAction();
+                if (object.newTitle != null)
+                    message.newTitle = String(object.newTitle);
+                return message;
+            };
+
+            /**
+             * Creates a plain object from an AiThreadRenameAction message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {waproto.SyncActionValue.AiThreadRenameAction} message AiThreadRenameAction
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            AiThreadRenameAction.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (message.newTitle != null && message.hasOwnProperty("newTitle")) {
+                    object.newTitle = message.newTitle;
+                    if (options.oneofs)
+                        object._newTitle = "newTitle";
+                }
+                return object;
+            };
+
+            /**
+             * Converts this AiThreadRenameAction to JSON.
+             * @function toJSON
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            AiThreadRenameAction.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for AiThreadRenameAction
+             * @function getTypeUrl
+             * @memberof waproto.SyncActionValue.AiThreadRenameAction
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            AiThreadRenameAction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.SyncActionValue.AiThreadRenameAction";
+            };
+
+            return AiThreadRenameAction;
         })();
 
         SyncActionValue.AndroidUnsupportedActions = (function() {
@@ -164288,6 +164877,235 @@ $root.waproto = (function() {
             return FavoritesAction;
         })();
 
+        SyncActionValue.InteractiveMessageAction = (function() {
+
+            /**
+             * Properties of an InteractiveMessageAction.
+             * @memberof waproto.SyncActionValue
+             * @interface IInteractiveMessageAction
+             * @property {waproto.SyncActionValue.InteractiveMessageAction.InteractiveMessageActionMode} type InteractiveMessageAction type
+             */
+
+            /**
+             * Constructs a new InteractiveMessageAction.
+             * @memberof waproto.SyncActionValue
+             * @classdesc Represents an InteractiveMessageAction.
+             * @implements IInteractiveMessageAction
+             * @constructor
+             * @param {waproto.SyncActionValue.IInteractiveMessageAction=} [properties] Properties to set
+             */
+            function InteractiveMessageAction(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * InteractiveMessageAction type.
+             * @member {waproto.SyncActionValue.InteractiveMessageAction.InteractiveMessageActionMode} type
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @instance
+             */
+            InteractiveMessageAction.prototype.type = 1;
+
+            /**
+             * Creates a new InteractiveMessageAction instance using the specified properties.
+             * @function create
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {waproto.SyncActionValue.IInteractiveMessageAction=} [properties] Properties to set
+             * @returns {waproto.SyncActionValue.InteractiveMessageAction} InteractiveMessageAction instance
+             */
+            InteractiveMessageAction.create = function create(properties) {
+                return new InteractiveMessageAction(properties);
+            };
+
+            /**
+             * Encodes the specified InteractiveMessageAction message. Does not implicitly {@link waproto.SyncActionValue.InteractiveMessageAction.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {waproto.SyncActionValue.IInteractiveMessageAction} message InteractiveMessageAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            InteractiveMessageAction.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified InteractiveMessageAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.InteractiveMessageAction.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {waproto.SyncActionValue.IInteractiveMessageAction} message InteractiveMessageAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            InteractiveMessageAction.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes an InteractiveMessageAction message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.SyncActionValue.InteractiveMessageAction} InteractiveMessageAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            InteractiveMessageAction.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.InteractiveMessageAction();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.type = reader.int32();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                if (!message.hasOwnProperty("type"))
+                    throw $util.ProtocolError("missing required 'type'", { instance: message });
+                return message;
+            };
+
+            /**
+             * Decodes an InteractiveMessageAction message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.SyncActionValue.InteractiveMessageAction} InteractiveMessageAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            InteractiveMessageAction.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies an InteractiveMessageAction message.
+             * @function verify
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            InteractiveMessageAction.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                switch (message.type) {
+                default:
+                    return "type: enum value expected";
+                case 1:
+                    break;
+                }
+                return null;
+            };
+
+            /**
+             * Creates an InteractiveMessageAction message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.SyncActionValue.InteractiveMessageAction} InteractiveMessageAction
+             */
+            InteractiveMessageAction.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.SyncActionValue.InteractiveMessageAction)
+                    return object;
+                var message = new $root.waproto.SyncActionValue.InteractiveMessageAction();
+                switch (object.type) {
+                default:
+                    if (typeof object.type === "number") {
+                        message.type = object.type;
+                        break;
+                    }
+                    break;
+                case "DISABLE_CTA":
+                case 1:
+                    message.type = 1;
+                    break;
+                }
+                return message;
+            };
+
+            /**
+             * Creates a plain object from an InteractiveMessageAction message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {waproto.SyncActionValue.InteractiveMessageAction} message InteractiveMessageAction
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            InteractiveMessageAction.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (options.defaults)
+                    object.type = options.enums === String ? "DISABLE_CTA" : 1;
+                if (message.type != null && message.hasOwnProperty("type"))
+                    object.type = options.enums === String ? $root.waproto.SyncActionValue.InteractiveMessageAction.InteractiveMessageActionMode[message.type] === undefined ? message.type : $root.waproto.SyncActionValue.InteractiveMessageAction.InteractiveMessageActionMode[message.type] : message.type;
+                return object;
+            };
+
+            /**
+             * Converts this InteractiveMessageAction to JSON.
+             * @function toJSON
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            InteractiveMessageAction.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for InteractiveMessageAction
+             * @function getTypeUrl
+             * @memberof waproto.SyncActionValue.InteractiveMessageAction
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            InteractiveMessageAction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.SyncActionValue.InteractiveMessageAction";
+            };
+
+            /**
+             * InteractiveMessageActionMode enum.
+             * @name waproto.SyncActionValue.InteractiveMessageAction.InteractiveMessageActionMode
+             * @enum {number}
+             * @property {number} DISABLE_CTA=1 DISABLE_CTA value
+             */
+            InteractiveMessageAction.InteractiveMessageActionMode = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[1] = "DISABLE_CTA"] = 1;
+                return values;
+            })();
+
+            return InteractiveMessageAction;
+        })();
+
         SyncActionValue.KeyExpiration = (function() {
 
             /**
@@ -165073,6 +165891,7 @@ $root.waproto = (function() {
                     case 6:
                     case 7:
                     case 8:
+                    case 9:
                         break;
                     }
                 }
@@ -165155,6 +165974,10 @@ $root.waproto = (function() {
                 case "DRAFTED":
                 case 8:
                     message.type = 8;
+                    break;
+                case "AI_HANDOFF":
+                case 9:
+                    message.type = 9;
                     break;
                 }
                 if (object.isImmutable != null)
@@ -165274,6 +166097,7 @@ $root.waproto = (function() {
              * @property {number} COMMUNITY=6 COMMUNITY value
              * @property {number} SERVER_ASSIGNED=7 SERVER_ASSIGNED value
              * @property {number} DRAFTED=8 DRAFTED value
+             * @property {number} AI_HANDOFF=9 AI_HANDOFF value
              */
             LabelEditAction.ListType = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -165286,6 +166110,7 @@ $root.waproto = (function() {
                 values[valuesById[6] = "COMMUNITY"] = 6;
                 values[valuesById[7] = "SERVER_ASSIGNED"] = 7;
                 values[valuesById[8] = "DRAFTED"] = 8;
+                values[valuesById[9] = "AI_HANDOFF"] = 9;
                 return values;
             })();
 
@@ -188063,6 +188888,7 @@ $root.waproto = (function() {
                 case 218:
                 case 219:
                 case 220:
+                case 221:
                     break;
                 }
             }
@@ -189407,6 +190233,10 @@ $root.waproto = (function() {
             case 220:
                 message.messageStubType = 220;
                 break;
+            case "GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE":
+            case 221:
+                message.messageStubType = 221;
+                break;
             }
             if (object.clearMedia != null)
                 message.clearMedia = Boolean(object.clearMedia);
@@ -190353,6 +191183,7 @@ $root.waproto = (function() {
          * @property {number} BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE=218 BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE value
          * @property {number} PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE=219 PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE value
          * @property {number} QUARANTINED_MESSAGE=220 QUARANTINED_MESSAGE value
+         * @property {number} GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE=221 GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE value
          */
         WebMessageInfo.StubType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -190577,6 +191408,7 @@ $root.waproto = (function() {
             values[valuesById[218] = "BIZ_AUTOMATICALLY_LABELED_CHAT_SYSTEM_MESSAGE"] = 218;
             values[valuesById[219] = "PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE"] = 219;
             values[valuesById[220] = "QUARANTINED_MESSAGE"] = 220;
+            values[valuesById[221] = "GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE"] = 221;
             return values;
         })();
 
