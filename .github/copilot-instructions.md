@@ -1,57 +1,59 @@
-# Mensagem de Commit
-**PRIORIDADE MÁXIMA: Todas as mensagens de commit DEVEM ser escritas em inglês.**
+# Commit Message
+**HIGHEST PRIORITY: All commit messages MUST be written in English.**
 
-A mensagem de commit deve ser clara e concisa, descrevendo a alteração feita. Deve obrigatoriamente seguir o formato: `type: description` sempre em inglês. Exemplos:
+The commit message must be clear and concise, describing the change made. It must follow the format: `type: description` always in English. Examples:
 - `feat: add login feature`
 - `fix: correct user endpoint`
 - `docs: update installation instructions`
 - `refactor: improve button reusability`
 - `style: adjust header spacing`
 
-# Nunca comente no código
-Comentários só devem ser adicionados quando explicitamente solicitados. Não insira comentários automaticamente.
+# Never comment in the code
+Comments should only be added when explicitly requested. Do not insert comments automatically.
 
-# Nunca crie, renomeie ou exclua arquivos sem necessidade explícita
-Alterações estruturais no projeto devem ocorrer apenas mediante instrução direta. Não modifique a estrutura sem autorização.
+# Never create, rename, or delete files without explicit need
+Structural changes to the project should only occur upon direct instruction. Do not modify the structure without authorization.
 
-# Corrija de forma cirúrgica
-Altere somente o que for estritamente necessário. Não reescreva trechos inteiros se apenas uma pequena parte exige correção.
+# Correct surgically
+Change only what is strictly necessary. Do not rewrite entire sections if only a small part requires correction.
 
-# Preserve o estilo e estrutura original do código
-Respeite o padrão de indentação, nomenclatura e organização existentes no projeto. Não aplique reformatações automáticas.
+# Preserve the original style and structure of the code
+Respect the existing indentation, naming, and organizational standards of the project. Do not apply automatic reformats.
 
-# Evite sugestões genéricas
-Forneça soluções específicas e contextualizadas. Não generalize nem ofereça alternativas não solicitadas.
+# Avoid generic suggestions
+Provide specific and contextualized solutions. Do not generalize or offer unsolicited alternatives.
 
-# Analisar o código dentro das pastas src do frontend e backend para analisar o que pode ser melhorado
-Sempre que sugerir melhorias, analise o código dentro das pastas `src` do frontend e backend. Foque em otimizações que respeitem a lógica existente e melhorem a performance ou legibilidade.
+# Analyze the code within the frontend and backend src folders to identify areas for improvement
+Whenever suggesting improvements, analyze the code within the frontend and backend src folders. Focus on optimizations that respect existing logic and improve performance or readability.
 
-# Evite duplicação de código e busque sempre a reutilização de componentes.
-Sempre que possível, proponha a reutilização de componentes existentes em vez de criar novos. Isso ajuda a manter o código limpo e reduz a complexidade do projeto.
+# Avoid code duplication and always seek component reuse.
 
-# Sempre que sugerir alterações, verifique se o código está atualizado com as últimas dependências e práticas recomendadas
-Antes de propor qualquer modificação, verifique se o código está alinhado com as últimas versões das dependências e as melhores práticas recomendadas. Isso garante que as alterações sejam compatíveis e aproveitem os recursos mais recentes disponíveis.
+Whenever possible, propose reusing existing components instead of creating new ones. This helps keep the code clean and reduces project complexity.
 
-# Sempre que possível, utilize o comando 'yarn build' para garantir que as alterações estejam corretas e otimizadas.
-Sempre que sugerir alterações, execute o comando `yarn build:tsc` para garantir que as modificações estejam corretas e otimizadas. Isso ajuda a identificar problemas de compilação e garante que o código esteja pronto para produção.
+# Whenever suggesting changes, ensure the code is up-to-date with the latest dependencies and best practices.
+Before proposing any modifications, verify that the code is aligned with the latest versions of dependencies and best practices. This ensures that the changes are compatible and take advantage of the latest available features.
 
-# Sempre executar 'yarn lint:fix' ao modificar arquivos.
-Sempre que fizer alterações em arquivos, execute o comando `yarn lint:fix` para corrigir automaticamente problemas de formatação e estilo. Isso ajuda a manter a consistência do código e a evitar erros comuns.
+# Whenever possible, use the 'yarn build' command to ensure that the changes are correct and optimized.
+Whenever suggesting changes, run the `yarn build:tsc` command to ensure that the modifications are correct and optimized. This helps identify compilation problems and ensures that the code is production-ready.
 
-# Type de Commit
-Ao criar um commit, sempre inclua um _type_ e um _scope_ (opcional) na mensagem do commit. O _type_ deve ser um dos seguintes tipos, e o _scope_ deve ser uma breve descrição do que foi alterado ou adicionado. A mensagem deve seguir o formato: `type(scope): descrição`.
-O _type_ pode ser um desses tipos:
+# Always run 'yarn lint:fix' when modifying files.
+Whenever you make changes to files, run the `yarn lint:fix` command to automatically correct formatting and style issues. This helps maintain code consistency and avoid common errors.
 
-| Prefixo | Descrição           | Significado                                    |
-|---------|---------------------|------------------------------------------------|
-| feat    | Features            | Uma nova funcionalidade                        |
-| fix     | Correções de Erros  | Uma correção de bug                            |
-| docs    | Documentação        | Apenas mudanças na documentação               |
-| style   | Estilos             | Mudanças em relação a estilização              |
-| refactor| Refatoração de Código | Uma alteração de código que não corrige um bug nem adiciona uma funcionalidade |
-| perf    | Melhorias de Performance | Uma alteração de código que melhora o desempenho |
-| test    | Testes              | Adição de testes em falta ou correção de testes existentes |
-| build   | Builds              | Mudanças que afetam o sistema de build ou dependências externas (exemplos de escopos: gulp, broccoli, npm) |
-| ci      | Integrações Contínuas | Alterações em nossos arquivos e scripts de configuração de CI (exemplos de escopos: Travis, Circle, BrowserStack, SauceLabs) |
-| chore   | Tarefas             | Outras mudanças que não modificam arquivos de código-fonte ou de teste |
-| revert  | Reverter            | Reverte um commit anterior                    |
+# Commit Type
+When creating a commit, always include a _type_ and a _scope_ (optional) in the commit message. The `_type_` must be one of the following types, and the `_scope_` must be a brief description of what was changed or added. The message must follow the format: `type(scope): description`.
+
+The `_type_` can be one of these types:
+
+| Prefix   | Description              | Meaning                                                                                                         |
+|----------|--------------------------|-----------------------------------------------------------------------------------------------------------------|
+| feat     | Features                 | A new feature                                                                                                   |
+| fix      | Bug Fixes                | A bug fix                                                                                                       |
+| docs     | Documentation            | Documentation changes only                                                                                      |
+| style    | Styles                   | Styling changes                                                                                                 |
+| refactor | Code Refactoring         | A code change that neither fixes a bug nor adds a feature                                                       |
+| perf     | Performance Improvements | A code change that improves performance                                                                         |
+| test     | Tests                    | Adding missing tests or fixing existing tests                                                                   |
+| build    | Builds                   | Changes that affect the build system or external dependencies (examples of scopes: gulp, broccoli, npm)         |
+| ci       | Continuous Integration   | Changes to our CI configuration files and scripts (examples of scopes: Travis, Circle, BrowserStack, SauceLabs) |
+| chore    | Tasks                    | Other changes that do not modify source code or test files                                                      |
+| revert   | Revert                   | Reverts a previous commit                                                                                       |
