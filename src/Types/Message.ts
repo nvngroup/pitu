@@ -67,11 +67,7 @@ export type MessageWithContextInfo =
     | 'pollResultSnapshotMessage'
     | 'messageHistoryNotice'
 
-export const nativeFlowSpecials = [
-	'mpm', 'cta_catalog', 'send_location',
-	'call_permission_request', 'wa_payment_transaction_details',
-	'automated_greeting_message_view_catalog', 'payment_info', 'review_and_pay'
-]
+export const nativeFlowSpecials = ['mpm', 'cta_catalog', 'send_location', 'call_permission_request', 'wa_payment_transaction_details', 'automated_greeting_message_view_catalog', 'payment_info', 'review_and_pay', 'galaxy_message']
 
 export type DownloadableMessage = { mediaKey?: Uint8Array | null, directPath?: string | null, url?: string | null }
 

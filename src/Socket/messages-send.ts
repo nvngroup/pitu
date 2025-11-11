@@ -783,6 +783,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				return {
 					native_flow_name: nativeFlowSpecial === 'review_and_pay' ? 'order_details' : nativeFlowSpecial
 				}
+			case 'galaxy_message':
+				return {
+					actual_actors: '2',
+					host_storage: '2',
+					privacy_mode_ts: unixTimestampSeconds().toString()
+				}
 			default:
 				return {
 					actual_actors: '2',
@@ -791,7 +797,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 			}
 		} else if (message.templateMessage) {
-			// TODO: Add attributes
 			return {}
 		} else if (message.listMessage) {
 			const type: waproto.Message.ListMessage.ListType | null | undefined = message.listMessage.listType
@@ -811,6 +816,27 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			case 'review_and_pay':
 			case 'payment_info':
 				return []
+			case 'galaxy_message':
+				return [{
+					tag: 'interactive',
+					attrs: {
+						type: 'native_flow',
+						v: '1'
+					},
+					content: [{
+						tag: 'native_flow',
+						attrs: {
+							v: '2',
+							name: nativeFlowSpecial
+						}
+					}]
+				},
+				{
+					tag: 'quality_control',
+					attrs: {
+						source_type: 'third_party'
+					}
+				}]
 			default:
 				return [{
 					tag: 'interactive',
