@@ -2,13 +2,14 @@ import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
-import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
+import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import { makeGroupsSocket } from './groups'
 import ListType = waproto.Message.ListMessage.ListType;
+import { MessageRetryManager } from '../Utils/message-retry-manager'
 
 export const makeMessagesSocket = (config: SocketConfig) => {
 	const {
@@ -18,6 +19,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		options: axiosOptions,
 		patchMessageBeforeSending,
 		cachedGroupMetadata,
+		enableRecentMessageCache,
+		maxMsgRetryCount,
+		messageRelayMaxConcurrent,
+		messageRelayMaxQueueSize
 	} = config
 	const sock = makeGroupsSocket(config)
 	const {
@@ -47,6 +52,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 		return msg
 	}
+
+	const messageRetryManager = enableRecentMessageCache ? new MessageRetryManager(logger, maxMsgRetryCount) : null
+
+	const messageRelayMutex = makeMessageRelayMutex({
+		maxConcurrent: messageRelayMaxConcurrent,
+		maxQueueSize: messageRelayMaxQueueSize
+	})
 
 	const userDevicesCache: CacheStore = config.userDevicesCache || CacheManager.getInstance('USER_DEVICES')
 
@@ -341,9 +353,60 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const relayMessage = async(
 		jid: string,
 		message: waproto.IMessage,
-		{ messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList }: MessageRelayOptions
+		{
+			messageId: msgId,
+			participant,
+			additionalAttributes,
+			additionalNodes,
+			useUserDevicesCache,
+			useCachedGroupMetadata,
+			statusJidList
+		}: MessageRelayOptions
+	) => {
+		return messageRelayMutex.mutex(async() => {
+			const stats = messageRelayMutex.getStats()
+			logger.debug(
+				{
+					jid,
+					msgId,
+					activeMessages: stats.activeCount,
+					queuedMessages: stats.queueSize,
+					maxConcurrent: stats.maxConcurrent
+				},
+				'relaying message with mutex control'
+			)
+
+			return await relayMessageInternal(
+				jid,
+				message,
+				{
+					messageId: msgId,
+					participant,
+					additionalAttributes,
+					additionalNodes,
+					useUserDevicesCache,
+					useCachedGroupMetadata,
+					statusJidList
+				}
+			)
+		})
+	}
+
+	const relayMessageInternal = async(
+		jid: string,
+		message: waproto.IMessage,
+		{
+			messageId: msgId,
+			participant,
+			additionalAttributes,
+			additionalNodes,
+			useUserDevicesCache,
+			useCachedGroupMetadata,
+			statusJidList
+		}: MessageRelayOptions
 	) => {
 		const meId: string = authState.creds.me!.id
+		const meLid: string | undefined = authState.creds.me!.lid
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity: boolean = isRetryResend
 
@@ -446,12 +509,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const patched: waproto.IMessage = await patchMessageBeforeSending(message, devices.map(d => jidEncode(d.user, isLid ? 'lid' : 's.whatsapp.net', d.device)))
 					const requiredPatched: waproto.IMessage = patchMessageRequiresBeforeSending(patched)
 					const bytes: Buffer = encodeWAMessage(requiredPatched)
+					const groupAddressingMode: string = additionalAttributes?.['addressing_mode'] || groupData?.addressingMode || 'lid'
+					const groupSenderIdentity: string = groupAddressingMode === 'lid' && meLid ? meLid : meId
 
 					const { ciphertext, senderKeyDistributionMessage } = await signalRepository.encryptGroupMessage(
 						{
 							group: destinationJid,
 							data: bytes,
-							meId,
+							meId: groupSenderIdentity,
 						}
 					)
 
@@ -507,54 +572,101 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
 					}
 				} else {
-					const { user: meUser } = jidDecode(meId)!
+					// TODO: investigate if this is true
+					let ownId: string = meId
+					if (isLid && meLid) {
+						ownId = meLid
+						logger.debug({ to: jid, ownId }, 'Using LID identity for @lid conversation')
+					} else {
+						logger.debug({ to: jid, ownId }, 'Using PN identity for @s.whatsapp.net conversation')
+					}
+
+					const { user: ownUser } = jidDecode(ownId)!
 
 					if (!participant) {
-						devices.push({ user })
-						if (user !== meUser) {
-							devices.push({ user: meUser })
+						const targetUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
+						devices.push({
+							user,
+							device: 0,
+							jid: jidEncode(user, targetUserServer, 0) // TODO: this entire logic is convoluted and weird.
+						})
+
+						if (user !== ownUser) {
+							const ownUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
+							const ownUserForAddressing: string = isLid && meLid ? jidDecode(meLid)!.user : jidDecode(meId)!.user
+
+							devices.push({
+								user: ownUserForAddressing,
+								device: 0,
+								jid: jidEncode(ownUserForAddressing, ownUserServer, 0)
+							})
 						}
 
 						if (additionalAttributes?.['category'] !== 'peer') {
-							const additionalDevices: JidWithDevice[] = await getUSyncDevices([ meId, jid ], !!useUserDevicesCache, true)
-							devices.push(...additionalDevices)
-							logger.debug({ count: additionalDevices.length }, 'fetched additional devices for 1:1 chat')
+							devices.length = 0
+
+							const senderIdentity: string =
+								isLid && meLid
+									? jidEncode(jidDecode(meLid)?.user!, 'lid', undefined)
+									: jidEncode(jidDecode(meId)?.user!, 's.whatsapp.net', undefined)
+
+							const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, jid], true, false)
+							devices.push(...sessionDevices)
+
+							logger.debug(
+								{
+									deviceCount: devices.length,
+									devices: devices.map(d => `${d.user}:${d.device}@${jidDecode(d.jid)?.server}`)
+								},
+								'Device enumeration complete with unified addressing'
+							)
 						}
 					}
 
-					const allJids: string[] = []
-					const meJids: string[] = []
-					const otherJids: string[] = []
+					const allRecipients: string[] = []
+					const meRecipients: string[] = []
+					const otherRecipients: string[] = []
+					const { user: mePnUser } = jidDecode(meId)!
+					const { user: meLidUser } = meLid ? jidDecode(meLid)! : { user: null }
 
-					if (devices.length === 0) {
-						logger.warn({ jid, participant, isInteractiveMessage }, 'no devices found for message relay')
-					}
-
-					for (const { user, device } of devices) {
-						const isMe: boolean = user === meUser
-						const jid: string = jidEncode(isMe && isLid ? authState.creds?.me?.lid!.split(':')[0] || user : user, isLid ? 'lid' : 's.whatsapp.net', device)
-						if (isMe) {
-							meJids.push(jid)
-						} else {
-							otherJids.push(jid)
+					for (const { user, jid } of devices) {
+						const isExactSenderDevice: boolean = jid === meId || jid === meLid
+						if (isExactSenderDevice) {
+							logger.debug({ jid, meId, meLid }, 'Skipping exact sender device (whatsmeow pattern)')
+							continue
 						}
 
-						allJids.push(jid)
+						// Check if this is our device (could match either PN or LID user)
+						const isMe: boolean = user === mePnUser || user === meLidUser
+
+						if (jid) {
+							if (isMe) {
+								meRecipients.push(jid)
+							} else {
+								otherRecipients.push(jid)
+							}
+
+							allRecipients.push(jid)
+						}
 					}
 
-					logger.debug({ allJidsCount: allJids.length, meJidsCount: meJids.length, otherJidsCount: otherJids.length }, 'prepared jids for encryption')
+					logger.debug({ allRecipientsCount: allRecipients.length, meRecipientsCount: meRecipients.length, otherRecipientsCount: otherRecipients.length }, 'prepared jids for encryption')
 
-					await assertSessions(allJids, false)
+					await assertSessions(allRecipients, false)
 
 					const [
 						{ nodes: meNodes, shouldIncludeDeviceIdentity: s1 },
 						{ nodes: otherNodes, shouldIncludeDeviceIdentity: s2 }
 					] = await Promise.all([
-						createParticipantNodes(meJids, meMsg, extraAttrs),
-						createParticipantNodes(otherJids, message, extraAttrs)
+						createParticipantNodes(meRecipients, meMsg || message, extraAttrs),
+						createParticipantNodes(otherRecipients, message, extraAttrs)
 					])
 					participants.push(...meNodes)
 					participants.push(...otherNodes)
+
+					if (meRecipients.length > 0 || otherRecipients.length > 0) {
+						extraAttrs['phash'] = generateParticipantHashV2([...meRecipients, ...otherRecipients])
+					}
 
 					shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || s1 || s2
 				}
@@ -707,6 +819,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				logger.debug({ msgId }, `sending message to ${participants.length} devices`)
 
 				await sendNode(stanza)
+
+				if (messageRetryManager && !participant) {
+					messageRetryManager.addRecentMessage(destinationJid, msgId, message)
+				}
 			}
 		)
 

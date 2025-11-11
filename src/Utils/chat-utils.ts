@@ -813,7 +813,7 @@ export const processSyncAction = (
 			{
 				id,
 				name: action.contactAction.fullName!,
-				lid: action.contactAction.lidJid || undefined,
+				lid: action.contactAction.lidJid!,
 				jid: isJidUser(id) ? id : undefined
 			}
 		])

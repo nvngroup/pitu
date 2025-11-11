@@ -598,7 +598,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			await sendNode({
 				tag: 'chatstate',
 				attrs: {
-					from: isLid ? me.lid! : me.id,
+					from: isLid ? me.lid : me.id,
 					to: toJid!,
 				},
 				content: [

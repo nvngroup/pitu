@@ -64,4 +64,7 @@ export type SocketConfig = {
     getMessage: (key: waproto.IMessageKey) => Promise<waproto.IMessage | undefined>
     cachedGroupMetadata: (jid: string) => Promise<GroupMetadata | undefined>
     makeSignalRepository: (auth: SignalAuthState) => SignalRepository
+    enableRecentMessageCache?: boolean
+    messageRelayMaxConcurrent?: number
+    messageRelayMaxQueueSize?: number
 }
