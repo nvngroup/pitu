@@ -13397,6 +13397,255 @@ $root.waproto = (function() {
         return BotCapabilityMetadata;
     })();
 
+    waproto.BotDocumentMessageMetadata = (function() {
+
+        /**
+         * Properties of a BotDocumentMessageMetadata.
+         * @memberof waproto
+         * @interface IBotDocumentMessageMetadata
+         * @property {waproto.BotDocumentMessageMetadata.DocumentPluginType|null} [pluginType] BotDocumentMessageMetadata pluginType
+         */
+
+        /**
+         * Constructs a new BotDocumentMessageMetadata.
+         * @memberof waproto
+         * @classdesc Represents a BotDocumentMessageMetadata.
+         * @implements IBotDocumentMessageMetadata
+         * @constructor
+         * @param {waproto.IBotDocumentMessageMetadata=} [properties] Properties to set
+         */
+        function BotDocumentMessageMetadata(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BotDocumentMessageMetadata pluginType.
+         * @member {waproto.BotDocumentMessageMetadata.DocumentPluginType|null|undefined} pluginType
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @instance
+         */
+        BotDocumentMessageMetadata.prototype.pluginType = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotDocumentMessageMetadata.prototype, "_pluginType", {
+            get: $util.oneOfGetter($oneOfFields = ["pluginType"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new BotDocumentMessageMetadata instance using the specified properties.
+         * @function create
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {waproto.IBotDocumentMessageMetadata=} [properties] Properties to set
+         * @returns {waproto.BotDocumentMessageMetadata} BotDocumentMessageMetadata instance
+         */
+        BotDocumentMessageMetadata.create = function create(properties) {
+            return new BotDocumentMessageMetadata(properties);
+        };
+
+        /**
+         * Encodes the specified BotDocumentMessageMetadata message. Does not implicitly {@link waproto.BotDocumentMessageMetadata.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {waproto.IBotDocumentMessageMetadata} message BotDocumentMessageMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotDocumentMessageMetadata.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.pluginType != null && Object.hasOwnProperty.call(message, "pluginType"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.pluginType);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BotDocumentMessageMetadata message, length delimited. Does not implicitly {@link waproto.BotDocumentMessageMetadata.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {waproto.IBotDocumentMessageMetadata} message BotDocumentMessageMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotDocumentMessageMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BotDocumentMessageMetadata message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.BotDocumentMessageMetadata} BotDocumentMessageMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotDocumentMessageMetadata.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotDocumentMessageMetadata();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.pluginType = reader.int32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BotDocumentMessageMetadata message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.BotDocumentMessageMetadata} BotDocumentMessageMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotDocumentMessageMetadata.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BotDocumentMessageMetadata message.
+         * @function verify
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BotDocumentMessageMetadata.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.pluginType != null && message.hasOwnProperty("pluginType")) {
+                properties._pluginType = 1;
+                switch (message.pluginType) {
+                default:
+                    return "pluginType: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a BotDocumentMessageMetadata message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.BotDocumentMessageMetadata} BotDocumentMessageMetadata
+         */
+        BotDocumentMessageMetadata.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.BotDocumentMessageMetadata)
+                return object;
+            var message = new $root.waproto.BotDocumentMessageMetadata();
+            switch (object.pluginType) {
+            default:
+                if (typeof object.pluginType === "number") {
+                    message.pluginType = object.pluginType;
+                    break;
+                }
+                break;
+            case "TEXT_EXTRACTION":
+            case 0:
+                message.pluginType = 0;
+                break;
+            case "OCR_AND_IMAGES":
+            case 1:
+                message.pluginType = 1;
+                break;
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BotDocumentMessageMetadata message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {waproto.BotDocumentMessageMetadata} message BotDocumentMessageMetadata
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BotDocumentMessageMetadata.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.pluginType != null && message.hasOwnProperty("pluginType")) {
+                object.pluginType = options.enums === String ? $root.waproto.BotDocumentMessageMetadata.DocumentPluginType[message.pluginType] === undefined ? message.pluginType : $root.waproto.BotDocumentMessageMetadata.DocumentPluginType[message.pluginType] : message.pluginType;
+                if (options.oneofs)
+                    object._pluginType = "pluginType";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this BotDocumentMessageMetadata to JSON.
+         * @function toJSON
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BotDocumentMessageMetadata.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BotDocumentMessageMetadata
+         * @function getTypeUrl
+         * @memberof waproto.BotDocumentMessageMetadata
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BotDocumentMessageMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.BotDocumentMessageMetadata";
+        };
+
+        /**
+         * DocumentPluginType enum.
+         * @name waproto.BotDocumentMessageMetadata.DocumentPluginType
+         * @enum {number}
+         * @property {number} TEXT_EXTRACTION=0 TEXT_EXTRACTION value
+         * @property {number} OCR_AND_IMAGES=1 OCR_AND_IMAGES value
+         */
+        BotDocumentMessageMetadata.DocumentPluginType = (function() {
+            var valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "TEXT_EXTRACTION"] = 0;
+            values[valuesById[1] = "OCR_AND_IMAGES"] = 1;
+            return values;
+        })();
+
+        return BotDocumentMessageMetadata;
+    })();
+
     waproto.BotFeedbackMessage = (function() {
 
         /**
@@ -16429,6 +16678,446 @@ $root.waproto = (function() {
         return BotFeedbackMessage;
     })();
 
+    waproto.BotGroupMetadata = (function() {
+
+        /**
+         * Properties of a BotGroupMetadata.
+         * @memberof waproto
+         * @interface IBotGroupMetadata
+         * @property {Array.<waproto.IBotGroupParticipantMetadata>|null} [participantsMetadata] BotGroupMetadata participantsMetadata
+         */
+
+        /**
+         * Constructs a new BotGroupMetadata.
+         * @memberof waproto
+         * @classdesc Represents a BotGroupMetadata.
+         * @implements IBotGroupMetadata
+         * @constructor
+         * @param {waproto.IBotGroupMetadata=} [properties] Properties to set
+         */
+        function BotGroupMetadata(properties) {
+            this.participantsMetadata = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BotGroupMetadata participantsMetadata.
+         * @member {Array.<waproto.IBotGroupParticipantMetadata>} participantsMetadata
+         * @memberof waproto.BotGroupMetadata
+         * @instance
+         */
+        BotGroupMetadata.prototype.participantsMetadata = $util.emptyArray;
+
+        /**
+         * Creates a new BotGroupMetadata instance using the specified properties.
+         * @function create
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {waproto.IBotGroupMetadata=} [properties] Properties to set
+         * @returns {waproto.BotGroupMetadata} BotGroupMetadata instance
+         */
+        BotGroupMetadata.create = function create(properties) {
+            return new BotGroupMetadata(properties);
+        };
+
+        /**
+         * Encodes the specified BotGroupMetadata message. Does not implicitly {@link waproto.BotGroupMetadata.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {waproto.IBotGroupMetadata} message BotGroupMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotGroupMetadata.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.participantsMetadata != null && message.participantsMetadata.length)
+                for (var i = 0; i < message.participantsMetadata.length; ++i)
+                    $root.waproto.BotGroupParticipantMetadata.encode(message.participantsMetadata[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BotGroupMetadata message, length delimited. Does not implicitly {@link waproto.BotGroupMetadata.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {waproto.IBotGroupMetadata} message BotGroupMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotGroupMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BotGroupMetadata message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.BotGroupMetadata} BotGroupMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotGroupMetadata.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotGroupMetadata();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        if (!(message.participantsMetadata && message.participantsMetadata.length))
+                            message.participantsMetadata = [];
+                        message.participantsMetadata.push($root.waproto.BotGroupParticipantMetadata.decode(reader, reader.uint32()));
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BotGroupMetadata message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.BotGroupMetadata} BotGroupMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotGroupMetadata.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BotGroupMetadata message.
+         * @function verify
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BotGroupMetadata.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.participantsMetadata != null && message.hasOwnProperty("participantsMetadata")) {
+                if (!Array.isArray(message.participantsMetadata))
+                    return "participantsMetadata: array expected";
+                for (var i = 0; i < message.participantsMetadata.length; ++i) {
+                    var error = $root.waproto.BotGroupParticipantMetadata.verify(message.participantsMetadata[i]);
+                    if (error)
+                        return "participantsMetadata." + error;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a BotGroupMetadata message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.BotGroupMetadata} BotGroupMetadata
+         */
+        BotGroupMetadata.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.BotGroupMetadata)
+                return object;
+            var message = new $root.waproto.BotGroupMetadata();
+            if (object.participantsMetadata) {
+                if (!Array.isArray(object.participantsMetadata))
+                    throw TypeError(".waproto.BotGroupMetadata.participantsMetadata: array expected");
+                message.participantsMetadata = [];
+                for (var i = 0; i < object.participantsMetadata.length; ++i) {
+                    if (typeof object.participantsMetadata[i] !== "object")
+                        throw TypeError(".waproto.BotGroupMetadata.participantsMetadata: object expected");
+                    message.participantsMetadata[i] = $root.waproto.BotGroupParticipantMetadata.fromObject(object.participantsMetadata[i]);
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BotGroupMetadata message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {waproto.BotGroupMetadata} message BotGroupMetadata
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BotGroupMetadata.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.arrays || options.defaults)
+                object.participantsMetadata = [];
+            if (message.participantsMetadata && message.participantsMetadata.length) {
+                object.participantsMetadata = [];
+                for (var j = 0; j < message.participantsMetadata.length; ++j)
+                    object.participantsMetadata[j] = $root.waproto.BotGroupParticipantMetadata.toObject(message.participantsMetadata[j], options);
+            }
+            return object;
+        };
+
+        /**
+         * Converts this BotGroupMetadata to JSON.
+         * @function toJSON
+         * @memberof waproto.BotGroupMetadata
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BotGroupMetadata.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BotGroupMetadata
+         * @function getTypeUrl
+         * @memberof waproto.BotGroupMetadata
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BotGroupMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.BotGroupMetadata";
+        };
+
+        return BotGroupMetadata;
+    })();
+
+    waproto.BotGroupParticipantMetadata = (function() {
+
+        /**
+         * Properties of a BotGroupParticipantMetadata.
+         * @memberof waproto
+         * @interface IBotGroupParticipantMetadata
+         * @property {string|null} [botFbid] BotGroupParticipantMetadata botFbid
+         */
+
+        /**
+         * Constructs a new BotGroupParticipantMetadata.
+         * @memberof waproto
+         * @classdesc Represents a BotGroupParticipantMetadata.
+         * @implements IBotGroupParticipantMetadata
+         * @constructor
+         * @param {waproto.IBotGroupParticipantMetadata=} [properties] Properties to set
+         */
+        function BotGroupParticipantMetadata(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BotGroupParticipantMetadata botFbid.
+         * @member {string|null|undefined} botFbid
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @instance
+         */
+        BotGroupParticipantMetadata.prototype.botFbid = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotGroupParticipantMetadata.prototype, "_botFbid", {
+            get: $util.oneOfGetter($oneOfFields = ["botFbid"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new BotGroupParticipantMetadata instance using the specified properties.
+         * @function create
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {waproto.IBotGroupParticipantMetadata=} [properties] Properties to set
+         * @returns {waproto.BotGroupParticipantMetadata} BotGroupParticipantMetadata instance
+         */
+        BotGroupParticipantMetadata.create = function create(properties) {
+            return new BotGroupParticipantMetadata(properties);
+        };
+
+        /**
+         * Encodes the specified BotGroupParticipantMetadata message. Does not implicitly {@link waproto.BotGroupParticipantMetadata.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {waproto.IBotGroupParticipantMetadata} message BotGroupParticipantMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotGroupParticipantMetadata.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.botFbid != null && Object.hasOwnProperty.call(message, "botFbid"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.botFbid);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BotGroupParticipantMetadata message, length delimited. Does not implicitly {@link waproto.BotGroupParticipantMetadata.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {waproto.IBotGroupParticipantMetadata} message BotGroupParticipantMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotGroupParticipantMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BotGroupParticipantMetadata message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.BotGroupParticipantMetadata} BotGroupParticipantMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotGroupParticipantMetadata.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotGroupParticipantMetadata();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.botFbid = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BotGroupParticipantMetadata message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.BotGroupParticipantMetadata} BotGroupParticipantMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotGroupParticipantMetadata.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BotGroupParticipantMetadata message.
+         * @function verify
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BotGroupParticipantMetadata.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.botFbid != null && message.hasOwnProperty("botFbid")) {
+                properties._botFbid = 1;
+                if (!$util.isString(message.botFbid))
+                    return "botFbid: string expected";
+            }
+            return null;
+        };
+
+        /**
+         * Creates a BotGroupParticipantMetadata message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.BotGroupParticipantMetadata} BotGroupParticipantMetadata
+         */
+        BotGroupParticipantMetadata.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.BotGroupParticipantMetadata)
+                return object;
+            var message = new $root.waproto.BotGroupParticipantMetadata();
+            if (object.botFbid != null)
+                message.botFbid = String(object.botFbid);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BotGroupParticipantMetadata message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {waproto.BotGroupParticipantMetadata} message BotGroupParticipantMetadata
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BotGroupParticipantMetadata.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.botFbid != null && message.hasOwnProperty("botFbid")) {
+                object.botFbid = message.botFbid;
+                if (options.oneofs)
+                    object._botFbid = "botFbid";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this BotGroupParticipantMetadata to JSON.
+         * @function toJSON
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BotGroupParticipantMetadata.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BotGroupParticipantMetadata
+         * @function getTypeUrl
+         * @memberof waproto.BotGroupParticipantMetadata
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BotGroupParticipantMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.BotGroupParticipantMetadata";
+        };
+
+        return BotGroupParticipantMetadata;
+    })();
+
     waproto.BotImagineMetadata = (function() {
 
         /**
@@ -19439,6 +20128,8 @@ $root.waproto = (function() {
          * @property {waproto.IAIThreadInfo|null} [botThreadInfo] BotMetadata botThreadInfo
          * @property {waproto.IAIRegenerateMetadata|null} [regenerateMetadata] BotMetadata regenerateMetadata
          * @property {waproto.ISessionTransparencyMetadata|null} [sessionTransparencyMetadata] BotMetadata sessionTransparencyMetadata
+         * @property {waproto.IBotDocumentMessageMetadata|null} [botDocumentMessageMetadata] BotMetadata botDocumentMessageMetadata
+         * @property {waproto.IBotGroupMetadata|null} [botGroupMetadata] BotMetadata botGroupMetadata
          * @property {Uint8Array|null} [internalMetadata] BotMetadata internalMetadata
          */
 
@@ -19722,6 +20413,22 @@ $root.waproto = (function() {
         BotMetadata.prototype.sessionTransparencyMetadata = null;
 
         /**
+         * BotMetadata botDocumentMessageMetadata.
+         * @member {waproto.IBotDocumentMessageMetadata|null|undefined} botDocumentMessageMetadata
+         * @memberof waproto.BotMetadata
+         * @instance
+         */
+        BotMetadata.prototype.botDocumentMessageMetadata = null;
+
+        /**
+         * BotMetadata botGroupMetadata.
+         * @member {waproto.IBotGroupMetadata|null|undefined} botGroupMetadata
+         * @memberof waproto.BotMetadata
+         * @instance
+         */
+        BotMetadata.prototype.botGroupMetadata = null;
+
+        /**
          * BotMetadata internalMetadata.
          * @member {Uint8Array|null|undefined} internalMetadata
          * @memberof waproto.BotMetadata
@@ -19931,6 +20638,18 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotMetadata.prototype, "_botDocumentMessageMetadata", {
+            get: $util.oneOfGetter($oneOfFields = ["botDocumentMessageMetadata"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotMetadata.prototype, "_botGroupMetadata", {
+            get: $util.oneOfGetter($oneOfFields = ["botGroupMetadata"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
         Object.defineProperty(BotMetadata.prototype, "_internalMetadata", {
             get: $util.oneOfGetter($oneOfFields = ["internalMetadata"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -20026,6 +20745,10 @@ $root.waproto = (function() {
                 $root.waproto.AIRegenerateMetadata.encode(message.regenerateMetadata, writer.uint32(/* id 32, wireType 2 =*/258).fork()).ldelim();
             if (message.sessionTransparencyMetadata != null && Object.hasOwnProperty.call(message, "sessionTransparencyMetadata"))
                 $root.waproto.SessionTransparencyMetadata.encode(message.sessionTransparencyMetadata, writer.uint32(/* id 33, wireType 2 =*/266).fork()).ldelim();
+            if (message.botDocumentMessageMetadata != null && Object.hasOwnProperty.call(message, "botDocumentMessageMetadata"))
+                $root.waproto.BotDocumentMessageMetadata.encode(message.botDocumentMessageMetadata, writer.uint32(/* id 34, wireType 2 =*/274).fork()).ldelim();
+            if (message.botGroupMetadata != null && Object.hasOwnProperty.call(message, "botGroupMetadata"))
+                $root.waproto.BotGroupMetadata.encode(message.botGroupMetadata, writer.uint32(/* id 35, wireType 2 =*/282).fork()).ldelim();
             if (message.internalMetadata != null && Object.hasOwnProperty.call(message, "internalMetadata"))
                 writer.uint32(/* id 999, wireType 2 =*/7994).bytes(message.internalMetadata);
             return writer;
@@ -20192,6 +20915,14 @@ $root.waproto = (function() {
                     }
                 case 33: {
                         message.sessionTransparencyMetadata = $root.waproto.SessionTransparencyMetadata.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 34: {
+                        message.botDocumentMessageMetadata = $root.waproto.BotDocumentMessageMetadata.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 35: {
+                        message.botGroupMetadata = $root.waproto.BotGroupMetadata.decode(reader, reader.uint32());
                         break;
                     }
                 case 999: {
@@ -20477,6 +21208,22 @@ $root.waproto = (function() {
                         return "sessionTransparencyMetadata." + error;
                 }
             }
+            if (message.botDocumentMessageMetadata != null && message.hasOwnProperty("botDocumentMessageMetadata")) {
+                properties._botDocumentMessageMetadata = 1;
+                {
+                    var error = $root.waproto.BotDocumentMessageMetadata.verify(message.botDocumentMessageMetadata);
+                    if (error)
+                        return "botDocumentMessageMetadata." + error;
+                }
+            }
+            if (message.botGroupMetadata != null && message.hasOwnProperty("botGroupMetadata")) {
+                properties._botGroupMetadata = 1;
+                {
+                    var error = $root.waproto.BotGroupMetadata.verify(message.botGroupMetadata);
+                    if (error)
+                        return "botGroupMetadata." + error;
+                }
+            }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 properties._internalMetadata = 1;
                 if (!(message.internalMetadata && typeof message.internalMetadata.length === "number" || $util.isString(message.internalMetadata)))
@@ -20643,6 +21390,16 @@ $root.waproto = (function() {
                 if (typeof object.sessionTransparencyMetadata !== "object")
                     throw TypeError(".waproto.BotMetadata.sessionTransparencyMetadata: object expected");
                 message.sessionTransparencyMetadata = $root.waproto.SessionTransparencyMetadata.fromObject(object.sessionTransparencyMetadata);
+            }
+            if (object.botDocumentMessageMetadata != null) {
+                if (typeof object.botDocumentMessageMetadata !== "object")
+                    throw TypeError(".waproto.BotMetadata.botDocumentMessageMetadata: object expected");
+                message.botDocumentMessageMetadata = $root.waproto.BotDocumentMessageMetadata.fromObject(object.botDocumentMessageMetadata);
+            }
+            if (object.botGroupMetadata != null) {
+                if (typeof object.botGroupMetadata !== "object")
+                    throw TypeError(".waproto.BotMetadata.botGroupMetadata: object expected");
+                message.botGroupMetadata = $root.waproto.BotGroupMetadata.fromObject(object.botGroupMetadata);
             }
             if (object.internalMetadata != null)
                 if (typeof object.internalMetadata === "string")
@@ -20829,6 +21586,16 @@ $root.waproto = (function() {
                 object.sessionTransparencyMetadata = $root.waproto.SessionTransparencyMetadata.toObject(message.sessionTransparencyMetadata, options);
                 if (options.oneofs)
                     object._sessionTransparencyMetadata = "sessionTransparencyMetadata";
+            }
+            if (message.botDocumentMessageMetadata != null && message.hasOwnProperty("botDocumentMessageMetadata")) {
+                object.botDocumentMessageMetadata = $root.waproto.BotDocumentMessageMetadata.toObject(message.botDocumentMessageMetadata, options);
+                if (options.oneofs)
+                    object._botDocumentMessageMetadata = "botDocumentMessageMetadata";
+            }
+            if (message.botGroupMetadata != null && message.hasOwnProperty("botGroupMetadata")) {
+                object.botGroupMetadata = $root.waproto.BotGroupMetadata.toObject(message.botGroupMetadata, options);
+                if (options.oneofs)
+                    object._botGroupMetadata = "botGroupMetadata";
             }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 object.internalMetadata = options.bytes === String ? $util.base64.encode(message.internalMetadata, 0, message.internalMetadata.length) : options.bytes === Array ? Array.prototype.slice.call(message.internalMetadata) : message.internalMetadata;
@@ -62912,6 +63679,7 @@ $root.waproto = (function() {
          * @property {string|null} [privacyStatementFull] InThreadSurveyMetadata privacyStatementFull
          * @property {Array.<waproto.InThreadSurveyMetadata.IInThreadSurveyPrivacyStatementPart>|null} [privacyStatementParts] InThreadSurveyMetadata privacyStatementParts
          * @property {string|null} [feedbackToastText] InThreadSurveyMetadata feedbackToastText
+         * @property {number|null} [startQuestionIndex] InThreadSurveyMetadata startQuestionIndex
          */
 
         /**
@@ -63067,6 +63835,14 @@ $root.waproto = (function() {
          */
         InThreadSurveyMetadata.prototype.feedbackToastText = null;
 
+        /**
+         * InThreadSurveyMetadata startQuestionIndex.
+         * @member {number|null|undefined} startQuestionIndex
+         * @memberof waproto.InThreadSurveyMetadata
+         * @instance
+         */
+        InThreadSurveyMetadata.prototype.startQuestionIndex = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -63160,6 +63936,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(InThreadSurveyMetadata.prototype, "_startQuestionIndex", {
+            get: $util.oneOfGetter($oneOfFields = ["startQuestionIndex"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new InThreadSurveyMetadata instance using the specified properties.
          * @function create
@@ -63220,6 +64002,8 @@ $root.waproto = (function() {
                     $root.waproto.InThreadSurveyMetadata.InThreadSurveyPrivacyStatementPart.encode(message.privacyStatementParts[i], writer.uint32(/* id 16, wireType 2 =*/130).fork()).ldelim();
             if (message.feedbackToastText != null && Object.hasOwnProperty.call(message, "feedbackToastText"))
                 writer.uint32(/* id 17, wireType 2 =*/138).string(message.feedbackToastText);
+            if (message.startQuestionIndex != null && Object.hasOwnProperty.call(message, "startQuestionIndex"))
+                writer.uint32(/* id 18, wireType 0 =*/144).int32(message.startQuestionIndex);
             return writer;
         };
 
@@ -63324,6 +64108,10 @@ $root.waproto = (function() {
                     }
                 case 17: {
                         message.feedbackToastText = reader.string();
+                        break;
+                    }
+                case 18: {
+                        message.startQuestionIndex = reader.int32();
                         break;
                     }
                 default:
@@ -63455,6 +64243,11 @@ $root.waproto = (function() {
                 if (!$util.isString(message.feedbackToastText))
                     return "feedbackToastText: string expected";
             }
+            if (message.startQuestionIndex != null && message.hasOwnProperty("startQuestionIndex")) {
+                properties._startQuestionIndex = 1;
+                if (!$util.isInteger(message.startQuestionIndex))
+                    return "startQuestionIndex: integer expected";
+            }
             return null;
         };
 
@@ -63520,6 +64313,8 @@ $root.waproto = (function() {
             }
             if (object.feedbackToastText != null)
                 message.feedbackToastText = String(object.feedbackToastText);
+            if (object.startQuestionIndex != null)
+                message.startQuestionIndex = object.startQuestionIndex | 0;
             return message;
         };
 
@@ -63624,6 +64419,11 @@ $root.waproto = (function() {
                 object.feedbackToastText = message.feedbackToastText;
                 if (options.oneofs)
                     object._feedbackToastText = "feedbackToastText";
+            }
+            if (message.startQuestionIndex != null && message.hasOwnProperty("startQuestionIndex")) {
+                object.startQuestionIndex = message.startQuestionIndex;
+                if (options.oneofs)
+                    object._startQuestionIndex = "startQuestionIndex";
             }
             return object;
         };
