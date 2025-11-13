@@ -598,7 +598,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			await sendNode({
 				tag: 'chatstate',
 				attrs: {
-					from: isLid ? me.lid : me.id,
+					from: isLid ? me.lid ? me.lid : me.id : me.id,
 					to: toJid!,
 				},
 				content: [
@@ -640,7 +640,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		const jid: string = attrs.from
 		const participant: string = attrs.participant || attrs.from
 
-		if (shouldIgnoreJid(jid) && jid !== '@s.whatsapp.net') {
+		if (shouldIgnoreJid(jid)) {
 			return
 		}
 
