@@ -11909,6 +11909,9 @@ export namespace waproto {
 
         /** ClientPairingProps isSyncdSnapshotRecoveryEnabled */
         isSyncdSnapshotRecoveryEnabled?: (boolean|null);
+
+        /** ClientPairingProps isHsThumbnailSyncEnabled */
+        isHsThumbnailSyncEnabled?: (boolean|null);
     }
 
     /** Represents a ClientPairingProps. */
@@ -11928,6 +11931,9 @@ export namespace waproto {
 
         /** ClientPairingProps isSyncdSnapshotRecoveryEnabled. */
         public isSyncdSnapshotRecoveryEnabled?: (boolean|null);
+
+        /** ClientPairingProps isHsThumbnailSyncEnabled. */
+        public isHsThumbnailSyncEnabled?: (boolean|null);
 
         /**
          * Creates a new ClientPairingProps instance using the specified properties.
@@ -25423,6 +25429,9 @@ export namespace waproto {
 
             /** Call deeplinkPayload */
             deeplinkPayload?: (string|null);
+
+            /** Call messageContextInfo */
+            messageContextInfo?: (waproto.IMessageContextInfo|null);
         }
 
         /** Represents a Call. */
@@ -25460,6 +25469,9 @@ export namespace waproto {
 
             /** Call deeplinkPayload. */
             public deeplinkPayload?: (string|null);
+
+            /** Call messageContextInfo. */
+            public messageContextInfo?: (waproto.IMessageContextInfo|null);
 
             /**
              * Creates a new Call instance using the specified properties.

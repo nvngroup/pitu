@@ -34482,6 +34482,7 @@ $root.waproto = (function() {
          * @property {boolean|null} [isChatDbLidMigrated] ClientPairingProps isChatDbLidMigrated
          * @property {boolean|null} [isSyncdPureLidSession] ClientPairingProps isSyncdPureLidSession
          * @property {boolean|null} [isSyncdSnapshotRecoveryEnabled] ClientPairingProps isSyncdSnapshotRecoveryEnabled
+         * @property {boolean|null} [isHsThumbnailSyncEnabled] ClientPairingProps isHsThumbnailSyncEnabled
          */
 
         /**
@@ -34523,6 +34524,14 @@ $root.waproto = (function() {
          */
         ClientPairingProps.prototype.isSyncdSnapshotRecoveryEnabled = null;
 
+        /**
+         * ClientPairingProps isHsThumbnailSyncEnabled.
+         * @member {boolean|null|undefined} isHsThumbnailSyncEnabled
+         * @memberof waproto.ClientPairingProps
+         * @instance
+         */
+        ClientPairingProps.prototype.isHsThumbnailSyncEnabled = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -34541,6 +34550,12 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(ClientPairingProps.prototype, "_isSyncdSnapshotRecoveryEnabled", {
             get: $util.oneOfGetter($oneOfFields = ["isSyncdSnapshotRecoveryEnabled"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(ClientPairingProps.prototype, "_isHsThumbnailSyncEnabled", {
+            get: $util.oneOfGetter($oneOfFields = ["isHsThumbnailSyncEnabled"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -34574,6 +34589,8 @@ $root.waproto = (function() {
                 writer.uint32(/* id 2, wireType 0 =*/16).bool(message.isSyncdPureLidSession);
             if (message.isSyncdSnapshotRecoveryEnabled != null && Object.hasOwnProperty.call(message, "isSyncdSnapshotRecoveryEnabled"))
                 writer.uint32(/* id 3, wireType 0 =*/24).bool(message.isSyncdSnapshotRecoveryEnabled);
+            if (message.isHsThumbnailSyncEnabled != null && Object.hasOwnProperty.call(message, "isHsThumbnailSyncEnabled"))
+                writer.uint32(/* id 4, wireType 0 =*/32).bool(message.isHsThumbnailSyncEnabled);
             return writer;
         };
 
@@ -34618,6 +34635,10 @@ $root.waproto = (function() {
                     }
                 case 3: {
                         message.isSyncdSnapshotRecoveryEnabled = reader.bool();
+                        break;
+                    }
+                case 4: {
+                        message.isHsThumbnailSyncEnabled = reader.bool();
                         break;
                     }
                 default:
@@ -34671,6 +34692,11 @@ $root.waproto = (function() {
                 if (typeof message.isSyncdSnapshotRecoveryEnabled !== "boolean")
                     return "isSyncdSnapshotRecoveryEnabled: boolean expected";
             }
+            if (message.isHsThumbnailSyncEnabled != null && message.hasOwnProperty("isHsThumbnailSyncEnabled")) {
+                properties._isHsThumbnailSyncEnabled = 1;
+                if (typeof message.isHsThumbnailSyncEnabled !== "boolean")
+                    return "isHsThumbnailSyncEnabled: boolean expected";
+            }
             return null;
         };
 
@@ -34692,6 +34718,8 @@ $root.waproto = (function() {
                 message.isSyncdPureLidSession = Boolean(object.isSyncdPureLidSession);
             if (object.isSyncdSnapshotRecoveryEnabled != null)
                 message.isSyncdSnapshotRecoveryEnabled = Boolean(object.isSyncdSnapshotRecoveryEnabled);
+            if (object.isHsThumbnailSyncEnabled != null)
+                message.isHsThumbnailSyncEnabled = Boolean(object.isHsThumbnailSyncEnabled);
             return message;
         };
 
@@ -34722,6 +34750,11 @@ $root.waproto = (function() {
                 object.isSyncdSnapshotRecoveryEnabled = message.isSyncdSnapshotRecoveryEnabled;
                 if (options.oneofs)
                     object._isSyncdSnapshotRecoveryEnabled = "isSyncdSnapshotRecoveryEnabled";
+            }
+            if (message.isHsThumbnailSyncEnabled != null && message.hasOwnProperty("isHsThumbnailSyncEnabled")) {
+                object.isHsThumbnailSyncEnabled = message.isHsThumbnailSyncEnabled;
+                if (options.oneofs)
+                    object._isHsThumbnailSyncEnabled = "isHsThumbnailSyncEnabled";
             }
             return object;
         };
@@ -71854,7 +71887,7 @@ $root.waproto = (function() {
             if (message.newsletterFollowerInviteMessageV2 != null && Object.hasOwnProperty.call(message, "newsletterFollowerInviteMessageV2"))
                 $root.waproto.Message.NewsletterFollowerInviteMessage.encode(message.newsletterFollowerInviteMessageV2, writer.uint32(/* id 113, wireType 2 =*/906).fork()).ldelim();
             if (message.pollResultSnapshotMessageV3 != null && Object.hasOwnProperty.call(message, "pollResultSnapshotMessageV3"))
-                $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 114, wireType 2 =*/914).fork()).ldelim();
+                $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 115, wireType 2 =*/922).fork()).ldelim();
             return writer;
         };
 
@@ -72265,7 +72298,7 @@ $root.waproto = (function() {
                         message.newsletterFollowerInviteMessageV2 = $root.waproto.Message.NewsletterFollowerInviteMessage.decode(reader, reader.uint32());
                         break;
                     }
-                case 114: {
+                case 115: {
                         message.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.decode(reader, reader.uint32());
                         break;
                     }
@@ -79144,6 +79177,7 @@ $root.waproto = (function() {
              * @property {waproto.IContextInfo|null} [contextInfo] Call contextInfo
              * @property {string|null} [nativeFlowCallButtonPayload] Call nativeFlowCallButtonPayload
              * @property {string|null} [deeplinkPayload] Call deeplinkPayload
+             * @property {waproto.IMessageContextInfo|null} [messageContextInfo] Call messageContextInfo
              */
 
             /**
@@ -79233,6 +79267,14 @@ $root.waproto = (function() {
              */
             Call.prototype.deeplinkPayload = null;
 
+            /**
+             * Call messageContextInfo.
+             * @member {waproto.IMessageContextInfo|null|undefined} messageContextInfo
+             * @memberof waproto.Message.Call
+             * @instance
+             */
+            Call.prototype.messageContextInfo = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -79290,6 +79332,12 @@ $root.waproto = (function() {
                 set: $util.oneOfSetter($oneOfFields)
             });
 
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(Call.prototype, "_messageContextInfo", {
+                get: $util.oneOfGetter($oneOfFields = ["messageContextInfo"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
             /**
              * Creates a new Call instance using the specified properties.
              * @function create
@@ -79332,6 +79380,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 8, wireType 2 =*/66).string(message.nativeFlowCallButtonPayload);
                 if (message.deeplinkPayload != null && Object.hasOwnProperty.call(message, "deeplinkPayload"))
                     writer.uint32(/* id 9, wireType 2 =*/74).string(message.deeplinkPayload);
+                if (message.messageContextInfo != null && Object.hasOwnProperty.call(message, "messageContextInfo"))
+                    $root.waproto.MessageContextInfo.encode(message.messageContextInfo, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                 return writer;
             };
 
@@ -79400,6 +79450,10 @@ $root.waproto = (function() {
                         }
                     case 9: {
                             message.deeplinkPayload = reader.string();
+                            break;
+                        }
+                    case 10: {
+                            message.messageContextInfo = $root.waproto.MessageContextInfo.decode(reader, reader.uint32());
                             break;
                         }
                     default:
@@ -79486,6 +79540,14 @@ $root.waproto = (function() {
                     if (!$util.isString(message.deeplinkPayload))
                         return "deeplinkPayload: string expected";
                 }
+                if (message.messageContextInfo != null && message.hasOwnProperty("messageContextInfo")) {
+                    properties._messageContextInfo = 1;
+                    {
+                        var error = $root.waproto.MessageContextInfo.verify(message.messageContextInfo);
+                        if (error)
+                            return "messageContextInfo." + error;
+                    }
+                }
                 return null;
             };
 
@@ -79531,6 +79593,11 @@ $root.waproto = (function() {
                     message.nativeFlowCallButtonPayload = String(object.nativeFlowCallButtonPayload);
                 if (object.deeplinkPayload != null)
                     message.deeplinkPayload = String(object.deeplinkPayload);
+                if (object.messageContextInfo != null) {
+                    if (typeof object.messageContextInfo !== "object")
+                        throw TypeError(".waproto.Message.Call.messageContextInfo: object expected");
+                    message.messageContextInfo = $root.waproto.MessageContextInfo.fromObject(object.messageContextInfo);
+                }
                 return message;
             };
 
@@ -79591,6 +79658,11 @@ $root.waproto = (function() {
                     object.deeplinkPayload = message.deeplinkPayload;
                     if (options.oneofs)
                         object._deeplinkPayload = "deeplinkPayload";
+                }
+                if (message.messageContextInfo != null && message.hasOwnProperty("messageContextInfo")) {
+                    object.messageContextInfo = $root.waproto.MessageContextInfo.toObject(message.messageContextInfo, options);
+                    if (options.oneofs)
+                        object._messageContextInfo = "messageContextInfo";
                 }
                 return object;
             };
