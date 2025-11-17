@@ -189761,6 +189761,7 @@ $root.waproto = (function() {
                 case 219:
                 case 220:
                 case 221:
+                case 222:
                     break;
                 }
             }
@@ -191109,6 +191110,10 @@ $root.waproto = (function() {
             case 221:
                 message.messageStubType = 221;
                 break;
+            case "GROUP_OPEN_BOT_ADDED":
+            case 222:
+                message.messageStubType = 222;
+                break;
             }
             if (object.clearMedia != null)
                 message.clearMedia = Boolean(object.clearMedia);
@@ -192056,6 +192061,7 @@ $root.waproto = (function() {
          * @property {number} PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE=219 PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE value
          * @property {number} QUARANTINED_MESSAGE=220 QUARANTINED_MESSAGE value
          * @property {number} GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE=221 GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE value
+         * @property {number} GROUP_OPEN_BOT_ADDED=222 GROUP_OPEN_BOT_ADDED value
          */
         WebMessageInfo.StubType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -192281,6 +192287,7 @@ $root.waproto = (function() {
             values[valuesById[219] = "PHONE_NUMBER_HIDING_CHAT_DEPRECATED_MESSAGE"] = 219;
             values[valuesById[220] = "QUARANTINED_MESSAGE"] = 220;
             values[valuesById[221] = "GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE"] = 221;
+            values[valuesById[222] = "GROUP_OPEN_BOT_ADDED"] = 222;
             return values;
         })();
 
