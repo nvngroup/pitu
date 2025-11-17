@@ -530,6 +530,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			}
 
 			break
+		case 'privacy_token':
+			await handlePrivacyTokenNotification(node)
+			break
 		case 'link_code_companion_reg':
 			const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
 			const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
@@ -591,6 +594,38 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		if (Object.keys(result).length) {
 			return result
+		}
+	}
+
+	const handlePrivacyTokenNotification = async(node: BinaryNode) => {
+		const tokensNode: BinaryNode | undefined = getBinaryNodeChild(node, 'tokens')
+		const from: string = jidNormalizedUser(node.attrs.from)
+
+		if (!tokensNode) {
+			return
+		}
+
+		const tokenNodes: BinaryNode[] = getBinaryNodeChildren(tokensNode, 'token')
+
+		for (const tokenNode of tokenNodes) {
+			const { attrs, content } = tokenNode
+			const type: string = attrs.type
+			const timestamp: string = attrs.t
+
+			if (type === 'trusted_contact' && content instanceof Buffer) {
+				logger.debug(
+					{
+						from,
+						timestamp,
+						tcToken: content
+					},
+					'received trusted contact token'
+				)
+
+				await authState.keys.set({
+					'contacts-tc-token': { [from]: { token: content } }
+				})
+			}
 		}
 	}
 

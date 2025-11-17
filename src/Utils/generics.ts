@@ -335,7 +335,7 @@ export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<{}> =
 	* A utility that fetches the latest web version of whatsapp.
 	* Use to ensure your WA connection is always on the latest version
 	*/
-export const fetchLatestWaWebVersion = async (options: RequestInit = {}) => {
+export const fetchLatestWaWebVersion = async(options: RequestInit = {}) => {
 	try {
 		const defaultHeaders = {
 			'sec-fetch-site': 'none',
