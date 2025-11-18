@@ -10,7 +10,15 @@ import { macErrorManager } from './mac-error-handler'
 import { sessionDiagnostics } from './session-diagnostics'
 import { MessageType, NO_MESSAGE_FOUND_ERROR_TEXT } from './types'
 
-const lidCache: CacheStore = CacheManager.getInstance('LID_CACHE')
+let lidCache: CacheStore | null = null
+
+const getLidCache = (): CacheStore => {
+	if (!lidCache) {
+		lidCache = CacheManager.getInstance('LID_CACHE')
+	}
+
+	return lidCache
+}
 
 const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
 	if (!sender.includes('@s.whatsapp.net')) {
@@ -378,9 +386,10 @@ export function decodeMessageNode(
 		}
 
 		if (senderLid && senderPn) {
-			const verify = lidCache.get<string>(jidNormalizedUser(senderPn))
+			const cache: CacheStore = getLidCache()
+			const verify: string | undefined = cache.get<string>(jidNormalizedUser(senderPn))
 			if (!verify) {
-				lidCache.set(jidNormalizedUser(senderPn), jidNormalizedUser(senderLid))
+				cache.set(jidNormalizedUser(senderPn), jidNormalizedUser(senderLid))
 			}
 		}
 	} else if (isJidGroup(from)) {
