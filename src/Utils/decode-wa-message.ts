@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { LIDMappingStore } from '../Signal/lid-mapping'
-import { CacheManager } from '../Socket'
+import { CacheManager } from '../Socket/cache-manager'
 import { CacheStore, SignalRepository, WAMessageKey } from '../Types'
 import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaIa, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
