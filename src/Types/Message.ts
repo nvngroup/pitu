@@ -21,6 +21,7 @@ export type WAMessageKey = waproto.IMessageKey & {
     peerRecipientPn?: string
     peerRecipientLid?: string
     isViewOnce?: boolean
+    addressingMode?: string
 }
 export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo

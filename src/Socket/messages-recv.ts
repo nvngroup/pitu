@@ -816,7 +816,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const handleNotification = async(node: BinaryNode) => {
 		const remoteJid: string = node.attrs.from
-		if (shouldIgnoreJid(remoteJid) && remoteJid !== '@s.whatsapp.net') {
+		if (shouldIgnoreJid(remoteJid) && remoteJid !== S_WHATSAPP_NET) {
 			logger.debug({ remoteJid, id: node.attrs.id }, 'ignored notification')
 			await sendMessageAck(node)
 			return
@@ -980,8 +980,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 								} catch (retryErr) {
 									logger.error({ retryErr }, 'Failed to send retry after error handling')
 								}
-
-
 							}
 						})
 					} else {
@@ -1004,8 +1002,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						if (isAnyHistoryMsg) {
 							const jid: string = jidNormalizedUser(msg.key.remoteJid!)
 							await sendReceipt(jid, undefined, [msg.key.id!], 'hist_sync')
-
-
 						}
 					}
 

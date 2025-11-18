@@ -341,6 +341,7 @@ export function decodeMessageNode(
 	const peerRecipientPn: string | undefined = stanza?.attrs?.peer_recipient_pn
 	const peerRecipientLid: string | undefined = stanza?.attrs?.peer_recipient_lid
 	const recipient: string | undefined = stanza.attrs.recipient
+	const addressingMode: string | undefined = stanza.attrs.addressing_mode
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
 	const isMeLid = (jid: string) => areJidsSameUser(jid, meLid)
 	const fromMe: boolean = (isLidUser(from) || isLidUser(participant) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
@@ -441,6 +442,7 @@ export function decodeMessageNode(
 		...(participantLid && { participantLid }),
 		...(peerRecipientPn && { peerRecipientPn }),
 		...(peerRecipientLid && { peerRecipientLid }),
+		...(addressingMode && { addressingMode })
 	}
 
 	const fullMessage: waproto.IWebMessageInfo = {
