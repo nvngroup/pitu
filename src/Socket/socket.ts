@@ -656,8 +656,7 @@ export const makeSocket = (config: SocketConfig) => {
 		authState.creds.pairingCode = pairingCode
 		authState.creds.me = {
 			id: jidEncode(phoneNumber, 's.whatsapp.net'),
-			name: '~',
-			lid: 'undefined'
+			name: '~'
 		}
 		ev.emit('creds.update', authState.creds)
 		await sendNode({
