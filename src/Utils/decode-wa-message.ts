@@ -3,7 +3,7 @@ import { waproto } from '../../WAProto'
 import { LIDMappingStore } from '../Signal/lid-mapping'
 import { CacheManager } from '../Socket/cache-manager'
 import { CacheStore, SignalRepository, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaIa, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
+import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
@@ -335,7 +335,7 @@ export function decodeMessageNode(
 	const fromMe: boolean = (isLidUser(from) || isLidUser(participant) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
 
 	if (isJidUser(from) || isLidUser(from)) {
-		if (recipient && !isJidMetaIa(recipient)) {
+		if (recipient && !isJidMetaAI(recipient)) {
 			if (!isMe(from) && !isMeLid(from)) {
 				throw new Boom('receipient present, but msg not from me', { data: stanza })
 			}

@@ -41,16 +41,28 @@ export const jidDecode = (jid: string | undefined): FullJid | undefined => {
 	}
 }
 
-export const areJidsSameUser = (jid1: string | undefined, jid2: string | undefined) => (
-	jidDecode(jid1)?.user === jidDecode(jid2)?.user
-)
-export const isJidMetaIa = (jid: string | undefined) => jid?.endsWith('@bot')
+/** is the jid a user */
+export const areJidsSameUser = (jid1: string | undefined, jid2: string | undefined) => jidDecode(jid1)?.user === jidDecode(jid2)?.user
+/** is the jid Meta AI */
+export const isJidMetaAI = (jid: string | undefined) => jid?.endsWith('@bot')
+/** is the jid a PN user */
 export const isJidUser = (jid: string | undefined) => (jid?.endsWith('@s.whatsapp.net'))
-export const isLidUser = (jid: string | undefined) => (jid?.endsWith('@lid'))
-export const isJidBroadcast = (jid: string | undefined) => (jid?.endsWith('@broadcast'))
-export const isJidGroup = (jid: string | undefined) => (jid?.endsWith('@g.us'))
+/** is the jid a PN user */
+export const isPnUser = (jid: string | undefined) => jid?.endsWith('@s.whatsapp.net')
+/** is the jid a LID */
+export const isLidUser = (jid: string | undefined) => jid?.endsWith('@lid')
+/** is the jid a broadcast */
+export const isJidBroadcast = (jid: string | undefined) => jid?.endsWith('@broadcast')
+/** is the jid a group */
+export const isJidGroup = (jid: string | undefined) => jid?.endsWith('@g.us')
+/** is the jid the status broadcast */
 export const isJidStatusBroadcast = (jid: string) => jid === 'status@broadcast'
-export const isJidNewsletter = (jid: string | undefined) => (jid?.endsWith('@newsletter'))
+/** is the jid a newsletter */
+export const isJidNewsletter = (jid: string | undefined) => jid?.endsWith('@newsletter')
+/** is the jid a hosted PN */
+export const isHostedPnUser = (jid: string | undefined) => jid?.endsWith('@hosted')
+/** is the jid a hosted LID */
+export const isHostedLidUser = (jid: string | undefined) => jid?.endsWith('@hosted.lid')
 
 const botRegexp = /^1313555\d{4}$|^131655500\d{2}$/
 export const isJidBot = (jid: string | undefined) => jid && botRegexp.test(jid.split('@')[0]) && jid.endsWith('@c.us')

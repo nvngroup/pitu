@@ -23,7 +23,7 @@ const SIGNAL_CONSTANTS = {
 } as const
 
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
-	const lidMapping = new LIDMappingStore(auth.keys as SignalKeyStoreWithTransaction)
+	const lidMapping = new LIDMappingStore(auth.keys as SignalKeyStoreWithTransaction, logger)
 	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
 	const recentMigrations = new NodeCache({
