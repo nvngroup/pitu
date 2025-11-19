@@ -90,16 +90,62 @@ export const generateRegistrationNode = (
 		platformType: getPlatformType(config.browser[1]),
 		requireFullSync: config.syncFullHistory,
 		historySyncConfig: {
-			storageQuotaMb: 569150,
-			inlineInitialPayloadInE2EeMsg: false,
+			/** HistorySyncConfig fullSyncDaysLimit */
+			fullSyncDaysLimit: config.syncFullHistoryLimitDays,
+
+			/** HistorySyncConfig fullSyncSizeMbLimit */
+			fullSyncSizeMbLimit: undefined,
+
+			/** HistorySyncConfig storageQuotaMb */
+			storageQuotaMb: 10240,
+
+			/** HistorySyncConfig inlineInitialPayloadInE2EeMsg */
+			inlineInitialPayloadInE2EeMsg: true,
+
+			/** HistorySyncConfig recentSyncDaysLimit */
+			recentSyncDaysLimit: config.recentSyncDaysLimit,
+
+			/** HistorySyncConfig supportCallLogHistory */
 			supportCallLogHistory: false,
+
+			/** HistorySyncConfig supportBotUserAgentChatHistory */
 			supportBotUserAgentChatHistory: true,
+
+			/** HistorySyncConfig supportCagReactionsAndPolls */
 			supportCagReactionsAndPolls: true,
+
+			/** HistorySyncConfig supportBizHostedMsg */
 			supportBizHostedMsg: true,
+
+			/** HistorySyncConfig supportRecentSyncChunkMessageCountTuning */
 			supportRecentSyncChunkMessageCountTuning: true,
+
+			/** HistorySyncConfig supportHostedGroupMsg */
 			supportHostedGroupMsg: true,
+
+			/** HistorySyncConfig supportFbidBotChatHistory */
 			supportFbidBotChatHistory: true,
-			supportMessageAssociation: true
+
+			/** HistorySyncConfig supportAddOnHistorySyncMigration */
+			supportAddOnHistorySyncMigration: undefined,
+
+			/** HistorySyncConfig supportMessageAssociation */
+			supportMessageAssociation: true,
+
+			/** HistorySyncConfig supportGroupHistory */
+			supportGroupHistory: true,
+
+			/** HistorySyncConfig onDemandReady */
+			onDemandReady: undefined,
+
+			/** HistorySyncConfig supportGuestChat */
+			supportGuestChat: undefined,
+
+			/** HistorySyncConfig completeOnDemandReady */
+			completeOnDemandReady: undefined,
+
+			/** HistorySyncConfig thumbnailSyncDaysLimit */
+			thumbnailSyncDaysLimit: config.thumbnailSyncDaysLimit,
 		},
 		version: {
 			primary: 10,

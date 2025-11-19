@@ -48,7 +48,10 @@ export type SocketConfig = {
     placeholderResendCache?: CacheStore
     onWhatsAppCache?: CacheStore
     linkPreviewImageThumbnailWidth: number
-    syncFullHistory: boolean
+    syncFullHistory?: boolean
+    syncFullHistoryLimitDays?: number
+    recentSyncDaysLimit?: number
+    thumbnailSyncDaysLimit?: number
     fireInitQueries: boolean
     generateHighQualityLinkPreview: boolean
     shouldIgnoreJid: (jid: string) => boolean | undefined
