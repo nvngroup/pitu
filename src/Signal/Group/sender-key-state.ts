@@ -17,9 +17,10 @@ export class SenderKeyState {
 		senderKeyStateStructure?: SenderKeyStateStructure | null
 	) {
 		if (senderKeyStateStructure) {
-			this.senderKeyStateStructure = {
-				...senderKeyStateStructure,
-				senderMessageKeys: senderKeyStateStructure.senderMessageKeys || []
+			if (!Array.isArray(senderKeyStateStructure.senderMessageKeys)) {
+				this.senderKeyStateStructure = { ...senderKeyStateStructure, senderMessageKeys: [] }
+			} else {
+				this.senderKeyStateStructure = senderKeyStateStructure
 			}
 		} else {
 			const keyId: number = id ?? 0
