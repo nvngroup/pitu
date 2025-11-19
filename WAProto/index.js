@@ -105218,7 +105218,6 @@ $root.waproto = (function() {
              * @interface IPaymentExtendedMetadata
              * @property {number|null} [type] PaymentExtendedMetadata type
              * @property {string|null} [platform] PaymentExtendedMetadata platform
-             * @property {string|null} [messageParamsJson] PaymentExtendedMetadata messageParamsJson
              */
 
             /**
@@ -105252,14 +105251,6 @@ $root.waproto = (function() {
              */
             PaymentExtendedMetadata.prototype.platform = null;
 
-            /**
-             * PaymentExtendedMetadata messageParamsJson.
-             * @member {string|null|undefined} messageParamsJson
-             * @memberof waproto.Message.PaymentExtendedMetadata
-             * @instance
-             */
-            PaymentExtendedMetadata.prototype.messageParamsJson = null;
-
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -105272,12 +105263,6 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(PaymentExtendedMetadata.prototype, "_platform", {
                 get: $util.oneOfGetter($oneOfFields = ["platform"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            // Virtual OneOf for proto3 optional field
-            Object.defineProperty(PaymentExtendedMetadata.prototype, "_messageParamsJson", {
-                get: $util.oneOfGetter($oneOfFields = ["messageParamsJson"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -105309,8 +105294,6 @@ $root.waproto = (function() {
                     writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.type);
                 if (message.platform != null && Object.hasOwnProperty.call(message, "platform"))
                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.platform);
-                if (message.messageParamsJson != null && Object.hasOwnProperty.call(message, "messageParamsJson"))
-                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.messageParamsJson);
                 return writer;
             };
 
@@ -105351,10 +105334,6 @@ $root.waproto = (function() {
                         }
                     case 2: {
                             message.platform = reader.string();
-                            break;
-                        }
-                    case 3: {
-                            message.messageParamsJson = reader.string();
                             break;
                         }
                     default:
@@ -105403,11 +105382,6 @@ $root.waproto = (function() {
                     if (!$util.isString(message.platform))
                         return "platform: string expected";
                 }
-                if (message.messageParamsJson != null && message.hasOwnProperty("messageParamsJson")) {
-                    properties._messageParamsJson = 1;
-                    if (!$util.isString(message.messageParamsJson))
-                        return "messageParamsJson: string expected";
-                }
                 return null;
             };
 
@@ -105427,8 +105401,6 @@ $root.waproto = (function() {
                     message.type = object.type >>> 0;
                 if (object.platform != null)
                     message.platform = String(object.platform);
-                if (object.messageParamsJson != null)
-                    message.messageParamsJson = String(object.messageParamsJson);
                 return message;
             };
 
@@ -105454,11 +105426,6 @@ $root.waproto = (function() {
                     object.platform = message.platform;
                     if (options.oneofs)
                         object._platform = "platform";
-                }
-                if (message.messageParamsJson != null && message.hasOwnProperty("messageParamsJson")) {
-                    object.messageParamsJson = message.messageParamsJson;
-                    if (options.oneofs)
-                        object._messageParamsJson = "messageParamsJson";
                 }
                 return object;
             };
@@ -136301,6 +136268,7 @@ $root.waproto = (function() {
      * @property {number} NEWSLETTER_SAVED_INTERESTS_ACTION=75 NEWSLETTER_SAVED_INTERESTS_ACTION value
      * @property {number} AI_THREAD_RENAME_ACTION=76 AI_THREAD_RENAME_ACTION value
      * @property {number} INTERACTIVE_MESSAGE_ACTION=77 INTERACTIVE_MESSAGE_ACTION value
+     * @property {number} SETTINGS_SYNC_ACTION=78 SETTINGS_SYNC_ACTION value
      * @property {number} SHARE_OWN_PN=10001 SHARE_OWN_PN value
      * @property {number} BUSINESS_BROADCAST_ACTION=10002 BUSINESS_BROADCAST_ACTION value
      */
@@ -136377,6 +136345,7 @@ $root.waproto = (function() {
         values[valuesById[75] = "NEWSLETTER_SAVED_INTERESTS_ACTION"] = 75;
         values[valuesById[76] = "AI_THREAD_RENAME_ACTION"] = 76;
         values[valuesById[77] = "INTERACTIVE_MESSAGE_ACTION"] = 77;
+        values[valuesById[78] = "SETTINGS_SYNC_ACTION"] = 78;
         values[valuesById[10001] = "SHARE_OWN_PN"] = 10001;
         values[valuesById[10002] = "BUSINESS_BROADCAST_ACTION"] = 10002;
         return values;
@@ -156881,7 +156850,6 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.ICtwaPerCustomerDataSharingAction|null} [ctwaPerCustomerDataSharingAction] SyncActionValue ctwaPerCustomerDataSharingAction
          * @property {waproto.SyncActionValue.IPaymentTosAction|null} [paymentTosAction] SyncActionValue paymentTosAction
          * @property {waproto.SyncActionValue.IPrivacySettingChannelsPersonalisedRecommendationAction|null} [privacySettingChannelsPersonalisedRecommendationAction] SyncActionValue privacySettingChannelsPersonalisedRecommendationAction
-         * @property {waproto.SyncActionValue.IBusinessBroadcastAssociationAction|null} [businessBroadcastAssociationAction] SyncActionValue businessBroadcastAssociationAction
          * @property {waproto.SyncActionValue.IDetectedOutcomesStatusAction|null} [detectedOutcomesStatusAction] SyncActionValue detectedOutcomesStatusAction
          * @property {waproto.SyncActionValue.IMaibaAIFeaturesControlAction|null} [maibaAiFeaturesControlAction] SyncActionValue maibaAiFeaturesControlAction
          * @property {waproto.SyncActionValue.IBusinessBroadcastListAction|null} [businessBroadcastListAction] SyncActionValue businessBroadcastListAction
@@ -156892,6 +156860,7 @@ $root.waproto = (function() {
          * @property {waproto.SyncActionValue.INewsletterSavedInterestsAction|null} [newsletterSavedInterestsAction] SyncActionValue newsletterSavedInterestsAction
          * @property {waproto.SyncActionValue.IAiThreadRenameAction|null} [aiThreadRenameAction] SyncActionValue aiThreadRenameAction
          * @property {waproto.SyncActionValue.IInteractiveMessageAction|null} [interactiveMessageAction] SyncActionValue interactiveMessageAction
+         * @property {waproto.SyncActionValue.ISettingsSyncAction|null} [settingsSyncAction] SyncActionValue settingsSyncAction
          */
 
         /**
@@ -157374,14 +157343,6 @@ $root.waproto = (function() {
         SyncActionValue.prototype.privacySettingChannelsPersonalisedRecommendationAction = null;
 
         /**
-         * SyncActionValue businessBroadcastAssociationAction.
-         * @member {waproto.SyncActionValue.IBusinessBroadcastAssociationAction|null|undefined} businessBroadcastAssociationAction
-         * @memberof waproto.SyncActionValue
-         * @instance
-         */
-        SyncActionValue.prototype.businessBroadcastAssociationAction = null;
-
-        /**
          * SyncActionValue detectedOutcomesStatusAction.
          * @member {waproto.SyncActionValue.IDetectedOutcomesStatusAction|null|undefined} detectedOutcomesStatusAction
          * @memberof waproto.SyncActionValue
@@ -157460,6 +157421,14 @@ $root.waproto = (function() {
          * @instance
          */
         SyncActionValue.prototype.interactiveMessageAction = null;
+
+        /**
+         * SyncActionValue settingsSyncAction.
+         * @member {waproto.SyncActionValue.ISettingsSyncAction|null|undefined} settingsSyncAction
+         * @memberof waproto.SyncActionValue
+         * @instance
+         */
+        SyncActionValue.prototype.settingsSyncAction = null;
 
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
@@ -157813,12 +157782,6 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
-        Object.defineProperty(SyncActionValue.prototype, "_businessBroadcastAssociationAction", {
-            get: $util.oneOfGetter($oneOfFields = ["businessBroadcastAssociationAction"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        // Virtual OneOf for proto3 optional field
         Object.defineProperty(SyncActionValue.prototype, "_detectedOutcomesStatusAction", {
             get: $util.oneOfGetter($oneOfFields = ["detectedOutcomesStatusAction"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -157875,6 +157838,12 @@ $root.waproto = (function() {
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(SyncActionValue.prototype, "_interactiveMessageAction", {
             get: $util.oneOfGetter($oneOfFields = ["interactiveMessageAction"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(SyncActionValue.prototype, "_settingsSyncAction", {
+            get: $util.oneOfGetter($oneOfFields = ["settingsSyncAction"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -158018,8 +157987,6 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.PaymentTosAction.encode(message.paymentTosAction, writer.uint32(/* id 63, wireType 2 =*/506).fork()).ldelim();
             if (message.privacySettingChannelsPersonalisedRecommendationAction != null && Object.hasOwnProperty.call(message, "privacySettingChannelsPersonalisedRecommendationAction"))
                 $root.waproto.SyncActionValue.PrivacySettingChannelsPersonalisedRecommendationAction.encode(message.privacySettingChannelsPersonalisedRecommendationAction, writer.uint32(/* id 64, wireType 2 =*/514).fork()).ldelim();
-            if (message.businessBroadcastAssociationAction != null && Object.hasOwnProperty.call(message, "businessBroadcastAssociationAction"))
-                $root.waproto.SyncActionValue.BusinessBroadcastAssociationAction.encode(message.businessBroadcastAssociationAction, writer.uint32(/* id 65, wireType 2 =*/522).fork()).ldelim();
             if (message.detectedOutcomesStatusAction != null && Object.hasOwnProperty.call(message, "detectedOutcomesStatusAction"))
                 $root.waproto.SyncActionValue.DetectedOutcomesStatusAction.encode(message.detectedOutcomesStatusAction, writer.uint32(/* id 66, wireType 2 =*/530).fork()).ldelim();
             if (message.maibaAiFeaturesControlAction != null && Object.hasOwnProperty.call(message, "maibaAiFeaturesControlAction"))
@@ -158040,6 +158007,8 @@ $root.waproto = (function() {
                 $root.waproto.SyncActionValue.AiThreadRenameAction.encode(message.aiThreadRenameAction, writer.uint32(/* id 76, wireType 2 =*/610).fork()).ldelim();
             if (message.interactiveMessageAction != null && Object.hasOwnProperty.call(message, "interactiveMessageAction"))
                 $root.waproto.SyncActionValue.InteractiveMessageAction.encode(message.interactiveMessageAction, writer.uint32(/* id 77, wireType 2 =*/618).fork()).ldelim();
+            if (message.settingsSyncAction != null && Object.hasOwnProperty.call(message, "settingsSyncAction"))
+                $root.waproto.SyncActionValue.SettingsSyncAction.encode(message.settingsSyncAction, writer.uint32(/* id 78, wireType 2 =*/626).fork()).ldelim();
             return writer;
         };
 
@@ -158306,10 +158275,6 @@ $root.waproto = (function() {
                         message.privacySettingChannelsPersonalisedRecommendationAction = $root.waproto.SyncActionValue.PrivacySettingChannelsPersonalisedRecommendationAction.decode(reader, reader.uint32());
                         break;
                     }
-                case 65: {
-                        message.businessBroadcastAssociationAction = $root.waproto.SyncActionValue.BusinessBroadcastAssociationAction.decode(reader, reader.uint32());
-                        break;
-                    }
                 case 66: {
                         message.detectedOutcomesStatusAction = $root.waproto.SyncActionValue.DetectedOutcomesStatusAction.decode(reader, reader.uint32());
                         break;
@@ -158348,6 +158313,10 @@ $root.waproto = (function() {
                     }
                 case 77: {
                         message.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 78: {
+                        message.settingsSyncAction = $root.waproto.SyncActionValue.SettingsSyncAction.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -158847,14 +158816,6 @@ $root.waproto = (function() {
                         return "privacySettingChannelsPersonalisedRecommendationAction." + error;
                 }
             }
-            if (message.businessBroadcastAssociationAction != null && message.hasOwnProperty("businessBroadcastAssociationAction")) {
-                properties._businessBroadcastAssociationAction = 1;
-                {
-                    var error = $root.waproto.SyncActionValue.BusinessBroadcastAssociationAction.verify(message.businessBroadcastAssociationAction);
-                    if (error)
-                        return "businessBroadcastAssociationAction." + error;
-                }
-            }
             if (message.detectedOutcomesStatusAction != null && message.hasOwnProperty("detectedOutcomesStatusAction")) {
                 properties._detectedOutcomesStatusAction = 1;
                 {
@@ -158933,6 +158894,14 @@ $root.waproto = (function() {
                     var error = $root.waproto.SyncActionValue.InteractiveMessageAction.verify(message.interactiveMessageAction);
                     if (error)
                         return "interactiveMessageAction." + error;
+                }
+            }
+            if (message.settingsSyncAction != null && message.hasOwnProperty("settingsSyncAction")) {
+                properties._settingsSyncAction = 1;
+                {
+                    var error = $root.waproto.SyncActionValue.SettingsSyncAction.verify(message.settingsSyncAction);
+                    if (error)
+                        return "settingsSyncAction." + error;
                 }
             }
             return null;
@@ -159244,11 +159213,6 @@ $root.waproto = (function() {
                     throw TypeError(".waproto.SyncActionValue.privacySettingChannelsPersonalisedRecommendationAction: object expected");
                 message.privacySettingChannelsPersonalisedRecommendationAction = $root.waproto.SyncActionValue.PrivacySettingChannelsPersonalisedRecommendationAction.fromObject(object.privacySettingChannelsPersonalisedRecommendationAction);
             }
-            if (object.businessBroadcastAssociationAction != null) {
-                if (typeof object.businessBroadcastAssociationAction !== "object")
-                    throw TypeError(".waproto.SyncActionValue.businessBroadcastAssociationAction: object expected");
-                message.businessBroadcastAssociationAction = $root.waproto.SyncActionValue.BusinessBroadcastAssociationAction.fromObject(object.businessBroadcastAssociationAction);
-            }
             if (object.detectedOutcomesStatusAction != null) {
                 if (typeof object.detectedOutcomesStatusAction !== "object")
                     throw TypeError(".waproto.SyncActionValue.detectedOutcomesStatusAction: object expected");
@@ -159298,6 +159262,11 @@ $root.waproto = (function() {
                 if (typeof object.interactiveMessageAction !== "object")
                     throw TypeError(".waproto.SyncActionValue.interactiveMessageAction: object expected");
                 message.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.fromObject(object.interactiveMessageAction);
+            }
+            if (object.settingsSyncAction != null) {
+                if (typeof object.settingsSyncAction !== "object")
+                    throw TypeError(".waproto.SyncActionValue.settingsSyncAction: object expected");
+                message.settingsSyncAction = $root.waproto.SyncActionValue.SettingsSyncAction.fromObject(object.settingsSyncAction);
             }
             return message;
         };
@@ -159608,11 +159577,6 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._privacySettingChannelsPersonalisedRecommendationAction = "privacySettingChannelsPersonalisedRecommendationAction";
             }
-            if (message.businessBroadcastAssociationAction != null && message.hasOwnProperty("businessBroadcastAssociationAction")) {
-                object.businessBroadcastAssociationAction = $root.waproto.SyncActionValue.BusinessBroadcastAssociationAction.toObject(message.businessBroadcastAssociationAction, options);
-                if (options.oneofs)
-                    object._businessBroadcastAssociationAction = "businessBroadcastAssociationAction";
-            }
             if (message.detectedOutcomesStatusAction != null && message.hasOwnProperty("detectedOutcomesStatusAction")) {
                 object.detectedOutcomesStatusAction = $root.waproto.SyncActionValue.DetectedOutcomesStatusAction.toObject(message.detectedOutcomesStatusAction, options);
                 if (options.oneofs)
@@ -159662,6 +159626,11 @@ $root.waproto = (function() {
                 object.interactiveMessageAction = $root.waproto.SyncActionValue.InteractiveMessageAction.toObject(message.interactiveMessageAction, options);
                 if (options.oneofs)
                     object._interactiveMessageAction = "interactiveMessageAction";
+            }
+            if (message.settingsSyncAction != null && message.hasOwnProperty("settingsSyncAction")) {
+                object.settingsSyncAction = $root.waproto.SyncActionValue.SettingsSyncAction.toObject(message.settingsSyncAction, options);
+                if (options.oneofs)
+                    object._settingsSyncAction = "settingsSyncAction";
             }
             return object;
         };
@@ -174359,6 +174328,1102 @@ $root.waproto = (function() {
             };
 
             return RemoveRecentStickerAction;
+        })();
+
+        SyncActionValue.SettingsSyncAction = (function() {
+
+            /**
+             * Properties of a SettingsSyncAction.
+             * @memberof waproto.SyncActionValue
+             * @interface ISettingsSyncAction
+             * @property {boolean|null} [startAtLogin] SettingsSyncAction startAtLogin
+             * @property {boolean|null} [minimizeToTray] SettingsSyncAction minimizeToTray
+             * @property {string|null} [language] SettingsSyncAction language
+             * @property {boolean|null} [replaceTextWithEmoji] SettingsSyncAction replaceTextWithEmoji
+             * @property {waproto.SyncActionValue.SettingsSyncAction.DisplayMode|null} [bannerNotificationDisplayMode] SettingsSyncAction bannerNotificationDisplayMode
+             * @property {waproto.SyncActionValue.SettingsSyncAction.DisplayMode|null} [unreadCounterBadgeDisplayMode] SettingsSyncAction unreadCounterBadgeDisplayMode
+             * @property {boolean|null} [isMessagesNotificationEnabled] SettingsSyncAction isMessagesNotificationEnabled
+             * @property {boolean|null} [isCallsNotificationEnabled] SettingsSyncAction isCallsNotificationEnabled
+             * @property {boolean|null} [isReactionsNotificationEnabled] SettingsSyncAction isReactionsNotificationEnabled
+             * @property {boolean|null} [isStatusReactionsNotificationEnabled] SettingsSyncAction isStatusReactionsNotificationEnabled
+             * @property {boolean|null} [isTextPreviewForNotificationEnabled] SettingsSyncAction isTextPreviewForNotificationEnabled
+             * @property {number|null} [defaultNotificationToneId] SettingsSyncAction defaultNotificationToneId
+             * @property {number|null} [groupDefaultNotificationToneId] SettingsSyncAction groupDefaultNotificationToneId
+             * @property {number|null} [appTheme] SettingsSyncAction appTheme
+             * @property {number|null} [wallpaperId] SettingsSyncAction wallpaperId
+             * @property {boolean|null} [isDoodleWallpaperEnabled] SettingsSyncAction isDoodleWallpaperEnabled
+             * @property {number|null} [fontSize] SettingsSyncAction fontSize
+             * @property {boolean|null} [isPhotosAutodownloadEnabled] SettingsSyncAction isPhotosAutodownloadEnabled
+             * @property {boolean|null} [isAudiosAutodownloadEnabled] SettingsSyncAction isAudiosAutodownloadEnabled
+             * @property {boolean|null} [isVideosAutodownloadEnabled] SettingsSyncAction isVideosAutodownloadEnabled
+             * @property {boolean|null} [isDocumentsAutodownloadEnabled] SettingsSyncAction isDocumentsAutodownloadEnabled
+             * @property {boolean|null} [disableLinkPreviews] SettingsSyncAction disableLinkPreviews
+             * @property {number|null} [notificationToneId] SettingsSyncAction notificationToneId
+             */
+
+            /**
+             * Constructs a new SettingsSyncAction.
+             * @memberof waproto.SyncActionValue
+             * @classdesc Represents a SettingsSyncAction.
+             * @implements ISettingsSyncAction
+             * @constructor
+             * @param {waproto.SyncActionValue.ISettingsSyncAction=} [properties] Properties to set
+             */
+            function SettingsSyncAction(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * SettingsSyncAction startAtLogin.
+             * @member {boolean|null|undefined} startAtLogin
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.startAtLogin = null;
+
+            /**
+             * SettingsSyncAction minimizeToTray.
+             * @member {boolean|null|undefined} minimizeToTray
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.minimizeToTray = null;
+
+            /**
+             * SettingsSyncAction language.
+             * @member {string|null|undefined} language
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.language = null;
+
+            /**
+             * SettingsSyncAction replaceTextWithEmoji.
+             * @member {boolean|null|undefined} replaceTextWithEmoji
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.replaceTextWithEmoji = null;
+
+            /**
+             * SettingsSyncAction bannerNotificationDisplayMode.
+             * @member {waproto.SyncActionValue.SettingsSyncAction.DisplayMode|null|undefined} bannerNotificationDisplayMode
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.bannerNotificationDisplayMode = null;
+
+            /**
+             * SettingsSyncAction unreadCounterBadgeDisplayMode.
+             * @member {waproto.SyncActionValue.SettingsSyncAction.DisplayMode|null|undefined} unreadCounterBadgeDisplayMode
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.unreadCounterBadgeDisplayMode = null;
+
+            /**
+             * SettingsSyncAction isMessagesNotificationEnabled.
+             * @member {boolean|null|undefined} isMessagesNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isMessagesNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isCallsNotificationEnabled.
+             * @member {boolean|null|undefined} isCallsNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isCallsNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isReactionsNotificationEnabled.
+             * @member {boolean|null|undefined} isReactionsNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isReactionsNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isStatusReactionsNotificationEnabled.
+             * @member {boolean|null|undefined} isStatusReactionsNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isStatusReactionsNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isTextPreviewForNotificationEnabled.
+             * @member {boolean|null|undefined} isTextPreviewForNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isTextPreviewForNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction defaultNotificationToneId.
+             * @member {number|null|undefined} defaultNotificationToneId
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.defaultNotificationToneId = null;
+
+            /**
+             * SettingsSyncAction groupDefaultNotificationToneId.
+             * @member {number|null|undefined} groupDefaultNotificationToneId
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.groupDefaultNotificationToneId = null;
+
+            /**
+             * SettingsSyncAction appTheme.
+             * @member {number|null|undefined} appTheme
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.appTheme = null;
+
+            /**
+             * SettingsSyncAction wallpaperId.
+             * @member {number|null|undefined} wallpaperId
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.wallpaperId = null;
+
+            /**
+             * SettingsSyncAction isDoodleWallpaperEnabled.
+             * @member {boolean|null|undefined} isDoodleWallpaperEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isDoodleWallpaperEnabled = null;
+
+            /**
+             * SettingsSyncAction fontSize.
+             * @member {number|null|undefined} fontSize
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.fontSize = null;
+
+            /**
+             * SettingsSyncAction isPhotosAutodownloadEnabled.
+             * @member {boolean|null|undefined} isPhotosAutodownloadEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isPhotosAutodownloadEnabled = null;
+
+            /**
+             * SettingsSyncAction isAudiosAutodownloadEnabled.
+             * @member {boolean|null|undefined} isAudiosAutodownloadEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isAudiosAutodownloadEnabled = null;
+
+            /**
+             * SettingsSyncAction isVideosAutodownloadEnabled.
+             * @member {boolean|null|undefined} isVideosAutodownloadEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isVideosAutodownloadEnabled = null;
+
+            /**
+             * SettingsSyncAction isDocumentsAutodownloadEnabled.
+             * @member {boolean|null|undefined} isDocumentsAutodownloadEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isDocumentsAutodownloadEnabled = null;
+
+            /**
+             * SettingsSyncAction disableLinkPreviews.
+             * @member {boolean|null|undefined} disableLinkPreviews
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.disableLinkPreviews = null;
+
+            /**
+             * SettingsSyncAction notificationToneId.
+             * @member {number|null|undefined} notificationToneId
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.notificationToneId = null;
+
+            // OneOf field names bound to virtual getters and setters
+            var $oneOfFields;
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_startAtLogin", {
+                get: $util.oneOfGetter($oneOfFields = ["startAtLogin"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_minimizeToTray", {
+                get: $util.oneOfGetter($oneOfFields = ["minimizeToTray"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_language", {
+                get: $util.oneOfGetter($oneOfFields = ["language"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_replaceTextWithEmoji", {
+                get: $util.oneOfGetter($oneOfFields = ["replaceTextWithEmoji"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_bannerNotificationDisplayMode", {
+                get: $util.oneOfGetter($oneOfFields = ["bannerNotificationDisplayMode"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_unreadCounterBadgeDisplayMode", {
+                get: $util.oneOfGetter($oneOfFields = ["unreadCounterBadgeDisplayMode"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isMessagesNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isMessagesNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isCallsNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isCallsNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isReactionsNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isReactionsNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isStatusReactionsNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isStatusReactionsNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isTextPreviewForNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isTextPreviewForNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_defaultNotificationToneId", {
+                get: $util.oneOfGetter($oneOfFields = ["defaultNotificationToneId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_groupDefaultNotificationToneId", {
+                get: $util.oneOfGetter($oneOfFields = ["groupDefaultNotificationToneId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_appTheme", {
+                get: $util.oneOfGetter($oneOfFields = ["appTheme"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_wallpaperId", {
+                get: $util.oneOfGetter($oneOfFields = ["wallpaperId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isDoodleWallpaperEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isDoodleWallpaperEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_fontSize", {
+                get: $util.oneOfGetter($oneOfFields = ["fontSize"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isPhotosAutodownloadEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isPhotosAutodownloadEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isAudiosAutodownloadEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isAudiosAutodownloadEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isVideosAutodownloadEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isVideosAutodownloadEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isDocumentsAutodownloadEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isDocumentsAutodownloadEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_disableLinkPreviews", {
+                get: $util.oneOfGetter($oneOfFields = ["disableLinkPreviews"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_notificationToneId", {
+                get: $util.oneOfGetter($oneOfFields = ["notificationToneId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Creates a new SettingsSyncAction instance using the specified properties.
+             * @function create
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {waproto.SyncActionValue.ISettingsSyncAction=} [properties] Properties to set
+             * @returns {waproto.SyncActionValue.SettingsSyncAction} SettingsSyncAction instance
+             */
+            SettingsSyncAction.create = function create(properties) {
+                return new SettingsSyncAction(properties);
+            };
+
+            /**
+             * Encodes the specified SettingsSyncAction message. Does not implicitly {@link waproto.SyncActionValue.SettingsSyncAction.verify|verify} messages.
+             * @function encode
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {waproto.SyncActionValue.ISettingsSyncAction} message SettingsSyncAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            SettingsSyncAction.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.startAtLogin != null && Object.hasOwnProperty.call(message, "startAtLogin"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).bool(message.startAtLogin);
+                if (message.minimizeToTray != null && Object.hasOwnProperty.call(message, "minimizeToTray"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).bool(message.minimizeToTray);
+                if (message.language != null && Object.hasOwnProperty.call(message, "language"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.language);
+                if (message.replaceTextWithEmoji != null && Object.hasOwnProperty.call(message, "replaceTextWithEmoji"))
+                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.replaceTextWithEmoji);
+                if (message.bannerNotificationDisplayMode != null && Object.hasOwnProperty.call(message, "bannerNotificationDisplayMode"))
+                    writer.uint32(/* id 5, wireType 0 =*/40).int32(message.bannerNotificationDisplayMode);
+                if (message.unreadCounterBadgeDisplayMode != null && Object.hasOwnProperty.call(message, "unreadCounterBadgeDisplayMode"))
+                    writer.uint32(/* id 6, wireType 0 =*/48).int32(message.unreadCounterBadgeDisplayMode);
+                if (message.isMessagesNotificationEnabled != null && Object.hasOwnProperty.call(message, "isMessagesNotificationEnabled"))
+                    writer.uint32(/* id 7, wireType 0 =*/56).bool(message.isMessagesNotificationEnabled);
+                if (message.isCallsNotificationEnabled != null && Object.hasOwnProperty.call(message, "isCallsNotificationEnabled"))
+                    writer.uint32(/* id 8, wireType 0 =*/64).bool(message.isCallsNotificationEnabled);
+                if (message.isReactionsNotificationEnabled != null && Object.hasOwnProperty.call(message, "isReactionsNotificationEnabled"))
+                    writer.uint32(/* id 9, wireType 0 =*/72).bool(message.isReactionsNotificationEnabled);
+                if (message.isStatusReactionsNotificationEnabled != null && Object.hasOwnProperty.call(message, "isStatusReactionsNotificationEnabled"))
+                    writer.uint32(/* id 10, wireType 0 =*/80).bool(message.isStatusReactionsNotificationEnabled);
+                if (message.isTextPreviewForNotificationEnabled != null && Object.hasOwnProperty.call(message, "isTextPreviewForNotificationEnabled"))
+                    writer.uint32(/* id 11, wireType 0 =*/88).bool(message.isTextPreviewForNotificationEnabled);
+                if (message.defaultNotificationToneId != null && Object.hasOwnProperty.call(message, "defaultNotificationToneId"))
+                    writer.uint32(/* id 12, wireType 0 =*/96).int32(message.defaultNotificationToneId);
+                if (message.groupDefaultNotificationToneId != null && Object.hasOwnProperty.call(message, "groupDefaultNotificationToneId"))
+                    writer.uint32(/* id 13, wireType 0 =*/104).int32(message.groupDefaultNotificationToneId);
+                if (message.appTheme != null && Object.hasOwnProperty.call(message, "appTheme"))
+                    writer.uint32(/* id 14, wireType 0 =*/112).int32(message.appTheme);
+                if (message.wallpaperId != null && Object.hasOwnProperty.call(message, "wallpaperId"))
+                    writer.uint32(/* id 15, wireType 0 =*/120).int32(message.wallpaperId);
+                if (message.isDoodleWallpaperEnabled != null && Object.hasOwnProperty.call(message, "isDoodleWallpaperEnabled"))
+                    writer.uint32(/* id 16, wireType 0 =*/128).bool(message.isDoodleWallpaperEnabled);
+                if (message.fontSize != null && Object.hasOwnProperty.call(message, "fontSize"))
+                    writer.uint32(/* id 17, wireType 0 =*/136).int32(message.fontSize);
+                if (message.isPhotosAutodownloadEnabled != null && Object.hasOwnProperty.call(message, "isPhotosAutodownloadEnabled"))
+                    writer.uint32(/* id 18, wireType 0 =*/144).bool(message.isPhotosAutodownloadEnabled);
+                if (message.isAudiosAutodownloadEnabled != null && Object.hasOwnProperty.call(message, "isAudiosAutodownloadEnabled"))
+                    writer.uint32(/* id 19, wireType 0 =*/152).bool(message.isAudiosAutodownloadEnabled);
+                if (message.isVideosAutodownloadEnabled != null && Object.hasOwnProperty.call(message, "isVideosAutodownloadEnabled"))
+                    writer.uint32(/* id 20, wireType 0 =*/160).bool(message.isVideosAutodownloadEnabled);
+                if (message.isDocumentsAutodownloadEnabled != null && Object.hasOwnProperty.call(message, "isDocumentsAutodownloadEnabled"))
+                    writer.uint32(/* id 21, wireType 0 =*/168).bool(message.isDocumentsAutodownloadEnabled);
+                if (message.disableLinkPreviews != null && Object.hasOwnProperty.call(message, "disableLinkPreviews"))
+                    writer.uint32(/* id 22, wireType 0 =*/176).bool(message.disableLinkPreviews);
+                if (message.notificationToneId != null && Object.hasOwnProperty.call(message, "notificationToneId"))
+                    writer.uint32(/* id 23, wireType 0 =*/184).int32(message.notificationToneId);
+                return writer;
+            };
+
+            /**
+             * Encodes the specified SettingsSyncAction message, length delimited. Does not implicitly {@link waproto.SyncActionValue.SettingsSyncAction.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {waproto.SyncActionValue.ISettingsSyncAction} message SettingsSyncAction message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            SettingsSyncAction.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+
+            /**
+             * Decodes a SettingsSyncAction message from the specified reader or buffer.
+             * @function decode
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {waproto.SyncActionValue.SettingsSyncAction} SettingsSyncAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            SettingsSyncAction.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.SyncActionValue.SettingsSyncAction();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.startAtLogin = reader.bool();
+                            break;
+                        }
+                    case 2: {
+                            message.minimizeToTray = reader.bool();
+                            break;
+                        }
+                    case 3: {
+                            message.language = reader.string();
+                            break;
+                        }
+                    case 4: {
+                            message.replaceTextWithEmoji = reader.bool();
+                            break;
+                        }
+                    case 5: {
+                            message.bannerNotificationDisplayMode = reader.int32();
+                            break;
+                        }
+                    case 6: {
+                            message.unreadCounterBadgeDisplayMode = reader.int32();
+                            break;
+                        }
+                    case 7: {
+                            message.isMessagesNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 8: {
+                            message.isCallsNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 9: {
+                            message.isReactionsNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 10: {
+                            message.isStatusReactionsNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 11: {
+                            message.isTextPreviewForNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 12: {
+                            message.defaultNotificationToneId = reader.int32();
+                            break;
+                        }
+                    case 13: {
+                            message.groupDefaultNotificationToneId = reader.int32();
+                            break;
+                        }
+                    case 14: {
+                            message.appTheme = reader.int32();
+                            break;
+                        }
+                    case 15: {
+                            message.wallpaperId = reader.int32();
+                            break;
+                        }
+                    case 16: {
+                            message.isDoodleWallpaperEnabled = reader.bool();
+                            break;
+                        }
+                    case 17: {
+                            message.fontSize = reader.int32();
+                            break;
+                        }
+                    case 18: {
+                            message.isPhotosAutodownloadEnabled = reader.bool();
+                            break;
+                        }
+                    case 19: {
+                            message.isAudiosAutodownloadEnabled = reader.bool();
+                            break;
+                        }
+                    case 20: {
+                            message.isVideosAutodownloadEnabled = reader.bool();
+                            break;
+                        }
+                    case 21: {
+                            message.isDocumentsAutodownloadEnabled = reader.bool();
+                            break;
+                        }
+                    case 22: {
+                            message.disableLinkPreviews = reader.bool();
+                            break;
+                        }
+                    case 23: {
+                            message.notificationToneId = reader.int32();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Decodes a SettingsSyncAction message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {waproto.SyncActionValue.SettingsSyncAction} SettingsSyncAction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            SettingsSyncAction.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+
+            /**
+             * Verifies a SettingsSyncAction message.
+             * @function verify
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            SettingsSyncAction.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                var properties = {};
+                if (message.startAtLogin != null && message.hasOwnProperty("startAtLogin")) {
+                    properties._startAtLogin = 1;
+                    if (typeof message.startAtLogin !== "boolean")
+                        return "startAtLogin: boolean expected";
+                }
+                if (message.minimizeToTray != null && message.hasOwnProperty("minimizeToTray")) {
+                    properties._minimizeToTray = 1;
+                    if (typeof message.minimizeToTray !== "boolean")
+                        return "minimizeToTray: boolean expected";
+                }
+                if (message.language != null && message.hasOwnProperty("language")) {
+                    properties._language = 1;
+                    if (!$util.isString(message.language))
+                        return "language: string expected";
+                }
+                if (message.replaceTextWithEmoji != null && message.hasOwnProperty("replaceTextWithEmoji")) {
+                    properties._replaceTextWithEmoji = 1;
+                    if (typeof message.replaceTextWithEmoji !== "boolean")
+                        return "replaceTextWithEmoji: boolean expected";
+                }
+                if (message.bannerNotificationDisplayMode != null && message.hasOwnProperty("bannerNotificationDisplayMode")) {
+                    properties._bannerNotificationDisplayMode = 1;
+                    switch (message.bannerNotificationDisplayMode) {
+                    default:
+                        return "bannerNotificationDisplayMode: enum value expected";
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                        break;
+                    }
+                }
+                if (message.unreadCounterBadgeDisplayMode != null && message.hasOwnProperty("unreadCounterBadgeDisplayMode")) {
+                    properties._unreadCounterBadgeDisplayMode = 1;
+                    switch (message.unreadCounterBadgeDisplayMode) {
+                    default:
+                        return "unreadCounterBadgeDisplayMode: enum value expected";
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                        break;
+                    }
+                }
+                if (message.isMessagesNotificationEnabled != null && message.hasOwnProperty("isMessagesNotificationEnabled")) {
+                    properties._isMessagesNotificationEnabled = 1;
+                    if (typeof message.isMessagesNotificationEnabled !== "boolean")
+                        return "isMessagesNotificationEnabled: boolean expected";
+                }
+                if (message.isCallsNotificationEnabled != null && message.hasOwnProperty("isCallsNotificationEnabled")) {
+                    properties._isCallsNotificationEnabled = 1;
+                    if (typeof message.isCallsNotificationEnabled !== "boolean")
+                        return "isCallsNotificationEnabled: boolean expected";
+                }
+                if (message.isReactionsNotificationEnabled != null && message.hasOwnProperty("isReactionsNotificationEnabled")) {
+                    properties._isReactionsNotificationEnabled = 1;
+                    if (typeof message.isReactionsNotificationEnabled !== "boolean")
+                        return "isReactionsNotificationEnabled: boolean expected";
+                }
+                if (message.isStatusReactionsNotificationEnabled != null && message.hasOwnProperty("isStatusReactionsNotificationEnabled")) {
+                    properties._isStatusReactionsNotificationEnabled = 1;
+                    if (typeof message.isStatusReactionsNotificationEnabled !== "boolean")
+                        return "isStatusReactionsNotificationEnabled: boolean expected";
+                }
+                if (message.isTextPreviewForNotificationEnabled != null && message.hasOwnProperty("isTextPreviewForNotificationEnabled")) {
+                    properties._isTextPreviewForNotificationEnabled = 1;
+                    if (typeof message.isTextPreviewForNotificationEnabled !== "boolean")
+                        return "isTextPreviewForNotificationEnabled: boolean expected";
+                }
+                if (message.defaultNotificationToneId != null && message.hasOwnProperty("defaultNotificationToneId")) {
+                    properties._defaultNotificationToneId = 1;
+                    if (!$util.isInteger(message.defaultNotificationToneId))
+                        return "defaultNotificationToneId: integer expected";
+                }
+                if (message.groupDefaultNotificationToneId != null && message.hasOwnProperty("groupDefaultNotificationToneId")) {
+                    properties._groupDefaultNotificationToneId = 1;
+                    if (!$util.isInteger(message.groupDefaultNotificationToneId))
+                        return "groupDefaultNotificationToneId: integer expected";
+                }
+                if (message.appTheme != null && message.hasOwnProperty("appTheme")) {
+                    properties._appTheme = 1;
+                    if (!$util.isInteger(message.appTheme))
+                        return "appTheme: integer expected";
+                }
+                if (message.wallpaperId != null && message.hasOwnProperty("wallpaperId")) {
+                    properties._wallpaperId = 1;
+                    if (!$util.isInteger(message.wallpaperId))
+                        return "wallpaperId: integer expected";
+                }
+                if (message.isDoodleWallpaperEnabled != null && message.hasOwnProperty("isDoodleWallpaperEnabled")) {
+                    properties._isDoodleWallpaperEnabled = 1;
+                    if (typeof message.isDoodleWallpaperEnabled !== "boolean")
+                        return "isDoodleWallpaperEnabled: boolean expected";
+                }
+                if (message.fontSize != null && message.hasOwnProperty("fontSize")) {
+                    properties._fontSize = 1;
+                    if (!$util.isInteger(message.fontSize))
+                        return "fontSize: integer expected";
+                }
+                if (message.isPhotosAutodownloadEnabled != null && message.hasOwnProperty("isPhotosAutodownloadEnabled")) {
+                    properties._isPhotosAutodownloadEnabled = 1;
+                    if (typeof message.isPhotosAutodownloadEnabled !== "boolean")
+                        return "isPhotosAutodownloadEnabled: boolean expected";
+                }
+                if (message.isAudiosAutodownloadEnabled != null && message.hasOwnProperty("isAudiosAutodownloadEnabled")) {
+                    properties._isAudiosAutodownloadEnabled = 1;
+                    if (typeof message.isAudiosAutodownloadEnabled !== "boolean")
+                        return "isAudiosAutodownloadEnabled: boolean expected";
+                }
+                if (message.isVideosAutodownloadEnabled != null && message.hasOwnProperty("isVideosAutodownloadEnabled")) {
+                    properties._isVideosAutodownloadEnabled = 1;
+                    if (typeof message.isVideosAutodownloadEnabled !== "boolean")
+                        return "isVideosAutodownloadEnabled: boolean expected";
+                }
+                if (message.isDocumentsAutodownloadEnabled != null && message.hasOwnProperty("isDocumentsAutodownloadEnabled")) {
+                    properties._isDocumentsAutodownloadEnabled = 1;
+                    if (typeof message.isDocumentsAutodownloadEnabled !== "boolean")
+                        return "isDocumentsAutodownloadEnabled: boolean expected";
+                }
+                if (message.disableLinkPreviews != null && message.hasOwnProperty("disableLinkPreviews")) {
+                    properties._disableLinkPreviews = 1;
+                    if (typeof message.disableLinkPreviews !== "boolean")
+                        return "disableLinkPreviews: boolean expected";
+                }
+                if (message.notificationToneId != null && message.hasOwnProperty("notificationToneId")) {
+                    properties._notificationToneId = 1;
+                    if (!$util.isInteger(message.notificationToneId))
+                        return "notificationToneId: integer expected";
+                }
+                return null;
+            };
+
+            /**
+             * Creates a SettingsSyncAction message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {waproto.SyncActionValue.SettingsSyncAction} SettingsSyncAction
+             */
+            SettingsSyncAction.fromObject = function fromObject(object) {
+                if (object instanceof $root.waproto.SyncActionValue.SettingsSyncAction)
+                    return object;
+                var message = new $root.waproto.SyncActionValue.SettingsSyncAction();
+                if (object.startAtLogin != null)
+                    message.startAtLogin = Boolean(object.startAtLogin);
+                if (object.minimizeToTray != null)
+                    message.minimizeToTray = Boolean(object.minimizeToTray);
+                if (object.language != null)
+                    message.language = String(object.language);
+                if (object.replaceTextWithEmoji != null)
+                    message.replaceTextWithEmoji = Boolean(object.replaceTextWithEmoji);
+                switch (object.bannerNotificationDisplayMode) {
+                default:
+                    if (typeof object.bannerNotificationDisplayMode === "number") {
+                        message.bannerNotificationDisplayMode = object.bannerNotificationDisplayMode;
+                        break;
+                    }
+                    break;
+                case "DISPLAY_MODE_UNKNOWN":
+                case 0:
+                    message.bannerNotificationDisplayMode = 0;
+                    break;
+                case "ALWAYS":
+                case 1:
+                    message.bannerNotificationDisplayMode = 1;
+                    break;
+                case "NEVER":
+                case 2:
+                    message.bannerNotificationDisplayMode = 2;
+                    break;
+                case "ONLY_WHEN_APP_IS_OPEN":
+                case 3:
+                    message.bannerNotificationDisplayMode = 3;
+                    break;
+                }
+                switch (object.unreadCounterBadgeDisplayMode) {
+                default:
+                    if (typeof object.unreadCounterBadgeDisplayMode === "number") {
+                        message.unreadCounterBadgeDisplayMode = object.unreadCounterBadgeDisplayMode;
+                        break;
+                    }
+                    break;
+                case "DISPLAY_MODE_UNKNOWN":
+                case 0:
+                    message.unreadCounterBadgeDisplayMode = 0;
+                    break;
+                case "ALWAYS":
+                case 1:
+                    message.unreadCounterBadgeDisplayMode = 1;
+                    break;
+                case "NEVER":
+                case 2:
+                    message.unreadCounterBadgeDisplayMode = 2;
+                    break;
+                case "ONLY_WHEN_APP_IS_OPEN":
+                case 3:
+                    message.unreadCounterBadgeDisplayMode = 3;
+                    break;
+                }
+                if (object.isMessagesNotificationEnabled != null)
+                    message.isMessagesNotificationEnabled = Boolean(object.isMessagesNotificationEnabled);
+                if (object.isCallsNotificationEnabled != null)
+                    message.isCallsNotificationEnabled = Boolean(object.isCallsNotificationEnabled);
+                if (object.isReactionsNotificationEnabled != null)
+                    message.isReactionsNotificationEnabled = Boolean(object.isReactionsNotificationEnabled);
+                if (object.isStatusReactionsNotificationEnabled != null)
+                    message.isStatusReactionsNotificationEnabled = Boolean(object.isStatusReactionsNotificationEnabled);
+                if (object.isTextPreviewForNotificationEnabled != null)
+                    message.isTextPreviewForNotificationEnabled = Boolean(object.isTextPreviewForNotificationEnabled);
+                if (object.defaultNotificationToneId != null)
+                    message.defaultNotificationToneId = object.defaultNotificationToneId | 0;
+                if (object.groupDefaultNotificationToneId != null)
+                    message.groupDefaultNotificationToneId = object.groupDefaultNotificationToneId | 0;
+                if (object.appTheme != null)
+                    message.appTheme = object.appTheme | 0;
+                if (object.wallpaperId != null)
+                    message.wallpaperId = object.wallpaperId | 0;
+                if (object.isDoodleWallpaperEnabled != null)
+                    message.isDoodleWallpaperEnabled = Boolean(object.isDoodleWallpaperEnabled);
+                if (object.fontSize != null)
+                    message.fontSize = object.fontSize | 0;
+                if (object.isPhotosAutodownloadEnabled != null)
+                    message.isPhotosAutodownloadEnabled = Boolean(object.isPhotosAutodownloadEnabled);
+                if (object.isAudiosAutodownloadEnabled != null)
+                    message.isAudiosAutodownloadEnabled = Boolean(object.isAudiosAutodownloadEnabled);
+                if (object.isVideosAutodownloadEnabled != null)
+                    message.isVideosAutodownloadEnabled = Boolean(object.isVideosAutodownloadEnabled);
+                if (object.isDocumentsAutodownloadEnabled != null)
+                    message.isDocumentsAutodownloadEnabled = Boolean(object.isDocumentsAutodownloadEnabled);
+                if (object.disableLinkPreviews != null)
+                    message.disableLinkPreviews = Boolean(object.disableLinkPreviews);
+                if (object.notificationToneId != null)
+                    message.notificationToneId = object.notificationToneId | 0;
+                return message;
+            };
+
+            /**
+             * Creates a plain object from a SettingsSyncAction message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {waproto.SyncActionValue.SettingsSyncAction} message SettingsSyncAction
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            SettingsSyncAction.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (message.startAtLogin != null && message.hasOwnProperty("startAtLogin")) {
+                    object.startAtLogin = message.startAtLogin;
+                    if (options.oneofs)
+                        object._startAtLogin = "startAtLogin";
+                }
+                if (message.minimizeToTray != null && message.hasOwnProperty("minimizeToTray")) {
+                    object.minimizeToTray = message.minimizeToTray;
+                    if (options.oneofs)
+                        object._minimizeToTray = "minimizeToTray";
+                }
+                if (message.language != null && message.hasOwnProperty("language")) {
+                    object.language = message.language;
+                    if (options.oneofs)
+                        object._language = "language";
+                }
+                if (message.replaceTextWithEmoji != null && message.hasOwnProperty("replaceTextWithEmoji")) {
+                    object.replaceTextWithEmoji = message.replaceTextWithEmoji;
+                    if (options.oneofs)
+                        object._replaceTextWithEmoji = "replaceTextWithEmoji";
+                }
+                if (message.bannerNotificationDisplayMode != null && message.hasOwnProperty("bannerNotificationDisplayMode")) {
+                    object.bannerNotificationDisplayMode = options.enums === String ? $root.waproto.SyncActionValue.SettingsSyncAction.DisplayMode[message.bannerNotificationDisplayMode] === undefined ? message.bannerNotificationDisplayMode : $root.waproto.SyncActionValue.SettingsSyncAction.DisplayMode[message.bannerNotificationDisplayMode] : message.bannerNotificationDisplayMode;
+                    if (options.oneofs)
+                        object._bannerNotificationDisplayMode = "bannerNotificationDisplayMode";
+                }
+                if (message.unreadCounterBadgeDisplayMode != null && message.hasOwnProperty("unreadCounterBadgeDisplayMode")) {
+                    object.unreadCounterBadgeDisplayMode = options.enums === String ? $root.waproto.SyncActionValue.SettingsSyncAction.DisplayMode[message.unreadCounterBadgeDisplayMode] === undefined ? message.unreadCounterBadgeDisplayMode : $root.waproto.SyncActionValue.SettingsSyncAction.DisplayMode[message.unreadCounterBadgeDisplayMode] : message.unreadCounterBadgeDisplayMode;
+                    if (options.oneofs)
+                        object._unreadCounterBadgeDisplayMode = "unreadCounterBadgeDisplayMode";
+                }
+                if (message.isMessagesNotificationEnabled != null && message.hasOwnProperty("isMessagesNotificationEnabled")) {
+                    object.isMessagesNotificationEnabled = message.isMessagesNotificationEnabled;
+                    if (options.oneofs)
+                        object._isMessagesNotificationEnabled = "isMessagesNotificationEnabled";
+                }
+                if (message.isCallsNotificationEnabled != null && message.hasOwnProperty("isCallsNotificationEnabled")) {
+                    object.isCallsNotificationEnabled = message.isCallsNotificationEnabled;
+                    if (options.oneofs)
+                        object._isCallsNotificationEnabled = "isCallsNotificationEnabled";
+                }
+                if (message.isReactionsNotificationEnabled != null && message.hasOwnProperty("isReactionsNotificationEnabled")) {
+                    object.isReactionsNotificationEnabled = message.isReactionsNotificationEnabled;
+                    if (options.oneofs)
+                        object._isReactionsNotificationEnabled = "isReactionsNotificationEnabled";
+                }
+                if (message.isStatusReactionsNotificationEnabled != null && message.hasOwnProperty("isStatusReactionsNotificationEnabled")) {
+                    object.isStatusReactionsNotificationEnabled = message.isStatusReactionsNotificationEnabled;
+                    if (options.oneofs)
+                        object._isStatusReactionsNotificationEnabled = "isStatusReactionsNotificationEnabled";
+                }
+                if (message.isTextPreviewForNotificationEnabled != null && message.hasOwnProperty("isTextPreviewForNotificationEnabled")) {
+                    object.isTextPreviewForNotificationEnabled = message.isTextPreviewForNotificationEnabled;
+                    if (options.oneofs)
+                        object._isTextPreviewForNotificationEnabled = "isTextPreviewForNotificationEnabled";
+                }
+                if (message.defaultNotificationToneId != null && message.hasOwnProperty("defaultNotificationToneId")) {
+                    object.defaultNotificationToneId = message.defaultNotificationToneId;
+                    if (options.oneofs)
+                        object._defaultNotificationToneId = "defaultNotificationToneId";
+                }
+                if (message.groupDefaultNotificationToneId != null && message.hasOwnProperty("groupDefaultNotificationToneId")) {
+                    object.groupDefaultNotificationToneId = message.groupDefaultNotificationToneId;
+                    if (options.oneofs)
+                        object._groupDefaultNotificationToneId = "groupDefaultNotificationToneId";
+                }
+                if (message.appTheme != null && message.hasOwnProperty("appTheme")) {
+                    object.appTheme = message.appTheme;
+                    if (options.oneofs)
+                        object._appTheme = "appTheme";
+                }
+                if (message.wallpaperId != null && message.hasOwnProperty("wallpaperId")) {
+                    object.wallpaperId = message.wallpaperId;
+                    if (options.oneofs)
+                        object._wallpaperId = "wallpaperId";
+                }
+                if (message.isDoodleWallpaperEnabled != null && message.hasOwnProperty("isDoodleWallpaperEnabled")) {
+                    object.isDoodleWallpaperEnabled = message.isDoodleWallpaperEnabled;
+                    if (options.oneofs)
+                        object._isDoodleWallpaperEnabled = "isDoodleWallpaperEnabled";
+                }
+                if (message.fontSize != null && message.hasOwnProperty("fontSize")) {
+                    object.fontSize = message.fontSize;
+                    if (options.oneofs)
+                        object._fontSize = "fontSize";
+                }
+                if (message.isPhotosAutodownloadEnabled != null && message.hasOwnProperty("isPhotosAutodownloadEnabled")) {
+                    object.isPhotosAutodownloadEnabled = message.isPhotosAutodownloadEnabled;
+                    if (options.oneofs)
+                        object._isPhotosAutodownloadEnabled = "isPhotosAutodownloadEnabled";
+                }
+                if (message.isAudiosAutodownloadEnabled != null && message.hasOwnProperty("isAudiosAutodownloadEnabled")) {
+                    object.isAudiosAutodownloadEnabled = message.isAudiosAutodownloadEnabled;
+                    if (options.oneofs)
+                        object._isAudiosAutodownloadEnabled = "isAudiosAutodownloadEnabled";
+                }
+                if (message.isVideosAutodownloadEnabled != null && message.hasOwnProperty("isVideosAutodownloadEnabled")) {
+                    object.isVideosAutodownloadEnabled = message.isVideosAutodownloadEnabled;
+                    if (options.oneofs)
+                        object._isVideosAutodownloadEnabled = "isVideosAutodownloadEnabled";
+                }
+                if (message.isDocumentsAutodownloadEnabled != null && message.hasOwnProperty("isDocumentsAutodownloadEnabled")) {
+                    object.isDocumentsAutodownloadEnabled = message.isDocumentsAutodownloadEnabled;
+                    if (options.oneofs)
+                        object._isDocumentsAutodownloadEnabled = "isDocumentsAutodownloadEnabled";
+                }
+                if (message.disableLinkPreviews != null && message.hasOwnProperty("disableLinkPreviews")) {
+                    object.disableLinkPreviews = message.disableLinkPreviews;
+                    if (options.oneofs)
+                        object._disableLinkPreviews = "disableLinkPreviews";
+                }
+                if (message.notificationToneId != null && message.hasOwnProperty("notificationToneId")) {
+                    object.notificationToneId = message.notificationToneId;
+                    if (options.oneofs)
+                        object._notificationToneId = "notificationToneId";
+                }
+                return object;
+            };
+
+            /**
+             * Converts this SettingsSyncAction to JSON.
+             * @function toJSON
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            SettingsSyncAction.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+
+            /**
+             * Gets the default type url for SettingsSyncAction
+             * @function getTypeUrl
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @static
+             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns {string} The default type url
+             */
+            SettingsSyncAction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                if (typeUrlPrefix === undefined) {
+                    typeUrlPrefix = "type.googleapis.com";
+                }
+                return typeUrlPrefix + "/waproto.SyncActionValue.SettingsSyncAction";
+            };
+
+            /**
+             * DisplayMode enum.
+             * @name waproto.SyncActionValue.SettingsSyncAction.DisplayMode
+             * @enum {number}
+             * @property {number} DISPLAY_MODE_UNKNOWN=0 DISPLAY_MODE_UNKNOWN value
+             * @property {number} ALWAYS=1 ALWAYS value
+             * @property {number} NEVER=2 NEVER value
+             * @property {number} ONLY_WHEN_APP_IS_OPEN=3 ONLY_WHEN_APP_IS_OPEN value
+             */
+            SettingsSyncAction.DisplayMode = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "DISPLAY_MODE_UNKNOWN"] = 0;
+                values[valuesById[1] = "ALWAYS"] = 1;
+                values[valuesById[2] = "NEVER"] = 2;
+                values[valuesById[3] = "ONLY_WHEN_APP_IS_OPEN"] = 3;
+                return values;
+            })();
+
+            /**
+             * SettingKey enum.
+             * @name waproto.SyncActionValue.SettingsSyncAction.SettingKey
+             * @enum {number}
+             * @property {number} SETTING_KEY_UNKNOWN=0 SETTING_KEY_UNKNOWN value
+             * @property {number} START_AT_LOGIN=1 START_AT_LOGIN value
+             * @property {number} MINIMIZE_TO_TRAY=2 MINIMIZE_TO_TRAY value
+             * @property {number} LANGUAGE=3 LANGUAGE value
+             * @property {number} REPLACE_TEXT_WITH_EMOJI=4 REPLACE_TEXT_WITH_EMOJI value
+             * @property {number} BANNER_NOTIFICATION_DISPLAY_MODE=5 BANNER_NOTIFICATION_DISPLAY_MODE value
+             * @property {number} UNREAD_COUNTER_BADGE_DISPLAY_MODE=6 UNREAD_COUNTER_BADGE_DISPLAY_MODE value
+             * @property {number} IS_MESSAGES_NOTIFICATION_ENABLED=7 IS_MESSAGES_NOTIFICATION_ENABLED value
+             * @property {number} IS_CALLS_NOTIFICATION_ENABLED=8 IS_CALLS_NOTIFICATION_ENABLED value
+             * @property {number} IS_REACTIONS_NOTIFICATION_ENABLED=9 IS_REACTIONS_NOTIFICATION_ENABLED value
+             * @property {number} IS_STATUS_REACTIONS_NOTIFICATION_ENABLED=10 IS_STATUS_REACTIONS_NOTIFICATION_ENABLED value
+             * @property {number} IS_TEXT_PREVIEW_FOR_NOTIFICATION_ENABLED=11 IS_TEXT_PREVIEW_FOR_NOTIFICATION_ENABLED value
+             * @property {number} DEFAULT_NOTIFICATION_TONE_ID=12 DEFAULT_NOTIFICATION_TONE_ID value
+             * @property {number} GROUP_DEFAULT_NOTIFICATION_TONE_ID=13 GROUP_DEFAULT_NOTIFICATION_TONE_ID value
+             * @property {number} APP_THEME=14 APP_THEME value
+             * @property {number} WALLPAPER_ID=15 WALLPAPER_ID value
+             * @property {number} IS_DOODLE_WALLPAPER_ENABLED=16 IS_DOODLE_WALLPAPER_ENABLED value
+             * @property {number} FONT_SIZE=17 FONT_SIZE value
+             * @property {number} IS_PHOTOS_AUTODOWNLOAD_ENABLED=18 IS_PHOTOS_AUTODOWNLOAD_ENABLED value
+             * @property {number} IS_AUDIOS_AUTODOWNLOAD_ENABLED=19 IS_AUDIOS_AUTODOWNLOAD_ENABLED value
+             * @property {number} IS_VIDEOS_AUTODOWNLOAD_ENABLED=20 IS_VIDEOS_AUTODOWNLOAD_ENABLED value
+             * @property {number} IS_DOCUMENTS_AUTODOWNLOAD_ENABLED=21 IS_DOCUMENTS_AUTODOWNLOAD_ENABLED value
+             * @property {number} DISABLE_LINK_PREVIEWS=22 DISABLE_LINK_PREVIEWS value
+             * @property {number} NOTIFICATION_TONE_ID=23 NOTIFICATION_TONE_ID value
+             */
+            SettingsSyncAction.SettingKey = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "SETTING_KEY_UNKNOWN"] = 0;
+                values[valuesById[1] = "START_AT_LOGIN"] = 1;
+                values[valuesById[2] = "MINIMIZE_TO_TRAY"] = 2;
+                values[valuesById[3] = "LANGUAGE"] = 3;
+                values[valuesById[4] = "REPLACE_TEXT_WITH_EMOJI"] = 4;
+                values[valuesById[5] = "BANNER_NOTIFICATION_DISPLAY_MODE"] = 5;
+                values[valuesById[6] = "UNREAD_COUNTER_BADGE_DISPLAY_MODE"] = 6;
+                values[valuesById[7] = "IS_MESSAGES_NOTIFICATION_ENABLED"] = 7;
+                values[valuesById[8] = "IS_CALLS_NOTIFICATION_ENABLED"] = 8;
+                values[valuesById[9] = "IS_REACTIONS_NOTIFICATION_ENABLED"] = 9;
+                values[valuesById[10] = "IS_STATUS_REACTIONS_NOTIFICATION_ENABLED"] = 10;
+                values[valuesById[11] = "IS_TEXT_PREVIEW_FOR_NOTIFICATION_ENABLED"] = 11;
+                values[valuesById[12] = "DEFAULT_NOTIFICATION_TONE_ID"] = 12;
+                values[valuesById[13] = "GROUP_DEFAULT_NOTIFICATION_TONE_ID"] = 13;
+                values[valuesById[14] = "APP_THEME"] = 14;
+                values[valuesById[15] = "WALLPAPER_ID"] = 15;
+                values[valuesById[16] = "IS_DOODLE_WALLPAPER_ENABLED"] = 16;
+                values[valuesById[17] = "FONT_SIZE"] = 17;
+                values[valuesById[18] = "IS_PHOTOS_AUTODOWNLOAD_ENABLED"] = 18;
+                values[valuesById[19] = "IS_AUDIOS_AUTODOWNLOAD_ENABLED"] = 19;
+                values[valuesById[20] = "IS_VIDEOS_AUTODOWNLOAD_ENABLED"] = 20;
+                values[valuesById[21] = "IS_DOCUMENTS_AUTODOWNLOAD_ENABLED"] = 21;
+                values[valuesById[22] = "DISABLE_LINK_PREVIEWS"] = 22;
+                values[valuesById[23] = "NOTIFICATION_TONE_ID"] = 23;
+                return values;
+            })();
+
+            /**
+             * SettingPlatform enum.
+             * @name waproto.SyncActionValue.SettingsSyncAction.SettingPlatform
+             * @enum {number}
+             * @property {number} PLATFORM_UNKNOWN=0 PLATFORM_UNKNOWN value
+             * @property {number} WEB=1 WEB value
+             * @property {number} HYBRID=2 HYBRID value
+             * @property {number} WINDOWS=3 WINDOWS value
+             * @property {number} MAC=4 MAC value
+             */
+            SettingsSyncAction.SettingPlatform = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "PLATFORM_UNKNOWN"] = 0;
+                values[valuesById[1] = "WEB"] = 1;
+                values[valuesById[2] = "HYBRID"] = 2;
+                values[valuesById[3] = "WINDOWS"] = 3;
+                values[valuesById[4] = "MAC"] = 4;
+                return values;
+            })();
+
+            return SettingsSyncAction;
         })();
 
         SyncActionValue.StarAction = (function() {
@@ -189762,6 +190827,7 @@ $root.waproto = (function() {
                 case 220:
                 case 221:
                 case 222:
+                case 223:
                     break;
                 }
             }
@@ -191114,6 +192180,10 @@ $root.waproto = (function() {
             case 222:
                 message.messageStubType = 222;
                 break;
+            case "GROUP_TEE_BOT_ADDED":
+            case 223:
+                message.messageStubType = 223;
+                break;
             }
             if (object.clearMedia != null)
                 message.clearMedia = Boolean(object.clearMedia);
@@ -192062,6 +193132,7 @@ $root.waproto = (function() {
          * @property {number} QUARANTINED_MESSAGE=220 QUARANTINED_MESSAGE value
          * @property {number} GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE=221 GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE value
          * @property {number} GROUP_OPEN_BOT_ADDED=222 GROUP_OPEN_BOT_ADDED value
+         * @property {number} GROUP_TEE_BOT_ADDED=223 GROUP_TEE_BOT_ADDED value
          */
         WebMessageInfo.StubType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -192288,6 +193359,7 @@ $root.waproto = (function() {
             values[valuesById[220] = "QUARANTINED_MESSAGE"] = 220;
             values[valuesById[221] = "GROUP_MEMBER_SHARE_GROUP_HISTORY_MODE"] = 221;
             values[valuesById[222] = "GROUP_OPEN_BOT_ADDED"] = 222;
+            values[valuesById[223] = "GROUP_TEE_BOT_ADDED"] = 223;
             return values;
         })();
 
