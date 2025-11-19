@@ -38,26 +38,6 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
-export const extractAddressingContext = (stanza: BinaryNode) => {
-	const addressingMode: string = stanza.attrs.addressing_mode || 'pn'
-	let senderAlt: string | undefined
-	let recipientAlt: string | undefined
-
-	if (addressingMode === 'lid') {
-		senderAlt = stanza.attrs.participant_pn || stanza.attrs.sender_pn
-		recipientAlt = stanza.attrs.recipient_pn
-	} else {
-		senderAlt = stanza.attrs.participant_lid || stanza.attrs.sender_lid
-		recipientAlt = stanza.attrs.recipient_lid
-	}
-
-	return {
-		addressingMode,
-		senderAlt,
-		recipientAlt
-	}
-}
-
 const processMessageContent = async(
 	item: BinaryNode,
 	fullMessage: waproto.IWebMessageInfo,
@@ -342,14 +322,14 @@ export function decodeMessageNode(
 	const msgId: string = stanza.attrs.id
 	const from: string = stanza.attrs.from
 	const senderPn: string | undefined = stanza?.attrs?.sender_pn
-	const senderLid: string | undefined = stanza.attrs.sender_lid
-	const participant: string | undefined = stanza.attrs.participant
+	const senderLid: string | undefined = stanza?.attrs?.sender_lid
+	const participant: string | undefined = stanza?.attrs?.participant
 	const participantPn: string | undefined = stanza?.attrs?.participant_pn
-	const participantLid: string | undefined = stanza.attrs.participant_lid
+	const participantLid: string | undefined = stanza?.attrs?.participant_lid
 	const peerRecipientPn: string | undefined = stanza?.attrs?.peer_recipient_pn
 	const peerRecipientLid: string | undefined = stanza?.attrs?.peer_recipient_lid
-	const recipient: string | undefined = stanza.attrs.recipient
-	const addressingMode: string | undefined = stanza.attrs.addressing_mode
+	const recipient: string | undefined = stanza?.attrs?.recipient
+	const addressingMode: string | undefined = stanza?.attrs?.addressing_mode
 	const isMe = (jid: string) => areJidsSameUser(jid, meId)
 	const isMeLid = (jid: string) => areJidsSameUser(jid, meLid)
 	const fromMe: boolean = (isLidUser(from) || isLidUser(participant) ? isMeLid : isMe)(stanza.attrs.participant || stanza.attrs.from)
