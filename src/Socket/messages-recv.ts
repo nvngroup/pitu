@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
 import { LIDMappingStore } from '../Signal/lid-mapping'
-import { CacheStore, GroupMetadata, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
+import { CacheStore, GroupMetadata, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,
 	aesEncryptGCM,
@@ -826,7 +826,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			await Promise.all([
 				processingMutex.mutex(
 					async() => {
-						const msg: Partial<waproto.IWebMessageInfo> | undefined = await processNotification(node)
+						const msg: Partial<WAMessage> | undefined = await processNotification(node)
 						if (msg) {
 							const isLid: boolean = node.attrs.from.includes('lid')
 							const fromMe: boolean = areJidsSameUser(node.attrs.participant || remoteJid, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
@@ -834,6 +834,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 								remoteJid,
 								fromMe,
 								participant: node.attrs.participant,
+								participantPn: node.attrs.participant_pn || node.attrs.sender_pn,
+								participantLid: node.attrs.participant_lid || node.attrs.sender_lid,
 								id: node.attrs.id,
 								...(msg.key || {})
 							}

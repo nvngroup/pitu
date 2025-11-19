@@ -9,7 +9,6 @@ import type { GroupMetadata } from './GroupMetadata'
 import { CacheStore } from './Socket'
 
 export { waproto as WAProto }
-export type WAMessage = waproto.IWebMessageInfo
 export type WAMessageContent = waproto.IMessage
 export type WAContactMessage = waproto.Message.IContactMessage
 export type WAContactsArrayMessage = waproto.Message.IContactsArrayMessage
@@ -23,6 +22,10 @@ export type WAMessageKey = waproto.IMessageKey & {
     isViewOnce?: boolean
     addressingMode?: string
 }
+export type WAMessage = waproto.IWebMessageInfo & {
+    key: WAMessageKey
+}
+
 export type WATextMessage = waproto.Message.IExtendedTextMessage
 export type WAContextInfo = waproto.IContextInfo
 export type WALocationMessage = waproto.Message.ILocationMessage
