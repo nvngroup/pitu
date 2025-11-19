@@ -7,9 +7,9 @@ import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
-import { makeGroupsSocket } from './groups'
 import ListType = waproto.Message.ListMessage.ListType;
 import { MessageRetryManager } from '../Utils/message-retry-manager'
+import { makeNewsletterSocket } from './newsletter'
 
 export const makeMessagesSocket = (config: SocketConfig) => {
 	const {
@@ -24,7 +24,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		messageRelayMaxConcurrent,
 		messageRelayMaxQueueSize
 	} = config
-	const sock = makeGroupsSocket(config)
+	const sock = makeNewsletterSocket(config)
 	const {
 		ev,
 		authState,
