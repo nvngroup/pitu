@@ -7494,7 +7494,8 @@ export namespace waproto {
         ATTACHMENT_TRAY_1_ON_1_CHAT = 35,
         ATTACHMENT_TRAY_GROUP_CHAT = 36,
         ASK_META_AI_MEDIA_VIEWER_1ON1 = 37,
-        ASK_META_AI_MEDIA_VIEWER_GROUP = 38
+        ASK_META_AI_MEDIA_VIEWER_GROUP = 38,
+        META_AI_SETTINGS = 45
     }
 
     /** Properties of a BotMetricsMetadata. */
@@ -43806,7 +43807,8 @@ export namespace waproto {
         INTERACTIVE_MESSAGE_ACTION = 77,
         SETTINGS_SYNC_ACTION = 78,
         SHARE_OWN_PN = 10001,
-        BUSINESS_BROADCAST_ACTION = 10002
+        BUSINESS_BROADCAST_ACTION = 10002,
+        AI_THREAD_DELETE_ACTION = 10003
     }
 
     /** Properties of a NoiseCertificate. */
