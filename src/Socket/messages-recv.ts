@@ -437,21 +437,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const from: string = jidNormalizedUser(node.attrs.from)
 
 		switch (nodeType) {
-		case 'privacy_token':
-			const tokenList: BinaryNode[] = getBinaryNodeChildren(child, 'token')
-			for (const { attrs, content } of tokenList) {
-				const jid: string = attrs.jid
-				ev.emit('chats.update', [
-					{
-						id: jid,
-						tcToken: content as Buffer
-					}
-				])
-
-				logger.debug({ jid }, 'got privacy token update')
-			}
-
-			break
 		case 'w:gp2':
 			handleGroupNotification(node.attrs.participant, child, result)
 			break
