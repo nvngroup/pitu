@@ -82,6 +82,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const callOfferCache: CacheStore = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
+	// Debounce identity-change session refreshes per JID to avoid bursts
+	const identityAssertDebounce: CacheStore = CacheManager.getInstance('IDENTITY_ASSERT_DEBOUNCE')
+
 	let sendActiveReceipts = false
 
 	const sendMessageAck = async({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
@@ -316,6 +319,17 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const identityNode: BinaryNode | undefined = getBinaryNodeChild(node, 'identity')
 			if (identityNode) {
 				logger.trace({ jid: from }, 'identity changed')
+				if (identityAssertDebounce.get(from!)) {
+					logger.debug({ jid: from }, 'skipping identity assert (debounced)')
+					return
+				}
+
+				identityAssertDebounce.set(from!, true)
+				try {
+					await assertSessions([from!], true)
+				} catch (error) {
+					logger.warn({ error, jid: from }, 'failed to assert sessions after identity change')
+				}
 			} else {
 				logger.trace({ node }, 'unknown encrypt notification')
 			}

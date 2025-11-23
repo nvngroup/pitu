@@ -26,8 +26,8 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Validate and decode JID with enhanced error handling
-	 */
+		* Validate and decode JID with enhanced error handling
+		*/
 	private validateAndDecodeJid(jid: string, expectedType: 'lid' | 'pn'): DecodedJid | null {
 		const isValidType: boolean | undefined = expectedType === 'lid' ? isLidUser(jid) : isJidUser(jid)
 
@@ -49,8 +49,8 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Validate LID-PN mapping parameters
-	 */
+		* Validate LID-PN mapping parameters
+		*/
 	private validateMappingParams(lid: string, pn: string): { lidJid: string; pnJid: string } | null {
 		if (!((isLidUser(lid) && isJidUser(pn)) || (isJidUser(lid) && isLidUser(pn)))) {
 			logger.error({ lid, pn }, 'Invalid LID-PN mapping parameters')
@@ -62,25 +62,25 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Create device-specific LID from user and device
-	 */
+		* Create device-specific LID from user and device
+		*/
 	private createDeviceSpecificLid(lidUser: string, device: number = LID_MAPPING_CONSTANTS.DEFAULT_DEVICE): string {
 		return `${lidUser}:${device}${LID_MAPPING_CONSTANTS.LID_DOMAIN}`
 	}
 
 	/**
-	 * Create device-specific PN from user and device
-	 */
+		* Create device-specific PN from user and device
+		*/
 	private createDeviceSpecificPN(pnUser: string, device: number = LID_MAPPING_CONSTANTS.DEFAULT_DEVICE): string {
 		return `${pnUser}:${device}${LID_MAPPING_CONSTANTS.WHATSAPP_DOMAIN}`
 	}
 
 	/**
-	 * Store LID-PN mapping - USER LEVEL with enhanced error handling and validation
-	 * @param lid - LID or PN identifier
-	 * @param pn - PN or LID identifier
-	 * @returns Promise with operation result
-	 */
+		* Store LID-PN mapping - USER LEVEL with enhanced error handling and validation
+		* @param lid - LID or PN identifier
+		* @param pn - PN or LID identifier
+		* @returns Promise with operation result
+		*/
 	async storeLIDPNMapping(lid: string, pn: string): Promise<LIDMappingResult> {
 		try {
 			if (!lid?.trim() || !pn?.trim()) {
@@ -188,10 +188,10 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Get LID for PN - Returns device-specific LID based on user mapping
-	 * @param pn - Phone number JID
-	 * @returns Promise<string | null> - Device-specific LID or null if not found
-	 */
+		* Get LID for PN - Returns device-specific LID based on user mapping
+		* @param pn - Phone number JID
+		* @returns Promise<string | null> - Device-specific LID or null if not found
+		*/
 	async getLIDForPN(pn: string): Promise<string | null> {
 		return (await this.getLIDsForPNs([pn]))?.[0]?.lidUser || null
 	}
@@ -289,10 +289,10 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Get PN for LID - USER LEVEL with device construction
-	 * @param lid - LID identifier
-	 * @returns Promise<string | null> - Device-specific PN JID or null if not found
-	 */
+		* Get PN for LID - USER LEVEL with device construction
+		* @param lid - LID identifier
+		* @returns Promise<string | null> - Device-specific PN JID or null if not found
+		*/
 	async getPNForLID(lid: string): Promise<string | null> {
 		try {
 			if (!lid?.trim()) {
@@ -328,10 +328,10 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Remove LID-PN mapping for a given user
-	 * @param userIdentifier - Can be either PN user or LID user
-	 * @returns Promise<boolean> - Success status
-	 */
+		* Remove LID-PN mapping for a given user
+		* @param userIdentifier - Can be either PN user or LID user
+		* @returns Promise<boolean> - Success status
+		*/
 	async removeLIDPNMapping(userIdentifier: string): Promise<boolean> {
 		try {
 			if (!userIdentifier?.trim()) {
@@ -381,10 +381,10 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Check if a mapping exists for the given user
-	 * @param userIdentifier - Either PN user or LID user
-	 * @returns Promise<boolean> - Whether mapping exists
-	 */
+		* Check if a mapping exists for the given user
+		* @param userIdentifier - Either PN user or LID user
+		* @returns Promise<boolean> - Whether mapping exists
+		*/
 	async hasMappingForUser(userIdentifier: string): Promise<boolean> {
 		try {
 			if (!userIdentifier?.trim()) {
@@ -409,9 +409,9 @@ export class LIDMappingStore {
 	}
 
 	/**
-	 * Get mapping statistics for debugging and monitoring
-	 * @returns Promise<{ totalMappings: number; users: string[] }>
-	 */
+		* Get mapping statistics for debugging and monitoring
+		* @returns Promise<{ totalMappings: number; users: string[] }>
+		*/
 	async getMappingStats(): Promise<{ totalMappings: number; users: string[] }> {
 		try {
 			logger.trace({}, 'Getting mapping statistics...')
@@ -422,6 +422,220 @@ export class LIDMappingStore {
 		} catch (error) {
 			logger.error({ error }, 'Failed to get mapping statistics')
 			return { totalMappings: 0, users: [] }
+		}
+	}
+
+	/**
+		* Extract and normalize JID from message for mapping
+		*/
+	private extractJidFromMessage(jid: string): { user: string; device: number; isLid?: boolean; isPn?: boolean } | null {
+		const decoded = jidDecode(jid)
+		if (!decoded?.user) {
+			return null
+		}
+
+		return {
+			user: decoded.user,
+			device: decoded.device || LID_MAPPING_CONSTANTS.DEFAULT_DEVICE,
+			isLid: isLidUser(jid),
+			isPn: isPnUser(jid) || isHostedPnUser(jid)
+		}
+	}
+
+	/**
+		* Store bidirectional mapping from message exchange
+		* This creates both PN→LID and LID→PN mappings at user level
+		*/
+	async storeMappingFromMessage(jid: string, participant?: string): Promise<void> {
+		try {
+			const jidInfo = this.extractJidFromMessage(jid)
+			if (!jidInfo) {
+				return
+			}
+
+			const participantInfo = participant ? this.extractJidFromMessage(participant) : null
+
+			let lidUser: string | null = null
+			let pnUser: string | null = null
+
+			if (jidInfo.isLid && participantInfo?.isPn) {
+				lidUser = jidInfo.user
+				pnUser = participantInfo.user
+			} else if (jidInfo.isPn && participantInfo?.isLid) {
+				pnUser = jidInfo.user
+				lidUser = participantInfo.user
+			} else if (jidInfo.isLid && !participantInfo) {
+				lidUser = jidInfo.user
+				const existingPn = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [`${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`])
+				pnUser = existingPn[`${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`]
+			} else if (jidInfo.isPn && !participantInfo) {
+				pnUser = jidInfo.user
+				const existingLid = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [pnUser])
+				lidUser = existingLid[pnUser]
+			}
+
+			if (lidUser && pnUser) {
+				const existingMapping = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [pnUser])
+				if (existingMapping[pnUser] === lidUser) {
+					this.logger.trace({ pnUser, lidUser }, 'Mapping already exists from message')
+					return
+				}
+
+				await this.keys.transaction(async() => {
+					await this.keys.set({
+						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
+							[pnUser]: lidUser,
+							[`${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`]: pnUser
+						}
+					})
+				})
+
+				this.mappingCache.set(`pn:${pnUser}`, lidUser)
+				this.mappingCache.set(`lid:${lidUser}`, pnUser)
+
+				this.logger.debug({ pnUser, lidUser, jid, participant }, 'Bidirectional mapping stored from message exchange')
+			}
+		} catch (error) {
+			this.logger.error({ error, jid, participant }, 'Failed to store mapping from message')
+		}
+	}
+
+	/**
+		* Store multiple mappings from message batch
+		*/
+	async storeMappingsFromMessages(messages: Array<{ jid: string; participant?: string }>): Promise<void> {
+		const mappingsToStore: { [pnUser: string]: string } = {}
+
+		for (const msg of messages) {
+			try {
+				const jidInfo = this.extractJidFromMessage(msg.jid)
+				if (!jidInfo) {
+					continue
+				}
+
+				const participantInfo = msg.participant ? this.extractJidFromMessage(msg.participant) : null
+
+				let lidUser: string | null = null
+				let pnUser: string | null = null
+
+				if (jidInfo.isLid && participantInfo?.isPn) {
+					lidUser = jidInfo.user
+					pnUser = participantInfo.user
+				} else if (jidInfo.isPn && participantInfo?.isLid) {
+					pnUser = jidInfo.user
+					lidUser = participantInfo.user
+				}
+
+				if (lidUser && pnUser) {
+					const existingLid = mappingsToStore[pnUser]
+					if (existingLid && existingLid !== lidUser) {
+						this.logger.warn({ pnUser, existingLid, newLid: lidUser }, 'Conflicting LID mapping detected')
+					}
+
+					mappingsToStore[pnUser] = lidUser
+				}
+			} catch (error) {
+				this.logger.error({ error, message: msg }, 'Failed to process message for mapping')
+			}
+		}
+
+		if (Object.keys(mappingsToStore).length === 0) {
+			return
+		}
+
+		await this.keys.transaction(async() => {
+			const updates: { [key: string]: string } = {}
+
+			for (const [pnUser, lidUser] of Object.entries(mappingsToStore)) {
+				updates[pnUser] = lidUser
+				updates[`${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`] = pnUser
+
+				this.mappingCache.set(`pn:${pnUser}`, lidUser)
+				this.mappingCache.set(`lid:${lidUser}`, pnUser)
+			}
+
+			await this.keys.set({
+				[LID_MAPPING_CONSTANTS.STORAGE_KEY]: updates
+			})
+		})
+
+		this.logger.info({ count: Object.keys(mappingsToStore).length }, 'Batch stored bidirectional mappings from messages')
+	}
+
+	/**
+		* Get all mappings for debugging and export
+		*/
+	async getAllMappings(): Promise<{ pnUser: string; lidUser: string }[]> {
+		try {
+			const allKeys = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [])
+			const mappings: { pnUser: string; lidUser: string }[] = []
+
+			for (const [key, value] of Object.entries(allKeys)) {
+				if (!key.endsWith(LID_MAPPING_CONSTANTS.REVERSE_SUFFIX) && typeof value === 'string') {
+					mappings.push({
+						pnUser: key,
+						lidUser: value
+					})
+				}
+			}
+
+			return mappings
+		} catch (error) {
+			this.logger.error({ error }, 'Failed to get all mappings')
+			return []
+		}
+	}
+
+	/**
+		* Validate and repair bidirectional consistency
+		*/
+	async validateAndRepairMappings(): Promise<{ validated: number; repaired: number; errors: number }> {
+		try {
+			const allKeys = await this.keys.get(LID_MAPPING_CONSTANTS.STORAGE_KEY, [])
+			const repairs: { [key: string]: string | null } = {}
+			let validated = 0
+			let repaired = 0
+			let errors = 0
+
+			for (const [key, value] of Object.entries(allKeys)) {
+				if (key.endsWith(LID_MAPPING_CONSTANTS.REVERSE_SUFFIX)) {
+					continue
+				}
+
+				const pnUser = key
+				const lidUser = value
+
+				if (!lidUser || typeof lidUser !== 'string') {
+					this.logger.warn({ pnUser }, 'Invalid LID user value')
+					errors++
+					continue
+				}
+
+				const reverseKey = `${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`
+				const reversePn = allKeys[reverseKey]
+
+				if (reversePn !== pnUser) {
+					this.logger.warn({ pnUser, lidUser, reversePn }, 'Inconsistent reverse mapping detected')
+					repairs[reverseKey] = pnUser
+					repaired++
+				} else {
+					validated++
+				}
+			}
+
+			if (Object.keys(repairs).length > 0) {
+				await this.keys.transaction(async() => {
+					await this.keys.set({
+						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: repairs
+					})
+				})
+				this.logger.info({ repaired }, 'Repaired inconsistent mappings')
+			}
+
+			return { validated, repaired, errors }
+		} catch (error) {
+			this.logger.error({ error }, 'Failed to validate mappings')
+			return { validated: 0, repaired: 0, errors: 0 }
 		}
 	}
 }

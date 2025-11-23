@@ -4,12 +4,13 @@ import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
 import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
-import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
-import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
+import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
+import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import ListType = waproto.Message.ListMessage.ListType;
 import { MessageRetryManager } from '../Utils/message-retry-manager'
 import { makeNewsletterSocket } from './newsletter'
+import { LIDMappingStore } from '../Signal/lid-mapping'
 
 export const makeMessagesSocket = (config: SocketConfig) => {
 	const {
@@ -39,6 +40,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		groupToggleEphemeral,
 	} = sock
 
+	const lidMapping = new LIDMappingStore(authState.keys, logger);
+
 	const patchMessageRequiresBeforeSending = (msg: waproto.IMessage): waproto.IMessage => {
 		if (msg?.deviceSentMessage?.message?.listMessage) {
 			msg = JSON.parse(JSON.stringify(msg))
@@ -61,6 +64,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	})
 
 	const userDevicesCache: CacheStore = config.userDevicesCache || CacheManager.getInstance('USER_DEVICES')
+	const peerSessionsCache: CacheStore =	CacheManager.getInstance('PEER_SESSIONS')
 
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
@@ -203,6 +207,21 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			const result: USyncQueryResult | undefined = await sock.executeUSyncQuery(query)
 
 			if (result) {
+				const lidResults: USyncQueryResultList[] = result.list.filter(a => !!a.lid)
+				if (lidResults.length > 0) {
+					logger.trace({}, 'Storing LID maps from device call')
+					await lidMapping.storeLIDPNMappings(lidResults.map(a => ({ lidUser: a.lid as string, pnUser: a.id })))
+
+					// Force-refresh sessions for newly mapped LIDs to align identity addressing
+					try {
+						const lids: string[] = lidResults.map(a => a.lid as string)
+						if (lids.length) {
+							await assertSessions(lids, true)
+						}
+					} catch (e) {
+						logger.warn({ e, count: lidResults.length }, 'failed to assert sessions for newly mapped LIDs')
+					}
+				}
 				const extracted: JidWithDevice[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
 				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
 
@@ -255,30 +274,43 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 
 		if (jidsRequiringFetch.length) {
-			logger.debug({ jidsRequiringFetch }, 'fetching sessions')
+			const wireJids: string[] = [
+				...jidsRequiringFetch.filter(jid => !!isLidUser(jid) || !!isHostedLidUser(jid)),
+				...(
+					(await lidMapping.getLIDsForPNs(
+						jidsRequiringFetch.filter(jid => !!isPnUser(jid) || !!isHostedPnUser(jid))
+					)) || []
+				).map(a => a.lidUser)
+			]
+
+			logger.debug({ jidsRequiringFetch, wireJids }, 'fetching sessions')
 			const result: BinaryNode = await query({
 				tag: 'iq',
 				attrs: {
 					xmlns: 'encrypt',
 					type: 'get',
-					to: S_WHATSAPP_NET,
+					to: S_WHATSAPP_NET
 				},
 				content: [
 					{
 						tag: 'key',
-						attrs: { },
-						content: jidsRequiringFetch.map(
-							jid => ({
-								tag: 'user',
-								attrs: { jid },
-							})
-						)
+						attrs: {},
+						content: wireJids.map(jid => {
+							const attrs: { [key: string]: string } = { jid }
+							if (force) attrs.reason = 'identity'
+							return { tag: 'user', attrs }
+						})
 					}
 				]
 			})
 			await parseAndInjectE2ESessions(result, signalRepository)
-
 			didFetchNewSession = true
+
+			// Cache fetched sessions using wire JIDs
+			for (const wireJid of wireJids) {
+				const signalId: string = signalRepository.jidToSignalProtocolAddress(wireJid)
+				peerSessionsCache.set(signalId, true)
+			}
 		}
 
 		return didFetchNewSession
