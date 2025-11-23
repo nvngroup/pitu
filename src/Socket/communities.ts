@@ -207,7 +207,7 @@ export const makeCommunitiesSocket = (config: SocketConfig) => {
 			const result: BinaryNode = await communityQuery(jid, 'set', [
 				{
 					tag: action,
-					attrs: {},
+					attrs: action === 'remove' ? { linked_groups: 'true' } : {},
 					content: participants.map(jid => ({
 						tag: 'participant',
 						attrs: { jid }
