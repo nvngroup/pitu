@@ -35,7 +35,7 @@ import {
 	getBinaryNodeChild,
 	getBinaryNodeChildBuffer,
 	getBinaryNodeChildren,
-	isJidGroup, isJidStatusBroadcast,
+	isJidGroup, isJidNewsletter, isJidStatusBroadcast,
 	isJidUser,
 	isLidUser,
 	jidDecode,
@@ -920,15 +920,18 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			await Promise.all([
 				processingMutex.mutex(async() => {
 					await decrypt()
-					if (msg.messageStubType === waproto.WebMessageInfo.StubType.CIPHERTEXT) {
-						if (msg?.messageStubParameters?.[0] === MISSING_KEYS_ERROR_TEXT) {
-							return sendMessageAck(node, NACK_REASONS.ParsingError)
+					if (msg.messageStubType === waproto.WebMessageInfo.StubType.CIPHERTEXT && category !== 'peer') {
+						if (
+							msg?.messageStubParameters?.[0] === MISSING_KEYS_ERROR_TEXT ||
+							msg.messageStubParameters?.[0] === NO_MESSAGE_FOUND_ERROR_TEXT
+						) {
+							return sendMessageAck(node)
 						}
 
 						const errorMessage: string = msg?.messageStubParameters?.[0] || ''
 						const isPreKeyError: boolean = errorMessage.includes('PreKey')
 
-						retryMutex.mutex(async() => {
+						retryMutex.mutex(async () => {
 							try {
 								if (!ws.isOpen) {
 									logger.debug({ node }, 'Connection closed, skipping retry')
@@ -969,25 +972,31 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 							}
 						})
 					} else {
-						let type: MessageReceiptType = undefined
-						let participant: string | null | undefined = msg.key.participant
-						if (category === 'peer') {
-							type = 'peer_msg'
-						} else if (msg.key.fromMe) {
-							type = 'sender'
-							if (isJidUser(msg.key.remoteJid!)) {
-								participant = author
+						const isNewsletter = isJidNewsletter(msg.key.remoteJid!)
+						if (!isNewsletter) {
+							let type: MessageReceiptType = undefined
+							let participant: string | null | undefined = msg.key.participant
+							if (category === 'peer') {
+								type = 'peer_msg'
+							} else if (msg.key.fromMe) {
+								type = 'sender'
+								if (isJidUser(msg.key.remoteJid!)) {
+									participant = author
+								}
+							} else if (!sendActiveReceipts) {
+								type = 'inactive'
 							}
-						} else if (!sendActiveReceipts) {
-							type = 'inactive'
-						}
 
-						await sendReceipt(msg.key.remoteJid!, participant!, [msg.key.id!], type)
+							await sendReceipt(msg.key.remoteJid!, participant!, [msg.key.id!], type)
 
-						const isAnyHistoryMsg: waproto.Message.IHistorySyncNotification | null | undefined = getHistoryMsg(msg.message!)
-						if (isAnyHistoryMsg) {
-							const jid: string = jidNormalizedUser(msg.key.remoteJid!)
-							await sendReceipt(jid, undefined, [msg.key.id!], 'hist_sync')
+							const isAnyHistoryMsg: waproto.Message.IHistorySyncNotification | null | undefined = getHistoryMsg(msg.message!)
+							if (isAnyHistoryMsg) {
+								const jid: string = jidNormalizedUser(msg.key.remoteJid!)
+								await sendReceipt(jid, undefined, [msg.key.id!], 'hist_sync') // TODO: investigate
+							}
+						} else {
+							await sendMessageAck(node)
+							logger.debug({ key: msg.key }, 'processed newsletter message without receipts')
 						}
 					}
 
