@@ -337,7 +337,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			for (const jid of jids) {
 				const signalId: string = signalRepository
 					.jidToSignalProtocolAddress(jid)
-				if (!sessions[signalId]) {
+				// Check both session storage and peer cache to avoid redundant fetches
+				const hasCachedSession: boolean = peerSessionsCache.get<boolean>(signalId) === true
+				if (!sessions[signalId] && !hasCachedSession) {
 					jidsRequiringFetch.push(jid)
 				}
 			}
@@ -354,6 +356,23 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			]
 
 			logger.debug({ jidsRequiringFetch, wireJids }, 'fetching sessions')
+
+			// Check if we already have cached sessions for these wire JIDs
+			const wireJidsToFetch: string[] = []
+			for (const wireJid of wireJids) {
+				const signalId: string = signalRepository.jidToSignalProtocolAddress(wireJid)
+				const hasCached: boolean = peerSessionsCache.get<boolean>(signalId) === true
+				if (!hasCached) {
+					wireJidsToFetch.push(wireJid)
+				} else {
+					logger.debug({ wireJid }, 'skipping fetch, session already cached')
+				}
+			}
+
+			if (wireJidsToFetch.length === 0) {
+				logger.debug({}, 'all sessions already cached, skipping fetch')
+				return didFetchNewSession
+			}
 
 			// Retry logic with exponential backoff for session fetching
 			let retries = 3
@@ -373,7 +392,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							{
 								tag: 'key',
 								attrs: {},
-								content: wireJids.map(jid => {
+								content: wireJidsToFetch.map(jid => {
 									const attrs: { [key: string]: string } = { jid }
 									if (force) {
 										attrs.reason = 'identity'
@@ -579,8 +598,27 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				additionalAttributes = { ...additionalAttributes, 'device_fanout': 'false' }
 			}
 
-			const { user, device } = jidDecode(participant.jid)! // rajeh: how does this even make sense TODO check out
-			devices.push({ user, device })
+			const decoded = jidDecode(participant.jid)!
+			const { user, device } = decoded
+
+			// If device is undefined (retry without device ID), use device 0 as fallback
+			const targetDevice = device !== undefined ? device : 0
+
+			devices.push({
+				user,
+				device: targetDevice,
+				jid: participant.jid
+			})
+
+			logger.debug(
+				{
+					participantJid: participant.jid,
+					user,
+					device: targetDevice,
+					hadDevice: device !== undefined
+				},
+				'Added participant device for retry'
+			)
 		}
 
 		if (isInteractiveMessage) {
@@ -727,6 +765,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						}
 
 						if (additionalAttributes?.['category'] !== 'peer') {
+							const initialDevices = [...devices]
 							devices.length = 0
 
 							const senderIdentity: string =
@@ -736,6 +775,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 							const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, jid], true, false)
 							devices.push(...sessionDevices)
+
+							if (devices.length === 0) {
+								logger.warn({ jid }, 'No devices found via USync, using initial device list as fallback')
+								devices.push(...initialDevices)
+							}
 
 							logger.debug(
 								{
