@@ -883,11 +883,11 @@ export const processSyncAction = (
 		ev.emit('settings.update', { setting: 'locale', value: action.localeSetting.locale })
 	} else if (action?.timeFormatAction) {
 		ev.emit('settings.update', { setting: 'timeFormat', value: action.timeFormatAction })
-	} /*else if (action?.pnForLidChatAction) {
+	} else if (action?.pnForLidChatAction) {
 		if (action.pnForLidChatAction.pnJid) {
 			ev.emit('lid-mapping.update', { lid: id!, pn: action.pnForLidChatAction.pnJid })
 		}
-	}*/ else if (action?.privacySettingRelayAllCalls) {
+	} else if (action?.privacySettingRelayAllCalls) {
 		ev.emit('settings.update', {
 			setting: 'privacySettingRelayAllCalls',
 			value: action.privacySettingRelayAllCalls
