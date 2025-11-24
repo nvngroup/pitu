@@ -473,32 +473,51 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const bytes: Buffer = encodeWAMessage(requiredPatched)
 
 		let shouldIncludeDeviceIdentity = false
-		const nodes: BinaryNode[] = await Promise.all(
-			jids.map(
-				async jid => {
-					const { type, ciphertext } = await signalRepository
-						.encryptMessage({ jid, data: bytes })
-					if (type === 'pkmsg') {
-						shouldIncludeDeviceIdentity = true
-					}
+		const nodes: BinaryNode[] = []
+		const failedJids: string[] = []
 
-					const node: BinaryNode = {
-						tag: 'to',
-						attrs: { jid },
-						content: [{
-							tag: 'enc',
-							attrs: {
-								v: '2',
-								type,
-								...extraAttrs || {}
-							},
-							content: ciphertext
-						}]
-					}
-					return node
+		for (const jid of jids) {
+			try {
+				const { type, ciphertext } = await signalRepository
+					.encryptMessage({ jid, data: bytes })
+				if (type === 'pkmsg') {
+					shouldIncludeDeviceIdentity = true
 				}
+
+				const node: BinaryNode = {
+					tag: 'to',
+					attrs: { jid },
+					content: [{
+						tag: 'enc',
+						attrs: {
+							v: '2',
+							type,
+							...extraAttrs || {}
+						},
+						content: ciphertext
+					}]
+				}
+				nodes.push(node)
+			} catch (error) {
+				failedJids.push(jid)
+				logger.warn(
+					{ jid, error: error.message },
+					'Failed to encrypt message for participant, skipping'
+				)
+			}
+		}
+
+		if (failedJids.length > 0) {
+			logger.warn(
+				{
+					failedCount: failedJids.length,
+					totalCount: jids.length,
+					failedJids: failedJids.slice(0, 5) // Log first 5 to avoid huge logs
+				},
+				'Some participants failed encryption'
 			)
-		)
+		}
+
 		return { nodes, shouldIncludeDeviceIdentity }
 	}
 
