@@ -1,6 +1,6 @@
-import NodeCache from '@cacheable/node-cache'
 import * as libsignal from 'libsignal'
-import type { SignalAuthState, SignalKeyStoreWithTransaction, SignedKeyPair } from '../Types'
+import { CacheManager } from '../Socket'
+import type { CacheStore, SignalAuthState, SignalKeyStoreWithTransaction, SignedKeyPair } from '../Types'
 import { SignalRepository } from '../Types/Signal'
 import { generateSignalPubKey } from '../Utils'
 import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
@@ -14,12 +14,10 @@ import { LIDMappingStore } from './lid-mapping'
 import { EncryptionResult, LIDMappingResult, SessionMigrationOptions, SessionValidationResult } from './types'
 
 const SIGNAL_CONSTANTS = {
-	MIGRATION_CACHE_TTL: 15 * 60 * 1000,
 	PREKEY_MESSAGE_TYPE: 3,
 	WHATSAPP_DOMAIN: '@s.whatsapp.net',
 	LID_DOMAIN: '@lid',
 	DEFAULT_DEVICE: 0,
-	SESSION_CACHE_TTL: 5 * 60 * 1000,
 } as const
 
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
@@ -27,18 +25,8 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	const lidMapping = new LIDMappingStore(parsedKeys, logger)
 	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
-	const migratedSessionCache = new NodeCache({
-		stdTTL: SIGNAL_CONSTANTS.MIGRATION_CACHE_TTL,
-		checkperiod: 60,
-		useClones: false,
-		maxKeys: 1000
-	})
-
-	const sessionValidationCache = new NodeCache({
-		stdTTL: SIGNAL_CONSTANTS.SESSION_CACHE_TTL,
-		useClones: false,
-		maxKeys: 500
-	})
+	const migratedSessionCache: CacheStore = CacheManager.getInstance('SIGNAL_STORE', 15 * 60)
+	const sessionValidationCache: CacheStore = CacheManager.getInstance('SIGNAL_STORE', 5 * 60)
 
 	/**
 	 * Utility function to validate JID format and decode
@@ -265,7 +253,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		async validateSession(jid: string): Promise<SessionValidationResult> {
 			try {
 				const cacheKey = `validation:${jid}`
-				const cached = sessionValidationCache.get(cacheKey) as SessionValidationResult | undefined
+				const cached: SessionValidationResult | undefined = sessionValidationCache.get<SessionValidationResult>(cacheKey)
 				if (cached) {
 					return cached
 				}
@@ -346,7 +334,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const deviceId: number = fromDecoded.device
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
-				if (!options.force && migratedSessionCache.has(migrationKey)) {
+				if (!options.force && migratedSessionCache.get<boolean>(migrationKey)) {
 					logger.trace({ migrationKey }, 'Migration already processed')
 					return
 				}
