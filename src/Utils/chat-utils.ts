@@ -902,11 +902,12 @@ export const processSyncAction = (
 			value: action.privacySettingDisableLinkPreviewsAction
 		})
 	} else if (
+		action?.notificationActivitySettingAction &&
 		action?.notificationActivitySettingAction?.notificationActivitySetting !== null
 	) {
 		ev.emit('settings.update', {
 			setting: 'notificationActivitySetting',
-			value: action!.notificationActivitySettingAction!.notificationActivitySetting!
+			value: action.notificationActivitySettingAction.notificationActivitySetting!
 		})
 	} else if (action?.lidContactAction) {
 		ev.emit('contacts.upsert', [
