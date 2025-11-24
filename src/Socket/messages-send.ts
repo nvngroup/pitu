@@ -354,28 +354,56 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			]
 
 			logger.debug({ jidsRequiringFetch, wireJids }, 'fetching sessions')
-			const result: BinaryNode = await query({
-				tag: 'iq',
-				attrs: {
-					xmlns: 'encrypt',
-					type: 'get',
-					to: S_WHATSAPP_NET
-				},
-				content: [
-					{
-						tag: 'key',
-						attrs: {},
-						content: wireJids.map(jid => {
-							const attrs: { [key: string]: string } = { jid }
-							if (force) {
-								attrs.reason = 'identity'
-							}
 
-							return { tag: 'user', attrs }
-						})
+			// Retry logic with exponential backoff for session fetching
+			let retries = 3
+			let result: BinaryNode | null = null
+			let lastError: Error | null = null
+
+			while (retries > 0 && !result) {
+				try {
+					result = await query({
+						tag: 'iq',
+						attrs: {
+							xmlns: 'encrypt',
+							type: 'get',
+							to: S_WHATSAPP_NET
+						},
+						content: [
+							{
+								tag: 'key',
+								attrs: {},
+								content: wireJids.map(jid => {
+									const attrs: { [key: string]: string } = { jid }
+									if (force) {
+										attrs.reason = 'identity'
+									}
+
+									return { tag: 'user', attrs }
+								})
+							}
+						]
+					}, 150_000) // 150 seconds timeout
+					break
+				} catch (error) {
+					lastError = error as Error
+					retries--
+					if (retries > 0) {
+						const backoffDelay = (4 - retries) * 5000 // 5s, 10s, 15s
+						logger.warn(
+							{ error: error.message, retriesLeft: retries, backoffDelay },
+							'Failed to fetch sessions, retrying...'
+						)
+						await delay(backoffDelay)
 					}
-				]
-			})
+				}
+			}
+
+			if (!result) {
+				logger.error({ error: lastError?.message, jidsRequiringFetch }, 'Failed to fetch sessions after all retries')
+				throw lastError || new Boom('Failed to fetch sessions', { statusCode: 408 })
+			}
+
 			await parseAndInjectE2ESessions(result, signalRepository)
 			didFetchNewSession = true
 
