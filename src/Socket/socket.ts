@@ -293,7 +293,7 @@ export const makeSocket = (config: SocketConfig) => {
 		const keyEnc: Buffer = await noise.processHandshake(handshake, creds.noiseKey)
 
 		let node: waproto.IClientPayload
-		if (!creds.me || !creds.registered) {
+		if (!creds.me) {
 			node = generateRegistrationNode(creds, config)
 			logger.trace({ node }, 'not logged in, attempting registration...')
 		} else {
