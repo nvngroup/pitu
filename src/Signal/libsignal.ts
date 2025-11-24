@@ -24,7 +24,7 @@ const SIGNAL_CONSTANTS = {
 
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
 	const parsedKeys = auth.keys as SignalKeyStoreWithTransaction
-	const lidMapping = new LIDMappingStore(parsedKeys as SignalKeyStoreWithTransaction, logger)
+	const lidMapping = new LIDMappingStore(parsedKeys, logger)
 	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
 	const migratedSessionCache = new NodeCache({
@@ -313,7 +313,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 				const addr = jidToSignalProtocolAddress(jid)
 
-				await (parsedKeys as SignalKeyStoreWithTransaction).transaction(async() => {
+				await (parsedKeys).transaction(async() => {
 					await parsedKeys.set({ session: { [addr.toString()]: null } })
 				})
 
@@ -362,7 +362,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 				let migrationSuccessful = false
 
-				await (parsedKeys as SignalKeyStoreWithTransaction).transaction(async() => {
+				await (parsedKeys).transaction(async() => {
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
