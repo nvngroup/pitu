@@ -1,14 +1,14 @@
-# <div align='center'>Baileys - Typescript/Javascript WhatsApp Web API</div>
+# <div align='center'>Pitu - Typescript/Javascript WhatsApp Web API</div>
 
 <div align='center'>
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/baileys/total)
-![NPM Downloads](https://img.shields.io/npm/dw/%40whiskeysockets%2Fbaileys?label=npm&color=%23CB3837)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/brunocgc/baileys)
-![GitHub License](https://img.shields.io/github/license/brunocgc/baileys)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/Pitu/total)
+![NPM Downloads](https://img.shields.io/npm/dw/%40whiskeysockets%2FPitu?label=npm&color=%23CB3837)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/brunocgc/Pitu)
+![GitHub License](https://img.shields.io/github/license/brunocgc/Pitu)
 ![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)
-![GitHub Repo stars](https://img.shields.io/github/stars/brunocgc/baileys)
-![GitHub forks](https://img.shields.io/github/forks/brunocgc/baileys)
+![GitHub Repo stars](https://img.shields.io/github/stars/brunocgc/Pitu)
+![GitHub forks](https://img.shields.io/github/forks/brunocgc/Pitu)
 
 </div>
 
@@ -18,14 +18,14 @@ This library was originally a project for **CS-2362 at Ashoka University** and i
 
 #### Liability and License Notice
 
-Baileys and its maintainers cannot be held liable for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/baileys/blob/master/LICENSE).
-The maintainers of Baileys do not in any way condone the use of this application in practices that violate the Terms of Service of WhatsApp. The maintainers of this application call upon the personal responsibility of its users to use this application in a fair way, as it is intended to be used.
+Pitu and its maintainers cannot be held liable for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/Pitu/blob/master/LICENSE).
+The maintainers of Pitu do not in any way condone the use of this application in practices that violate the Terms of Service of WhatsApp. The maintainers of this application call upon the personal responsibility of its users to use this application in a fair way, as it is intended to be used.
 
 ##
 
-- Baileys does not require Selenium or any other browser to be interface with WhatsApp Web, it does so directly using a **WebSocket**.
+- Pitu does not require Selenium or any other browser to be interface with WhatsApp Web, it does so directly using a **WebSocket**.
 - Not running Selenium or Chromimum saves you like **half a gig** of ram :/
-- Baileys supports interacting with the multi-device & web versions of WhatsApp.
+- Pitu supports interacting with the multi-device & web versions of WhatsApp.
 - Thank you to [@pokearaujo](https://github.com/pokearaujo/multidevice) for writing his observations on the workings of WhatsApp Multi-Device. Also, thank you to [@Sigalor](https://github.com/sigalor/whatsapp-web-reveng) for writing his observations on the workings of WhatsApp Web and thanks to [@Rhymen](https://github.com/Rhymen/go-whatsapp/) for the **go** implementation.
 
 > [!IMPORTANT]
@@ -39,7 +39,7 @@ Do check out & run [example.ts](Example/example.ts) to see an example usage of t
 The script covers most common use cases.
 To run the example script, download or clone the repo and then type the following in a terminal:
 
-1. ``` cd path/to/Baileys ```
+1. ``` cd path/to/Pitu ```
 2. ``` yarn ```
 3. ``` yarn example ```
 
@@ -48,19 +48,19 @@ To run the example script, download or clone the repo and then type the followin
 Use the stable version:
 
 ```
-yarn add baileys
+yarn add Pitu
 ```
 
 Use the edge version (no guarantee of stability, but latest fixes + features)
 
 ```
-yarn add github:brunocgc/baileys
+yarn add github:brunocgc/Pitu
 ```
 
 Then import the default function in your code:
 
 ```ts
-import makeWASocket from 'baileys'
+import makeWASocket from 'Pitu'
 ```
 
 # Links
@@ -169,27 +169,27 @@ import makeWASocket from 'baileys'
   - [Send Broadcast & Stories](#send-broadcast--stories)
   - [Query a Broadcast List's Recipients & Name](#query-a-broadcast-lists-recipients--name)
 - [Writing Custom Functionality](#writing-custom-functionality)
-  - [Enabling Debug Level in Baileys Logs](#enabling-debug-level-in-baileys-logs)
+  - [Enabling Debug Level in Pitu Logs](#enabling-debug-level-in-Pitu-logs)
   - [How Whatsapp Communicate With Us](#how-whatsapp-communicate-with-us)
   - [Register a Callback for Websocket Events](#register-a-callback-for-websocket-events)
 
 ## Connecting Account
 
-WhatsApp provides a multi-device API that allows Baileys to be authenticated as a second WhatsApp client by scanning a **QR code** or **Pairing Code** with WhatsApp on your phone.
+WhatsApp provides a multi-device API that allows Pitu to be authenticated as a second WhatsApp client by scanning a **QR code** or **Pairing Code** with WhatsApp on your phone.
 
 > [!NOTE]
 > **[Here](#example-to-start) is a simple example of event handling**
 
 > [!TIP]
-> **You can see all supported socket configs [here](https://baileys.whiskeysockets.io/types/SocketConfig.html) (Recommended)**
+> **You can see all supported socket configs [here](https://Pitu.whiskeysockets.io/types/SocketConfig.html) (Recommended)**
 
 ### Starting socket with **QR-CODE**
 
 > [!TIP]
-> You can customize browser name if you connect with **QR-CODE**, with `Browser` constant, we have some browsers config, **see [here](https://baileys.whiskeysockets.io/types/BrowsersMap.html)**
+> You can customize browser name if you connect with **QR-CODE**, with `Browser` constant, we have some browsers config, **see [here](https://Pitu.whiskeysockets.io/types/BrowsersMap.html)**
 
 ```ts
-import makeWASocket from 'baileys'
+import makeWASocket from 'Pitu'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -208,7 +208,7 @@ If the connection is successful, you will see a QR code printed on your terminal
 The phone number can't have `+` or `()` or `-`, only numbers, you must provide country code
 
 ```ts
-import makeWASocket from 'baileys'
+import makeWASocket from 'Pitu'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -225,7 +225,7 @@ if (!sock.authState.creds.registered) {
 ### Receive Full History
 
 1. Set `syncFullHistory` as `true`
-2. Baileys, by default, use chrome browser config
+2. Pitu, by default, use chrome browser config
     - If you'd like to emulate a desktop connection (and receive more message history), this browser setting to your Socket config:
 
 ```ts
@@ -241,7 +241,7 @@ const sock = makeWASocket({
 
 ### Caching Group Metadata (Recommended)
 
-- If you use baileys for groups, we recommend you to set `cachedGroupMetadata` in socket config, you need to implement a cache like this:
+- If you use Pitu for groups, we recommend you to set `cachedGroupMetadata` in socket config, you need to implement a cache like this:
 
     ```ts
     const groupCache = new NodeCache({stdTTL: 5 * 60, useClones: false})
@@ -288,9 +288,9 @@ You obviously don't want to keep scanning the QR code every time you want to con
 So, you can load the credentials to log back in:
 
 ```ts
-import makeWASocket, { useMultiFileAuthState } from 'baileys'
+import makeWASocket, { useMultiFileAuthState } from 'Pitu'
 
-const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
+const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
 
 // will use the given state to connect
 // so if valid credentials are available -- it'll connect without QR
@@ -308,11 +308,11 @@ sock.ev.on('creds.update', saveCreds)
 
 ## Handling Events
 
-- Baileys uses the EventEmitter syntax for events.
+- Pitu uses the EventEmitter syntax for events.
 They're all nicely typed up, so you shouldn't have any issues with an Intellisense editor like VS Code.
 
 > [!IMPORTANT]
-> **The events are [these](https://baileys.whiskeysockets.io/types/BaileysEventMap.html)**, it's important you see all events
+> **The events are [these](https://Pitu.whiskeysockets.io/types/PituEventMap.html)**, it's important you see all events
 
 You can listen to these events like this:
 
@@ -329,11 +329,11 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 > This example includes basic auth storage too
 
 ```ts
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from 'baileys'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from 'Pitu'
 import { Boom } from '@hapi/boom'
 
 async function connectToWhatsApp () {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
     const sock = makeWASocket({
         // can provide additional config here
         auth: state,
@@ -419,8 +419,8 @@ sock.ev.on('messages.update', event => {
 ## Sending Messages
 
 - Send all types of messages with a single function
-  - **[Here](https://baileys.whiskeysockets.io/types/AnyMessageContent.html) you can see all message contents supported, like text message**
-  - **[Here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html) you can see all options supported, like quote message**
+  - **[Here](https://Pitu.whiskeysockets.io/types/AnyMessageContent.html) you can see all message contents supported, like text message**
+  - **[Here](https://Pitu.whiskeysockets.io/types/MiscMessageGenerationOptions.html) you can see all options supported, like quote message**
 
     ```ts
     const jid: string
@@ -483,7 +483,7 @@ await sock.sendMessage(
 
 #### Forward Messages
 
-- You need to have message object, use a [message](https://baileys.whiskeysockets.io/types/WAMessage.html) object
+- You need to have message object, use a [message](https://Pitu.whiskeysockets.io/types/WAMessage.html) object
 
 ```ts
 const msg = getMessageFromStore() // implement this on your end
@@ -527,7 +527,7 @@ await sock.sendMessage(
 
 #### Reaction Message
 
-- You need to pass the key of message, use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+- You need to pass the key of message, use a [key](https://Pitu.whiskeysockets.io/types/WAMessageKey.html) object
 
 ```ts
 await sock.sendMessage(
@@ -543,7 +543,7 @@ await sock.sendMessage(
 
 #### Pin Message
 
-- You need to pass the key of message, use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+- You need to pass the key of message, use a [key](https://Pitu.whiskeysockets.io/types/WAMessageKey.html) object
 
 - Time can be:
 
@@ -585,7 +585,7 @@ await sock.sendMessage(
 ### Sending Messages with Link Previews
 
 1. By default, wa does not have link generation when sent from the web
-2. Baileys has a function to generate the content for these link previews
+2. Pitu has a function to generate the content for these link previews
 3. To enable this function's usage, add `link-preview-js` as a dependency to your project with `yarn add link-preview-js`
 4. Send a link:
 
@@ -593,7 +593,7 @@ await sock.sendMessage(
 await sock.sendMessage(
     jid,
     {
-        text: 'Hi, this was sent using https://github.com/brunocgc/baileys'
+        text: 'Hi, this was sent using https://github.com/brunocgc/Pitu'
     }
 )
 ```
@@ -603,9 +603,9 @@ await sock.sendMessage(
 Sending media (video, stickers, images) is easier & more efficient than ever.
 
 > [!NOTE]
-> In media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://baileys.whiskeysockets.io/types/WAMediaUpload.html)
+> In media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://Pitu.whiskeysockets.io/types/WAMediaUpload.html)
 
-- When specifying a media url, Baileys never loads the entire buffer into memory; it even encrypts the media as a readable stream.
+- When specifying a media url, Pitu never loads the entire buffer into memory; it even encrypts the media as a readable stream.
 
 > [!TIP]
 > It's recommended to use Stream or Url to save memory
@@ -735,7 +735,7 @@ If you want to save the media you received
 
 ```ts
 import { createWriteStream } from 'fs'
-import { downloadMediaMessage, getContentType } from 'baileys'
+import { downloadMediaMessage, getContentType } from 'Pitu'
 
 sock.ev.on('messages.upsert', async ({ [m] }) => {
     if (!m.message) return // if there is no text or media message
@@ -750,7 +750,7 @@ sock.ev.on('messages.upsert', async ({ [m] }) => {
             { },
             {
                 logger,
-                // pass this so that baileys can request a reupload of media
+                // pass this so that Pitu can request a reupload of media
                 // that has been deleted
                 reuploadRequest: sock.updateMediaMessage
             }
@@ -782,8 +782,8 @@ await sock.rejectCall(callId, callFrom)
 
 ### Reading Messages
 
-- A set of message [keys](https://baileys.whiskeysockets.io/types/WAMessageKey.html) must be explicitly marked read now.
-- You cannot mark an entire 'chat' read as it were with Baileys Web.
+- A set of message [keys](https://Pitu.whiskeysockets.io/types/WAMessageKey.html) must be explicitly marked read now.
+- You cannot mark an entire 'chat' read as it were with Pitu Web.
 This means you have to keep track of unread messages.
 
 ```ts
@@ -797,7 +797,7 @@ On a `WAMessage`, the `messageID` can be accessed using ```messageID = message.k
 
 ### Update Presence
 
-- ``` presence ``` can be one of [these](https://baileys.whiskeysockets.io/types/WAPresence.html)
+- ``` presence ``` can be one of [these](https://Pitu.whiskeysockets.io/types/WAPresence.html)
 - The presence expires after about 10 seconds.
 - This lets the person/group with `jid` know whether you're online, offline, typing etc.
 
@@ -806,7 +806,7 @@ await sock.sendPresenceUpdate('available', jid)
 ```
 
 > [!NOTE]
-> If a desktop client is active, WA doesn't send push notifications to the device. If you would like to receive said notifications -- mark your Baileys client offline using `sock.sendPresenceUpdate('unavailable')`
+> If a desktop client is active, WA doesn't send push notifications to the device. If you would like to receive said notifications -- mark your Pitu client offline using `sock.sendPresenceUpdate('unavailable')`
 
 ## Modifying Chats
 
@@ -1023,7 +1023,7 @@ await sock.updateProfileName('My name')
 - To change your display picture or a group's
 
 > [!NOTE]
-> Like media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://baileys.whiskeysockets.io/types/WAMediaUpload.html)
+> Like media messages, you can pass `{ stream: Stream }` or `{ url: Url }` or `Buffer` directly, you can see more [here](https://Pitu.whiskeysockets.io/types/WAMediaUpload.html)
 
 ```ts
 await sock.updateProfilePicture(jid, { url: './new-profile-picture.jpeg' })
@@ -1291,8 +1291,8 @@ await sock.sendMessage(
 )
 ```
 
-- Message body can be a `extendedTextMessage` or `imageMessage` or `videoMessage` or `voiceMessage`, see [here](https://baileys.whiskeysockets.io/types/AnyRegularMessageContent.html)
-- You can add `backgroundColor` and other options in the message options, see [here](https://baileys.whiskeysockets.io/types/MiscMessageGenerationOptions.html)
+- Message body can be a `extendedTextMessage` or `imageMessage` or `videoMessage` or `voiceMessage`, see [here](https://Pitu.whiskeysockets.io/types/AnyRegularMessageContent.html)
+- You can add `backgroundColor` and other options in the message options, see [here](https://Pitu.whiskeysockets.io/types/MiscMessageGenerationOptions.html)
 - `broadcast: true` enables broadcast mode
 - `statusJidList`: a list of people that you can get which you need to provide, which are the people who will get this status message.
 
@@ -1309,9 +1309,9 @@ console.log (`list name: ${bList.name}, recps: ${bList.recipients}`)
 
 ## Writing Custom Functionality
 
-Baileys is written with custom functionality in mind. Instead of forking the project & re-writing the internals, you can simply write your own extensions.
+Pitu is written with custom functionality in mind. Instead of forking the project & re-writing the internals, you can simply write your own extensions.
 
-### Enabling Debug Level in Baileys Logs
+### Enabling Debug Level in Pitu Logs
 
 First, enable the logging of unhandled messages from WhatsApp by setting:
 

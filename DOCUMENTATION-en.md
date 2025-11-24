@@ -1,4 +1,4 @@
-# Baileys Socket - Documentation
+# Pitu Socket - Documentation
 
 ## Table of Contents
 
@@ -30,6 +30,9 @@
   - [call](#call)
   - [labels.edit](#labelsedit)
   - [labels.association](#labelsassociation)
+  - [settings.update](#settingsupdate)
+  - [chats.lock](#chatslock)
+  - [lid-mapping.update](#lid-mappingupdate)
 - [Authentication and Session](#authentication-and-session)
 - [Default Socket Settings](#default-socket-settings)
   - [patchMessageBeforeSending](#patchmessagebeforesending)
@@ -83,11 +86,11 @@
 
 ## Introduction
 
-Baileys Socket allows direct connection to WhatsApp Web via WebSocket, without the need for Selenium or browsers. It is highly efficient, consumes less memory, and supports multiple devices.
+Pitu Socket allows direct connection to WhatsApp Web via WebSocket, without the need for Selenium or browsers. It is highly efficient, consumes less memory, and supports multiple devices.
 
 ## Socket Overview
 
-Baileys Socket is the core responsible for real-time communication with WhatsApp Web, using the WebSocket protocol. It abstracts all the complexity of connection, authentication, sending and receiving events and messages, allowing developers to create robust and scalable integrations with the WhatsApp platform.
+Pitu Socket is the core responsible for real-time communication with WhatsApp Web, using the WebSocket protocol. It abstracts all the complexity of connection, authentication, sending and receiving events and messages, allowing developers to create robust and scalable integrations with the WhatsApp platform.
 
 Main features:
 
@@ -99,11 +102,11 @@ Main features:
 - **Group and Contact Management:** Allows programmatic creation, editing, and management of groups and contacts.
 - **Extensible:** Modular structure, making it easy to add new features and integrations.
 
-The Socket is the foundation for all Baileys operations, essential for any application that wants to interact with WhatsApp in an automated and reliable way.
+The Socket is the foundation for all Pitu operations, essential for any application that wants to interact with WhatsApp in an automated and reliable way.
 
 ## Socket Events
 
-`BaileysEventMap` defines all events that can be emitted by the Baileys Socket. Each event represents a relevant action or update during communication with WhatsApp. Below, I explain each of the main events:
+`PituEventMap` defines all events that can be emitted by the Pitu Socket. Each event represents a relevant action or update during communication with WhatsApp. Below, I explain each of the main events:
 
 ### connection.update
 
@@ -422,9 +425,70 @@ sock.ev.on('labels.association', (data) => {
 })
 ```
 
+### settings.update
+
+WhatsApp settings update. This event is emitted when any setting is changed, such as language, time format, privacy, among others.
+
+Possible fields:
+
+- `setting`: Name of the changed setting
+- `value`: New value of the setting
+
+Supported settings:
+
+- `locale`: WhatsApp language
+- `timeFormat`: Time format (12h or 24h)
+- `privacySettingRelayAllCalls`: Call relay privacy setting
+- `statusPrivacy`: Status privacy
+- `disableLinkPreviews`: Disable link previews
+- `notificationActivitySetting`: Notification activity setting
+- `channelsPersonalisedRecommendation`: Personalized channel recommendations
+
+Settings update:
+
+```ts
+sock.ev.on('settings.update', (data) => {
+    console.log('Setting updated:', data.setting, '=', data.value)
+})
+```
+
+### chats.lock
+
+Chat lock or unlock event.
+
+Fields:
+
+- `id`: Chat ID
+- `locked`: Lock status (true/false)
+
+Chat lock:
+
+```ts
+sock.ev.on('chats.lock', (data) => {
+    console.log('Chat', data.id, 'locked:', data.locked)
+})
+```
+
+### lid-mapping.update
+
+LID (Linked ID) to phone number (PN) mapping event. This event is emitted when there is an association between a linked identifier (LID) and a real phone number (PN), used to manage linked identities on WhatsApp.
+
+Fields:
+
+- `lid`: Linked identifier (Linked ID)
+- `pn`: Associated phone number (Phone Number JID)
+
+LID mapping update:
+
+```ts
+sock.ev.on('lid-mapping.update', (data) => {
+    console.log('LID mapping updated:', data.lid, '->', data.pn)
+})
+```
+
 ## Authentication and Session
 
-Authentication and session management are fundamental to ensure your application maintains access to WhatsApp without needing to scan the QR Code on every run. Baileys makes this process easy through the `makeWASocket` method and credential persistence utilities.
+Authentication and session management are fundamental to ensure your application maintains access to WhatsApp without needing to scan the QR Code on every run. Pitu makes this process easy through the `makeWASocket` method and credential persistence utilities.
 
 ### Creating the Socket with makeWASocket
 
@@ -433,7 +497,7 @@ Authentication and session management are fundamental to ensure your application
 #### Basic connection example
 
 ```ts
-import makeWASocket from 'baileys'
+import makeWASocket from 'Pitu'
 
 const sock = makeWASocket({
     printQRInTerminal: true // Shows the QR Code in the terminal for authentication
@@ -445,10 +509,10 @@ const sock = makeWASocket({
 To avoid the need for manual authentication every time, use the `useMultiFileAuthState` utility to save and restore credentials:
 
 ```ts
-import makeWASocket, { useMultiFileAuthState } from 'baileys'
+import makeWASocket, { useMultiFileAuthState } from 'Pitu'
 
 async function startSocket() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: true
@@ -470,7 +534,7 @@ startSocket()
 
 ## Default Socket Settings
 
-Baileys offers a default configuration for the Socket, defined in `DEFAULT_CONNECTION_CONFIG`. These options control connection behavior, authentication, performance, and advanced features. You can override any of them when creating the socket with `makeWASocket`.
+Pitu offers a default configuration for the Socket, defined in `DEFAULT_CONNECTION_CONFIG`. These options control connection behavior, authentication, performance, and advanced features. You can override any of them when creating the socket with `makeWASocket`.
 
 ### Main Default Options
 
@@ -479,7 +543,7 @@ Baileys offers a default configuration for the Socket, defined in `DEFAULT_CONNE
 - **waWebSocketUrl**: WhatsApp Web WebSocket URL.
 - **connectTimeoutMs**: Maximum time (ms) to try to connect.
 - **keepAliveIntervalMs**: Interval (ms) for sending keep-alive packets.
-- **logger**: Default logger for Baileys logs.
+- **logger**: Default logger for Pitu logs.
 - **emitOwnEvents**: Whether own events should be emitted.
 - **defaultQueryTimeoutMs**: Default timeout for queries (ms).
 - **customUploadHosts**: Custom hosts for media upload.
@@ -550,7 +614,7 @@ If you don't need to modify anything, just return the received message.
 
 ### shouldSyncHistoryMessage
 
-The `shouldSyncHistoryMessage` function allows you to programmatically control whether a historical message (old messages retrieved during sync) should be synced or ignored by Baileys. It receives the message as a parameter and should return `true` (to sync) or `false` (to ignore).
+The `shouldSyncHistoryMessage` function allows you to programmatically control whether a historical message (old messages retrieved during sync) should be synced or ignored by Pitu. It receives the message as a parameter and should return `true` (to sync) or `false` (to ignore).
 
 This function is useful for filtering old messages, for example, ignoring messages from certain types, groups, or contacts during history restoration.
 
@@ -579,7 +643,7 @@ If not defined, the default is to sync all historical messages (`true`).
 
 ### shouldIgnoreJid
 
-The `shouldIgnoreJid` function allows you to programmatically define which JIDs (user, group, channel, etc identifiers) should be ignored by Baileys during sync and event/message processing. It receives the JID as a parameter and should return `true` (to ignore) or `false` (to process normally).
+The `shouldIgnoreJid` function allows you to programmatically define which JIDs (user, group, channel, etc identifiers) should be ignored by Pitu during sync and event/message processing. It receives the JID as a parameter and should return `true` (to ignore) or `false` (to process normally).
 
 This function is useful for filtering groups, contacts, channels, or any JID you don't want your bot/process to interact with or process.
 
@@ -613,7 +677,7 @@ If not defined, the default is to process all JIDs (`false`).
 
 The `getMessage` function is used to fetch and return a specific message from your application's local storage, based on an identifier (usually the `WAMessageKey`).
 
-It is essential for scenarios where Baileys needs to access the full content of a previously received or sent message, such as when resending, editing, deleting, or processing reactions and read receipts.
+It is essential for scenarios where Pitu needs to access the full content of a previously received or sent message, such as when resending, editing, deleting, or processing reactions and read receipts.
 
 This function should be asynchronous and return the corresponding message for the provided identifier, or `undefined` if not found.
 
@@ -630,17 +694,17 @@ const sock = makeWASocket({
 
 You can use this function to:
 
-- Allow Baileys to retrieve old messages for operations like deletion, editing, quoting
+- Allow Pitu to retrieve old messages for operations like deletion, editing, quoting
 - Integrate with your own databases, caches, or persistence systems
 - Ensure that operations dependent on previous messages work correctly
 
-If not defined, the default is to return `undefined`, which may limit some Baileys features.
+If not defined, the default is to return `undefined`, which may limit some Pitu features.
 
 > Tip: Implement an efficient storage system to ensure performance and integrity when fetching messages by key.
 
 ### cachedGroupMetadata
 
-The `cachedGroupMetadata` function allows you to provide Baileys with a caching mechanism for group metadata (such as name, participants, description, settings, etc). It is called whenever the socket needs to access detailed group information, avoiding multiple requests to the WhatsApp API and improving application performance.
+The `cachedGroupMetadata` function allows you to provide Pitu with a caching mechanism for group metadata (such as name, participants, description, settings, etc). It is called whenever the socket needs to access detailed group information, avoiding multiple requests to the WhatsApp API and improving application performance.
 
 This function should be asynchronous and receive the group JID as a parameter, returning the group metadata (if cached) or `undefined` if not available locally.
 
@@ -667,17 +731,17 @@ If not defined, the default is not to use cache, making a new request whenever n
 
 ### makeSignalRepository
 
-The `makeSignalRepository` function is responsible for creating and providing the Signal repository used by Baileys to manage all end-to-end encryption of messages, groups, and calls. The Signal Protocol is the security standard used by WhatsApp to ensure privacy and integrity of communications.
+The `makeSignalRepository` function is responsible for creating and providing the Signal repository used by Pitu to manage all end-to-end encryption of messages, groups, and calls. The Signal Protocol is the security standard used by WhatsApp to ensure privacy and integrity of communications.
 
 This function should return a Signal Protocol-compatible implementation, responsible for storing and retrieving keys, sessions, and other cryptographic data needed for the secure operation of the socket.
 
-In most cases, Baileys already provides a default implementation (`makeLibSignalRepository`), but you can customize it to integrate with databases, distributed systems, or high-availability solutions.
+In most cases, Pitu already provides a default implementation (`makeLibSignalRepository`), but you can customize it to integrate with databases, distributed systems, or high-availability solutions.
 
 #### Example of usage
 
 ```ts
 const sock = makeWASocket({
-    makeSignalRepository: makeLibSignalRepository // Baileys default
+    makeSignalRepository: makeLibSignalRepository // Pitu default
 })
 ```
 
@@ -687,13 +751,13 @@ You can customize this function to:
 - Implement backup and recovery strategies for Signal sessions
 - Ensure high availability and resilience in distributed environments
 
-If not defined, the default is to use Baileys' internal implementation, which already meets most use cases.
+If not defined, the default is to use Pitu' internal implementation, which already meets most use cases.
 
 > Tip: Only change this function if you really need advanced control over Signal key storage. For most bots and integrations, the default implementation is sufficient and secure.
 
 ## Message Management
 
-Message management is one of the main features of Baileys Socket, allowing you to send, edit, delete, quote, react, and download media programmatically. Below are the most common operations, practical examples, and usage tips.
+Message management is one of the main features of Pitu Socket, allowing you to send, edit, delete, quote, react, and download media programmatically. Below are the most common operations, practical examples, and usage tips.
 
 ### Sending Messages
 
@@ -732,7 +796,7 @@ await sock.sendMessage('5511999999999@s.whatsapp.net', {
 
 ### Internal Message Management
 
-The `sendMessage` method of Baileys is highly robust and flexible, allowing sending of messages to contacts, groups, status, and even advanced operations like editing, deletion, pinning, polls, and more. Below, I detail how message management works internally, based on the source code (`src/Socket/messages-send.ts`).
+The `sendMessage` method of Pitu is highly robust and flexible, allowing sending of messages to contacts, groups, status, and even advanced operations like editing, deletion, pinning, polls, and more. Below, I detail how message management works internally, based on the source code (`src/Socket/messages-send.ts`).
 
 #### 1. Message Generation and Sending
 
@@ -750,7 +814,7 @@ The `sendMessage` method of Baileys is highly robust and flexible, allowing send
 
 #### 3. Sending to Groups, Contacts, and Status
 
-- Baileys automatically detects if the JID is a group, contact, or status, and adjusts sending as needed.
+- Pitu automatically detects if the JID is a group, contact, or status, and adjusts sending as needed.
 - For groups, it handles distribution to all participants and management of encryption keys (Signal Protocol).
 - For status, it uses the special JID `status@broadcast`.
 
@@ -762,7 +826,7 @@ The `sendMessage` method of Baileys is highly robust and flexible, allowing send
 
 #### 5. Sync and Sessions
 
-- Baileys automatically manages sessions and devices, guaranteeing that messages are delivered to all recipient devices (multi-device).
+- Pitu automatically manages sessions and devices, guaranteeing that messages are delivered to all recipient devices (multi-device).
 - Utilizes cache and sync to optimize sending and avoid redundancies.
 
 #### 6. Best Practices and Notes
@@ -770,7 +834,7 @@ The `sendMessage` method of Baileys is highly robust and flexible, allowing send
 - Always use the return of `sendMessage` to store the message object, making future operations (edit, delete, quote, etc) easier.
 - For bulk operations (e.g., marking multiple messages as read), use the bulk methods (`readMessages`, `sendReceipts`).
 - Sending to groups is more complex due to the need to distribute keys and ensure delivery to all participants.
-- Baileys automatically handles end-to-end encryption, but it is important to keep session and key storage secure.
+- Pitu automatically handles end-to-end encryption, but it is important to keep session and key storage secure.
 - Use socket events (`messages.upsert`, `messages.update`, etc) to monitor message status and update your system in real time.
 
 #### 7. Advanced Example: Sending, Editing, and Deleting
@@ -802,7 +866,7 @@ await sock.sendMessage(groupJid, { text: 'Hello, group!' }, { quoted: originalMe
 
 ## Group Management
 
-Baileys offers a complete API for managing WhatsApp groups, allowing you to create, edit, fetch information, manage participants, and control advanced group settings. All operations are asynchronous and follow the socket's event and method pattern.
+Pitu offers a complete API for managing WhatsApp groups, allowing you to create, edit, fetch information, manage participants, and control advanced group settings. All operations are asynchronous and follow the socket's event and method pattern.
 
 ### Main Methods
 
@@ -950,7 +1014,7 @@ sock.ev.on('groups.update', (updates) => {
 
 ## Chat Management
 
-Baileys allows complete management of WhatsApp chats, including creation, editing, archiving, marking as read/unread, managing contacts, labels, and privacy. Below are the main methods and usage examples.
+Pitu allows complete management of WhatsApp chats, including creation, editing, archiving, marking as read/unread, managing contacts, labels, and privacy. Below are the main methods and usage examples.
 
 ### Main Methods
 
@@ -1093,7 +1157,7 @@ sock.ev.on('chats.update', (updates) => {
 
 ## Business Messages
 
-Baileys offers full support for managing WhatsApp business resources, such as product catalog, collections, and orders. Below are the main methods available for business accounts:
+Pitu offers full support for managing WhatsApp business resources, such as product catalog, collections, and orders. Below are the main methods available for business accounts:
 
 ### Main Methods
 
@@ -1163,7 +1227,7 @@ Removes one or more products from the business catalog.
 
 ## Data Sync (USync)
 
-USync is the protocol used by Baileys to sync contacts, groups, messages, and other data between devices efficiently and securely. It allows multiple devices to maintain the same state of information, ensuring consistency and real-time updates.
+USync is the protocol used by Pitu to sync contacts, groups, messages, and other data between devices efficiently and securely. It allows multiple devices to maintain the same state of information, ensuring consistency and real-time updates.
 
 ### How USync Works
 
@@ -1213,13 +1277,13 @@ interface USyncQueryProtocol {
 
 ### Notes
 
-- USync is used automatically by Baileys in multi-device operations.
+- USync is used automatically by Pitu in multi-device operations.
 - For advanced use, you can create custom protocols by implementing the `USyncQueryProtocol` interface.
 - See the files `src/WAUSync/` and `src/Types/USync.ts` for implementation details and protocol examples.
 
 ## Socket Utilities
 
-Baileys Socket utilities are helper functions that facilitate integration, maintenance, and extension of your bot or system. They cover authentication, event handling, credential storage, message/media processing, and session management.
+Pitu Socket utilities are helper functions that facilitate integration, maintenance, and extension of your bot or system. They cover authentication, event handling, credential storage, message/media processing, and session management.
 
 ### Main Utilities and Helpers
 
@@ -1228,8 +1292,8 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 - **useMultiFileAuthState**: Allows saving and restoring authentication state in multiple files, ideal for persistent bots and applications.
 
   ```ts
-  import { useMultiFileAuthState } from 'baileys'
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
+  import { useMultiFileAuthState } from 'Pitu'
+  const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
   // Pass 'state' to makeWASocket and save credentials on 'creds.update' event
   ```
 
@@ -1241,7 +1305,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 - **captureEventStream / readAndEmitEventStream**: Record and replay event streams for debugging, testing, or scenario replication.
 
   ```ts
-  import { captureEventStream, readAndEmitEventStream } from 'baileys'
+  import { captureEventStream, readAndEmitEventStream } from 'Pitu'
   captureEventStream(sock.ev, 'events.log')
   // ... later
   const ev = readAndEmitEventStream('events.log', 100)
@@ -1255,7 +1319,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 - **processMessage / decodeWAMessage**: Help process and decode received messages.
 
   ```ts
-  import { downloadMediaMessage } from 'baileys'
+  import { downloadMediaMessage } from 'Pitu'
   const buffer = await downloadMediaMessage(msg, 'buffer', {})
   ```
 
@@ -1267,7 +1331,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 #### 5. Cache and Performance Utilities
 
 - **cachedGroupMetadata**: Implement group metadata cache to reduce repeated calls and improve performance.
-- **getMessage**: Allows Baileys to fetch old messages from your local storage.
+- **getMessage**: Allows Pitu to fetch old messages from your local storage.
 
 #### 6. General Helpers
 
@@ -1287,7 +1351,7 @@ Baileys Socket utilities are helper functions that facilitate integration, maint
 #### Downloading received media
 
 ```ts
-import { downloadMediaMessage } from 'baileys'
+import { downloadMediaMessage } from 'Pitu'
 const buffer = await downloadMediaMessage(msg, 'buffer', { })
 // Save or process the buffer as needed
 ```
@@ -1295,7 +1359,7 @@ const buffer = await downloadMediaMessage(msg, 'buffer', { })
 #### Session persistence
 
 ```ts
-import { useMultiFileAuthState } from 'baileys'
+import { useMultiFileAuthState } from 'Pitu'
 const { state, saveCreds } = await useMultiFileAuthState('auth')
 const sock = makeWASocket({ auth: state })
 sock.ev.on('creds.update', saveCreds)
@@ -1314,7 +1378,7 @@ const sock = makeWASocket({
 #### Event buffering
 
 ```ts
-import { makeEventBuffer } from 'baileys'
+import { makeEventBuffer } from 'Pitu'
 const ev = makeEventBuffer(logger)
 ev.buffer()
 // ...batch processing

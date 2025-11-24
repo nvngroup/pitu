@@ -1,4 +1,4 @@
-# ❓ Baileys - Perguntas Frequentes (FAQ)
+# ❓ Pitu - Perguntas Frequentes (FAQ)
 
 ## 🎯 Índice Rápido
 
@@ -15,7 +15,7 @@
 
 ### ❓ Como funciona a conexão com o WhatsApp?
 
-O Baileys se conecta diretamente ao WhatsApp Web via WebSocket, simulando um navegador. Você precisa "pareá-lo" com seu WhatsApp mobile escaneando um QR Code ou usando código de pareamento.
+O Pitu se conecta diretamente ao WhatsApp Web via WebSocket, simulando um navegador. Você precisa "pareá-lo" com seu WhatsApp mobile escaneando um QR Code ou usando código de pareamento.
 
 ### ❓ QR Code vs Código de Pareamento - qual usar?
 
@@ -96,7 +96,7 @@ await sock.sendMessage(jid, {
     text: '*Negrito* _Itálico_ ~Riscado~ ```Código``` \n\n' +
           '• Lista item 1\n' +
           '• Lista item 2\n\n' +
-          'Link: https://github.com/brunocgc/Baileys'
+          'Link: https://github.com/brunocgc/Pitu'
 })
 ```
 
@@ -298,7 +298,7 @@ if (!supportedImages.includes(ext)) {
 
 ## 🏢 Uso Comercial e Limites
 
-### ❓ Posso usar Baileys comercialmente?
+### ❓ Posso usar Pitu comercialmente?
 
 ✅ **Sim**, mas com responsabilidade:
 
@@ -517,7 +517,7 @@ services:
 
 ### 🤝 Comunidade
 
-- 🐙 **GitHub**: [github.com/brunocgc/Baileys](https://github.com/brunocgc/Baileys)
+- 🐙 **GitHub**: [github.com/brunocgc/Pitu](https://github.com/brunocgc/Pitu)
 - 🌐 **Site**: [nvngroup.com.br](https://www.nvngroup.com.br)
 
 ### 🐛 Reportar Bugs
@@ -525,6 +525,6 @@ services:
 1. Verifique se o problema já foi reportado
 2. Forneça código para reproduzir o erro
 3. Inclua logs de erro completos
-4. Especifique versão do Node.js e Baileys
+4. Especifique versão do Node.js e Pitu
 
 ---

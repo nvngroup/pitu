@@ -1,13 +1,13 @@
-# <div align='center'>Baileys - API TypeScript/Javascript para WhatsApp Web</div>
+# <div align='center'>Pitu - API TypeScript/Javascript para WhatsApp Web</div>
 
 <div align='center'>
 
 ![NVN.PLUS Logo](https://github.com/user-attachments/assets/8cd401e2-a783-4b69-a3b2-ab371fac711a)
 
 [![Versão](https://img.shields.io/badge/versão-1.0.11-blue.svg)](https://nvn.plus)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/Baileys/total)
-![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)
-![GitHub License](https://img.shields.io/github/license/brunocgc/Baileys)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/brunocgc/Pitu/total)
+![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2FPitu?label=npm&color=%23CB3837)
+![GitHub License](https://img.shields.io/github/license/brunocgc/Pitu)
 
 </div>
 
@@ -21,7 +21,7 @@ This library was originally a project for **CS-2362 at Ashoka University** and i
 
 ### 📜 Liability and License Notice
 
-Baileys and its maintainers **cannot be held liable** for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/Baileys/blob/master/LICENSE). The maintainers do not condone the use of this application in practices that violate WhatsApp's Terms of Service. Users are responsible for using this application ethically and legally.
+Pitu and its maintainers **cannot be held liable** for misuse of this application, as stated in the [MIT license](https://github.com/brunocgc/Pitu/blob/master/LICENSE). The maintainers do not condone the use of this application in practices that violate WhatsApp's Terms of Service. Users are responsible for using this application ethically and legally.
 
 ---
 
@@ -52,17 +52,17 @@ For a comprehensive learning experience, check our organized documentation:
 
 ## 🤝 Contributing
 
-We welcome contributions to improve Baileys! Here's how you can help:
+We welcome contributions to improve Pitu! Here's how you can help:
 
 ### 🐛 **Bug Reports**
 
-- Check existing [issues](https://github.com/brunocgc/Baileys/issues) first
+- Check existing [issues](https://github.com/brunocgc/Pitu/issues) first
 - Provide detailed reproduction steps
 - Include your environment details (Node.js version, OS, etc.)
 
 ### 💡 **Feature Requests**
 
-- Open an [issue](https://github.com/brunocgc/Baileys/issues) with the "enhancement" label
+- Open an [issue](https://github.com/brunocgc/Pitu/issues) with the "enhancement" label
 - Describe the feature and its use case
 - Provide examples if possible
 
@@ -85,7 +85,7 @@ We welcome contributions to improve Baileys! Here's how you can help:
 
 ## 🔗 Links
 
-- **GitHub:** <https://github.com/brunocgc/Baileys>
+- **GitHub:** <https://github.com/brunocgc/Pitu>
 - **NPM:** <https://www.npmjs.com/package/@nvngroup/pitu>
 - **Site:** <https://www.nvngroup.com.br>
 
@@ -110,7 +110,7 @@ We welcome contributions to improve Baileys! Here's how you can help:
 <td align="center">
 <h3>⭐ GitHub</h3>
 <p>
-<a href="https://github.com/brunocgc/Baileys">
+<a href="https://github.com/brunocgc/Pitu">
 <img src="https://img.shields.io/badge/GitHub-Dar%20Estrela-181717?style=for-the-badge&logo=github" alt="GitHub"/>
 </a>
 </p>
@@ -118,7 +118,7 @@ We welcome contributions to improve Baileys! Here's how you can help:
 <td align="center">
 <h3>💬 Community</h3>
 <p>
-<a href="https://github.com/brunocgc/Baileys/discussions">
+<a href="https://github.com/brunocgc/Pitu/discussions">
 <img src="https://img.shields.io/badge/Discord-Entrar%20Agora-7289DA?style=for-the-badge&logo=discord" alt="Discord"/>
 </a>
 </p>

@@ -1,4 +1,4 @@
-# <div align='center'>Baileys - API TypeScript/Javascript para WhatsApp Web</div>
+# <div align='center'>Pitu - API TypeScript/Javascript para WhatsApp Web</div>
 
 <div align='center'>
 
@@ -6,7 +6,7 @@
 
 [![Versão](https://img.shields.io/badge/versão-1.0.11-blue.svg)](https://nvn.plus)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/nvngroup/pitu/total)
-![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2Fbaileys?label=npm&color=%23CB3837)
+![NPM Downloads](https://img.shields.io/npm/dw/%40brunocgc%2FPitu?label=npm&color=%23CB3837)
 ![GitHub License](https://img.shields.io/github/license/nvngroup/pitu)
 
 </div>
@@ -21,7 +21,7 @@ Esta biblioteca foi originalmente um projeto para **CS-2362 na Universidade Asho
 
 ### 📜 Aviso de Responsabilidade e Licença
 
-O Baileys e seus mantenedores **não podem ser responsabilizados** pelo uso indevido desta aplicação, conforme declarado na [licença MIT](https://github.com/nvngroup/pitu/blob/master/LICENSE). Os mantenedores não aprovam o uso desta aplicação em práticas que violem os Termos de Serviço do WhatsApp. Os usuários são responsáveis por usar esta aplicação de forma ética e legal.
+O Pitu e seus mantenedores **não podem ser responsabilizados** pelo uso indevido desta aplicação, conforme declarado na [licença MIT](https://github.com/nvngroup/pitu/blob/master/LICENSE). Os mantenedores não aprovam o uso desta aplicação em práticas que violem os Termos de Serviço do WhatsApp. Os usuários são responsáveis por usar esta aplicação de forma ética e legal.
 
 ---
 
@@ -52,7 +52,7 @@ Para uma experiência de aprendizado abrangente, confira nossa documentação or
 
 ## 🤝 Contribuindo
 
-Bem-vindos às contribuições para melhorar o Baileys! Veja como você pode ajudar:
+Bem-vindos às contribuições para melhorar o Pitu! Veja como você pode ajudar:
 
 ### 🐛 **Relatórios de Bug**
 

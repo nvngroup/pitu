@@ -1,6 +1,6 @@
-# 🎯 Baileys - Exemplos Práticos
+# 🎯 Pitu - Exemplos Práticos
 
-Este documento contém exemplos práticos e casos de uso reais para o Baileys.
+Este documento contém exemplos práticos e casos de uso reais para o Pitu.
 
 ## 📱 Bot de Atendimento Avançado
 

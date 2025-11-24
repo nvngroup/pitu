@@ -594,7 +594,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity: boolean = isRetryResend
 
-
 		const { user, server } = jidDecode(jid)!
 		const statusJid = 'status@broadcast'
 		const isGroup: boolean = server === 'g.us'

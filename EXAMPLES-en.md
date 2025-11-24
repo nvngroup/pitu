@@ -1,6 +1,6 @@
-# 🎯 Baileys - Practical Examples
+# 🎯 Pitu - Practical Examples
 
-This document contains practical examples and real-world use cases for Baileys.
+This document contains practical examples and real-world use cases for Pitu.
 
 ## 📱 Advanced Customer Service Bot
 
