@@ -1,3 +1,4 @@
+import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import {
 	type GroupMetadata,
@@ -395,7 +396,17 @@ export const makeGroupsSocket = (config: SocketConfig) => {
 }
 
 export const extractGroupMetadata = (result: BinaryNode) => {
-	const group: BinaryNode = getBinaryNodeChild(result, 'group')!
+	const group: BinaryNode | undefined = getBinaryNodeChild(result, 'group')
+	if (!group) {
+		const errorNode: BinaryNode | undefined = getBinaryNodeChild(result, 'error')
+		if (errorNode) {
+			throw new Boom(`Group metadata query failed with error ${errorNode.attrs.code}: ${errorNode.attrs.text}`, {
+				data: errorNode
+			})
+		}
+
+		throw new Boom('Invalid group metadata response, missing <group> node', { data: result })
+	}
 	const descChild: BinaryNode | undefined = getBinaryNodeChild(group, 'description')
 	let desc: string | undefined
 	let descId: string | undefined
@@ -408,6 +419,10 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 		descOwner = descChild.attrs.participant ? jidNormalizedUser(descChild.attrs.participant) : undefined
 		descOwnerJid = descChild.attrs.participant_pn ? jidNormalizedUser(descChild.attrs.participant_pn) : undefined
 		descTime = +descChild.attrs.t
+	}
+
+	if (!group.attrs.id) {
+		throw new Boom('Group id is missing from metadata', { data: group })
 	}
 
 	const groupId: string = group.attrs.id.includes('@') ? group.attrs.id : jidEncode(group.attrs.id, 'g.us')
