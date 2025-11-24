@@ -34,6 +34,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		sendNode,
 		query,
 		onUnexpectedError,
+		signalRepository,
 	} = sock
 
 	let privacySettings: { [_: string]: string } | undefined
@@ -938,8 +939,8 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			}
 		}
 
-		const historyMsg = getHistoryMsg(msg.message!)
-		const shouldProcessHistoryMsg = historyMsg
+		const historyMsg: waproto.Message.IHistorySyncNotification | null | undefined = getHistoryMsg(msg.message!)
+		const shouldProcessHistoryMsg: boolean = historyMsg
 			? (
 				shouldSyncHistoryMessage(historyMsg)
 				&& PROCESSABLE_HISTORY_TYPES.includes(historyMsg.syncType!)
@@ -993,6 +994,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 					logger,
 					options: config.options,
 					getMessage,
+					signalRepository
 				}
 			)
 		])
