@@ -598,7 +598,26 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const statusJid = 'status@broadcast'
 		const isGroup: boolean = server === 'g.us'
 		const isStatus: boolean = jid === statusJid
-		const isLid: boolean = server === 'lid'
+
+		let isLid: boolean = server === 'lid'
+		let effectiveJid: string = jid
+
+		if (!isGroup && !isStatus && (isPnUser(jid) || isHostedPnUser(jid))) {
+			try {
+				const lidMappings = await signalRepository.getLIDMappingStore().getLIDsForPNs([jid])
+				if (lidMappings && lidMappings.length > 0 && lidMappings[0].lidUser) {
+					isLid = true
+					effectiveJid = lidMappings[0].lidUser
+					logger.debug(
+						{ originalJid: jid, lidJid: effectiveJid },
+						'Converting to LID addressing as requested'
+					)
+				}
+			} catch (error) {
+				logger.debug({ error: error.message, jid }, 'Failed to check LID mapping, using original JID')
+			}
+		}
+
 		// const isNewsletter: boolean = server === 'newsletter'
 		const isGroupOrStatus: boolean = isGroup || isStatus
 		// const finalJid: string = jid
@@ -607,8 +626,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		useUserDevicesCache = useUserDevicesCache !== false
 		useCachedGroupMetadata = useCachedGroupMetadata !== false && !isStatus
 
+		// Use the effective user from the LID or original JID
+		const effectiveUser = jidDecode(effectiveJid)?.user || user
+
 		const participants: BinaryNode[] = []
-		const destinationJid: string = (!isStatus) ? jidEncode(user, isLid ? 'lid' : isGroup ? 'g.us' : 's.whatsapp.net') : statusJid
+		const destinationJid: string = (!isStatus) ? jidEncode(effectiveUser, isLid ? 'lid' : isGroup ? 'g.us' : 's.whatsapp.net') : statusJid
 		const binaryNodeContent: BinaryNode[] = []
 		const devices: JidWithDevice[] = []
 
@@ -793,12 +815,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					if (!isRetryResend) {
 						const targetUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
 						devices.push({
-							user,
+							user: effectiveUser,
 							device: 0,
-							jid: jidEncode(user, targetUserServer, 0) // TODO: this entire logic is convoluted and weird.
+							jid: jidEncode(effectiveUser, targetUserServer, 0)
 						})
 
-						if (user !== ownUser) {
+						if (effectiveUser !== ownUser) {
 							const ownUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
 							const ownUserForAddressing: string = isLid && meLid ? jidDecode(meLid)!.user : jidDecode(meId)!.user
 
@@ -818,17 +840,26 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 									? jidEncode(jidDecode(meLid)?.user!, 'lid', undefined)
 									: jidEncode(jidDecode(meId)?.user!, 's.whatsapp.net', undefined)
 
-							const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, jid], true, false)
-							devices.push(...sessionDevices)
+							const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, effectiveJid], true, false)
+
+							// Filter devices to match the destination server type (lid or s.whatsapp.net)
+							const targetServer = isLid ? 'lid' : 's.whatsapp.net'
+							const filteredDevices = sessionDevices.filter(d => {
+								const decoded = jidDecode(d.jid)
+								return decoded?.server === targetServer
+							})
+
+							devices.push(...filteredDevices)
 
 							if (devices.length === 0) {
-								logger.warn({ jid }, 'No devices found via USync, using initial device list as fallback')
+								logger.warn({ jid, targetServer }, 'No devices found via USync for target server type, using initial device list as fallback')
 								devices.push(...initialDevices)
 							}
 
 							logger.debug(
 								{
 									deviceCount: devices.length,
+									targetServer,
 									devices: devices.map(d => `${d.user}:${d.device}@${jidDecode(d.jid)?.server}`)
 								},
 								'Device enumeration complete with unified addressing'
@@ -836,15 +867,23 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						}
 					} else if (devices.length === 0) {
 						// Retry without devices - fetch all devices for the target
-						logger.debug({ jid }, 'Retry without devices, fetching all devices')
+						logger.debug({ jid, effectiveJid }, 'Retry without devices, fetching all devices')
 
 						const senderIdentity: string =
 							isLid && meLid
 								? jidEncode(jidDecode(meLid)?.user!, 'lid', undefined)
 								: jidEncode(jidDecode(meId)?.user!, 's.whatsapp.net', undefined)
 
-						const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, jid], false, false)
-						devices.push(...sessionDevices)
+						const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, effectiveJid], false, false)
+
+						// Filter devices to match the destination server type (lid or s.whatsapp.net)
+						const targetServer = isLid ? 'lid' : 's.whatsapp.net'
+						const filteredDevices = sessionDevices.filter(d => {
+							const decoded = jidDecode(d.jid)
+							return decoded?.server === targetServer
+						})
+
+						devices.push(...filteredDevices)
 
 						if (devices.length === 0) {
 							// Fallback to device 0
@@ -855,12 +894,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								jid: jidEncode(user, targetUserServer, 0)
 							})
 
-							logger.warn({ jid }, 'No devices found for retry, using device 0 as fallback')
+							logger.warn({ jid, targetServer }, 'No devices found for retry, using device 0 as fallback')
 						}
 
 						logger.debug(
 							{
 								deviceCount: devices.length,
+								targetServer,
 								devices: devices.map(d => `${d.user}:${d.device}@${jidDecode(d.jid)?.server}`)
 							},
 							'Device enumeration complete for retry'
@@ -1507,13 +1547,25 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')
 				}
 
-				await relayMessage(jid, fullMsg.message!, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
+			await relayMessage(jid, fullMsg.message!, {
+				messageId: fullMsg.key.id!,
+				useCachedGroupMetadata: options.useCachedGroupMetadata,
+				additionalAttributes,
+				statusJidList: options.statusJidList,
+				additionalNodes
+			})
 
-				try {
-					if (getContentType(fullMsg.message!) === 'listMessage') {
-						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, { messageId: fullMsg.key.id!, useCachedGroupMetadata: options.useCachedGroupMetadata, additionalAttributes, statusJidList: options.statusJidList, additionalNodes })
-					}
-				} catch (err) {
+			try {
+				if (getContentType(fullMsg.message!) === 'listMessage') {
+					await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, {
+						messageId: fullMsg.key.id!,
+						useCachedGroupMetadata: options.useCachedGroupMetadata,
+						additionalAttributes,
+						statusJidList: options.statusJidList,
+						additionalNodes
+					})
+				}
+			} catch (err) {
 					logger.error(err)
 				}
 
