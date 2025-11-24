@@ -853,6 +853,7 @@ export const makeSocket = (config: SocketConfig) => {
 
 		end(new Boom(`Stream Errored (${reason})`, { statusCode, data: node }))
 	})
+
 	ws.on('CB:failure', (node: BinaryNode) => {
 		const reason = +(node.attrs.reason || 500)
 		end(new Boom('Connection Failure', { statusCode: reason, data: node.attrs }))

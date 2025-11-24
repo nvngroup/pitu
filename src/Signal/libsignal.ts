@@ -25,8 +25,8 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	const lidMapping = new LIDMappingStore(parsedKeys, logger)
 	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
-	const migratedSessionCache: CacheStore = CacheManager.getInstance('SIGNAL_STORE', 15 * 60)
-	const sessionValidationCache: CacheStore = CacheManager.getInstance('SIGNAL_STORE', 5 * 60)
+	const migratedSessionCache: CacheStore = CacheManager.getInstance('SESSION_MIGRATION_CACHE')
+	const sessionValidationCache: CacheStore = CacheManager.getInstance('SESSION_VALIDATION_CACHE')
 
 	/**
 	 * Utility function to validate JID format and decode
