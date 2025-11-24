@@ -19842,6 +19842,8 @@ $root.waproto = (function() {
                 case 36:
                 case 37:
                 case 38:
+                case 39:
+                case 40:
                 case 45:
                     break;
                 }
@@ -20028,6 +20030,14 @@ $root.waproto = (function() {
             case "ASK_META_AI_MEDIA_VIEWER_GROUP":
             case 38:
                 message.botEntryPointOrigin = 38;
+                break;
+            case "MEDIA_PICKER_1_ON_1_CHAT":
+            case 39:
+                message.botEntryPointOrigin = 39;
+                break;
+            case "MEDIA_PICKER_GROUP_CHAT":
+            case 40:
+                message.botEntryPointOrigin = 40;
                 break;
             case "META_AI_SETTINGS":
             case 45:
@@ -21682,6 +21692,8 @@ $root.waproto = (function() {
      * @property {number} ATTACHMENT_TRAY_GROUP_CHAT=36 ATTACHMENT_TRAY_GROUP_CHAT value
      * @property {number} ASK_META_AI_MEDIA_VIEWER_1ON1=37 ASK_META_AI_MEDIA_VIEWER_1ON1 value
      * @property {number} ASK_META_AI_MEDIA_VIEWER_GROUP=38 ASK_META_AI_MEDIA_VIEWER_GROUP value
+     * @property {number} MEDIA_PICKER_1_ON_1_CHAT=39 MEDIA_PICKER_1_ON_1_CHAT value
+     * @property {number} MEDIA_PICKER_GROUP_CHAT=40 MEDIA_PICKER_GROUP_CHAT value
      * @property {number} META_AI_SETTINGS=45 META_AI_SETTINGS value
      */
     waproto.BotMetricsEntryPoint = (function() {
@@ -21725,6 +21737,8 @@ $root.waproto = (function() {
         values[valuesById[36] = "ATTACHMENT_TRAY_GROUP_CHAT"] = 36;
         values[valuesById[37] = "ASK_META_AI_MEDIA_VIEWER_1ON1"] = 37;
         values[valuesById[38] = "ASK_META_AI_MEDIA_VIEWER_GROUP"] = 38;
+        values[valuesById[39] = "MEDIA_PICKER_1_ON_1_CHAT"] = 39;
+        values[valuesById[40] = "MEDIA_PICKER_GROUP_CHAT"] = 40;
         values[valuesById[45] = "META_AI_SETTINGS"] = 45;
         return values;
     })();
@@ -21961,6 +21975,8 @@ $root.waproto = (function() {
                 case 36:
                 case 37:
                 case 38:
+                case 39:
+                case 40:
                 case 45:
                     break;
                 }
@@ -22157,6 +22173,14 @@ $root.waproto = (function() {
             case "ASK_META_AI_MEDIA_VIEWER_GROUP":
             case 38:
                 message.destinationEntryPoint = 38;
+                break;
+            case "MEDIA_PICKER_1_ON_1_CHAT":
+            case 39:
+                message.destinationEntryPoint = 39;
+                break;
+            case "MEDIA_PICKER_GROUP_CHAT":
+            case 40:
+                message.destinationEntryPoint = 40;
                 break;
             case "META_AI_SETTINGS":
             case 45:
@@ -46334,6 +46358,7 @@ $root.waproto = (function() {
              * @property {string|null} [newsletterName] ForwardedNewsletterMessageInfo newsletterName
              * @property {waproto.ContextInfo.ForwardedNewsletterMessageInfo.ContentType|null} [contentType] ForwardedNewsletterMessageInfo contentType
              * @property {string|null} [accessibilityText] ForwardedNewsletterMessageInfo accessibilityText
+             * @property {string|null} [profileName] ForwardedNewsletterMessageInfo profileName
              */
 
             /**
@@ -46391,6 +46416,14 @@ $root.waproto = (function() {
              */
             ForwardedNewsletterMessageInfo.prototype.accessibilityText = null;
 
+            /**
+             * ForwardedNewsletterMessageInfo profileName.
+             * @member {string|null|undefined} profileName
+             * @memberof waproto.ContextInfo.ForwardedNewsletterMessageInfo
+             * @instance
+             */
+            ForwardedNewsletterMessageInfo.prototype.profileName = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -46421,6 +46454,12 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(ForwardedNewsletterMessageInfo.prototype, "_accessibilityText", {
                 get: $util.oneOfGetter($oneOfFields = ["accessibilityText"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(ForwardedNewsletterMessageInfo.prototype, "_profileName", {
+                get: $util.oneOfGetter($oneOfFields = ["profileName"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -46458,6 +46497,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 4, wireType 0 =*/32).int32(message.contentType);
                 if (message.accessibilityText != null && Object.hasOwnProperty.call(message, "accessibilityText"))
                     writer.uint32(/* id 5, wireType 2 =*/42).string(message.accessibilityText);
+                if (message.profileName != null && Object.hasOwnProperty.call(message, "profileName"))
+                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.profileName);
                 return writer;
             };
 
@@ -46510,6 +46551,10 @@ $root.waproto = (function() {
                         }
                     case 5: {
                             message.accessibilityText = reader.string();
+                            break;
+                        }
+                    case 6: {
+                            message.profileName = reader.string();
                             break;
                         }
                     default:
@@ -46579,6 +46624,11 @@ $root.waproto = (function() {
                     if (!$util.isString(message.accessibilityText))
                         return "accessibilityText: string expected";
                 }
+                if (message.profileName != null && message.hasOwnProperty("profileName")) {
+                    properties._profileName = 1;
+                    if (!$util.isString(message.profileName))
+                        return "profileName: string expected";
+                }
                 return null;
             };
 
@@ -46622,6 +46672,8 @@ $root.waproto = (function() {
                 }
                 if (object.accessibilityText != null)
                     message.accessibilityText = String(object.accessibilityText);
+                if (object.profileName != null)
+                    message.profileName = String(object.profileName);
                 return message;
             };
 
@@ -46662,6 +46714,11 @@ $root.waproto = (function() {
                     object.accessibilityText = message.accessibilityText;
                     if (options.oneofs)
                         object._accessibilityText = "accessibilityText";
+                }
+                if (message.profileName != null && message.hasOwnProperty("profileName")) {
+                    object.profileName = message.profileName;
+                    if (options.oneofs)
+                        object._profileName = "profileName";
                 }
                 return object;
             };
@@ -70336,6 +70393,7 @@ $root.waproto = (function() {
          * @property {waproto.Message.IPollCreationMessage|null} [pollCreationMessageV5] Message pollCreationMessageV5
          * @property {waproto.Message.INewsletterFollowerInviteMessage|null} [newsletterFollowerInviteMessageV2] Message newsletterFollowerInviteMessageV2
          * @property {waproto.Message.IPollResultSnapshotMessage|null} [pollResultSnapshotMessageV3] Message pollResultSnapshotMessageV3
+         * @property {waproto.Message.IFutureProofMessage|null} [newsletterAdminProfileMessage] Message newsletterAdminProfileMessage
          */
 
         /**
@@ -71113,6 +71171,14 @@ $root.waproto = (function() {
          */
         Message.prototype.pollResultSnapshotMessageV3 = null;
 
+        /**
+         * Message newsletterAdminProfileMessage.
+         * @member {waproto.Message.IFutureProofMessage|null|undefined} newsletterAdminProfileMessage
+         * @memberof waproto.Message
+         * @instance
+         */
+        Message.prototype.newsletterAdminProfileMessage = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -71686,6 +71752,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(Message.prototype, "_newsletterAdminProfileMessage", {
+            get: $util.oneOfGetter($oneOfFields = ["newsletterAdminProfileMessage"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new Message instance using the specified properties.
          * @function create
@@ -71900,6 +71972,8 @@ $root.waproto = (function() {
                 $root.waproto.Message.NewsletterFollowerInviteMessage.encode(message.newsletterFollowerInviteMessageV2, writer.uint32(/* id 113, wireType 2 =*/906).fork()).ldelim();
             if (message.pollResultSnapshotMessageV3 != null && Object.hasOwnProperty.call(message, "pollResultSnapshotMessageV3"))
                 $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 115, wireType 2 =*/922).fork()).ldelim();
+            if (message.newsletterAdminProfileMessage != null && Object.hasOwnProperty.call(message, "newsletterAdminProfileMessage"))
+                $root.waproto.Message.FutureProofMessage.encode(message.newsletterAdminProfileMessage, writer.uint32(/* id 116, wireType 2 =*/930).fork()).ldelim();
             return writer;
         };
 
@@ -72312,6 +72386,10 @@ $root.waproto = (function() {
                     }
                 case 115: {
                         message.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 116: {
+                        message.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -73107,6 +73185,14 @@ $root.waproto = (function() {
                         return "pollResultSnapshotMessageV3." + error;
                 }
             }
+            if (message.newsletterAdminProfileMessage != null && message.hasOwnProperty("newsletterAdminProfileMessage")) {
+                properties._newsletterAdminProfileMessage = 1;
+                {
+                    var error = $root.waproto.Message.FutureProofMessage.verify(message.newsletterAdminProfileMessage);
+                    if (error)
+                        return "newsletterAdminProfileMessage." + error;
+                }
+            }
             return null;
         };
 
@@ -73593,6 +73679,11 @@ $root.waproto = (function() {
                 if (typeof object.pollResultSnapshotMessageV3 !== "object")
                     throw TypeError(".waproto.Message.pollResultSnapshotMessageV3: object expected");
                 message.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.fromObject(object.pollResultSnapshotMessageV3);
+            }
+            if (object.newsletterAdminProfileMessage != null) {
+                if (typeof object.newsletterAdminProfileMessage !== "object")
+                    throw TypeError(".waproto.Message.newsletterAdminProfileMessage: object expected");
+                message.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.fromObject(object.newsletterAdminProfileMessage);
             }
             return message;
         };
@@ -74084,6 +74175,11 @@ $root.waproto = (function() {
                 object.pollResultSnapshotMessageV3 = $root.waproto.Message.PollResultSnapshotMessage.toObject(message.pollResultSnapshotMessageV3, options);
                 if (options.oneofs)
                     object._pollResultSnapshotMessageV3 = "pollResultSnapshotMessageV3";
+            }
+            if (message.newsletterAdminProfileMessage != null && message.hasOwnProperty("newsletterAdminProfileMessage")) {
+                object.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.toObject(message.newsletterAdminProfileMessage, options);
+                if (options.oneofs)
+                    object._newsletterAdminProfileMessage = "newsletterAdminProfileMessage";
             }
             return object;
         };
