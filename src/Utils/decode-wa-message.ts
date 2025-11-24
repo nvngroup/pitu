@@ -1,6 +1,5 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
-import { LIDMappingStore } from '../Signal/lid-mapping'
 import { CacheManager } from '../Socket/cache-manager'
 import { CacheStore, SignalRepository, WAMessage, WAMessageKey } from '../Types'
 import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'

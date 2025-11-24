@@ -1,5 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { createHash, randomBytes } from 'crypto'
+import fetch from 'node-fetch'
 import { platform, release } from 'os'
 import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
@@ -307,10 +308,11 @@ export const printQRIfNecessaryListener = (ev: BaileysEventEmitter, logger: ILog
  * utility that fetches latest baileys version from the master branch.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestBaileysVersion = async(options: RequestInit = { }) => {
+export const fetchLatestBaileysVersion = async(options: FetchRequestInit = { }) => {
 	const URL = 'https://raw.githubusercontent.com/brunocgc/Baileys/refs/heads/dev/src/Defaults/baileys-version.json'
 	try {
 		const result = await fetch(URL, {
+			agent: options.dispatcher,
 			...options,
 			method: 'GET'
 		})
@@ -337,7 +339,7 @@ export const fetchLatestBaileysVersion = async(options: RequestInit = { }) => {
 	* A utility that fetches the latest web version of whatsapp.
 	* Use to ensure your WA connection is always on the latest version
 	*/
-export const fetchLatestWaWebVersion = async(options: RequestInit = {}) => {
+export const fetchLatestWaWebVersion = async(options: FetchRequestInit = {}) => {
 	try {
 		const defaultHeaders = {
 			'sec-fetch-site': 'none',

@@ -2,6 +2,7 @@
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { promises as fs } from 'fs'
+import fetch from 'node-fetch'
 import { type Transform } from 'stream'
 import { waproto } from '../../WAProto'
 import { CALL_AUDIO_PREFIX, CALL_VIDEO_PREFIX, MEDIA_KEYS, URL_REGEX, WA_DEFAULT_EPHEMERAL } from '../Defaults'

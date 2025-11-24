@@ -3,7 +3,6 @@ import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
 import { waproto } from '../../WAProto'
 import { KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
-import { LIDMappingStore } from '../Signal/lid-mapping'
 import { CacheStore, GroupMetadata, KeyPair, MessageReceiptType, MessageRelayOptions, MessageUserReceipt, SocketConfig, WACallEvent, WACallUpdateType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageStubType, WAPatchName } from '../Types'
 import {
 	aesDecryptCTR,

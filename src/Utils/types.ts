@@ -38,7 +38,7 @@ export type MessageType = 'chat' | 'peer_broadcast' | 'other_broadcast' | 'group
 export type MediaDownloadOptions = {
  startByte?: number
  endByte?: number
- options?: RequestInit
+	options?: FetchRequestInit
 }
 
 export const BUFFERABLE_EVENT = [

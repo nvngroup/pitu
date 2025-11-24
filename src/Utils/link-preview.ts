@@ -19,7 +19,7 @@ export type URLGenerationOptions = {
 		/** Timeout in ms */
 		timeout: number
 		proxyUrl?: string
-		headers?: HeadersInit
+		headers?: FetchHeadersInit
 	}
 	uploadImage?: WAMediaUploadFunction
 	logger?: ILogger

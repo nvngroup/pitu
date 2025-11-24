@@ -5,6 +5,7 @@ import { once } from 'events'
 import { createReadStream, createWriteStream, promises as fs, ReadStream, WriteStream } from 'fs'
 import { ResizeStrategy } from 'jimp'
 import type { IAudioMetadata } from 'music-metadata'
+import fetch from 'node-fetch'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { Readable, Transform } from 'stream'
@@ -282,7 +283,7 @@ export const toBuffer = async(stream: Readable) => {
 	return Buffer.concat(chunks)
 }
 
-export const getStream = async(item: WAMediaUpload, opts?: RequestInit & { maxContentLength?: number }) => {
+export const getStream = async(item: WAMediaUpload, opts?: FetchRequestInit & { maxContentLength?: number }) => {
 	if (Buffer.isBuffer(item)) {
 		return { stream: toReadable(item), type: 'buffer' } as const
 	}
@@ -343,9 +344,9 @@ export async function generateThumbnail(
 	}
 }
 
-export const getHttpStream = async(url: string | URL, options: RequestInit & { isStream?: true } = {}) => {
+export const getHttpStream = async(url: string | URL, options: FetchRequestInit & { isStream?: true } = {}) => {
 	const response = await fetch(url.toString(), {
-		// dispatcher: options.dispatcher,
+		agent: options.dispatcher,
 		method: 'GET',
 		headers: options.headers as HeadersInit
 	})
@@ -359,7 +360,7 @@ export const getHttpStream = async(url: string | URL, options: RequestInit & { i
 type EncryptedStreamOptions = {
 	saveOriginalFileIfRequired?: boolean
 	logger?: ILogger
-	opts?: RequestInit
+	opts?: FetchRequestInit
 }
 
 export const encryptedStream = async(
@@ -486,7 +487,7 @@ const toSmallestChunkSize = (num: number) => {
 export type MediaDownloadOptions = {
 	startByte?: number
 	endByte?: number
-	options?: RequestInit
+	options?: FetchRequestInit
 }
 
 export const getUrlFromDirectPath = (directPath: string) => `https://${DEF_HOST}${directPath}`

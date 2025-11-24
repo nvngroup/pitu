@@ -62,7 +62,7 @@ export type SocketConfig = {
         patch: boolean
         snapshot: boolean
     }
-    options: RequestInit
+    options: FetchRequestInit
     getMessage: (key: waproto.IMessageKey) => Promise<waproto.IMessage | undefined>
     cachedGroupMetadata: (jid: string) => Promise<GroupMetadata | undefined>
     makeSignalRepository: (auth: SignalAuthState) => SignalRepository

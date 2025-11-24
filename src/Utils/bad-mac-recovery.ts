@@ -1,5 +1,4 @@
 import { Boom } from '@hapi/boom'
-import { LIDMappingStore } from '../Signal/lid-mapping'
 import type { SignalAuthState, SignalRepository } from '../Types'
 import { FullJid, jidNormalizedUser } from '../WABinary'
 import logger from './logger'

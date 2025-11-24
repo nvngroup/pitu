@@ -263,7 +263,7 @@ export const decodeSyncdPatch = async(
 
 export const extractSyncdPatches = async(
 	result: BinaryNode,
-	options: RequestInit
+	options: FetchRequestInit
 ) => {
 	const syncNode: BinaryNode | undefined = getBinaryNodeChild(result, 'sync')
 	const collectionNodes: BinaryNode[] = getBinaryNodeChildren(syncNode, 'collection')
@@ -321,7 +321,7 @@ export const extractSyncdPatches = async(
 
 export const downloadExternalBlob = async(
 	blob: waproto.IExternalBlobReference,
-	options: RequestInit
+	options: FetchRequestInit
 ) => {
 	const stream: Transform = await downloadContentFromMessage(blob, 'md-app-state', { options })
 	const bufferArray: Buffer[] = []
@@ -334,7 +334,7 @@ export const downloadExternalBlob = async(
 
 export const downloadExternalPatch = async(
 	blob: waproto.IExternalBlobReference,
-	options: RequestInit
+	options: FetchRequestInit
 ) => {
 	const buffer: Buffer = await downloadExternalBlob(blob, options)
 	const syncData: waproto.SyncdMutations = waproto.SyncdMutations.decode(buffer)
@@ -395,7 +395,7 @@ export const decodePatches = async(
 	syncds: waproto.ISyncdPatch[],
 	initial: LTHashState,
 	getAppStateSyncKey: FetchAppStateSyncKey,
-	options: RequestInit,
+	options: FetchRequestInit,
 	minimumVersionNumber?: number,
 	logger?: ILogger,
 	validateMacs = true
@@ -895,26 +895,25 @@ export const processSyncAction = (
 	} else if (action?.statusPrivacy) {
 		ev.emit('settings.update', { setting: 'statusPrivacy', value: action.statusPrivacy })
 	} else if (action?.lockChatAction) {
-		ev.emit('chats.lock', { id: id!, locked: !!action.lockChatAction.locked })
+		ev.emit('chats.lock', { id: id, locked: !!action.lockChatAction.locked })
 	} else if (action?.privacySettingDisableLinkPreviewsAction) {
 		ev.emit('settings.update', {
 			setting: 'disableLinkPreviews',
 			value: action.privacySettingDisableLinkPreviewsAction
 		})
 	} else if (
-		action?.notificationActivitySettingAction &&
-		action.notificationActivitySettingAction.notificationActivitySetting != null
+		action?.notificationActivitySettingAction?.notificationActivitySetting !== null
 	) {
 		ev.emit('settings.update', {
 			setting: 'notificationActivitySetting',
-			value: action.notificationActivitySettingAction.notificationActivitySetting
+			value: action!.notificationActivitySettingAction!.notificationActivitySetting!
 		})
 	} else if (action?.lidContactAction) {
 		ev.emit('contacts.upsert', [
 			{
-				id: id!,
+				id: id,
 				name: action.lidContactAction.fullName!,
-				lid: id!
+				lid: id
 			}
 		])
 	} else if (action?.privacySettingChannelsPersonalisedRecommendationAction) {

@@ -1,4 +1,3 @@
-import { LIDMappingStore } from '../Signal/lid-mapping'
 import type { SignalAuthState, SignalRepository } from '../Types'
 import { jidNormalizedUser } from '../WABinary'
 import logger from './logger'

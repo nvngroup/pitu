@@ -15,7 +15,7 @@ type ProcessMessageContext = {
 	ev: BaileysEventEmitter
 	getMessage: SocketConfig['getMessage']
 	logger?: ILogger
-	options: RequestInit
+	options: FetchRequestInit
 	signalRepository: SignalRepository
 }
 

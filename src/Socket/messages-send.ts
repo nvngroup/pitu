@@ -8,7 +8,6 @@ import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, 
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import ListType = waproto.Message.ListMessage.ListType;
-import { LIDMappingStore } from '../Signal/lid-mapping'
 import { MessageRetryManager } from '../Utils/message-retry-manager'
 import { makeNewsletterSocket } from './newsletter'
 
@@ -449,9 +448,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isGroup: boolean = server === 'g.us'
 		const isStatus: boolean = jid === statusJid
 		const isLid: boolean = server === 'lid'
-		const isNewsletter: boolean = server === 'newsletter'
+		// const isNewsletter: boolean = server === 'newsletter'
 		const isGroupOrStatus: boolean = isGroup || isStatus
-		const finalJid: string = jid
+		// const finalJid: string = jid
 
 		msgId = msgId || generateMessageIDV2(sock.user?.id)
 		useUserDevicesCache = useUserDevicesCache !== false

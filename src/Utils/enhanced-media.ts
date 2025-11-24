@@ -1,3 +1,4 @@
+import fetch from 'node-fetch'
 import { Transform } from 'stream'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
