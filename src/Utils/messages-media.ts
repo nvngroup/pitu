@@ -348,7 +348,7 @@ export const getHttpStream = async(url: string | URL, options: FetchRequestInit 
 	const response = await fetch(url.toString(), {
 		agent: options.dispatcher,
 		method: 'GET',
-		headers: options.headers as HeadersInit
+		headers: options.headers as FetchHeadersInit
 	})
 	if (!response.ok) {
 		throw new Boom(`Failed to fetch stream from ${url}`, { statusCode: response.status, data: { url } })
