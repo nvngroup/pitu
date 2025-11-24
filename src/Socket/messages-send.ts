@@ -72,12 +72,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		maxQueueSize: messageRelayMaxQueueSize
 	})
 
-	const shouldCloseUserDevicesCache: boolean = !config.userDevicesCache
+	const shouldCloseUserDevicesCache = !config.userDevicesCache
 
 	const userDevicesCache: CacheStore = config.userDevicesCache || CacheManager.getInstance('USER_DEVICES')
 	const peerSessionsCache: CacheStore = CacheManager.getInstance('PEER_SESSIONS')
 
-	const localUserDevicesCache: CacheStore | undefined = shouldCloseUserDevicesCache ? (userDevicesCache as CacheStore) : undefined
+	const localUserDevicesCache: CacheStore | undefined = shouldCloseUserDevicesCache ? (userDevicesCache) : undefined
 
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
@@ -267,7 +267,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return deviceResults
 	}
 
-	const assertSessions = async(jids: string[], force: boolean = false) => {
+	const assertSessions = async(jids: string[], force = false) => {
 		let didFetchNewSession = false
 		let jidsRequiringFetch: string[] = []
 		if (force) {
