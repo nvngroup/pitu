@@ -12,7 +12,7 @@ import { Readable, Transform } from 'stream'
 import { URL } from 'url'
 import { waproto } from '../../WAProto'
 import { DEFAULT_ORIGIN, MEDIA_HKDF_KEY_MAPPING, MEDIA_PATH_MAP } from '../Defaults'
-import { BaileysEventMap, DownloadableMessage, FetchHeadersInit, FetchRequestInit, MediaConnInfo, MediaDecryptionKeyInfo, MediaType, MessageType, SocketConfig, WAGenericMediaMessage, WAMediaUpload, WAMediaUploadFunction, WAMessageContent } from '../Types'
+import { BaileysEventMap, DownloadableMessage, FetchRequestInit, MediaConnInfo, MediaDecryptionKeyInfo, MediaType, MessageType, SocketConfig, WAGenericMediaMessage, WAMediaUpload, WAMediaUploadFunction, WAMessageContent } from '../Types'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildBuffer, jidNormalizedUser } from '../WABinary'
 import { aesDecryptGCM, aesEncryptGCM, hkdf } from './crypto'
 import { generateMessageIDV2 } from './generics'
@@ -344,29 +344,29 @@ export async function generateThumbnail(
 	}
 }
 
-export const getHttpStream = async (url: string | URL, options: FetchRequestInit & { isStream?: true } = {}): Promise<Readable> => {
-	const { dispatcher, headers, ...restOptions } = options;
+export const getHttpStream = async(url: string | URL, options: FetchRequestInit & { isStream?: true } = {}): Promise<Readable> => {
+	const { dispatcher, headers, ...restOptions } = options
 
 	const response = await fetch(url.toString(), {
 		method: 'GET',
-		headers: headers as FetchHeadersInit | undefined,
+		headers: headers,
 		dispatcher,
 		...restOptions
-	} as any);
+	} as any)
 
 	if (!response.ok) {
-		throw new Boom(`Failed to fetch stream from ${url}`, { statusCode: response.status, data: { url } });
+		throw new Boom(`Failed to fetch stream from ${url}`, { statusCode: response.status, data: { url } })
 	}
 
 	if (!response.body) {
-		throw new Boom(`Response body is empty from ${url}`, { statusCode: 500, data: { url } });
+		throw new Boom(`Response body is empty from ${url}`, { statusCode: 500, data: { url } })
 	}
 
 	if (response.body instanceof Readable) {
-		return response.body;
+		return response.body
 	}
 
-	return Readable.fromWeb(response.body as any);
+	return Readable.fromWeb(response.body as any)
 }
 
 type EncryptedStreamOptions = {
@@ -528,27 +528,27 @@ export const downloadContentFromMessage = async(
  * Decrypts and downloads an AES256-CBC encrypted file given the keys.
  * Assumes the SHA256 of the plaintext is appended to the end of the ciphertext
  * */
-export const downloadEncryptedContent = async (
+export const downloadEncryptedContent = async(
 	downloadUrl: string,
 	{ cipherKey, iv, macKey }: MediaDecryptionKeyInfo,
 	{ startByte, endByte, options }: MediaDownloadOptions = {}
 ) => {
-	let bytesFetched = 0;
-	let startChunk = 0;
-	let firstBlockIsIV = false;
+	let bytesFetched = 0
+	let startChunk = 0
+	let firstBlockIsIV = false
 
 	if (startByte) {
-		const chunk: number = toSmallestChunkSize(startByte || 0);
+		const chunk: number = toSmallestChunkSize(startByte || 0)
 		if (chunk) {
-			startChunk = chunk - AES_CHUNK_SIZE;
-			bytesFetched = chunk;
-			firstBlockIsIV = true;
+			startChunk = chunk - AES_CHUNK_SIZE
+			bytesFetched = chunk
+			firstBlockIsIV = true
 		}
 	}
 
-	const endChunk: number | undefined = endByte ? toSmallestChunkSize(endByte || 0) + AES_CHUNK_SIZE : undefined;
+	const endChunk: number | undefined = endByte ? toSmallestChunkSize(endByte || 0) + AES_CHUNK_SIZE : undefined
 
-	const headersInit = options?.headers ? options.headers : undefined;
+	const headersInit = options?.headers ? options.headers : undefined
 	const headers: Record<string, string> = {
 		...(headersInit
 			? Array.isArray(headersInit)
@@ -556,144 +556,153 @@ export const downloadEncryptedContent = async (
 				: (headersInit as Record<string, string>)
 			: {}),
 		Origin: DEFAULT_ORIGIN
-	};
+	}
 
 	if (startChunk || endChunk) {
-		headers.Range = `bytes=${startChunk}-`;
+		headers.Range = `bytes=${startChunk}-`
 		if (endChunk) {
-			headers.Range += endChunk;
+			headers.Range += endChunk
 		}
 	}
 
-	let fetched: Readable;
+	let fetched: Readable
 	try {
 		fetched = await getHttpStream(downloadUrl, {
 			...options || {},
 			headers,
-		});
+		})
 	} catch (error) {
 		logger.error({ error, downloadUrl }, 'Falha ao obter stream')
-		throw new Boom('Falha ao baixar mídia', { statusCode: 500, data: error });
+		throw new Boom('Falha ao baixar mídia', { statusCode: 500, data: error })
 	}
 
-	let aes: Crypto.Decipheriv | undefined;
-	let hmac: Crypto.Hmac | undefined;
+	let aes: Crypto.Decipheriv | undefined
+	let hmac: Crypto.Hmac | undefined
 
-	const shouldVerifyMac = macKey && !startByte && !endByte;
+	const shouldVerifyMac = macKey && !startByte && !endByte
 
 	if (shouldVerifyMac) {
-		hmac = Crypto.createHmac('sha256', macKey!).update(iv);
+		hmac = Crypto.createHmac('sha256', macKey).update(iv)
 	}
 
-	let buffer: Buffer = Buffer.alloc(0);
+	let buffer: Buffer = Buffer.alloc(0)
 
 	const pushBytes = (bytes: Buffer, push: (bytes: Buffer) => void) => {
 		if (startByte || endByte) {
-			const start: number | undefined = bytesFetched >= startByte! ? undefined : Math.max(startByte! - bytesFetched, 0);
-			const end: number | undefined = bytesFetched + bytes.length < endByte! ? undefined : Math.max(endByte! - bytesFetched, 0);
+			const start: number | undefined = bytesFetched >= startByte! ? undefined : Math.max(startByte! - bytesFetched, 0)
+			const end: number | undefined = bytesFetched + bytes.length < endByte! ? undefined : Math.max(endByte! - bytesFetched, 0)
 
 			if (bytes.length > 0) {
-				const slice = bytes.subarray(start, end);
-				if (slice.length > 0) push(slice);
+				const slice = bytes.subarray(start, end)
+				if (slice.length > 0) {
+					push(slice)
+				}
 			}
 
-			bytesFetched += bytes.length;
+			bytesFetched += bytes.length
 		} else {
-			push(bytes);
+			push(bytes)
 		}
-	};
+	}
 
 	const output = new Transform({
 		transform(chunk, _, callback) {
 			try {
-				buffer = Buffer.concat([buffer, chunk]);
+				buffer = Buffer.concat([buffer, chunk])
 
-				const macSize = shouldVerifyMac ? 10 : 0;
-				const availableBytes = buffer.length - macSize;
+				const macSize = shouldVerifyMac ? 10 : 0
+				const availableBytes = buffer.length - macSize
 
 				if (availableBytes >= AES_CHUNK_SIZE) {
-					const bytesToProcess = availableBytes - (availableBytes % AES_CHUNK_SIZE);
+					const bytesToProcess = availableBytes - (availableBytes % AES_CHUNK_SIZE)
 
-					const dataToProcess = buffer.subarray(0, bytesToProcess);
+					const dataToProcess = buffer.subarray(0, bytesToProcess)
 
-					buffer = buffer.subarray(bytesToProcess);
+					buffer = buffer.subarray(bytesToProcess)
 
 					if (hmac) {
-						hmac.update(dataToProcess);
+						hmac.update(dataToProcess)
 					}
 
-					let dataForAes: Buffer = dataToProcess;
+					let dataForAes: Buffer = dataToProcess
 					if (!aes) {
-						let ivValue: Buffer = iv;
+						let ivValue: Buffer = iv
 						if (firstBlockIsIV) {
-							ivValue = dataForAes.subarray(0, AES_CHUNK_SIZE);
-							dataForAes = dataForAes.subarray(AES_CHUNK_SIZE);
+							ivValue = dataForAes.subarray(0, AES_CHUNK_SIZE)
+							dataForAes = dataForAes.subarray(AES_CHUNK_SIZE)
 						}
 
 						try {
-							aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, ivValue);
-							if (endByte) aes.setAutoPadding(false);
+							aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, ivValue)
+							if (endByte) {
+								aes.setAutoPadding(false)
+							}
 						} catch (e) {
-							return callback(new Error(`Falha init AES: ${e.message}`));
+							return callback(new Error(`Falha init AES: ${e.message}`))
 						}
 					}
 
 					if (dataForAes.length > 0) {
-						pushBytes(aes.update(dataForAes), (b) => this.push(b));
+						pushBytes(aes.update(dataForAes), (b) => this.push(b))
 					}
 				}
 
-				callback();
+				callback()
 			} catch (error) {
-				callback(error);
+				callback(error)
 			}
 		},
 
 		final(callback) {
 			try {
-				const macSize = shouldVerifyMac ? 10 : 0;
+				const macSize = shouldVerifyMac ? 10 : 0
 
-				const dataToDecrypt: Buffer = buffer.subarray(0, buffer.length - macSize);
-				const receivedMac: Buffer | undefined = shouldVerifyMac ? buffer.subarray(buffer.length - macSize) : undefined;
+				const dataToDecrypt: Buffer = buffer.subarray(0, buffer.length - macSize)
+				const receivedMac: Buffer | undefined = shouldVerifyMac ? buffer.subarray(buffer.length - macSize) : undefined
 
 				if (dataToDecrypt.length > 0) {
-					if (hmac) hmac.update(dataToDecrypt);
+					if (hmac) {
+						hmac.update(dataToDecrypt)
+					}
 
 					if (!aes) {
-						aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, iv);
+						aes = Crypto.createDecipheriv('aes-256-cbc', cipherKey, iv)
 					}
-					pushBytes(aes.update(dataToDecrypt), (b) => this.push(b));
+
+					pushBytes(aes.update(dataToDecrypt), (b) => this.push(b))
 				}
 
-				if (!aes) return callback(new Error("Stream ended without AES init"));
+				if (!aes) {
+					return callback(new Error('Stream ended without AES init'))
+				}
 
 				try {
-					const finalData: Buffer = aes.final();
+					const finalData: Buffer = aes.final()
 					if (finalData.length > 0) {
-						pushBytes(finalData, (b) => this.push(b));
+						pushBytes(finalData, (b) => this.push(b))
 					}
 				} catch {}
 
 				if (hmac && receivedMac) {
-					const calculatedMac: Buffer = hmac.digest().subarray(0, 10);
+					const calculatedMac: Buffer = hmac.digest().subarray(0, 10)
 
 					if (!calculatedMac.equals(receivedMac)) {
-						return callback(new Error(`HMAC Mismatch: Server=${receivedMac.toString('hex')} Local=${calculatedMac.toString('hex')}`));
+						return callback(new Error(`HMAC Mismatch: Server=${receivedMac.toString('hex')} Local=${calculatedMac.toString('hex')}`))
 					}
 				}
 
-				callback();
+				callback()
 			} catch (error) {
-				callback(error);
+				callback(error)
 			}
 		}
-	});
+	})
 
-	fetched.on('error', (err) => output.destroy(err));
-	output.on('error', (err) => fetched.destroy());
+	fetched.on('error', (err) => output.destroy(err))
+	output.on('error', () => fetched.destroy())
 
-	return fetched.pipe(output);
-};
+	return fetched.pipe(output)
+}
 
 export function extensionForMediaMessage(message: WAMessageContent) {
 	const getExtension = (mimetype: string) => mimetype.split(';')[0].split('/')[1]
