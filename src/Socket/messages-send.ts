@@ -2,7 +2,7 @@ import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
-import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
+import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
@@ -1272,6 +1272,65 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							upsertMessage(fullMsg, 'append')
 						))
 					})
+				}
+
+				// Handle album media sending
+				if (typeof content === 'object' && 'album' in content && content.album) {
+					const { medias, delay: delayMs = 500 } = content.album
+
+					// Send each media with association to album
+					for (let i = 0; i < medias.length; i++) {
+						const media = medias[i]
+
+						const mediaMsg = await generateWAMessage(jid, media as any, {
+							logger,
+							userJid,
+							getUrlInfo: text => getUrlInfo(text, {
+								thumbnailWidth: linkPreviewImageThumbnailWidth,
+								fetchOpts: {
+									timeout: 3_000,
+									...(axiosOptions || {})
+								},
+								logger,
+								uploadImage: generateHighQualityLinkPreview ? waUploadToServer : undefined
+							}),
+							getProfilePicUrl: sock.profilePictureUrl,
+							getCallLink: sock.createCallLink,
+							upload: waUploadToServer,
+							mediaCache: config.mediaCache,
+							options: config.options,
+							messageId: generateMessageIDV2(sock.user?.id),
+							...options
+						})
+
+						// Add message association to link this media to the album
+						mediaMsg.message = {
+							...mediaMsg.message,
+							messageContextInfo: {
+								messageAssociation: {
+									associationType: waproto.MessageAssociation.AssociationType.MEDIA_ALBUM,
+									parentMessageKey: fullMsg.key
+								}
+							}
+						}
+
+						await relayMessage(jid, mediaMsg.message, {
+							messageId: mediaMsg.key.id!,
+							useCachedGroupMetadata: options.useCachedGroupMetadata,
+							statusJidList: options.statusJidList
+						})
+
+						if (config.emitOwnEvents) {
+							process.nextTick(() => {
+								processingMutex.mutex(() => upsertMessage(mediaMsg, 'append'))
+							})
+						}
+
+						// Add delay between media sends (except for the last one)
+						if (i < medias.length - 1) {
+							await delay(delayMs)
+						}
+					}
 				}
 
 				return fullMsg

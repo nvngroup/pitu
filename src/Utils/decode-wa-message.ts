@@ -37,7 +37,7 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
-const storeMappingFromEnvelope = async (
+const storeMappingFromEnvelope = async(
 	stanza: BinaryNode,
 	sender: string,
 	repository: SignalRepository,
@@ -99,6 +99,7 @@ const processMessageContent = async(
 			// TODO: Handle hosted devices
 			storeMappingFromEnvelope(stanza, author, repository, decryptionJid, logger)
 		}
+
 		await processDecryptedMessage(msgBuffer, tag, attrs, fullMessage, decryptionJid, repository, logger)
 		return { processed: true }
 	} catch (err) {
