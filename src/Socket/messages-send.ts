@@ -346,18 +346,31 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 
 		if (jidsRequiringFetch.length) {
+			const lidMappings = await signalRepository.getLIDMappingStore().getLIDsForPNs(
+				jidsRequiringFetch.filter(jid => !!isPnUser(jid) || !!isHostedPnUser(jid))
+			) || []
+
 			const wireJids: string[] = [
 				...jidsRequiringFetch.filter(jid => !!isLidUser(jid) || !!isHostedLidUser(jid)),
-				...(
-					(await signalRepository.getLIDMappingStore().getLIDsForPNs(
-						jidsRequiringFetch.filter(jid => !!isPnUser(jid) || !!isHostedPnUser(jid))
-					)) || []
-				).map(a => a.lidUser)
+				...lidMappings.map(a => a.lidUser)
 			]
 
-			logger.debug({ jidsRequiringFetch, wireJids }, 'fetching sessions')
+			// If no LID mappings found, use the original PN JIDs
+			const pnJidsWithoutLid = jidsRequiringFetch.filter(jid => {
+				if (!isPnUser(jid) && !isHostedPnUser(jid)) {
+					return false
+				}
 
-			// Check if we already have cached sessions for these wire JIDs
+				const hasLidMapping = lidMappings.some(m => areJidsSameUser(m.pnUser, jid))
+				return !hasLidMapping
+			})
+
+			if (pnJidsWithoutLid.length > 0) {
+				logger.debug({ pnJidsWithoutLid }, 'No LID mapping found for some PNs, using PN JIDs directly')
+				wireJids.push(...pnJidsWithoutLid)
+			}
+
+			logger.debug({ jidsRequiringFetch, wireJids }, 'fetching sessions')			// Check if we already have cached sessions for these wire JIDs
 			const wireJidsToFetch: string[] = []
 			for (const wireJid of wireJids) {
 				const signalId: string = signalRepository.jidToSignalProtocolAddress(wireJid)
