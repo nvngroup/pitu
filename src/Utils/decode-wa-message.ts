@@ -541,7 +541,7 @@ export const decryptMessageNode = (
 				}
 			}
 
-			if (!decryptables) {
+			if (!decryptables && !fullMessage.key?.isViewOnce) {
 				fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 				fullMessage.messageStubParameters = [NO_MESSAGE_FOUND_ERROR_TEXT]
 			}
