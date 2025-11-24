@@ -601,24 +601,37 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			const decoded = jidDecode(participant.jid)!
 			const { user, device } = decoded
 
-			// If device is undefined (retry without device ID), use device 0 as fallback
-			const targetDevice = device !== undefined ? device : 0
+			// Check if we have a valid session for this specific device
+			if (device !== undefined) {
+				const signalId = signalRepository.jidToSignalProtocolAddress(participant.jid)
+				const sessions = await authState.keys.get('session', [signalId])
 
-			devices.push({
-				user,
-				device: targetDevice,
-				jid: participant.jid
-			})
+				if (sessions[signalId]) {
+					// We have a valid session, use this specific device
+					devices.push({
+						user,
+						device,
+						jid: participant.jid
+					})
 
-			logger.debug(
-				{
-					participantJid: participant.jid,
-					user,
-					device: targetDevice,
-					hadDevice: device !== undefined
-				},
-				'Added participant device for retry'
-			)
+					logger.debug(
+						{ participantJid: participant.jid, user, device },
+						'Using specific device for retry (session exists)'
+					)
+				} else {
+					// No session for this device, will fetch all devices via getUSyncDevices later
+					logger.debug(
+						{ participantJid: participant.jid, user, device },
+						'No session for specific device, will fetch all devices'
+					)
+				}
+			} else {
+				// No device specified, will fetch all devices via getUSyncDevices later
+				logger.debug(
+					{ participantJid: participant.jid, user },
+					'No device specified in retry, will fetch all devices'
+				)
+			}
 		}
 
 		if (isInteractiveMessage) {
@@ -789,6 +802,37 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 								'Device enumeration complete with unified addressing'
 							)
 						}
+					} else if (devices.length === 0) {
+						// Retry without devices - fetch all devices for the target
+						logger.debug({ jid }, 'Retry without devices, fetching all devices')
+
+						const senderIdentity: string =
+							isLid && meLid
+								? jidEncode(jidDecode(meLid)?.user!, 'lid', undefined)
+								: jidEncode(jidDecode(meId)?.user!, 's.whatsapp.net', undefined)
+
+						const sessionDevices: JidWithDevice[] = await getUSyncDevices([senderIdentity, jid], false, false)
+						devices.push(...sessionDevices)
+
+						if (devices.length === 0) {
+							// Fallback to device 0
+							const targetUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
+							devices.push({
+								user,
+								device: 0,
+								jid: jidEncode(user, targetUserServer, 0)
+							})
+
+							logger.warn({ jid }, 'No devices found for retry, using device 0 as fallback')
+						}
+
+						logger.debug(
+							{
+								deviceCount: devices.length,
+								devices: devices.map(d => `${d.user}:${d.device}@${jidDecode(d.jid)?.server}`)
+							},
+							'Device enumeration complete for retry'
+						)
 					}
 
 					const allRecipients: string[] = []
