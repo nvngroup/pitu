@@ -249,6 +249,37 @@ const processMessage = async(
 					options
 				)
 
+				// Auto-create LID mappings for contacts from history sync
+				if (data.contacts?.length > 0) {
+					const lidMappingsToStore: Array<{ lidUser: string; pnUser: string }> = []
+
+					for (const contact of data.contacts) {
+						if (contact.lid && contact.jid) {
+							// Contact has both LID and JID (PN), create mapping
+							lidMappingsToStore.push({
+								lidUser: contact.lid,
+								pnUser: contact.jid
+							})
+						}
+					}
+
+					if (lidMappingsToStore.length > 0) {
+						logger?.info(
+							{ count: lidMappingsToStore.length },
+							'Auto-storing LID mappings from history sync contacts'
+						)
+
+						try {
+							await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidMappingsToStore)
+						} catch (error) {
+							logger?.error(
+								{ error, count: lidMappingsToStore.length },
+								'Failed to store LID mappings from history sync'
+							)
+						}
+					}
+				}
+
 				ev.emit('messaging-history.set', {
 					...data,
 					isLatest:

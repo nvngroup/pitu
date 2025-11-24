@@ -1032,6 +1032,37 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		}
 	})
 
+	// Auto-create LID mappings when contacts are upserted
+	ev.on('contacts.upsert', async(contacts: Contact[]) => {
+		const lidMappingsToStore: Array<{ lidUser: string; pnUser: string }> = []
+
+		for (const contact of contacts) {
+			if (contact.lid && contact.jid) {
+				// Contact has both LID and JID (PN), create mapping
+				lidMappingsToStore.push({
+					lidUser: contact.lid,
+					pnUser: contact.jid
+				})
+			}
+		}
+
+		if (lidMappingsToStore.length > 0) {
+			logger.debug(
+				{ count: lidMappingsToStore.length },
+				'Auto-storing LID mappings from contacts.upsert event'
+			)
+
+			try {
+				await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidMappingsToStore)
+			} catch (error) {
+				logger.error(
+					{ error, count: lidMappingsToStore.length },
+					'Failed to store LID mappings from contacts.upsert'
+				)
+			}
+		}
+	})
+
 	ev.on('connection.update', ({ connection }) => {
 		if (connection === 'open') {
 			if (fireInitQueries) {

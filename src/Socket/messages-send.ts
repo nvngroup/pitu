@@ -594,6 +594,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity: boolean = isRetryResend
 
+
 		const { user, server } = jidDecode(jid)!
 		const statusJid = 'status@broadcast'
 		const isGroup: boolean = server === 'g.us'
@@ -602,16 +603,51 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		let isLid: boolean = server === 'lid'
 		let effectiveJid: string = jid
 
-		if (!isGroup && !isStatus && (isPnUser(jid) || isHostedPnUser(jid))) {
+		// Auto-detect and use LID from mapping: ensure LID session exists and use it
+		if (!isGroup && !isStatus && !isLid && (isPnUser(jid) || isHostedPnUser(jid))) {
 			try {
+				// First, try to get LID mapping from store
 				const lidMappings = await signalRepository.getLIDMappingStore().getLIDsForPNs([jid])
 				if (lidMappings && lidMappings.length > 0 && lidMappings[0].lidUser) {
-					isLid = true
-					effectiveJid = lidMappings[0].lidUser
-					logger.debug(
-						{ originalJid: jid, lidJid: effectiveJid },
-						'Converting to LID addressing as requested'
-					)
+					const potentialLid = lidMappings[0].lidUser
+
+					// Check if we have an active LID session
+					const lidSignalId = `${potentialLid.split('@')[0]}.0:0`
+					let lidSession = await authState.keys.get('session', [lidSignalId])
+
+					if (!lidSession?.[lidSignalId]) {
+						// No LID session exists, try to create it via assertSessions
+						logger.debug(
+							{ originalJid: jid, potentialLid },
+							'LID mapping found but no session, fetching LID session'
+						)
+
+						try {
+							await assertSessions([potentialLid], false)
+							// Re-check if session was created
+							lidSession = await authState.keys.get('session', [lidSignalId])
+						} catch (sessionError) {
+							logger.warn(
+								{ error: sessionError.message, potentialLid },
+								'Failed to create LID session, will keep PN'
+							)
+						}
+					}
+
+					if (lidSession?.[lidSignalId]) {
+						// We have a valid LID session now, use it
+						isLid = true
+						effectiveJid = potentialLid
+						logger.debug(
+							{ originalJid: jid, lidJid: effectiveJid },
+							'Using LID addressing based on session'
+						)
+					} else {
+						logger.debug(
+							{ originalJid: jid, potentialLid },
+							'Could not establish LID session, keeping PN'
+						)
+					}
 				}
 			} catch (error) {
 				logger.debug({ error: error.message, jid }, 'Failed to check LID mapping, using original JID')
@@ -1547,25 +1583,25 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					logger.warn({ jid, message: fullMsg.message }, 'Sending native flow messages may require additional approval from WhatsApp to avoid message being marked as spam')
 				}
 
-			await relayMessage(jid, fullMsg.message!, {
-				messageId: fullMsg.key.id!,
-				useCachedGroupMetadata: options.useCachedGroupMetadata,
-				additionalAttributes,
-				statusJidList: options.statusJidList,
-				additionalNodes
-			})
+				await relayMessage(jid, fullMsg.message!, {
+					messageId: fullMsg.key.id!,
+					useCachedGroupMetadata: options.useCachedGroupMetadata,
+					additionalAttributes,
+					statusJidList: options.statusJidList,
+					additionalNodes
+				})
 
-			try {
-				if (getContentType(fullMsg.message!) === 'listMessage') {
-					await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, {
-						messageId: fullMsg.key.id!,
-						useCachedGroupMetadata: options.useCachedGroupMetadata,
-						additionalAttributes,
-						statusJidList: options.statusJidList,
-						additionalNodes
-					})
-				}
-			} catch (err) {
+				try {
+					if (getContentType(fullMsg.message!) === 'listMessage') {
+						await relayMessage(jid, { viewOnceMessageV2: { message: fullMsg.message! } }, {
+							messageId: fullMsg.key.id!,
+							useCachedGroupMetadata: options.useCachedGroupMetadata,
+							additionalAttributes,
+							statusJidList: options.statusJidList,
+							additionalNodes
+						})
+					}
+				} catch (err) {
 					logger.error(err)
 				}
 
