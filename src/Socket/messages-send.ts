@@ -449,6 +449,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isGroup: boolean = server === 'g.us'
 		const isStatus: boolean = jid === statusJid
 		const isLid: boolean = server === 'lid'
+		const isNewsletter: boolean = server === 'newsletter'
+		const isGroupOrStatus: boolean = isGroup || isStatus
+		const finalJid: string = jid
 
 		msgId = msgId || generateMessageIDV2(sock.user?.id)
 		useUserDevicesCache = useUserDevicesCache !== false
@@ -496,7 +499,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					extraAttrs['decrypt-fail'] = 'hide' // TODO: expand for reactions and other types
 				}
 
-				if (isGroup || isStatus) {
+				if (isGroupOrStatus && !isRetryResend) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async() => {
 							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // TODO: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
@@ -523,20 +526,26 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						})()
 					])
 
-					if (!participant) {
-						const participantsList: string[] = (groupData && !isStatus) ? groupData.participants.map(p => p.id) : []
-						if (isStatus && statusJidList) {
-							participantsList.push(...statusJidList)
-						}
-
-						const additionalDevices: JidWithDevice[] = await getUSyncDevices(participantsList, !!useUserDevicesCache, false)
-						devices.push(...additionalDevices)
-					}
-
+					const participantsList = groupData ? groupData.participants.map(p => p.id) : []
 					if (groupData?.ephemeralDuration && groupData.ephemeralDuration > 0) {
 						additionalAttributes = {
 							...additionalAttributes,
 							expiration: groupData.ephemeralDuration.toString()
+
+						}
+					}
+
+					if (isStatus && statusJidList) {
+						participantsList.push(...statusJidList)
+					}
+
+					const additionalDevices: JidWithDevice[] = await getUSyncDevices(participantsList, !!useUserDevicesCache, false)
+					devices.push(...additionalDevices)
+
+					if (isGroup) {
+						additionalAttributes = {
+							...additionalAttributes,
+							addressing_mode: groupData?.addressingMode || 'lid'
 						}
 					}
 
@@ -581,30 +590,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						participants.push(...result.nodes)
 					}
 
-					if (isRetryResend) {
-						const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
-							data: bytes,
-							jid: participant?.jid!
-						})
-
-						binaryNodeContent.push({
-							tag: 'enc',
-							attrs: {
-								v: '2',
-								type,
-								count: participant!.count.toString()
-							},
-							content: encryptedContent
-						})
-					} else {
-						binaryNodeContent.push({
-							tag: 'enc',
-							attrs: { v: '2', type: 'skmsg', ...extraAttrs },
-							content: ciphertext
-						})
-
-						await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
-					}
+					binaryNodeContent.push({
+						tag: 'enc',
+						attrs: { v: '2', type: 'skmsg', ...extraAttrs },
+						content: ciphertext
+					})
+					await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
 				} else {
 					// TODO: investigate if this is true
 					let ownId: string = meId
@@ -617,7 +608,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 					const { user: ownUser } = jidDecode(ownId)!
 
-					if (!participant) {
+					if (!isRetryResend) {
 						const targetUserServer: 'lid' | 's.whatsapp.net' = isLid ? 'lid' : 's.whatsapp.net'
 						devices.push({
 							user,
@@ -703,6 +694,35 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 
 					shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || s1 || s2
+				}
+
+				if (isRetryResend) {
+					const isParticipantLid: boolean | undefined = isLidUser(participant!.jid)
+					const isMe: boolean = areJidsSameUser(participant!.jid, isParticipantLid ? meLid : meId)
+
+					const encodedMessageToSend: Buffer = isMe
+						? encodeWAMessage({
+							deviceSentMessage: {
+								destinationJid,
+								message
+							}
+						})
+						: encodeWAMessage(message)
+
+					const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
+						data: encodedMessageToSend,
+						jid: participant!.jid
+					})
+
+					binaryNodeContent.push({
+						tag: 'enc',
+						attrs: {
+							v: '2',
+							type,
+							count: participant!.count.toString()
+						},
+						content: encryptedContent
+					})
 				}
 
 				if (participants.length) {

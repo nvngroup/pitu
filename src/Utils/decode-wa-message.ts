@@ -2,8 +2,8 @@ import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { LIDMappingStore } from '../Signal/lid-mapping'
 import { CacheManager } from '../Socket/cache-manager'
-import { CacheStore, SignalRepository, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
+import { CacheStore, SignalRepository, WAMessage, WAMessageKey } from '../Types'
+import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
@@ -37,12 +37,34 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
+const storeMappingFromEnvelope = async (
+	stanza: BinaryNode,
+	sender: string,
+	repository: SignalRepository,
+	decryptionJid: string,
+	logger: ILogger
+): Promise<void> => {
+	// TODO: Handle hosted IDs
+	const { senderAlt } = extractAddressingContext(stanza)
+
+	if (senderAlt && isLidUser(senderAlt) && isPnUser(sender) && decryptionJid === sender) {
+		try {
+			await repository.getLIDMappingStore().storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
+			await repository.migrateSession(sender, senderAlt)
+			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
+		} catch (error) {
+			logger.warn({ sender, senderAlt, error }, 'Failed to store LID mapping')
+		}
+	}
+}
+
 const processMessageContent = async(
 	item: BinaryNode,
-	fullMessage: waproto.IWebMessageInfo,
+	fullMessage: WAMessage,
 	sender: string,
 	author: string,
 	repository: SignalRepository,
+	stanza: any,
 	logger: ILogger
 ): Promise<{ processed: boolean }> => {
 	const { tag, attrs, content } = item
@@ -52,6 +74,14 @@ const processMessageContent = async(
 		const details = waproto.VerifiedNameCertificate.Details.decode(cert.details!)
 		fullMessage.verifiedBizName = details.verifiedName
 		return { processed: false }
+	}
+
+	if (tag === 'unavailable' && attrs.type === 'view_once') {
+		fullMessage.key.isViewOnce = true // TODO: remove from here and add a STUB TYPE
+	}
+
+	if (attrs.count && tag === 'enc') {
+		fullMessage.retryCount = Number(attrs.count)
 	}
 
 	if (tag !== 'enc' && tag !== 'plaintext') {
@@ -64,7 +94,12 @@ const processMessageContent = async(
 
 	try {
 		const msgBuffer: Uint8Array = await decryptMessageContent(tag, attrs, content, sender, author, repository)
-		await processDecryptedMessage(msgBuffer, tag, attrs, fullMessage, author, repository, logger)
+		const decryptionJid: string = await getDecryptionJid(author, repository)
+		if (tag !== 'plaintext') {
+			// TODO: Handle hosted devices
+			storeMappingFromEnvelope(stanza, author, repository, decryptionJid, logger)
+		}
+		await processDecryptedMessage(msgBuffer, tag, attrs, fullMessage, decryptionJid, repository, logger)
 		return { processed: true }
 	} catch (err) {
 		const jid: string = fullMessage.key?.remoteJid || 'unknown'
@@ -305,6 +340,37 @@ const cleanupGroupSenderKey = async(
 	logger.debug({ jid, author, keyId }, 'Cleared corrupted sender key for MAC recovery')
 }
 
+export const extractAddressingContext = (stanza: BinaryNode) => {
+	let senderAlt: string | undefined
+	let recipientAlt: string | undefined
+
+	const sender: string = stanza.attrs.participant || stanza.attrs.from
+	const addressingMode: string = stanza.attrs.addressing_mode || (sender?.endsWith('lid') ? 'lid' : 'pn')
+
+	if (addressingMode === 'lid') {
+		// Message is LID-addressed: sender is LID, extract corresponding PN
+		// without device data
+		senderAlt = stanza.attrs.participant_pn || stanza.attrs.sender_pn || stanza.attrs.peer_recipient_pn
+		recipientAlt = stanza.attrs.recipient_pn
+		// with device data
+		//if (sender && senderAlt) senderAlt = transferDevice(sender, senderAlt)
+	} else {
+		// Message is PN-addressed: sender is PN, extract corresponding LID
+		// without device data
+		senderAlt = stanza.attrs.participant_lid || stanza.attrs.sender_lid || stanza.attrs.peer_recipient_lid
+		recipientAlt = stanza.attrs.recipient_lid
+
+		//with device data
+		//if (sender && senderAlt) senderAlt = transferDevice(sender, senderAlt)
+	}
+
+	return {
+		addressingMode,
+		senderAlt,
+		recipientAlt
+	}
+}
+
 /**
  * Decode the received node as a message.
  * @note this will only parse the message, not decrypt it
@@ -433,8 +499,9 @@ export function decodeMessageNode(
 		...(addressingMode && { addressingMode })
 	}
 
-	const fullMessage: waproto.IWebMessageInfo = {
+	const fullMessage: WAMessage = {
 		key,
+		category: stanza.attrs.category,
 		messageTimestamp: +stanza.attrs.t,
 		pushName: pushname,
 		broadcast: isJidBroadcast(from)
@@ -467,7 +534,7 @@ export const decryptMessageNode = (
 			let decryptables = 0
 			if (Array.isArray(stanza.content)) {
 				for (const item of stanza.content) {
-					const result = await processMessageContent(item, fullMessage, sender, author, repository, logger)
+					const result = await processMessageContent(item, fullMessage, sender, author, repository, stanza, logger)
 					if (result.processed) {
 						decryptables += 1
 					}
