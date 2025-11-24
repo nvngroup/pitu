@@ -887,29 +887,45 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const isParticipantLid: boolean | undefined = isLidUser(participant!.jid)
 					const isMe: boolean = areJidsSameUser(participant!.jid, isParticipantLid ? meLid : meId)
 
-					const encodedMessageToSend: Buffer = isMe
-						? encodeWAMessage({
-							deviceSentMessage: {
-								destinationJid,
-								message
-							}
+					// Validate that we have a valid session before attempting encryption
+					const signalId = signalRepository.jidToSignalProtocolAddress(participant!.jid)
+					const sessions = await authState.keys.get('session', [signalId])
+
+					if (!sessions[signalId]) {
+						logger.error(
+							{
+								participantJid: participant!.jid,
+								signalId
+							},
+							'No valid session for retry participant, skipping retry encryption'
+						)
+					// Don't throw error, just skip this retry attempt
+					// The message will remain in PENDING state and may retry again later
+					} else {
+						const encodedMessageToSend: Buffer = isMe
+							? encodeWAMessage({
+								deviceSentMessage: {
+									destinationJid,
+									message
+								}
+							})
+							: encodeWAMessage(message)
+
+						const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
+							data: encodedMessageToSend,
+							jid: participant!.jid
 						})
-						: encodeWAMessage(message)
 
-					const { type, ciphertext: encryptedContent } = await signalRepository.encryptMessage({
-						data: encodedMessageToSend,
-						jid: participant!.jid
-					})
-
-					binaryNodeContent.push({
-						tag: 'enc',
-						attrs: {
-							v: '2',
-							type,
-							count: participant!.count.toString()
-						},
-						content: encryptedContent
-					})
+						binaryNodeContent.push({
+							tag: 'enc',
+							attrs: {
+								v: '2',
+								type,
+								count: participant!.count.toString()
+							},
+							content: encryptedContent
+						})
+					}
 				}
 
 				if (participants.length) {
