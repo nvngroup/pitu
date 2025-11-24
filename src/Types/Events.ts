@@ -44,6 +44,23 @@ export type BaileysEventMap = {
     'call': WACallEvent[]
     'labels.edit': Label
     'labels.association': { association: LabelAssociation, type: 'add' | 'remove' }
+    /** Settings and actions sync events */
+    'chats.lock': { id: string; locked: boolean }
+    'settings.update':
+    | { setting: 'unarchiveChats'; value: boolean }
+    | { setting: 'locale'; value: string }
+    | { setting: 'disableLinkPreviews'; value: waproto.SyncActionValue.IPrivacySettingDisableLinkPreviewsAction }
+    | { setting: 'timeFormat'; value: waproto.SyncActionValue.ITimeFormatAction }
+    | { setting: 'privacySettingRelayAllCalls'; value: waproto.SyncActionValue.IPrivacySettingRelayAllCalls }
+    | { setting: 'statusPrivacy'; value: waproto.SyncActionValue.IStatusPrivacyAction }
+    | {
+        setting: 'notificationActivitySetting'
+        value: waproto.SyncActionValue.NotificationActivitySettingAction.NotificationActivitySetting
+    }
+    | {
+        setting: 'channelsPersonalisedRecommendation'
+        value: waproto.SyncActionValue.IPrivacySettingChannelsPersonalisedRecommendationAction
+    }
 }
 
 export type BufferedEventData = {
