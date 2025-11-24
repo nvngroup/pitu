@@ -34,6 +34,7 @@ import {
 	getBinaryNodeChild,
 	getBinaryNodeChildBuffer,
 	getBinaryNodeChildren,
+	getBinaryNodeChildString,
 	isJidGroup,
 	isJidNewsletter,
 	isJidStatusBroadcast,
@@ -87,6 +88,158 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const identityAssertDebounce: CacheStore = CacheManager.getInstance('IDENTITY_ASSERT_DEBOUNCE')
 
 	let sendActiveReceipts = false
+
+	// Handles mex newsletter notifications
+	const handleMexNewsletterNotification = async (node: BinaryNode) => {
+		const mexNode: BinaryNode | undefined = getBinaryNodeChild(node, 'mex')
+		if (!mexNode?.content) {
+			logger.warn({ node }, 'Invalid mex newsletter notification')
+			return
+		}
+
+		let data: any
+		try {
+			data = JSON.parse(mexNode.content.toString())
+		} catch (error) {
+			logger.error({ err: error, node }, 'Failed to parse mex newsletter notification')
+			return
+		}
+
+		const operation = data?.operation
+		const updates = data?.updates
+
+		if (!updates || !operation) {
+			logger.warn({ data }, 'Invalid mex newsletter notification content')
+			return
+		}
+
+		logger.info({ operation, updates }, 'got mex newsletter notification')
+
+		switch (operation) {
+			case 'NotificationNewsletterUpdate':
+				for (const update of updates) {
+					if (update.jid && update.settings && Object.keys(update.settings).length > 0) {
+						ev.emit('newsletter-settings.update', {
+							id: update.jid,
+							update: update.settings
+						})
+					}
+				}
+
+				break
+
+			case 'NotificationNewsletterAdminPromote':
+				for (const update of updates) {
+					if (update.jid && update.user) {
+						ev.emit('newsletter-participants.update', {
+							id: update.jid,
+							author: node.attrs.from!,
+							user: update.user,
+							new_role: 'ADMIN',
+							action: 'promote'
+						})
+					}
+				}
+
+				break
+
+			default:
+				logger.info({ operation, data }, 'Unhandled mex newsletter notification')
+				break
+		}
+	}
+
+	// Handles newsletter notifications
+	const handleNewsletterNotification = async (node: BinaryNode) => {
+		const from: string = node.attrs.from!
+		const child: BinaryNode = getAllBinaryNodeChildren(node)[0]!
+		const author: string = node.attrs.participant!
+
+		logger.info({ from, child }, 'got newsletter notification')
+
+		switch (child.tag) {
+			case 'reaction':
+				const reactionUpdate = {
+					id: from,
+					server_id: child.attrs.message_id!,
+					reaction: {
+						code: getBinaryNodeChildString(child, 'reaction'),
+						count: 1
+					}
+				}
+				ev.emit('newsletter.reaction', reactionUpdate)
+				break
+
+			case 'view':
+				const viewUpdate = {
+					id: from,
+					server_id: child.attrs.message_id!,
+					count: parseInt(child.content?.toString() || '0', 10)
+				}
+				ev.emit('newsletter.view', viewUpdate)
+				break
+
+			case 'participant':
+				const participantUpdate = {
+					id: from,
+					author,
+					user: child.attrs.jid!,
+					action: child.attrs.action!,
+					new_role: child.attrs.role!
+				}
+				ev.emit('newsletter-participants.update', participantUpdate)
+				break
+
+			case 'update':
+				const settingsNode: BinaryNode | undefined = getBinaryNodeChild(child, 'settings')
+				if (settingsNode) {
+					const update: Record<string, any> = {}
+					const nameNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'name')
+					if (nameNode?.content) update.name = nameNode.content.toString()
+
+					const descriptionNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'description')
+					if (descriptionNode?.content) update.description = descriptionNode.content.toString()
+
+					ev.emit('newsletter-settings.update', {
+						id: from,
+						update
+					})
+				}
+
+				break
+
+			case 'message':
+				const plaintextNode: BinaryNode | undefined = getBinaryNodeChild(child, 'plaintext')
+				if (plaintextNode?.content) {
+					try {
+						const contentBuf: Buffer =
+							typeof plaintextNode.content === 'string'
+								? Buffer.from(plaintextNode.content, 'binary')
+								: Buffer.from(plaintextNode.content as Uint8Array)
+						const messageProto =waproto.Message.decode(contentBuf).toJSON()
+						const fullMessage = waproto.WebMessageInfo.fromObject({
+							key: {
+								remoteJid: from,
+								id: child.attrs.message_id || child.attrs.server_id,
+								fromMe: false // TODO: is this really true though
+							},
+							message: messageProto,
+							messageTimestamp: +child.attrs.t!
+						}).toJSON() as WAMessage
+						await upsertMessage(fullMessage, 'append')
+						logger.info({}, 'Processed plaintext newsletter message')
+					} catch (error) {
+						logger.error({ error }, 'Failed to decode plaintext newsletter message')
+					}
+				}
+
+				break
+
+			default:
+				logger.warn({ node }, 'Unknown newsletter notification')
+				break
+		}
+	}
 
 	const sendMessageAck = async({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
 		const stanza: BinaryNode = {
@@ -452,144 +605,150 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const from: string = jidNormalizedUser(node.attrs.from)
 
 		switch (nodeType) {
-		case 'w:gp2':
-			handleGroupNotification(node.attrs.participant, child, result)
-			break
-		case 'mediaretry':
-			const event = decodeMediaRetryNode(node)
-			ev.emit('messages.media-update', [event])
-			break
-		case 'encrypt':
-			await handleEncryptNotification(node)
-			break
-		case 'devices':
-			const devices: BinaryNode[] = getBinaryNodeChildren(child, 'device')
-			if (areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
-				const deviceJids: string[] = devices.map(d => d.attrs.jid)
-				logger.trace({ deviceJids }, 'got my own devices')
-			}
-
-			break
-		case 'server_sync':
-			const update: BinaryNode | undefined = getBinaryNodeChild(node, 'collection')
-			if (update) {
-				const name = update.attrs.name as WAPatchName
-				await resyncAppState([name], false)
-			}
-
-			break
-		case 'picture':
-			const setPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'set')
-			const delPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'delete')
-
-			ev.emit('contacts.update', [{
-				id: jidNormalizedUser(node?.attrs?.from) || from || ((setPicture || delPicture)?.attrs?.hash) || '',
-				imgUrl: setPicture ? 'changed' : 'removed'
-			}])
-
-			if (isJidGroup(from)) {
-				const node: BinaryNode | undefined = setPicture || delPicture
-				result.messageStubType = WAMessageStubType.GROUP_CHANGE_ICON
-
-				if (setPicture) {
-					result.messageStubParameters = [setPicture.attrs.id]
+			case 'newsletter':
+				await handleNewsletterNotification(node)
+				break
+			case 'mex':
+				await handleMexNewsletterNotification(node)
+				break
+			case 'w:gp2':
+				handleGroupNotification(node.attrs.participant, child, result)
+				break
+			case 'mediaretry':
+				const event = decodeMediaRetryNode(node)
+				ev.emit('messages.media-update', [event])
+				break
+			case 'encrypt':
+				await handleEncryptNotification(node)
+				break
+			case 'devices':
+				const devices: BinaryNode[] = getBinaryNodeChildren(child, 'device')
+				if (areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
+					const deviceJids: string[] = devices.map(d => d.attrs.jid)
+					logger.trace({ deviceJids }, 'got my own devices')
 				}
 
-				result.participant = node?.attrs.author
-				result.key = {
-					...result.key || {},
-					participant: setPicture?.attrs.author
+				break
+			case 'server_sync':
+				const update: BinaryNode | undefined = getBinaryNodeChild(node, 'collection')
+				if (update) {
+					const name = update.attrs.name as WAPatchName
+					await resyncAppState([name], false)
 				}
-			}
 
-			break
-		case 'account_sync':
-			if (child.tag === 'disappearing_mode') {
-				const newDuration: number = +child.attrs.duration
-				const timestamp: number = +child.attrs.t
+				break
+			case 'picture':
+				const setPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'set')
+				const delPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'delete')
 
-				logger.trace({ newDuration }, 'updated account disappearing mode')
+				ev.emit('contacts.update', [{
+					id: jidNormalizedUser(node?.attrs?.from) || from || ((setPicture || delPicture)?.attrs?.hash) || '',
+					imgUrl: setPicture ? 'changed' : 'removed'
+				}])
 
-				ev.emit('creds.update', {
-					accountSettings: {
-						...authState.creds.accountSettings,
-						defaultDisappearingMode: {
-							ephemeralExpiration: newDuration,
-							ephemeralSettingTimestamp: timestamp,
-						},
+				if (isJidGroup(from)) {
+					const node: BinaryNode | undefined = setPicture || delPicture
+					result.messageStubType = WAMessageStubType.GROUP_CHANGE_ICON
+
+					if (setPicture) {
+						result.messageStubParameters = [setPicture.attrs.id]
 					}
+
+					result.participant = node?.attrs.author
+					result.key = {
+						...result.key || {},
+						participant: setPicture?.attrs.author
+					}
+				}
+
+				break
+			case 'account_sync':
+				if (child.tag === 'disappearing_mode') {
+					const newDuration: number = +child.attrs.duration
+					const timestamp: number = +child.attrs.t
+
+					logger.trace({ newDuration }, 'updated account disappearing mode')
+
+					ev.emit('creds.update', {
+						accountSettings: {
+							...authState.creds.accountSettings,
+							defaultDisappearingMode: {
+								ephemeralExpiration: newDuration,
+								ephemeralSettingTimestamp: timestamp,
+							},
+						}
+					})
+				} else if (child.tag === 'blocklist') {
+					const blocklists: BinaryNode[] = getBinaryNodeChildren(child, 'item')
+
+					for (const { attrs } of blocklists) {
+						const blocklist: string[] = [attrs.jid]
+						const type: 'add' | 'remove' = (attrs.action === 'block') ? 'add' : 'remove'
+						ev.emit('blocklist.update', { blocklist, type })
+					}
+				}
+
+				break
+			case 'privacy_token':
+				await handlePrivacyTokenNotification(node)
+				break
+			case 'link_code_companion_reg':
+				const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
+				const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
+				const primaryIdentityPublicKey: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
+				const primaryEphemeralPublicKeyWrapped: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
+				const codePairingPublicKey: Buffer = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
+				const companionSharedKey: Buffer = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
+				const random: Buffer = randomBytes(32)
+				const linkCodeSalt: Buffer = randomBytes(32)
+				const linkCodePairingExpanded: Buffer = await hkdf(companionSharedKey, 32, {
+					salt: linkCodeSalt,
+					info: 'link_code_pairing_key_bundle_encryption_key'
 				})
-			} else if (child.tag === 'blocklist') {
-				const blocklists: BinaryNode[] = getBinaryNodeChildren(child, 'item')
-
-				for (const { attrs } of blocklists) {
-					const blocklist: string[] = [attrs.jid]
-					const type: 'add' | 'remove' = (attrs.action === 'block') ? 'add' : 'remove'
-					ev.emit('blocklist.update', { blocklist, type })
-				}
-			}
-
-			break
-		case 'privacy_token':
-			await handlePrivacyTokenNotification(node)
-			break
-		case 'link_code_companion_reg':
-			const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
-			const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
-			const primaryIdentityPublicKey: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
-			const primaryEphemeralPublicKeyWrapped: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
-			const codePairingPublicKey: Buffer = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
-			const companionSharedKey: Buffer = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
-			const random: Buffer = randomBytes(32)
-			const linkCodeSalt: Buffer = randomBytes(32)
-			const linkCodePairingExpanded: Buffer = await hkdf(companionSharedKey, 32, {
-				salt: linkCodeSalt,
-				info: 'link_code_pairing_key_bundle_encryption_key'
-			})
-			const encryptPayload: Buffer = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
-			const encryptIv: Buffer = randomBytes(12)
-			const encrypted: Buffer = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
-			const encryptedPayload: Buffer = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
-			const identitySharedKey: Buffer = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
-			const identityPayload: Buffer = Buffer.concat([companionSharedKey, identitySharedKey, random])
-			authState.creds.advSecretKey = (await hkdf(identityPayload, 32, { info: 'adv_secret' })).toString('base64')
-			await query({
-				tag: 'iq',
-				attrs: {
-					to: S_WHATSAPP_NET,
-					type: 'set',
-					id: sock.generateMessageTag(),
-					xmlns: 'md'
-				},
-				content: [
-					{
-						tag: 'link_code_companion_reg',
-						attrs: {
-							jid: authState.creds.me!.id,
-							stage: 'companion_finish',
-						},
-						content: [
-							{
-								tag: 'link_code_pairing_wrapped_key_bundle',
-								attrs: {},
-								content: encryptedPayload
+				const encryptPayload: Buffer = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
+				const encryptIv: Buffer = randomBytes(12)
+				const encrypted: Buffer = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
+				const encryptedPayload: Buffer = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
+				const identitySharedKey: Buffer = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
+				const identityPayload: Buffer = Buffer.concat([companionSharedKey, identitySharedKey, random])
+				authState.creds.advSecretKey = (await hkdf(identityPayload, 32, { info: 'adv_secret' })).toString('base64')
+				await query({
+					tag: 'iq',
+					attrs: {
+						to: S_WHATSAPP_NET,
+						type: 'set',
+						id: sock.generateMessageTag(),
+						xmlns: 'md'
+					},
+					content: [
+						{
+							tag: 'link_code_companion_reg',
+							attrs: {
+								jid: authState.creds.me!.id,
+								stage: 'companion_finish',
 							},
-							{
-								tag: 'companion_identity_public',
-								attrs: {},
-								content: authState.creds.signedIdentityKey.public
-							},
-							{
-								tag: 'link_code_pairing_ref',
-								attrs: {},
-								content: ref
-							}
-						]
-					}
-				]
-			})
-			authState.creds.registered = true
-			ev.emit('creds.update', authState.creds)
+							content: [
+								{
+									tag: 'link_code_pairing_wrapped_key_bundle',
+									attrs: {},
+									content: encryptedPayload
+								},
+								{
+									tag: 'companion_identity_public',
+									attrs: {},
+									content: authState.creds.signedIdentityKey.public
+								},
+								{
+									tag: 'link_code_pairing_ref',
+									attrs: {},
+									content: ref
+								}
+							]
+						}
+					]
+				})
+				authState.creds.registered = true
+				ev.emit('creds.update', authState.creds)
 		}
 
 		if (Object.keys(result).length) {
