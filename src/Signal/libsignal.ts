@@ -6,12 +6,12 @@ import { generateSignalPubKey } from '../Utils'
 import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
-import { FullJid, jidDecode } from '../WABinary'
+import { transferDevice, FullJid, jidDecode, isLidUser, isHostedLidUser, isPnUser, isHostedPnUser } from '../WABinary'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
 import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
-import { EncryptionResult, LIDMappingResult, SessionMigrationOptions, SessionValidationResult } from './types'
+import { EncryptionResult, SessionValidationResult } from './types'
 
 const SIGNAL_CONSTANTS = {
 	PREKEY_MESSAGE_TYPE: 3,
@@ -314,77 +314,147 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			}
 		},
 
-		async migrateSession(fromJid: string, toJid: string, options: SessionMigrationOptions = {}): Promise<void> {
-			try {
-				if (!options.skipValidation) {
-					if (!fromJid.includes(SIGNAL_CONSTANTS.WHATSAPP_DOMAIN) || !toJid.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
-						logger.warn({ fromJid, toJid }, 'Invalid migration direction')
-						return
-					}
-				}
+		async migrateSession(
+			fromJid: string,
+			toJid: string
+		): Promise<{ migrated: number; skipped: number; total: number }> {
+			// TODO: use usync to handle this entire mess
+			if (!fromJid || (!isLidUser(toJid) && !isHostedLidUser(toJid))) return { migrated: 0, skipped: 0, total: 0 }
 
-				const fromDecoded = validateAndDecodeJid(fromJid)
-				const toDecoded = validateAndDecodeJid(toJid)
-
-				if (!fromDecoded || !toDecoded) {
-					logger.error({ fromJid, toJid }, 'Failed to decode JIDs for migration')
-					return
-				}
-
-				const deviceId: number = fromDecoded.device
-				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
-
-				if (!options.force && migratedSessionCache.get<boolean>(migrationKey)) {
-					logger.trace({ migrationKey }, 'Migration already processed')
-					return
-				}
-
-				const lidAddr = jidToSignalProtocolAddress(toJid)
-				const { [lidAddr.toString()]: lidExists } = await parsedKeys.get('session', [lidAddr.toString()])
-
-				if (lidExists && !options.force) {
-					logger.trace({ toJid }, 'LID session already exists')
-					migratedSessionCache.set(migrationKey, true)
-					return
-				}
-
-				let migrationSuccessful = false
-
-				await (parsedKeys).transaction(async() => {
-					const fromAddr = jidToSignalProtocolAddress(fromJid)
-					const fromSession = await (storage as any).loadSession(fromAddr.toString())
-
-					if (!fromSession?.haveOpenSession()) {
-						logger.debug({ fromJid, toJid }, 'No valid session found for migration')
-						return
-					}
-
-					const mappingResult: LIDMappingResult = await lidMapping.storeLIDPNMapping(toJid, fromJid)
-					if (!mappingResult.success) {
-						logger.error({ error: mappingResult.error, fromJid, toJid }, 'Failed to store LID mapping')
-						return
-					}
-
-					const sessionBytes = fromSession.serialize()
-					const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
-
-					await (storage as any).storeSession(lidAddr.toString(), copiedSession)
-					await parsedKeys.set({ session: { [fromAddr.toString()]: null } })
-
-					migrationSuccessful = true
-					logger.info({ fromJid, toJid }, 'Session migrated successfully')
-				})
-
-				if (migrationSuccessful) {
-					migratedSessionCache.set(migrationKey, true)
-					sessionValidationCache.del(`validation:${fromJid}`)
-					sessionValidationCache.del(`validation:${toJid}`)
-				}
-
-			} catch (error) {
-				logger.error({ error, fromJid, toJid }, 'Session migration failed')
-				throw error
+			// Only support PN to LID migration
+			if (!isPnUser(fromJid) && !isHostedPnUser(fromJid)) {
+				return { migrated: 0, skipped: 0, total: 1 }
 			}
+
+			const { user } = jidDecode(fromJid)!
+
+			logger.debug({ fromJid }, 'bulk device migration - loading all user devices')
+
+			// Get user's device list from storage
+			const { [user]: userDevices } = await parsedKeys.get('device-list', [user])
+			if (!userDevices) {
+				return { migrated: 0, skipped: 0, total: 0 }
+			}
+
+			const { device: fromDevice } = jidDecode(fromJid)!
+			const fromDeviceStr = fromDevice?.toString() || '0'
+			if (!userDevices.includes(fromDeviceStr)) {
+				userDevices.push(fromDeviceStr)
+			}
+
+			// Filter out cached devices before database fetch
+			const uncachedDevices = userDevices.filter(device => {
+				const deviceKey = `${user}.${device}`
+				return !migratedSessionCache.get(deviceKey)
+			})
+
+			// Bulk check session existence only for uncached devices
+			const deviceSessionKeys = uncachedDevices.map(device => `${user}.${device}`)
+			const existingSessions = await parsedKeys.get('session', deviceSessionKeys)
+
+			// Step 3: Convert existing sessions to JIDs (only migrate sessions that exist)
+			const deviceJids: string[] = []
+			for (const [sessionKey, sessionData] of Object.entries(existingSessions)) {
+				if (sessionData) {
+					// Session exists in storage
+					const deviceStr = sessionKey.split('.')[1]
+					if (!deviceStr) continue
+					const deviceNum = parseInt(deviceStr)
+					let jid = deviceNum === 0 ? `${user}@s.whatsapp.net` : `${user}:${deviceNum}@s.whatsapp.net`
+					if (deviceNum === 99) {
+						jid = `${user}:99@hosted`
+					}
+
+					deviceJids.push(jid)
+				}
+			}
+
+			logger.debug(
+				{
+					fromJid,
+					totalDevices: userDevices.length,
+					devicesWithSessions: deviceJids.length,
+					devices: deviceJids
+				},
+				'bulk device migration complete - all user devices processed'
+			)
+
+			// Single transaction for all migrations
+			return parsedKeys.transaction(
+				async (): Promise<{ migrated: number; skipped: number; total: number }> => {
+					// Prepare migration operations with addressing metadata
+					type MigrationOp = {
+						fromJid: string
+						toJid: string
+						pnUser: string
+						lidUser: string
+						deviceId: number
+						fromAddr: libsignal.ProtocolAddress
+						toAddr: libsignal.ProtocolAddress
+					}
+
+					const migrationOps: MigrationOp[] = deviceJids.map(jid => {
+						const lidWithDevice = transferDevice(jid, toJid)
+						const fromDecoded: FullJid = jidDecode(jid)!
+						const toDecoded: FullJid = jidDecode(lidWithDevice)!
+
+						return {
+							fromJid: jid,
+							toJid: lidWithDevice,
+							pnUser: fromDecoded.user,
+							lidUser: toDecoded.user,
+							deviceId: fromDecoded.device || 0,
+							fromAddr: jidToSignalProtocolAddress(jid),
+							toAddr: jidToSignalProtocolAddress(lidWithDevice)
+						}
+					})
+
+					const totalOps = migrationOps.length
+					let migratedCount = 0
+
+					// Bulk fetch PN sessions - already exist (verified during device discovery)
+					const pnAddrStrings = Array.from(new Set(migrationOps.map(op => op.fromAddr.toString())))
+					const pnSessions = await parsedKeys.get('session', pnAddrStrings)
+
+					// Prepare bulk session updates (PN → LID migration + deletion)
+					const sessionUpdates: { [key: string]: Uint8Array | null } = {}
+
+					for (const op of migrationOps) {
+						const pnAddrStr = op.fromAddr.toString()
+						const lidAddrStr = op.toAddr.toString()
+
+						const pnSession = pnSessions[pnAddrStr]
+						if (pnSession) {
+							// Session exists (guaranteed from device discovery)
+							const fromSession = libsignal.SessionRecord.deserialize(pnSession)
+							if (fromSession.haveOpenSession()) {
+								// Queue for bulk update: copy to LID, delete from PN
+								sessionUpdates[lidAddrStr] = fromSession.serialize()
+								sessionUpdates[pnAddrStr] = null
+
+								migratedCount++
+							}
+						}
+					}
+
+					// Single bulk session update for all migrations
+					if (Object.keys(sessionUpdates).length > 0) {
+						await parsedKeys.set({ session: sessionUpdates })
+						logger.debug({ migratedSessions: migratedCount }, 'bulk session migration complete')
+
+						// Cache device-level migrations
+						for (const op of migrationOps) {
+							if (sessionUpdates[op.toAddr.toString()]) {
+								const deviceKey = `${op.pnUser}.${op.deviceId}`
+								migratedSessionCache.set(deviceKey, true)
+							}
+						}
+					}
+
+					const skippedCount = totalOps - migratedCount
+					return { migrated: migratedCount, skipped: skippedCount, total: totalOps }
+				}
+			)
 		},
 
 		async encryptMessageWithWire({ encryptionJid, wireJid, data }) {
