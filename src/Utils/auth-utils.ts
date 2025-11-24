@@ -48,7 +48,7 @@ export function makeCacheableSignalKeyStore(
 					const item: SignalDataTypeMap[typeof type] | undefined = fetched[id]
 					if (item) {
 						data[id] = item
-						cache.set(getUniqueId(type, id), item)
+						cache.set(getUniqueId(type, id), item as SignalDataTypeMap[keyof SignalDataTypeMap])
 					}
 				}
 			}
