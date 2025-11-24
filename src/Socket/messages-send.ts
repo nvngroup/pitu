@@ -323,7 +323,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return deviceResults
 	}
 
-	const assertSessions = async(jids: string[], force = false) => {
+	const assertSessions = async(jids: string[], force: boolean) => {
 		let didFetchNewSession = false
 		let jidsRequiringFetch: string[] = []
 		if (force) {
@@ -975,6 +975,15 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 				} else {
 					logger.warn({ jid, msgId, isGroup, isStatus }, 'no participants to send message, message may not be delivered')
+				}
+
+				// Validate that we have content to send
+				if (binaryNodeContent.length === 0) {
+					logger.error(
+						{ jid, msgId, isRetryResend, hasParticipant: !!participant },
+						'No encrypted content to send, aborting message send'
+					)
+					throw new Boom('No encrypted content available for message', { statusCode: 500 })
 				}
 
 				const stanza: BinaryNode = {
