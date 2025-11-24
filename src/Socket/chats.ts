@@ -23,6 +23,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		appStateMacVerification,
 		shouldIgnoreJid,
 		shouldSyncHistoryMessage,
+		getMessage,
 	} = config
 	const sock = makeUSyncSocket(config)
 	const {
@@ -991,7 +992,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 					keyStore: authState.keys,
 					logger,
 					options: config.options,
-					getMessage: config.getMessage,
+					getMessage,
 				}
 			)
 		])

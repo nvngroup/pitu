@@ -1,6 +1,5 @@
 
 import { Boom } from '@hapi/boom'
-import axios from 'axios'
 import { randomBytes } from 'crypto'
 import { promises as fs } from 'fs'
 import { type Transform } from 'stream'
@@ -416,9 +415,10 @@ export const generateWAMessageContent = async(
 		if (options.getProfilePicUrl) {
 			const pfpUrl: string | undefined = await options.getProfilePicUrl(message.groupInvite.jid, 'preview')
 			if (pfpUrl) {
-				const resp = await axios.get(pfpUrl, { responseType: 'arraybuffer' })
-				if (resp.status === 200) {
-					m.groupInviteMessage.jpegThumbnail = resp.data
+				const resp = await fetch(pfpUrl)
+				if (resp.ok) {
+					const arrayBuffer = await resp.arrayBuffer()
+					m.groupInviteMessage.jpegThumbnail = Buffer.from(arrayBuffer)
 				}
 			}
 		}
@@ -1300,6 +1300,19 @@ export const updateMessageWithPollUpdate = (
 	msg.pollUpdates = reactions
 }
 
+/** Update the message with a new event response */
+export const updateMessageWithEventResponse = (
+	msg: Pick<WAMessage, 'eventResponses'>,
+	update: waproto.IEventResponse
+) => {
+	const authorID: string = getKeyAuthor(update.eventResponseMessageKey)
+
+	const responses: waproto.IEventResponse[] = (msg.eventResponses || []).filter(r => getKeyAuthor(r.eventResponseMessageKey) !== authorID)
+	responses.push(update)
+
+	msg.eventResponses = responses
+}
+
 type VoteAggregation = {
 	name: string
 	voters: string[]
@@ -1351,6 +1364,41 @@ export function getAggregateVotesInPollMessage(
 	return Object.values(voteHashMap)
 }
 
+type ResponseAggregation = {
+	response: string
+	responders: string[]
+}
+
+/**
+	* Aggregates all event responses in an event message.
+	* @param msg the event creation message
+	* @param meId your jid
+	* @returns A list of response types & their responders
+	*/
+export function getAggregateResponsesInEventMessage(
+	{ eventResponses }: Pick<WAMessage, 'eventResponses'>,
+	meId?: string
+) {
+	const responseTypes: string[] = ['GOING', 'NOT_GOING', 'MAYBE']
+	const responseMap: { [_: string]: ResponseAggregation } = {}
+
+	for (const type of responseTypes) {
+		responseMap[type] = {
+			response: type,
+			responders: []
+		}
+	}
+
+	for (const update of eventResponses || []) {
+		const responseType = (update as any).eventResponse || 'UNKNOWN'
+		if (responseType !== 'UNKNOWN' && responseMap[responseType]) {
+			responseMap[responseType].responders.push(getKeyAuthor(update.eventResponseMessageKey, meId))
+		}
+	}
+
+	return Object.values(responseMap)
+}
+
 /** Given a list of message keys, aggregates them by chat & sender. Useful for sending read receipts in bulk */
 export const aggregateMessageKeysNotFromMe = (keys: waproto.IMessageKey[]) => {
 	const keyMap: { [id: string]: { jid: string, participant: string | undefined, messageIds: string[] } } = { }
@@ -1390,7 +1438,7 @@ export const downloadMediaMessage = async<Type extends 'buffer' | 'stream'>(
 ) => {
 	const result: Buffer | Transform = await downloadMsg()
 		.catch(async(error) => {
-			if (ctx && axios.isAxiosError(error) && REUPLOAD_REQUIRED_STATUS.includes(error.response?.status!)) {
+			if (ctx && error.status && REUPLOAD_REQUIRED_STATUS.includes(error.status)) {
 				ctx.logger.trace({ key: message.key }, 'sending reupload media request...')
 				message = await ctx.reuploadRequest(message)
 				const result: Buffer | Transform = await downloadMsg()

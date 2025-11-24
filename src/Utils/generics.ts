@@ -1,10 +1,9 @@
 import { Boom } from '@hapi/boom'
-import axios, { AxiosRequestConfig } from 'axios'
 import { createHash, randomBytes } from 'crypto'
 import { platform, release } from 'os'
 import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
-import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
+import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAMessageKey, WAVersion } from '../Types'
 import { BinaryNode, FullJid, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 import { sha256 } from './crypto'
 import { ILogger } from './logger'
@@ -53,10 +52,10 @@ export const BufferJSON = {
 }
 
 export const getKeyAuthor = (
-	key: waproto.IMessageKey | undefined | null,
+	key: WAMessageKey | undefined | null,
 	meId = 'me'
 ) => (
-	(key?.fromMe ? meId : key?.participant || key?.remoteJid) || ''
+	(key?.fromMe ? meId : key?.participantPn || key?.senderPn || key?.peerRecipientPn || key?.participant || key?.remoteJid) || ''
 )
 
 export const writeRandomPadMax16 = (msg: Uint8Array) => {
@@ -308,18 +307,21 @@ export const printQRIfNecessaryListener = (ev: BaileysEventEmitter, logger: ILog
  * utility that fetches latest baileys version from the master branch.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestBaileysVersion = async(options: AxiosRequestConfig<{}> = { }) => {
+export const fetchLatestBaileysVersion = async(options: RequestInit = { }) => {
 	const URL = 'https://raw.githubusercontent.com/brunocgc/Baileys/refs/heads/dev/src/Defaults/baileys-version.json'
 	try {
-		const result = await axios.get<{ version: WAVersion }>(
-			URL,
-			{
-				...options,
-				responseType: 'json'
-			}
-		)
+		const result = await fetch(URL, {
+			...options,
+			method: 'GET'
+		})
+
+		if (!result.ok) {
+			throw new Error(`Failed to fetch: ${result.statusText}`)
+		}
+
+		const data = await result.json() as { version: WAVersion }
 		return {
-			version: result.data.version,
+			version: data.version,
 			isLatest: true
 		}
 	} catch (error) {

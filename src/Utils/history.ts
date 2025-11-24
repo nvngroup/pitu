@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
 import { Transform } from 'stream'
 import { promisify } from 'util'
 import { inflate } from 'zlib'
@@ -13,7 +12,7 @@ const inflatePromise = promisify(inflate)
 
 export const downloadHistory = async(
 	msg: waproto.Message.IHistorySyncNotification,
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
 ) => {
 	const stream: Transform = await downloadContentFromMessage(msg, 'md-msg-hist', { options })
 	const bufferArray: Buffer[] = []
@@ -106,7 +105,7 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 
 export const downloadAndProcessHistorySyncNotification = async(
 	msg: waproto.Message.IHistorySyncNotification,
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
 ) => {
 	const historyMsg = await downloadHistory(msg, options)
 	return processHistoryMessage(historyMsg)

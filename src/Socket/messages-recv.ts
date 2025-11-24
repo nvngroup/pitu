@@ -27,7 +27,7 @@ import {
 	xmppSignedPreKey
 } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
-import { MISSING_KEYS_ERROR_TEXT, NACK_REASONS, NO_MESSAGE_FOUND_ERROR_TEXT } from '../Utils/types'
+import { MISSING_KEYS_ERROR_TEXT, NO_MESSAGE_FOUND_ERROR_TEXT } from '../Utils/types'
 import {
 	areJidsSameUser,
 	BinaryNode,
@@ -319,14 +319,14 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			const identityNode: BinaryNode | undefined = getBinaryNodeChild(node, 'identity')
 			if (identityNode) {
 				logger.trace({ jid: from }, 'identity changed')
-				if (identityAssertDebounce.get(from!)) {
+				if (identityAssertDebounce.get(from)) {
 					logger.debug({ jid: from }, 'skipping identity assert (debounced)')
 					return
 				}
 
-				identityAssertDebounce.set(from!, true)
+				identityAssertDebounce.set(from, true)
 				try {
-					await assertSessions([from!], true)
+					await assertSessions([from], true)
 				} catch (error) {
 					logger.warn({ error, jid: from }, 'failed to assert sessions after identity change')
 				}
@@ -905,14 +905,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 					'Received LID migration sync message from server'
 				)
 
-				const lidMapping: LIDMappingStore = signalRepository.getLIDMappingStore()
 				if (decoded.pnToLidMappings && decoded.pnToLidMappings.length > 0) {
 					for (const mapping of decoded.pnToLidMappings) {
 						const pn = `${mapping.pn}@s.whatsapp.net`
 						const lidValue: number | Long = mapping.latestLid || mapping.assignedLid
 						const lid = `${lidValue}@lid`
 
-						await lidMapping.storeLIDPNMapping(lid, pn)
+						await signalRepository.getLIDMappingStore().storeLIDPNMapping(lid, pn)
 						logger.debug(
 							{
 								pn,
@@ -945,7 +944,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						const errorMessage: string = msg?.messageStubParameters?.[0] || ''
 						const isPreKeyError: boolean = errorMessage.includes('PreKey')
 
-						retryMutex.mutex(async () => {
+						retryMutex.mutex(async() => {
 							try {
 								if (!ws.isOpen) {
 									logger.debug({ node }, 'Connection closed, skipping retry')

@@ -8,9 +8,9 @@ import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, 
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import ListType = waproto.Message.ListMessage.ListType;
+import { LIDMappingStore } from '../Signal/lid-mapping'
 import { MessageRetryManager } from '../Utils/message-retry-manager'
 import { makeNewsletterSocket } from './newsletter'
-import { LIDMappingStore } from '../Signal/lid-mapping'
 
 export const makeMessagesSocket = (config: SocketConfig) => {
 	const {
@@ -39,8 +39,6 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		groupMetadataWithRetry,
 		groupToggleEphemeral,
 	} = sock
-
-	const lidMapping = new LIDMappingStore(authState.keys, logger);
 
 	const patchMessageRequiresBeforeSending = (msg: waproto.IMessage): waproto.IMessage => {
 		if (msg?.deviceSentMessage?.message?.listMessage) {
@@ -210,7 +208,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const lidResults: USyncQueryResultList[] = result.list.filter(a => !!a.lid)
 				if (lidResults.length > 0) {
 					logger.trace({}, 'Storing LID maps from device call')
-					await lidMapping.storeLIDPNMappings(lidResults.map(a => ({ lidUser: a.lid as string, pnUser: a.id })))
+					await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidResults.map(a => ({ lidUser: a.lid as string, pnUser: a.id })))
 
 					// Force-refresh sessions for newly mapped LIDs to align identity addressing
 					try {
@@ -222,6 +220,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						logger.warn({ e, count: lidResults.length }, 'failed to assert sessions for newly mapped LIDs')
 					}
 				}
+
 				const extracted: JidWithDevice[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
 				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
 
@@ -277,7 +276,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			const wireJids: string[] = [
 				...jidsRequiringFetch.filter(jid => !!isLidUser(jid) || !!isHostedLidUser(jid)),
 				...(
-					(await lidMapping.getLIDsForPNs(
+					(await signalRepository.getLIDMappingStore().getLIDsForPNs(
 						jidsRequiringFetch.filter(jid => !!isPnUser(jid) || !!isHostedPnUser(jid))
 					)) || []
 				).map(a => a.lidUser)
@@ -297,7 +296,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						attrs: {},
 						content: wireJids.map(jid => {
 							const attrs: { [key: string]: string } = { jid }
-							if (force) attrs.reason = 'identity'
+							if (force) {
+								attrs.reason = 'identity'
+							}
+
 							return { tag: 'user', attrs }
 						})
 					}

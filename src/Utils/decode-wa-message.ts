@@ -25,9 +25,8 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 		return sender
 	}
 
-	const lidMapping: LIDMappingStore = repository.getLIDMappingStore()
 	const normalizedSender: string = jidNormalizedUser(sender)
-	const lidForPN: string | null = await lidMapping.getLIDForPN(normalizedSender)
+	const lidForPN: string | null = await repository.getLIDMappingStore().getLIDForPN(normalizedSender)
 
 	if (lidForPN?.includes('@lid')) {
 		const senderDecoded: FullJid | undefined = jidDecode(sender)

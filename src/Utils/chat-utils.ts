@@ -1,5 +1,4 @@
 import { Boom } from '@hapi/boom'
-import { AxiosRequestConfig } from 'axios'
 import { Transform } from 'stream'
 import { waproto } from '../../WAProto'
 import { AccountSettings, BaileysEventEmitter, Chat, ChatModification, ChatMutation, ChatUpdate, Contact, InitialAppStateSyncOptions, LastMessageList, LTHashState, MinimalMessage, WAPatchCreate, WAPatchName } from '../Types'
@@ -264,7 +263,7 @@ export const decodeSyncdPatch = async(
 
 export const extractSyncdPatches = async(
 	result: BinaryNode,
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
 ) => {
 	const syncNode: BinaryNode | undefined = getBinaryNodeChild(result, 'sync')
 	const collectionNodes: BinaryNode[] = getBinaryNodeChildren(syncNode, 'collection')
@@ -322,7 +321,7 @@ export const extractSyncdPatches = async(
 
 export const downloadExternalBlob = async(
 	blob: waproto.IExternalBlobReference,
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
 ) => {
 	const stream: Transform = await downloadContentFromMessage(blob, 'md-app-state', { options })
 	const bufferArray: Buffer[] = []
@@ -335,7 +334,7 @@ export const downloadExternalBlob = async(
 
 export const downloadExternalPatch = async(
 	blob: waproto.IExternalBlobReference,
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
 ) => {
 	const buffer: Buffer = await downloadExternalBlob(blob, options)
 	const syncData: waproto.SyncdMutations = waproto.SyncdMutations.decode(buffer)
@@ -396,7 +395,7 @@ export const decodePatches = async(
 	syncds: waproto.ISyncdPatch[],
 	initial: LTHashState,
 	getAppStateSyncKey: FetchAppStateSyncKey,
-	options: AxiosRequestConfig<{}>,
+	options: RequestInit,
 	minimumVersionNumber?: number,
 	logger?: ILogger,
 	validateMacs = true

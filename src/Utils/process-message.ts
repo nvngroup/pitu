@@ -1,8 +1,7 @@
-import { AxiosRequestConfig } from 'axios'
 import { waproto } from '../../WAProto'
-import { AuthenticationCreds, BaileysEventEmitter, CacheStore, Chat, Contact, GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod, SignalKeyStoreWithTransaction, SocketConfig, WAMessageStubType } from '../Types'
+import { AuthenticationCreds, BaileysEventEmitter, CacheStore, Chat, Contact, GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod, SignalKeyStoreWithTransaction, SignalRepository, SocketConfig, WAMessageKey, WAMessageStubType } from '../Types'
 import { getContentType, normalizeMessageContent } from '../Utils/messages'
-import { areJidsSameUser, isJidBroadcast, isJidStatusBroadcast, jidNormalizedUser } from '../WABinary'
+import { areJidsSameUser, isJidBroadcast, isJidStatusBroadcast, isLidUser, jidNormalizedUser } from '../WABinary'
 import { aesDecryptGCM, hmacSign } from './crypto'
 import { getKeyAuthor, toNumber } from './generics'
 import { downloadAndProcessHistorySyncNotification } from './history'
@@ -16,7 +15,8 @@ type ProcessMessageContext = {
 	ev: BaileysEventEmitter
 	getMessage: SocketConfig['getMessage']
 	logger?: ILogger
-	options: AxiosRequestConfig<{}>
+	options: RequestInit
+	signalRepository: SignalRepository
 }
 
 const REAL_MSG_STUB_TYPES = new Set([
@@ -97,6 +97,17 @@ type PollContext = {
 	voterJid: string
 }
 
+type EventContext = {
+	/** normalised jid of the person that created the event */
+	eventCreatorJid: string
+	/** ID of the event creation message */
+	eventMsgId: string
+	/** event creation message enc key */
+	eventEncKey: Uint8Array
+	/** jid of the person that responded */
+	responderJid: string
+}
+
 /**
  * Decrypt a poll vote
  * @param vote encrypted vote
@@ -134,6 +145,36 @@ export function decryptPollVote(
 	}
 }
 
+/**
+	* Decrypt an event response
+	* @param response encrypted event response
+	* @param ctx additional info about the event required for decryption
+	* @returns event response message
+	*/
+export function decryptEventResponse(
+	{ encPayload, encIv }: waproto.Message.IPollEncValue,
+	{ eventCreatorJid, eventMsgId, eventEncKey, responderJid }: EventContext
+) {
+	const sign: Buffer = Buffer.concat([
+		toBinary(eventMsgId),
+		toBinary(eventCreatorJid),
+		toBinary(responderJid),
+		toBinary('Event Response'),
+		new Uint8Array([1])
+	])
+
+	const key0: Buffer = hmacSign(eventEncKey, new Uint8Array(32), 'sha256')
+	const decKey: Buffer = hmacSign(sign, key0, 'sha256')
+	const aad: Buffer = toBinary(`${eventMsgId}\u0000${responderJid}`)
+
+	const decrypted: Buffer = aesDecryptGCM(encPayload!, decKey, encIv!, aad)
+	return waproto.Message.EventResponseMessage.decode(decrypted)
+
+	function toBinary(txt: string) {
+		return Buffer.from(txt)
+	}
+}
+
 const processMessage = async(
 	message: waproto.IWebMessageInfo,
 	{
@@ -141,6 +182,7 @@ const processMessage = async(
 		placeholderResendCache,
 		ev,
 		creds,
+		signalRepository,
 		keyStore,
 		logger,
 		options,
@@ -315,6 +357,61 @@ const processMessage = async(
 			reaction,
 			key: content.reactionMessage?.key!,
 		}])
+	} else if (content?.encEventResponseMessage) {
+		// we need to fetch the event creation message to get the event enc key
+		const encEventResponse: waproto.Message.IEncEventResponseMessage = content.encEventResponseMessage
+		const creationMsgKey: WAMessageKey = encEventResponse.eventCreationMessageKey!
+
+		// we need to fetch the event creation message to get the event enc key
+		const eventMsg: waproto.IMessage | undefined = await getMessage(creationMsgKey)
+		if (eventMsg) {
+			try {
+				const meIdNormalised: string = jidNormalizedUser(meId)
+
+				// all jids need to be PN
+				const eventCreatorKey: string = creationMsgKey.participant || creationMsgKey.remoteJid!
+				const eventCreatorPn = isLidUser(eventCreatorKey)
+					? await signalRepository.getLIDMappingStore().getPNForLID(eventCreatorKey)
+					: eventCreatorKey
+				const eventCreatorJid: string = getKeyAuthor(
+					{ remoteJid: jidNormalizedUser(eventCreatorPn!), fromMe: meIdNormalised === eventCreatorPn },
+					meIdNormalised
+				)
+
+				const responderJid: string = getKeyAuthor(message.key, meIdNormalised)
+				const eventEncKey: Uint8Array | null | undefined = eventMsg?.messageContextInfo?.messageSecret
+
+				if (!eventEncKey) {
+					logger?.warn({ creationMsgKey }, 'event response: missing messageSecret for decryption')
+				} else {
+					const responseMsg = decryptEventResponse(encEventResponse, {
+						eventEncKey,
+						eventCreatorJid,
+						eventMsgId: creationMsgKey.id!,
+						responderJid
+					})
+
+					const eventResponse = {
+						eventResponseMessageKey: message.key,
+						senderTimestampMs: responseMsg.timestampMs!,
+						response: responseMsg
+					}
+
+					ev.emit('messages.update', [
+						{
+							key: creationMsgKey,
+							update: {
+								eventResponses: [eventResponse]
+							}
+						}
+					])
+				}
+			} catch (err) {
+				logger?.warn({ err, creationMsgKey }, 'failed to decrypt event response')
+			}
+		} else {
+			logger?.warn({ creationMsgKey }, 'event creation message not found, cannot decrypt response')
+		}
 	} else if (message.messageStubType) {
 		const jid: string = message.key?.remoteJid!
 		let participants: string[]

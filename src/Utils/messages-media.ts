@@ -1,5 +1,4 @@
 import { Boom } from '@hapi/boom'
-import axios, { AxiosRequestConfig } from 'axios'
 import { exec } from 'child_process'
 import * as Crypto from 'crypto'
 import { once } from 'events'
@@ -283,7 +282,7 @@ export const toBuffer = async(stream: Readable) => {
 	return Buffer.concat(chunks)
 }
 
-export const getStream = async (item: WAMediaUpload, opts?: RequestInit & { maxContentLength?: number }) => {
+export const getStream = async(item: WAMediaUpload, opts?: RequestInit & { maxContentLength?: number }) => {
 	if (Buffer.isBuffer(item)) {
 		return { stream: toReadable(item), type: 'buffer' } as const
 	}
@@ -344,7 +343,7 @@ export async function generateThumbnail(
 	}
 }
 
-export const getHttpStream = async (url: string | URL, options: RequestInit & { isStream?: true } = {}) => {
+export const getHttpStream = async(url: string | URL, options: RequestInit & { isStream?: true } = {}) => {
 	const response = await fetch(url.toString(), {
 		// dispatcher: options.dispatcher,
 		method: 'GET',
@@ -745,13 +744,14 @@ export function extensionForMediaMessage(message: WAMessageContent) {
 }
 
 export const getWAUploadToServer = (
-	{ customUploadHosts, fetchAgent, logger, options }: SocketConfig,
-	refreshMediaConn: (force: boolean) => Promise<MediaConnInfo>,
+	{ customUploadHosts, logger, options }: SocketConfig,
+	refreshMediaConn: (force: boolean) => Promise<MediaConnInfo>
 ): WAMediaUploadFunction => {
 	return async(filePath, { mediaType, fileEncSha256B64, timeoutMs }) => {
+		// send a query JSON to obtain the url & auth token to upload our media
 		let uploadInfo: MediaConnInfo = await refreshMediaConn(false)
 
-		let urls: { mediaUrl: string, directPath: string } | undefined
+		let urls: { mediaUrl: string; directPath: string; meta_hmac?: string; ts?: number; fbid?: number } | undefined
 		const hosts = [...customUploadHosts, ...uploadInfo.hosts]
 
 		fileEncSha256B64 = encodeBase64EncodedStringForUpload(fileEncSha256B64)
@@ -759,56 +759,64 @@ export const getWAUploadToServer = (
 		for (const { hostname } of hosts) {
 			logger.debug({ hostname }, `uploading to "${hostname}"`)
 
-			const auth: string = encodeURIComponent(uploadInfo.auth)
+			const auth = encodeURIComponent(uploadInfo.auth) // the auth token
 			const url = `https://${hostname}${MEDIA_PATH_MAP[mediaType]}/${fileEncSha256B64}?auth=${auth}&token=${fileEncSha256B64}`
-			let result: { [key: string]: string } | undefined
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			let result: any
 			try {
+				const stream = createReadStream(filePath)
+				const response = await fetch(url, {
+					method: 'POST',
+					body: stream as any,
+					headers: {
+						...(() => {
+							const hdrs = options?.headers
+							if (!hdrs) {
+								return {}
+							}
 
-				const body = await axios.post(
-					url,
-					createReadStream(filePath),
-					{
-						...options,
-						maxRedirects: 0,
-						headers: {
-							...options.headers || {},
-							'Content-Type': 'application/octet-stream',
-							'Origin': DEFAULT_ORIGIN
-						},
-						httpsAgent: fetchAgent,
-						timeout: timeoutMs,
-						responseType: 'json',
-						maxBodyLength: Infinity,
-						maxContentLength: Infinity,
-					}
-				)
-				result = body.data
+							return Array.isArray(hdrs) ? Object.fromEntries(hdrs) : (hdrs as Record<string, string>)
+						})(),
+						'Content-Type': 'application/octet-stream',
+						Origin: DEFAULT_ORIGIN
+					},
+					// duplex: 'half',
+					// Note: custom agents/proxy require undici Agent; omitted here.
+					signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined
+				})
+				let parsed: any = undefined
+				try {
+					parsed = await response.json()
+				} catch {
+					parsed = undefined
+				}
+
+				result = parsed
 
 				if (result?.url || result?.directPath) {
 					urls = {
 						mediaUrl: result.url,
-						directPath: result.direct_path
+						directPath: result.direct_path,
+						meta_hmac: result.meta_hmac,
+						fbid: result.fbid,
+						ts: result.ts
 					}
 					break
 				} else {
 					uploadInfo = await refreshMediaConn(true)
 					throw new Error(`upload failed, reason: ${JSON.stringify(result)}`)
 				}
-			} catch (error) {
-				if (axios.isAxiosError(error)) {
-					result = error.response?.data
-				}
-
-				const isLast: boolean = hostname === hosts[uploadInfo.hosts.length - 1]?.hostname
-				logger.warn({ trace: error.stack, uploadResult: result }, `Error in uploading to ${hostname} ${isLast ? '' : ', retrying...'}`)
+			} catch (error: any) {
+				const isLast = hostname === hosts[uploadInfo.hosts.length - 1]?.hostname
+				logger.warn(
+					{ trace: error?.stack, uploadResult: result },
+					`Error in uploading to ${hostname} ${isLast ? '' : ', retrying...'}`
+				)
 			}
 		}
 
 		if (!urls) {
-			throw new Boom(
-				'Media upload failed on all hosts',
-				{ statusCode: 500 }
-			)
+			throw new Boom('Media upload failed on all hosts', { statusCode: 500 })
 		}
 
 		return urls

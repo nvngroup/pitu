@@ -1,4 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
 import { waproto } from '../../WAProto'
 import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, ChatMutation, MediaType, WAMediaUpload } from '../Types'
 
@@ -39,7 +38,7 @@ export type MessageType = 'chat' | 'peer_broadcast' | 'other_broadcast' | 'group
 export type MediaDownloadOptions = {
  startByte?: number
  endByte?: number
- options?: AxiosRequestConfig<{}>
+ options?: RequestInit
 }
 
 export const BUFFERABLE_EVENT = [

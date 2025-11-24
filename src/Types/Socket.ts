@@ -1,5 +1,4 @@
 
-import { AxiosRequestConfig } from 'axios'
 import type { Agent } from 'https'
 import type { URL } from 'url'
 import { waproto } from '../../WAProto'
@@ -63,7 +62,7 @@ export type SocketConfig = {
         patch: boolean
         snapshot: boolean
     }
-    options: AxiosRequestConfig<{}>
+    options: RequestInit
     getMessage: (key: waproto.IMessageKey) => Promise<waproto.IMessage | undefined>
     cachedGroupMetadata: (jid: string) => Promise<GroupMetadata | undefined>
     makeSignalRepository: (auth: SignalAuthState) => SignalRepository

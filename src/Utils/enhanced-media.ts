@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from 'axios'
 import { Transform } from 'stream'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
@@ -20,19 +19,19 @@ export const enhancedDownloadEncryptedContent = async(
 	} catch (error) {
 		logger.error({ error }, 'Error in original decryption, trying alternative method')
 
-		const response: AxiosResponse = await axios.get(downloadUrl, {
-			responseType: 'arraybuffer',
+		const response = await fetch(downloadUrl, {
 			...options.options
 		})
 
-		if (response.status !== 200) {
+		if (!response.ok) {
 			throw new Error(`Falha ao baixar o conteúdo: ${response.status}`)
 		}
 
 		const { cipherKey, iv } = keys
 
 		const { Readable } = await import('stream')
-		const buffer: Buffer = Buffer.from(response.data)
+		const arrayBuffer = await response.arrayBuffer()
+		const buffer: Buffer = Buffer.from(arrayBuffer)
 		const nodeReadable = new Readable()
 
 		nodeReadable._read = function() { }

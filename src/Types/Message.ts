@@ -1,5 +1,4 @@
 
-import { AxiosRequestConfig } from 'axios'
 import type { Readable } from 'stream'
 import type { URL } from 'url'
 import { waproto } from '../../WAProto'
@@ -387,7 +386,7 @@ export type MediaGenerationOptions = {
 
     mediaUploadTimeoutMs?: number
 
-    options?: AxiosRequestConfig
+    options?: RequestInit
 
     backgroundColor?: string
 
