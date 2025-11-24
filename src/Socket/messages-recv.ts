@@ -759,6 +759,12 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const handlePrivacyTokenNotification = async(node: BinaryNode) => {
 		const tokensNode: BinaryNode | undefined = getBinaryNodeChild(node, 'tokens')
 		const from: string = jidNormalizedUser(node.attrs.from)
+		let lidForPN: string | null = null
+		try {
+			lidForPN = await signalRepository.getLIDMappingStore().getLIDForPN(from)
+		} catch (error) {
+			logger.warn({ error, jid: from }, 'Failed to get lid for PN in handlePrivacyTokenNotification.')
+		}
 
 		if (!tokensNode) {
 			return
@@ -784,6 +790,12 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				await authState.keys.set({
 					'contacts-tc-token': { [from]: { token: content } }
 				})
+
+				if (lidForPN) {
+					await authState.keys.set({
+						'contacts-tc-token': { [lidForPN]: { token: content } }
+					})
+				}
 			}
 		}
 	}
