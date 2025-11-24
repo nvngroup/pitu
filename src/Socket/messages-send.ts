@@ -793,10 +793,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				const contactTcToken =
 					!isGroup && !isRetryResend && !isStatus
-						? await authState.keys.get('contacts-tc-token', [destinationJid])
+						? await authState.keys.get('tc-token', [destinationJid])
 						: {}
 
-				const tcTokenBuffer = contactTcToken[destinationJid]?.token
+				const tcTokenBuffer: Buffer = contactTcToken[destinationJid]?.token
 
 				if (tcTokenBuffer) {
 					(stanza.content as BinaryNode[]).push({

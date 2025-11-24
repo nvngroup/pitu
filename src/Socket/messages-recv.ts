@@ -873,12 +873,12 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				)
 
 				await authState.keys.set({
-					'contacts-tc-token': { [from]: { token: content } }
+					'tc-token': { [from]: { token: content, timestamp } }
 				})
 
 				if (lidForPN) {
 					await authState.keys.set({
-						'contacts-tc-token': { [lidForPN]: { token: content } }
+						'tc-token': { [lidForPN]: { token: content, timestamp } }
 					})
 				}
 			}
