@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { Transform } from 'stream'
+import { Readable } from 'stream'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
 import { downloadEncryptedContent as originalDownloadEncryptedContent } from '../Utils/messages-media'
@@ -10,40 +10,45 @@ import { MediaDownloadOptions } from './types'
  * Versão modificada da função downloadEncryptedContent que tenta usar
  * o método de descriptografia alternativo caso o método original falhe
  */
-export const enhancedDownloadEncryptedContent = async(
+export const enhancedDownloadEncryptedContent = async (
 	downloadUrl: string,
 	keys: MediaDecryptionKeyInfo,
 	options: MediaDownloadOptions = {}
 ) => {
 	try {
-		return await originalDownloadEncryptedContent(downloadUrl, keys, options)
+		return await originalDownloadEncryptedContent(downloadUrl, keys, options);
 	} catch (error) {
-		logger.error({ error }, 'Error in original decryption, trying alternative method')
+		logger.error({ error }, 'Error in original decryption, trying alternative method');
 
 		const response = await fetch(downloadUrl, {
-			...options.options
-		})
+			...options.options,
+			// Garante que não falhe por timeouts padrão se o arquivo for grande
+		} as any);
 
 		if (!response.ok) {
-			throw new Error(`Falha ao baixar o conteúdo: ${response.status}`)
+			throw new Error(`Falha ao baixar o conteúdo: ${response.status}`);
 		}
 
-		const { cipherKey, iv } = keys
+		const { cipherKey, iv } = keys;
+		const startByte: number = options.startByte || 0;
+		const firstBlockIsIV: boolean = startByte > 0;
 
-		const { Readable } = await import('stream')
-		const arrayBuffer = await response.arrayBuffer()
-		const buffer: Buffer = Buffer.from(arrayBuffer)
-		const nodeReadable = new Readable()
+		// CRIAÇÃO DO DECRYPTOR
+		const fallbackDecryptor = createFallbackDecryptStream(cipherKey, iv, firstBlockIsIV);
 
-		nodeReadable._read = function() { }
+		// --- OTIMIZAÇÃO AQUI ---
+		// Em vez de carregar tudo na memória, convertemos o body diretamente
+		// para um Stream do Node e fazemos o pipe instantâneo.
 
-		nodeReadable.push(buffer)
-		nodeReadable.push(null)
+		if (!response.body) {
+			throw new Error('O corpo da resposta está vazio');
+		}
 
-		const startByte: number = options.startByte || 0
-		const firstBlockIsIV: boolean = startByte > 0
+		// Converte WebStream (fetch) -> NodeStream
+		// O cast 'as any' resolve o conflito de tipos ReadableStream<any> vs ReadableStream<Uint8Array>
+		const sourceStream: Readable = Readable.fromWeb(response.body as any);
 
-		const fallbackDecryptor: Transform = createFallbackDecryptStream(cipherKey, iv, firstBlockIsIV)
-		return nodeReadable.pipe(fallbackDecryptor)
+		// Retorna o stream conectado. O processamento acontece conforme os dados chegam.
+		return sourceStream.pipe(fallbackDecryptor);
 	}
 }

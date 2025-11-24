@@ -35,6 +35,7 @@ export type WAGenericMediaMessage = waproto.Message.IVideoMessage | waproto.Mess
 export const WAMessageStubType = waproto.WebMessageInfo.StubType
 export const WAMessageStatus = waproto.WebMessageInfo.Status
 import { ILogger } from '../Utils/logger'
+import { FetchRequestInit } from '.'
 export type WAMediaPayloadURL = { url: URL | string }
 export type WAMediaPayloadStream = { stream: Readable }
 export type WAMediaUpload = Buffer | WAMediaPayloadStream | WAMediaPayloadURL

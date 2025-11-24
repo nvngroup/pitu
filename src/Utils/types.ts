@@ -1,5 +1,5 @@
 import { waproto } from '../../WAProto'
-import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, ChatMutation, MediaType, WAMediaUpload } from '../Types'
+import { BaileysEvent, BaileysEventEmitter, BaileysEventMap, ChatMutation, FetchRequestInit, MediaType, WAMediaUpload } from '../Types'
 
 export interface BadMACError {
  jid: string

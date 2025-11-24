@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { Transform } from 'stream'
 import { waproto } from '../../WAProto'
-import { AccountSettings, BaileysEventEmitter, Chat, ChatModification, ChatMutation, ChatUpdate, Contact, InitialAppStateSyncOptions, LastMessageList, LTHashState, MinimalMessage, WAPatchCreate, WAPatchName } from '../Types'
+import { AccountSettings, BaileysEventEmitter, Chat, ChatModification, ChatMutation, ChatUpdate, Contact, FetchRequestInit, InitialAppStateSyncOptions, LastMessageList, LTHashState, MinimalMessage, WAPatchCreate, WAPatchName } from '../Types'
 import { ChatLabelAssociation, LabelAssociationType, MessageLabelAssociation } from '../Types/LabelAssociation'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, isJidGroup, isJidUser, jidNormalizedUser } from '../WABinary'
 import { aesDecrypt, aesEncrypt, hkdf, hmacSign } from './crypto'

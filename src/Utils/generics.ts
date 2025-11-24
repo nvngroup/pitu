@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import { platform, release } from 'os'
 import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
-import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAMessageKey, WAVersion } from '../Types'
+import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, FetchRequestInit, WACallUpdateType, WAMessageKey, WAVersion } from '../Types'
 import { BinaryNode, FullJid, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 import { sha256 } from './crypto'
 import { ILogger } from './logger'
@@ -308,14 +308,14 @@ export const printQRIfNecessaryListener = (ev: BaileysEventEmitter, logger: ILog
  * utility that fetches latest baileys version from the master branch.
  * Use to ensure your WA connection is always on the latest version
  */
-export const fetchLatestBaileysVersion = async(options: FetchRequestInit = { }) => {
+export const fetchLatestBaileysVersion = async(options: FetchRequestInit = {}) => {
 	const URL = 'https://raw.githubusercontent.com/brunocgc/Baileys/refs/heads/dev/src/Defaults/baileys-version.json'
 	try {
 		const result = await fetch(URL, {
-			agent: options.dispatcher,
+			dispatcher: options.dispatcher,
+			method: 'GET',
 			...options,
-			method: 'GET'
-		})
+		} as any)
 
 		if (!result.ok) {
 			throw new Error(`Failed to fetch: ${result.statusText}`)
@@ -350,10 +350,11 @@ export const fetchLatestWaWebVersion = async(options: FetchRequestInit = {}) => 
 		const headers = { ...defaultHeaders, ...options.headers }
 
 		const response = await fetch('https://web.whatsapp.com/sw.js', {
+			dispatcher: options.dispatcher,
 			...options,
 			method: 'GET',
 			headers
-		})
+		} as any)
 
 		if (!response.ok) {
 			throw new Boom(`Failed to fetch sw.js: ${response.statusText}`, { statusCode: response.status })
@@ -374,7 +375,7 @@ export const fetchLatestWaWebVersion = async(options: FetchRequestInit = {}) => 
 			}
 		}
 
-		const clientRevision = match[1]
+		const clientRevision: string = match[1]
 
 		return {
 			version: [2, 3000, +clientRevision] as WAVersion,

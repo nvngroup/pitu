@@ -1,5 +1,5 @@
 import { Readable } from 'stream'
-import { WAMediaUploadFunction, WAUrlInfo } from '../Types'
+import { FetchHeadersInit, WAMediaUploadFunction, WAUrlInfo } from '../Types'
 import { ILogger } from './logger'
 import { prepareWAMessageMedia } from './messages'
 import { extractImageThumb, getHttpStream } from './messages-media'

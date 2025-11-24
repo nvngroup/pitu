@@ -7,6 +7,7 @@ import { AuthenticationState, SignalAuthState, TransactionCapabilityOptions } fr
 import { GroupMetadata } from './GroupMetadata'
 import { MediaConnInfo } from './Message'
 import { SignalRepository } from './Signal'
+import { FetchRequestInit } from '.'
 
 export type WAVersion = [number, number, number]
 export type WABrowserDescription = [string, string, string]
