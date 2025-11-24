@@ -2,7 +2,7 @@ import { chunk } from 'lodash'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import { SignalRepository } from '../Types'
 import { AuthenticationCreds, AuthenticationState, KeyPair, SignalIdentity, SignalKeyStore, SignedKeyPair } from '../Types/Auth'
-import { assertNodeErrorFree, BinaryNode, getBinaryNodeChild, getBinaryNodeChildBuffer, getBinaryNodeChildren, getBinaryNodeChildUInt, jidDecode, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
+import { assertNodeErrorFree, BinaryNode, FullJid, getBinaryNodeChild, getBinaryNodeChildBuffer, getBinaryNodeChildren, getBinaryNodeChildUInt, jidDecode, S_WHATSAPP_NET } from '../WABinary'
 import { DeviceListData, ParsedDeviceInfo, USyncQueryResultList } from '../WAUSync'
 import { Curve, generateSignalPubKey } from './crypto'
 import { encodeBigEndian } from './generics'
@@ -118,7 +118,7 @@ export const parseAndInjectE2ESessions = async(
 export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string, excludeZeroDevices: boolean) => {
 	const { user: myUser, device: myDevice } = jidDecode(myJid)!
 
-	const extracted: JidWithDevice[] = []
+	const extracted: FullJid[] = []
 
 
 	for (const userResult of result) {
@@ -132,7 +132,7 @@ export const extractDeviceJids = (result: USyncQueryResultList[], myJid: string,
 				const hasKeyIndex: boolean = device === 0 || !!keyIndex
 
 				if (!shouldExcludeZero && !isSameDevice && hasKeyIndex) {
-					extracted.push({ user, device, jid: userResult.id })
+					extracted.push({ user, device, jid: userResult.id, server: jidDecode(userResult.id)!.server })
 				}
 			}
 		} else if (!devices) {

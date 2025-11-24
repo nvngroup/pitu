@@ -4,7 +4,7 @@ import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
 import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
-import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
+import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import ListType = waproto.Message.ListMessage.ListType;
@@ -206,6 +206,16 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return deviceResults
 		}
 
+		const requestedLidUsers = new Set<string>()
+		for (const jid of toFetch) {
+			if (isLidUser(jid) || isHostedLidUser(jid)) {
+				const user: string | undefined = jidDecode(jid)?.user
+				if (user) {
+					requestedLidUsers.add(user)
+				}
+			}
+		}
+
 		logger.debug({ toFetch, ignoreZeroDevices }, 'fetching devices from server')
 
 		const query: USyncQuery = new USyncQuery()
@@ -236,25 +246,71 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 				}
 
-				const extracted: JidWithDevice[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
+				const extracted: FullJid[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
 				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
 
 				if (extracted.length === 0) {
 					logger.warn({ toFetch, ignoreZeroDevices }, 'no devices extracted from USyncQuery result')
 				}
 
-				const deviceMap: { [_: string]: JidWithDevice[] } = {}
+				const deviceMap: { [_: string]: FullJid[] } = {}
 
 				for (const item of extracted) {
 					deviceMap[item.user] = deviceMap[item.user] || []
 					deviceMap[item.user].push(item)
 
-					deviceResults.push(item)
+					// deviceResults.push(item)
+				}
+
+				// Process each user's devices as a group for bulk LID migration
+				for (const [user, userDevices] of Object.entries(deviceMap)) {
+					const isLidUser = requestedLidUsers.has(user)
+
+					// Process all devices for this user
+					for (const item of userDevices) {
+						const finalJid: string = isLidUser
+							? jidEncode(user, item.server, item.device)
+							: jidEncode(item.user, item.server, item.device)
+
+						deviceResults.push({
+							...item,
+							jid: finalJid
+						})
+
+						logger.debug(
+							{
+								user: item.user,
+								device: item.device,
+								finalJid,
+								usedLid: isLidUser
+							},
+							'Processed device with LID priority'
+						)
+					}
 				}
 
 				for (const key in deviceMap) {
 					userDevicesCache.set(key, deviceMap[key])
 					logger.debug({ user: key, deviceCount: deviceMap[key].length }, 'cached devices for user')
+				}
+
+				const userDeviceUpdates: { [userId: string]: string[] } = {}
+				for (const [userId, devices] of Object.entries(deviceMap)) {
+					if (devices && devices.length > 0) {
+						userDeviceUpdates[userId] = devices.map(d => d.device?.toString() || '0')
+					}
+				}
+
+				if (Object.keys(userDeviceUpdates).length > 0) {
+					try {
+						await authState.keys.set({ 'device-list': userDeviceUpdates })
+						logger.debug(
+							{ userCount: Object.keys(userDeviceUpdates).length },
+							'stored user device lists for bulk migration'
+						)
+					} catch (error) {
+						logger.warn({ error }, 'failed to store user device lists')
+					}
 				}
 			} else {
 				logger.warn({ toFetch }, 'USyncQuery returned no result')

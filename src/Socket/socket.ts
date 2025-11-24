@@ -41,8 +41,8 @@ import {
 	encodeBinaryNode,
 	getBinaryNodeChild,
 	getBinaryNodeChildren,
+	jidDecode,
 	jidEncode,
-	jidNormalizedUser,
 	S_WHATSAPP_NET
 } from '../WABinary'
 import { WebSocketClient } from './Client'
@@ -824,10 +824,21 @@ export const makeSocket = (config: SocketConfig) => {
 				try {
 					const myPN = authState.creds.me!.id
 
-					await signalRepository.storeLIDPNMapping(myLID, myPN)
+					// Store our own LID-PN mapping
+					await signalRepository.getLIDMappingStore().storeLIDPNMappings([{ lidUser: myLID, pnUser: myPN }])
+
+					// Create device list for our own user (needed for bulk migration)
+					const { user, device } = jidDecode(myPN)!
+					await authState.keys.set({
+						'device-list': {
+							[user]: [device?.toString() || '0']
+						}
+					})
+
+					// migrate our own session
 					await signalRepository.migrateSession(myPN, myLID)
 
-					logger.info({ myPN: jidNormalizedUser(myPN), myLID: jidNormalizedUser(myLID) }, 'Own LID session created successfully')
+					logger.info({ myPN, myLID }, 'Own LID session created successfully')
 				} catch (error) {
 					logger.error({ error, lid: myLID }, 'Failed to create own LID session')
 				}

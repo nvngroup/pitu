@@ -407,6 +407,7 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 
 		throw new Boom('Invalid group metadata response, missing <group> node', { data: result })
 	}
+
 	const descChild: BinaryNode | undefined = getBinaryNodeChild(group, 'description')
 	let desc: string | undefined
 	let descId: string | undefined

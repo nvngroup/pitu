@@ -6,7 +6,7 @@ import { generateSignalPubKey } from '../Utils'
 import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
-import { transferDevice, FullJid, jidDecode, isLidUser, isHostedLidUser, isPnUser, isHostedPnUser } from '../WABinary'
+import { FullJid, isHostedLidUser, isHostedPnUser, isLidUser, isPnUser, jidDecode, transferDevice } from '../WABinary'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
 import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
@@ -319,7 +319,9 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			toJid: string
 		): Promise<{ migrated: number; skipped: number; total: number }> {
 			// TODO: use usync to handle this entire mess
-			if (!fromJid || (!isLidUser(toJid) && !isHostedLidUser(toJid))) return { migrated: 0, skipped: 0, total: 0 }
+			if (!fromJid || (!isLidUser(toJid) && !isHostedLidUser(toJid))) {
+				return { migrated: 0, skipped: 0, total: 0 }
+			}
 
 			// Only support PN to LID migration
 			if (!isPnUser(fromJid) && !isHostedPnUser(fromJid)) {
@@ -358,7 +360,10 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				if (sessionData) {
 					// Session exists in storage
 					const deviceStr = sessionKey.split('.')[1]
-					if (!deviceStr) continue
+					if (!deviceStr) {
+						continue
+					}
+
 					const deviceNum = parseInt(deviceStr)
 					let jid = deviceNum === 0 ? `${user}@s.whatsapp.net` : `${user}:${deviceNum}@s.whatsapp.net`
 					if (deviceNum === 99) {
@@ -381,7 +386,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 			// Single transaction for all migrations
 			return parsedKeys.transaction(
-				async (): Promise<{ migrated: number; skipped: number; total: number }> => {
+				async(): Promise<{ migrated: number; skipped: number; total: number }> => {
 					// Prepare migration operations with addressing metadata
 					type MigrationOp = {
 						fromJid: string
