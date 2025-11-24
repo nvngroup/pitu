@@ -53,15 +53,31 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return msg
 	}
 
-	const messageRetryManager = enableRecentMessageCache ? new MessageRetryManager(logger, maxMsgRetryCount) : null
+	const messageRetryManager: MessageRetryManager | null = enableRecentMessageCache ? new MessageRetryManager(logger, maxMsgRetryCount) : null
+	const baseEnd = sock.end
+	let resourcesClosed = false
+	const cleanupResources = () => {
+		if (resourcesClosed) {
+			return
+		}
+
+		resourcesClosed = true
+		peerSessionsCache.close()
+		localUserDevicesCache?.close()
+		messageRetryManager?.shutdown()
+	}
 
 	const messageRelayMutex = makeMessageRelayMutex({
 		maxConcurrent: messageRelayMaxConcurrent,
 		maxQueueSize: messageRelayMaxQueueSize
 	})
 
+	const shouldCloseUserDevicesCache: boolean = !config.userDevicesCache
+
 	const userDevicesCache: CacheStore = config.userDevicesCache || CacheManager.getInstance('USER_DEVICES')
-	const peerSessionsCache: CacheStore =	CacheManager.getInstance('PEER_SESSIONS')
+	const peerSessionsCache: CacheStore = CacheManager.getInstance('PEER_SESSIONS')
+
+	const localUserDevicesCache: CacheStore | undefined = shouldCloseUserDevicesCache ? (userDevicesCache as CacheStore) : undefined
 
 	let mediaConn: Promise<MediaConnInfo>
 	const refreshMediaConn = async(forceGet = false) => {
@@ -251,7 +267,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return deviceResults
 	}
 
-	const assertSessions = async(jids: string[], force: boolean) => {
+	const assertSessions = async(jids: string[], force: boolean = false) => {
 		let didFetchNewSession = false
 		let jidsRequiringFetch: string[] = []
 		if (force) {
@@ -1097,8 +1113,14 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 	const waitForMsgMediaUpdate = bindWaitForEvent(ev, 'messages.media-update')
 
+	const end: typeof sock.end = error => {
+		cleanupResources()
+		baseEnd(error)
+	}
+
 	return {
 		...sock,
+		end,
 		getPrivacyTokens,
 		assertSessions,
 		relayMessage,

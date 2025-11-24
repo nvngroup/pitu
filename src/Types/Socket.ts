@@ -16,6 +16,7 @@ export type CacheStore = {
     set<T>(key: string, value: T): void
     del(key: string): void
     flushAll(): void
+    close(): void
 }
 
 export type SocketConfig = {

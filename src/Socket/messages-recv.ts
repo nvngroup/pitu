@@ -49,6 +49,66 @@ import { CacheManager } from './cache-manager'
 import { extractGroupMetadata } from './groups'
 import { makeMessagesSocket } from './messages-send'
 
+export type RetryParticipantResolution = {
+	jid?: string
+	hasDevice: boolean
+	source: string
+}
+
+export const resolveRetryParticipant = (
+	existingParticipant: string | undefined,
+	remoteJid: string,
+	retryNode?: BinaryNode
+): RetryParticipantResolution => {
+	const retryAttrs = retryNode?.attrs || {}
+	const candidates: { jid?: string; source: string }[] = [
+		{ jid: existingParticipant, source: 'receipt.participant' },
+		{ jid: retryAttrs.participant, source: 'retry.participant' },
+		{ jid: retryAttrs.from, source: 'retry.from' },
+		{ jid: retryAttrs.sender, source: 'retry.sender' },
+		{ jid: retryAttrs['device_jid'], source: 'retry.device_jid' },
+		{ jid: retryAttrs.jid, source: 'retry.jid' },
+		{ jid: retryAttrs.author, source: 'retry.author' }
+	]
+
+	const seen = new Set<string>()
+	let fallback: RetryParticipantResolution | undefined
+
+	for (const candidate of candidates) {
+		if (!candidate.jid || seen.has(candidate.jid)) {
+			continue
+		}
+
+		seen.add(candidate.jid)
+
+		if (candidate.jid === remoteJid && isJidGroup(candidate.jid)) {
+			continue
+		}
+
+		const decoded = jidDecode(candidate.jid)
+		const hasDevice = Boolean(decoded?.device)
+
+		if (hasDevice) {
+			return { ...candidate, hasDevice }
+		}
+
+		if (!fallback) {
+			fallback = { ...candidate, hasDevice }
+		}
+	}
+
+	if (!fallback && !isJidGroup(remoteJid)) {
+		const decoded = jidDecode(remoteJid)
+		fallback = {
+			jid: remoteJid,
+			hasDevice: Boolean(decoded?.device),
+			source: 'remoteJid'
+		}
+	}
+
+	return fallback || { hasDevice: false, source: 'unknown' }
+}
+
 export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	const {
 		logger,
@@ -80,12 +140,33 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 	const retryMutex = makeMutex()
 
+	const shouldCloseCallOfferCache: boolean = !config.callOfferCache
+	const shouldClosePlaceholderResendCache: boolean = !config.placeholderResendCache
+	const shouldCloseMsgRetryCache: boolean = !config.msgRetryCounterCache
+
 	const msgRetryCache: CacheStore = config.msgRetryCounterCache || CacheManager.getInstance('MSG_RETRY')
 	const callOfferCache: CacheStore = config.callOfferCache || CacheManager.getInstance('CALL_OFFER')
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
+	const localMsgRetryCache: CacheStore | undefined = shouldCloseMsgRetryCache ? (msgRetryCache as CacheStore) : undefined
+	const localCallOfferCache: CacheStore | undefined = shouldCloseCallOfferCache ? (callOfferCache as CacheStore) : undefined
+	const localPlaceholderResendCache: CacheStore | undefined = shouldClosePlaceholderResendCache ? (placeholderResendCache as CacheStore) : undefined
+
 	// Debounce identity-change session refreshes per JID to avoid bursts
 	const identityAssertDebounce: CacheStore = CacheManager.getInstance('IDENTITY_ASSERT_DEBOUNCE')
+
+	const baseEnd = sock.end
+	let recvResourcesClosed = false
+	const cleanupRecvResources = () => {
+		if (recvResourcesClosed) {
+			return
+		}
+
+		recvResourcesClosed = true
+		localMsgRetryCache?.close()
+		localCallOfferCache?.close()
+		localPlaceholderResendCache?.close()
+	}
 
 	let sendActiveReceipts = false
 
@@ -855,33 +936,66 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		const remoteJid: string = key.remoteJid!
 		const participant: string = key.participant || remoteJid
-		const sendToAll = !jidDecode(participant)?.device
+		// const sendToAll = !jidDecode(participant)?.device
+		const participantResolution: RetryParticipantResolution = resolveRetryParticipant(participant, remoteJid, retryNode)
+		const sendToAll: boolean = !participantResolution.jid
+		const hasDeviceIdentifier: boolean = Boolean(participantResolution.hasDevice)
+		let shouldRecreateSession: boolean = false
 
 		logger.trace({ participant, sendToAll, retryCount: retryNode.attrs.count }, 'preparing to retry message')
 
-		await assertSessions([participant], true)
+		const participantJidForSession = participantResolution.jid || participant
+		await assertSessions([participantJidForSession], true)
 
 		if (isJidGroup(remoteJid)) {
 			await authState.keys.set({ 'sender-key-memory': { [remoteJid]: null } })
 			logger.debug({ remoteJid }, 'cleared sender-key-memory for group')
 		}
 
-		logger.debug({ participant, sendToAll }, 'forced new session for retry recp')
+		logger.debug(
+			{
+				participant,
+				resolvedParticipant: participantResolution.jid,
+				sendToAll,
+				shouldRecreateSession,
+				// recreateReason,
+				hasDeviceIdentifier
+			},
+			'forced new session for retry recp'
+		)
 
 		for (const [i, msg] of msgs.entries()) {
 			if (msg) {
 				updateSendMessageAgainCount(ids[i], participant)
 				const msgRelayOpts: MessageRelayOptions = { messageId: ids[i] }
 
-				if (sendToAll) {
-					msgRelayOpts.useUserDevicesCache = false
-					logger.debug({ id: ids[i] }, 'retrying message to all devices')
-				} else {
+				if (participantResolution.jid) {
 					msgRelayOpts.participant = {
-						jid: participant,
-						count: +retryNode.attrs.count
+						jid: participantResolution.jid,
+						count: +retryNode.attrs.count!
 					}
-					logger.debug({ id: ids[i], participant, count: retryNode.attrs.count }, 'retrying message to specific device')
+
+					if (!hasDeviceIdentifier) {
+						logger.info(
+							{
+								messageId: ids[i],
+								participant: participantResolution.jid,
+								resolutionSource: participantResolution.source
+							},
+							'retry request without device id; targeting participant anyway'
+						)
+					}
+				} else {
+					msgRelayOpts.useUserDevicesCache = false
+					logger.warn(
+						{
+							messageId: ids[i],
+							participant,
+							remoteJid,
+							retryAttrs: retryNode.attrs
+						},
+						'retry request missing participant info; falling back to broadcast resend'
+					)
 				}
 
 				try {
@@ -1463,8 +1577,14 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	})
 
+	const end: typeof sock.end = error => {
+		cleanupRecvResources()
+		baseEnd(error)
+	}
+
 	return {
 		...sock,
+		end,
 		sendMessageAck,
 		sendRetryRequest,
 		offerCall,

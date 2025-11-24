@@ -23,10 +23,11 @@ const SIGNAL_CONSTANTS = {
 } as const
 
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
-	const lidMapping = new LIDMappingStore(auth.keys as SignalKeyStoreWithTransaction, logger)
+	const parsedKeys = auth.keys as SignalKeyStoreWithTransaction
+	const lidMapping = new LIDMappingStore(parsedKeys as SignalKeyStoreWithTransaction, logger)
 	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
 
-	const recentMigrations = new NodeCache({
+	const migratedSessionCache = new NodeCache({
 		stdTTL: SIGNAL_CONSTANTS.MIGRATION_CACHE_TTL,
 		checkperiod: 60,
 		useClones: false,
@@ -82,14 +83,14 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			}
 
 			const lidAddr = jidToSignalProtocolAddress(lidForPN)
-			const { [lidAddr.toString()]: lidSession } = await auth.keys.get('session', [lidAddr.toString()])
+			const { [lidAddr.toString()]: lidSession } = await parsedKeys.get('session', [lidAddr.toString()])
 
 			if (lidSession) {
 				return lidForPN
 			}
 
 			const pnAddr = jidToSignalProtocolAddress(jid)
-			const { [pnAddr.toString()]: pnSession } = await auth.keys.get('session', [pnAddr.toString()])
+			const { [pnAddr.toString()]: pnSession } = await parsedKeys.get('session', [pnAddr.toString()])
 
 			if (pnSession) {
 				await repository.migrateSession(jid, lidForPN)
@@ -119,7 +120,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 						error,
 						async() => {
 							const keyId: string = senderName.toString()
-							await auth.keys.set({ 'sender-key': { [keyId]: null } })
+							await parsedKeys.set({ 'sender-key': { [keyId]: null } })
 						}
 					)
 				}
@@ -137,7 +138,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 			const senderMsg = new SenderKeyDistributionMessage(null, null, null, null, item.axolotlSenderKeyDistributionMessage)
 			const senderNameStr: string = senderName.toString()
-			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
+			const { [senderNameStr]: senderKey } = await parsedKeys.get('sender-key', [senderNameStr])
 			if (!senderKey) {
 				await storage.storeSenderKey(senderName, new SenderKeyRecord())
 			}
@@ -168,7 +169,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 						jid,
 						error,
 						async() => {
-							await auth.keys.set({ 'session': { [addr.toString()]: null } })
+							await parsedKeys.set({ 'session': { [addr.toString()]: null } })
 						}
 					)
 				}
@@ -229,7 +230,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			const senderName: SenderKeyName = jidToSignalSenderKeyName(group, meId)
 			const builder = new GroupSessionBuilder(storage)
 			const senderNameStr: string = senderName.toString()
-			const { [senderNameStr]: senderKey } = await auth.keys.get('sender-key', [senderNameStr])
+			const { [senderNameStr]: senderKey } = await parsedKeys.get('sender-key', [senderNameStr])
 
 			if (!senderKey) {
 				await storage.storeSenderKey(senderName, new SenderKeyRecord())
@@ -312,8 +313,8 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 				const addr = jidToSignalProtocolAddress(jid)
 
-				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
-					await auth.keys.set({ session: { [addr.toString()]: null } })
+				await (parsedKeys as SignalKeyStoreWithTransaction).transaction(async() => {
+					await parsedKeys.set({ session: { [addr.toString()]: null } })
 				})
 
 				sessionValidationCache.del(`validation:${jid}`)
@@ -345,23 +346,23 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				const deviceId: number = fromDecoded.device
 				const migrationKey = `${fromDecoded.user}.${deviceId}→${toDecoded.user}.${deviceId}`
 
-				if (!options.force && recentMigrations.has(migrationKey)) {
+				if (!options.force && migratedSessionCache.has(migrationKey)) {
 					logger.trace({ migrationKey }, 'Migration already processed')
 					return
 				}
 
 				const lidAddr = jidToSignalProtocolAddress(toJid)
-				const { [lidAddr.toString()]: lidExists } = await auth.keys.get('session', [lidAddr.toString()])
+				const { [lidAddr.toString()]: lidExists } = await parsedKeys.get('session', [lidAddr.toString()])
 
 				if (lidExists && !options.force) {
 					logger.trace({ toJid }, 'LID session already exists')
-					recentMigrations.set(migrationKey, true)
+					migratedSessionCache.set(migrationKey, true)
 					return
 				}
 
 				let migrationSuccessful = false
 
-				await (auth.keys as SignalKeyStoreWithTransaction).transaction(async() => {
+				await (parsedKeys as SignalKeyStoreWithTransaction).transaction(async() => {
 					const fromAddr = jidToSignalProtocolAddress(fromJid)
 					const fromSession = await (storage as any).loadSession(fromAddr.toString())
 
@@ -380,14 +381,14 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					const copiedSession = libsignal.SessionRecord.deserialize(sessionBytes)
 
 					await (storage as any).storeSession(lidAddr.toString(), copiedSession)
-					await auth.keys.set({ session: { [fromAddr.toString()]: null } })
+					await parsedKeys.set({ session: { [fromAddr.toString()]: null } })
 
 					migrationSuccessful = true
 					logger.info({ fromJid, toJid }, 'Session migrated successfully')
 				})
 
 				if (migrationSuccessful) {
-					recentMigrations.set(migrationKey, true)
+					migratedSessionCache.set(migrationKey, true)
 					sessionValidationCache.del(`validation:${fromJid}`)
 					sessionValidationCache.del(`validation:${toJid}`)
 				}
@@ -405,7 +406,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 		destroy() {
 			try {
-				recentMigrations.flushAll()
+				migratedSessionCache.flushAll()
 				sessionValidationCache.flushAll()
 
 				logger.trace({}, 'LibSignal repository destroyed and caches cleared')
