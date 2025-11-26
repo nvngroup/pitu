@@ -39,6 +39,7 @@ import {
 	BinaryNode,
 	binaryNodeToString,
 	encodeBinaryNode,
+	getAllBinaryNodeChildren,
 	getBinaryNodeChild,
 	getBinaryNodeChildren,
 	jidDecode,
@@ -847,11 +848,12 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 
 	ws.on('CB:stream:error', (node: BinaryNode) => {
+		const [reasonNode] = getAllBinaryNodeChildren(node)
 		logger.error({ node }, 'stream errored out')
 
 		const { reason, statusCode } = getErrorCodeFromStreamError(node)
 
-		end(new Boom(`Stream Errored (${reason})`, { statusCode, data: node }))
+		end(new Boom(`Stream Errored (${reason})`, { statusCode, data: reasonNode || node }))
 	})
 
 	ws.on('CB:failure', (node: BinaryNode) => {
