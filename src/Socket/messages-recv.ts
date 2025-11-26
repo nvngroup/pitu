@@ -1142,7 +1142,13 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handleMessage = async(node: BinaryNode) => {
+	const handleMessage = async (node: BinaryNode) => {
+		const senderLid: string = node.attrs.from.includes('@lid') ? node.attrs.from : node.attrs.sender_lid || node.attrs.participant_lid
+		const pn: string = node.attrs.from.includes('@s.whatsapp.net') ? node.attrs.from : node.attrs.sender_pn || node.attrs.participant_pn
+		if (senderLid && pn) {
+			await signalRepository.getLIDMappingStore().storeLIDPNMapping(senderLid, pn)
+		}
+
 		if (shouldIgnoreJid(node.attrs.from) && node.attrs.from !== '@s.whatsapp.net') {
 			logger.debug({ key: node.attrs.key }, 'ignored message')
 			await sendMessageAck(node)
@@ -1150,8 +1156,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 
 		let response: string | undefined
+		const encNode: BinaryNode | undefined = getBinaryNodeChild(node, 'enc')
+		const unavailableNode: BinaryNode | undefined = getBinaryNodeChild(node, 'unavailable')
 
-		if (getBinaryNodeChild(node, 'unavailable') && !getBinaryNodeChild(node, 'enc')) {
+		if (unavailableNode && !encNode) {
 			await sendMessageAck(node)
 			const { key } = decodeMessageNode(node, authState.creds.me!.id, authState.creds.me!.lid || '').fullMessage
 			response = await requestPlaceholderResend(key) // TODO: DEPRECATE THIS LOGIC AND PASS IT OFF TO THE RETRY MANAGER
@@ -1202,7 +1210,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						const lid = `${lidValue}@lid`
 
 						await signalRepository.getLIDMappingStore().storeLIDPNMapping(lid, pn)
-						logger.debug(
+						logger.fatal(
 							{
 								pn,
 								lid,
@@ -1369,8 +1377,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 				placeholderResendCache.del(messageKey?.id!)
 			}
 		}, 15_000)
-
-		return sendPeerDataOperationMessage(pdoMessage)
 	}
 
 	const handleCall = async(node: BinaryNode) => {
