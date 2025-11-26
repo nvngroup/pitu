@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
-import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, getAggregateVotesInPollMessage, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey, jidNormalizedUser } from '../src'
+import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey, jidNormalizedUser, extractMessageContent, getContentType, downloadMediaMessage } from '../src'
 import fs from 'fs'
 import logger from '../src/Utils/logger'
 
@@ -123,6 +123,34 @@ const startSock = async () => {
 			if (events['messages.upsert']) {
 				const upsert = events['messages.upsert']
 				logger.info({ upsert }, 'Message upsert event received')
+
+				try {
+					const messages = (upsert as any).messages || []
+					for (const msg of messages) {
+						try {
+							const content = extractMessageContent(msg.message)
+							const ctype = getContentType(content)
+							if (ctype === 'imageMessage' || ctype === 'videoMessage' || ctype === 'audioMessage' || ctype === 'documentMessage') {
+								const buffer = await downloadMediaMessage(msg as any, 'buffer', { options: {} }).catch(err => {
+									logger?.warn({ err, key: msg.key }, 'Failed to download media')
+									return null
+								})
+								if (buffer) {
+									const jidSafe = (msg.key?.remoteJid || 'unknown').replace(/[@:]/g, '_')
+									const id = msg.key?.id || Date.now().toString()
+									const filePath = `Media/${jidSafe}_${id}_image.jpg`
+									await fs.promises.mkdir('Media', { recursive: true })
+									await fs.promises.writeFile(filePath, buffer)
+									logger?.info({ filePath, key: msg.key }, 'Saved image from message')
+								}
+							}
+						} catch (err) {
+							logger?.trace({ err }, 'error processing message for media download')
+						}
+					}
+				} catch (err) {
+					logger?.error({ err }, 'messages.upsert handler failed')
+				}
 
 				if (upsert.type === 'notify') {
 					for (const msg of upsert.messages as any[]) {
