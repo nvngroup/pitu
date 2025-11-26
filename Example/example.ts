@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import readline from 'readline'
 import { randomBytes } from 'crypto'
-import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestBaileysVersion, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey, jidNormalizedUser, extractMessageContent, getContentType, downloadMediaMessage } from '../src'
+import makeWASocket, { AnyMessageContent, BinaryInfo, delay, DisconnectReason, encodeWAM, fetchLatestWaWebVersion, isJidNewsletter, makeCacheableSignalKeyStore, waproto, useMultiFileAuthState, WAMessageContent, WAMessageKey, jidNormalizedUser, extractMessageContent, getContentType, downloadMediaMessage, printQRIfNecessaryListener } from '../src'
 import fs from 'fs'
 import logger from '../src/Utils/logger'
 
@@ -10,7 +10,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const question = (text: string) => new Promise<string>((resolve) => rl.question(text, resolve))
 const startSock = async () => {
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info')
-	const { version, isLatest } = await fetchLatestBaileysVersion()
+	const { version, isLatest } = await fetchLatestWaWebVersion()
 	logger.info({ version, isLatest }, 'using WA version')
 	const sock = makeWASocket({
 		version,
@@ -59,6 +59,17 @@ const startSock = async () => {
 					if ((lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut) {
 						startSock()
 					} else {
+						// remove stored credentials for this connection since we're logged out
+						try {
+							await fs.promises.unlink('baileys_auth_info/creds.json')
+							logger.info({ path: 'baileys_auth_info/creds.json' }, 'Removed creds.json due to logout')
+						} catch (err: any) {
+							if (err && err.code === 'ENOENT') {
+								logger.info({ path: 'baileys_auth_info/creds.json' }, 'creds.json not found during logout cleanup')
+							} else {
+								logger.warn({ err }, 'Failed to remove creds.json during logout cleanup')
+							}
+						}
 						logger.info({}, 'Connection closed. You are logged out.')
 					}
 				}
@@ -87,6 +98,7 @@ const startSock = async () => {
 
 
 				if (update.qr) {
+					printQRIfNecessaryListener(sock.ev, logger)
 					const website: string = "https://quickchart.io/qr?text=" + encodeURIComponent(update.qr)
 					logger.info({ website }, 'QR code received, open in browser:')
 				}

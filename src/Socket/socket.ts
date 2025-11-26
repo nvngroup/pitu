@@ -430,8 +430,8 @@ export const makeSocket = (config: SocketConfig) => {
 			const preKeyCount = await getAvailablePreKeysOnServer()
 			const { exists: currentPreKeyExists, currentPreKeyId } = await verifyCurrentPreKeyExists()
 
-			logger.info({ preKeyCount }, `${preKeyCount} pre-keys found on server`)
-			logger.info({ currentPreKeyId, currentPreKeyExists }, `Current prekey ID: ${currentPreKeyId}, exists in storage: ${currentPreKeyExists}`)
+			logger.debug({ preKeyCount }, `${preKeyCount} pre-keys found on server`)
+			logger.debug({ currentPreKeyId, currentPreKeyExists }, `Current prekey ID: ${currentPreKeyId}, exists in storage: ${currentPreKeyExists}`)
 
 			const lowServerCount = preKeyCount <= MIN_PREKEY_COUNT
 			const missingCurrentPreKey = !currentPreKeyExists && currentPreKeyId > 0
@@ -448,10 +448,10 @@ export const makeSocket = (config: SocketConfig) => {
 					reasons.push(`current prekey ${currentPreKeyId} missing from storage`)
 				}
 
-				logger.info({ reasons }, `Uploading PreKeys due to: ${reasons.join(', ')}`)
+				logger.debug({ reasons }, `Uploading PreKeys due to: ${reasons.join(', ')}`)
 				await uploadPreKeys()
 			} else {
-				logger.info({ preKeyCount, currentPreKeyId }, `PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
+				logger.debug({ preKeyCount, currentPreKeyId }, `PreKey validation passed - Server: ${preKeyCount}, Current prekey ${currentPreKeyId} exists`)
 			}
 		} catch (error) {
 			logger.error({ error }, 'Failed to check/upload pre-keys during initialization')
@@ -839,7 +839,7 @@ export const makeSocket = (config: SocketConfig) => {
 					// migrate our own session
 					await signalRepository.migrateSession(myPN, myLID)
 
-					logger.info({ myPN, myLID }, 'Own LID session created successfully')
+					logger.debug({ myPN, myLID }, 'Own LID session created successfully')
 				} catch (error) {
 					logger.error({ error, lid: myLID }, 'Failed to create own LID session')
 				}
