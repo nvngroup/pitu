@@ -60,7 +60,7 @@ yarn add github:brunocgc/Pitu
 Then import the default function in your code:
 
 ```ts
-import makeWASocket from 'Pitu'
+import makeWASocket from '@nvngroup/pitu'
 ```
 
 # Links
@@ -189,7 +189,7 @@ WhatsApp provides a multi-device API that allows Pitu to be authenticated as a s
 > You can customize browser name if you connect with **QR-CODE**, with `Browser` constant, we have some browsers config, **see [here](https://Pitu.whiskeysockets.io/types/BrowsersMap.html)**
 
 ```ts
-import makeWASocket from 'Pitu'
+import makeWASocket from '@nvngroup/pitu'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -208,7 +208,7 @@ If the connection is successful, you will see a QR code printed on your terminal
 The phone number can't have `+` or `()` or `-`, only numbers, you must provide country code
 
 ```ts
-import makeWASocket from 'Pitu'
+import makeWASocket from '@nvngroup/pitu'
 
 const sock = makeWASocket({
     // can provide additional config here
@@ -288,7 +288,7 @@ You obviously don't want to keep scanning the QR code every time you want to con
 So, you can load the credentials to log back in:
 
 ```ts
-import makeWASocket, { useMultiFileAuthState } from 'Pitu'
+import makeWASocket, { useMultiFileAuthState } from '@nvngroup/pitu'
 
 const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
 
@@ -329,7 +329,7 @@ sock.ev.on('messages.upsert', ({ messages }) => {
 > This example includes basic auth storage too
 
 ```ts
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from 'Pitu'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@nvngroup/pitu'
 import { Boom } from '@hapi/boom'
 
 async function connectToWhatsApp () {
@@ -735,7 +735,7 @@ If you want to save the media you received
 
 ```ts
 import { createWriteStream } from 'fs'
-import { downloadMediaMessage, getContentType } from 'Pitu'
+import { downloadMediaMessage, getContentType } from '@nvngroup/pitu'
 
 sock.ev.on('messages.upsert', async ({ [m] }) => {
     if (!m.message) return // if there is no text or media message

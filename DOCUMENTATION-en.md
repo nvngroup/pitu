@@ -497,7 +497,7 @@ Authentication and session management are fundamental to ensure your application
 #### Basic connection example
 
 ```ts
-import makeWASocket from 'Pitu'
+import makeWASocket from '@nvngroup/pitu'
 
 const sock = makeWASocket({
     printQRInTerminal: true // Shows the QR Code in the terminal for authentication
@@ -509,7 +509,7 @@ const sock = makeWASocket({
 To avoid the need for manual authentication every time, use the `useMultiFileAuthState` utility to save and restore credentials:
 
 ```ts
-import makeWASocket, { useMultiFileAuthState } from 'Pitu'
+import makeWASocket, { useMultiFileAuthState } from '@nvngroup/pitu'
 
 async function startSocket() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
@@ -1292,7 +1292,7 @@ Pitu Socket utilities are helper functions that facilitate integration, maintena
 - **useMultiFileAuthState**: Allows saving and restoring authentication state in multiple files, ideal for persistent bots and applications.
 
   ```ts
-  import { useMultiFileAuthState } from 'Pitu'
+  import { useMultiFileAuthState } from '@nvngroup/pitu'
   const { state, saveCreds } = await useMultiFileAuthState('auth_info_Pitu')
   // Pass 'state' to makeWASocket and save credentials on 'creds.update' event
   ```
@@ -1305,7 +1305,7 @@ Pitu Socket utilities are helper functions that facilitate integration, maintena
 - **captureEventStream / readAndEmitEventStream**: Record and replay event streams for debugging, testing, or scenario replication.
 
   ```ts
-  import { captureEventStream, readAndEmitEventStream } from 'Pitu'
+  import { captureEventStream, readAndEmitEventStream } from '@nvngroup/pitu'
   captureEventStream(sock.ev, 'events.log')
   // ... later
   const ev = readAndEmitEventStream('events.log', 100)
@@ -1319,7 +1319,7 @@ Pitu Socket utilities are helper functions that facilitate integration, maintena
 - **processMessage / decodeWAMessage**: Help process and decode received messages.
 
   ```ts
-  import { downloadMediaMessage } from 'Pitu'
+  import { downloadMediaMessage } from '@nvngroup/pitu'
   const buffer = await downloadMediaMessage(msg, 'buffer', {})
   ```
 
@@ -1351,7 +1351,7 @@ Pitu Socket utilities are helper functions that facilitate integration, maintena
 #### Downloading received media
 
 ```ts
-import { downloadMediaMessage } from 'Pitu'
+import { downloadMediaMessage } from '@nvngroup/pitu'
 const buffer = await downloadMediaMessage(msg, 'buffer', { })
 // Save or process the buffer as needed
 ```
@@ -1359,7 +1359,7 @@ const buffer = await downloadMediaMessage(msg, 'buffer', { })
 #### Session persistence
 
 ```ts
-import { useMultiFileAuthState } from 'Pitu'
+import { useMultiFileAuthState } from '@nvngroup/pitu'
 const { state, saveCreds } = await useMultiFileAuthState('auth')
 const sock = makeWASocket({ auth: state })
 sock.ev.on('creds.update', saveCreds)
@@ -1378,7 +1378,7 @@ const sock = makeWASocket({
 #### Event buffering
 
 ```ts
-import { makeEventBuffer } from 'Pitu'
+import { makeEventBuffer } from '@nvngroup/pitu'
 const ev = makeEventBuffer(logger)
 ev.buffer()
 // ...batch processing
