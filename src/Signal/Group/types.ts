@@ -1,9 +1,18 @@
+import * as libsignal from 'libsignal'
 import { SenderKeyName } from './sender-key-name'
 import { SenderKeyRecord } from './sender-key-record'
 
 export interface SenderKeyStore {
   loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
-  storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord): Promise<void>
+		storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord): Promise<void>
+	loadSession(id: string): Promise<unknown>
+	storeSession(id: string, record: libsignal.SessionRecord): Promise<void>
+	isTrustedIdentity(): boolean
+	loadPreKey(keyId: number | string): Promise<{ privKey: Buffer; pubKey: Buffer } | undefined>
+	removePreKey(keyId: number): Promise<void>
+	loadSignedPreKey(): { privKey: Buffer; pubKey: Buffer }
+	getOurRegistrationId(): number
+	getOurIdentity(): { privKey: Buffer; pubKey: Buffer }
 }
 
 export const GROUP_CONSTANTS = {

@@ -69,6 +69,7 @@ export type WABusinessProfile = {
 export type CurveKeyPair = { private: Uint8Array, public: Uint8Array }
 
 export type FetchRequestInit = RequestInit & {
-    dispatcher?: any
+    dispatcher?: unknown
+    maxContentLength?: number
 }
 export type FetchHeadersInit = HeadersInit

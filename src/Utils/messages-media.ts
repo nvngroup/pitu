@@ -345,14 +345,14 @@ export async function generateThumbnail(
 }
 
 export const getHttpStream = async(url: string | URL, options: FetchRequestInit & { isStream?: true } = {}): Promise<Readable> => {
-	const { dispatcher, headers, ...restOptions } = options
+	const { headers, dispatcher, ...restOptions } = options
 
 	const response = await fetch(url.toString(), {
 		method: 'GET',
 		headers: headers,
 		dispatcher,
 		...restOptions
-	} as any)
+	} as Parameters<typeof fetch>[1])
 
 	if (!response.ok) {
 		throw new Boom(`Failed to fetch stream from ${url}`, { statusCode: response.status, data: { url } })
@@ -421,8 +421,8 @@ export const encryptedStream = async(
 
 			if (
 				type === 'remote' &&
-				(opts as any)?.maxContentLength &&
-				fileLength + data.length > (opts as any).maxContentLength
+				opts?.maxContentLength &&
+				fileLength + data.length > opts.maxContentLength
 			) {
 				throw new Boom(
 					`content length exceeded when encrypting "${type}"`,
@@ -746,7 +746,7 @@ export const getWAUploadToServer = (
 				const stream = createReadStream(filePath)
 				const response = await fetch(url, {
 					method: 'POST',
-					body: stream as any,
+					body: stream,
 					headers: {
 						...(() => {
 							const hdrs = options?.headers
@@ -763,7 +763,7 @@ export const getWAUploadToServer = (
 					// Note: custom agents/proxy require undici Agent; omitted here.
 					signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined
 				})
-				let parsed: any = undefined
+				let parsed: unknown = undefined
 				try {
 					parsed = await response.json()
 				} catch {
@@ -771,7 +771,6 @@ export const getWAUploadToServer = (
 				}
 
 				result = parsed
-
 				if (result?.url || result?.directPath) {
 					urls = {
 						mediaUrl: result.url,
@@ -785,12 +784,17 @@ export const getWAUploadToServer = (
 					uploadInfo = await refreshMediaConn(true)
 					throw new Error(`upload failed, reason: ${JSON.stringify(result)}`)
 				}
-			} catch (error: any) {
-				const isLast = hostname === hosts[uploadInfo.hosts.length - 1]?.hostname
-				logger.warn(
-					{ trace: error?.stack, uploadResult: result },
-					`Error in uploading to ${hostname} ${isLast ? '' : ', retrying...'}`
-				)
+			} catch (error) {
+				if (error instanceof Boom) {
+					logger?.error({ error }, 'Boom error occurred')
+					throw error
+				} else if (error instanceof Error) {
+					logger?.error({ error }, 'An unexpected error occurred')
+					throw new Boom(error.message, { data: error })
+				} else {
+					logger?.error({ error }, 'Unknown error occurred')
+					throw new Boom('Unknown error', { data: error })
+				}
 			}
 		}
 

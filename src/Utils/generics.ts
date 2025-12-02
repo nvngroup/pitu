@@ -34,18 +34,18 @@ export const getPlatformId = (browser: string) => {
 }
 
 export const BufferJSON = {
-	replacer: (k, value: any) => {
-		if (Buffer.isBuffer(value) || value instanceof Uint8Array || value?.type === 'Buffer') {
-			return { type: 'Buffer', data: Buffer.from(value?.data || value).toString('base64') }
+	replacer: (_k: string, value: unknown) => {
+		if (Buffer.isBuffer(value) || value instanceof Uint8Array || (value && typeof value === 'object' && 'type' in value && value.type === 'Buffer')) {
+			return { type: 'Buffer', data: Buffer.from((value && typeof value === 'object' && 'data' in value ? value.data : value) as Buffer | Uint8Array).toString('base64') }
 		}
 
 		return value
 	},
 
-	reviver: (_, value: any) => {
-		if (typeof value === 'object' && !!value && (value.buffer === true || value.type === 'Buffer')) {
-			const val = value.data || value.value
-			return typeof val === 'string' ? Buffer.from(val, 'base64') : Buffer.from(val || [])
+	reviver: (_: string, value: unknown) => {
+		if (typeof value === 'object' && !!value && ('buffer' in value && value.buffer === true || 'type' in value && value.type === 'Buffer')) {
+			const val: unknown = ('data' in value ? value.data : 'value' in value ? value.value : undefined)
+			return typeof val === 'string' ? Buffer.from(val, 'base64') : Buffer.from((val as number[]) || [])
 		}
 
 		return value
@@ -315,7 +315,7 @@ export const fetchLatestBaileysVersion = async(options: FetchRequestInit = {}) =
 			dispatcher: options.dispatcher,
 			method: 'GET',
 			...options,
-		} as any)
+		} as Parameters<typeof fetch>[1])
 
 		if (!result.ok) {
 			throw new Error(`Failed to fetch: ${result.statusText}`)
@@ -354,7 +354,7 @@ export const fetchLatestWaWebVersion = async(options: FetchRequestInit = {}) => 
 			...options,
 			method: 'GET',
 			headers
-		} as any)
+		} as Parameters<typeof fetch>[1])
 
 		if (!response.ok) {
 			throw new Boom(`Failed to fetch sw.js: ${response.statusText}`, { statusCode: response.status })
@@ -477,7 +477,7 @@ export const getCodeFromWSError = (error: Error) => {
 			statusCode = code
 		}
 	} else if (
-		(error as any)?.code?.startsWith('E')
+		(error && 'code' in error && typeof error.code === 'string' && error.code.startsWith('E'))
 		|| error?.message?.includes('timed out')
 	) {
 		statusCode = 408
@@ -494,7 +494,7 @@ export const isWABusinessPlatform = (platform: string) => {
 	return platform === 'smbi' || platform === 'smba'
 }
 
-export function trimUndefined(obj: {[_: string]: any}) {
+export function trimUndefined<T extends object>(obj: T): T {
 	for (const key in obj) {
 		if (typeof obj[key] === 'undefined') {
 			delete obj[key]

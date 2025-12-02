@@ -22,8 +22,7 @@ export const enhancedDownloadEncryptedContent = async(
 
 		const response = await fetch(downloadUrl, {
 			...options.options,
-			// Garante que não falhe por timeouts padrão se o arquivo for grande
-		} as any)
+		}	as Parameters<typeof fetch>[1])
 
 		if (!response.ok) {
 			throw new Error(`Falha ao baixar o conteúdo: ${response.status}`)

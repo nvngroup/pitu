@@ -1053,7 +1053,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 			)
 
 			try {
-				await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidMappingsToStore)
+				await signalRepository.lidMapping.storeLIDPNMappings(lidMappingsToStore)
 			} catch (error) {
 				logger.error(
 					{ error, count: lidMappingsToStore.length },

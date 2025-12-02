@@ -151,7 +151,7 @@ export class BadMACRecoveryManager {
 		logger.info({ jid }, 'Starting comprehensive 1:1 session recovery for Bad MAC error')
 
 		if (jid.includes('@s.whatsapp.net')) {
-			const lidForPN: string | null = await repository.getLIDMappingStore().getLIDForPN(jid)
+			const lidForPN: string | null = await repository.lidMapping.getLIDForPN(jid)
 
 			if (lidForPN?.includes('@lid')) {
 				const pnAddr: string = repository.jidToSignalProtocolAddress(jid)

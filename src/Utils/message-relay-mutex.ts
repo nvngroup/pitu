@@ -9,9 +9,9 @@ export const makeMessageRelayMutex = (config: MessageRelayMutexConfig = {}) => {
 
 	let activeCount = 0
 	const queue: Array<{
-		task: () => Promise<any>
-		resolve: (value: any) => void
-		reject: (error: any) => void
+		task: () => Promise<unknown>
+		resolve: (value: unknown) => void
+		reject: (error: unknown) => void
 	}> = []
 
 	const processNext = () => {
@@ -43,7 +43,7 @@ export const makeMessageRelayMutex = (config: MessageRelayMutexConfig = {}) => {
 
 			return new Promise<T>((resolve, reject) => {
 				queue.push({
-					task: task as () => Promise<any>,
+					task: task as () => Promise<T>,
 					resolve,
 					reject
 				})

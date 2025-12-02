@@ -78,8 +78,8 @@ export const makeEventBuffer = (logger: ILogger): BaileysBufferableEventEmitter 
 			}
 		},
 		emit<T extends BaileysEvent>(event: BaileysEvent, evData: BaileysEventMap[T]) {
-			if (isBuffering && BUFFERABLE_EVENT_SET.has(event)) {
-				append(data, historyCache, event as BufferableEvent, evData, logger)
+			if (isBuffering && BUFFERABLE_EVENT_SET.has(event as BufferableEvent)) {
+				append(data, historyCache, event as BufferableEvent, evData as BaileysEventMap[BufferableEvent], logger)
 				return true
 			}
 
@@ -131,12 +131,13 @@ function append<E extends BufferableEvent>(
 	data: BufferedEventData,
 	historyCache: Set<string>,
 	event: E,
-	eventData: any,
+	eventData: BaileysEventMap[E],
 	logger: ILogger
 ) {
 	switch (event) {
 	case 'messaging-history.set':
-		for (const chat of eventData.chats as Chat[]) {
+		const messagingHistorySet = eventData as BaileysEventMap['messaging-history.set']
+		for (const chat of messagingHistorySet.chats) {
 			const existingChat: Chat = data.historySets.chats[chat.id]
 			if (existingChat) {
 				existingChat.endOfHistoryTransferType = chat.endOfHistoryTransferType
@@ -150,7 +151,7 @@ function append<E extends BufferableEvent>(
 			}
 		}
 
-		for (const contact of eventData.contacts as Contact[]) {
+		for (const contact of messagingHistorySet.contacts) {
 			const existingContact: Contact = data.historySets.contacts[contact.id]
 			if (existingContact) {
 				Object.assign(existingContact, trimUndefined(contact))
@@ -164,7 +165,7 @@ function append<E extends BufferableEvent>(
 			}
 		}
 
-		for (const message of eventData.messages as WAMessage[]) {
+		for (const message of messagingHistorySet.messages) {
 			const key: string = stringifyMessageKey(message.key)
 			const existingMsg: WAMessage = data.historySets.messages[key]
 			if (!existingMsg && !historyCache.has(key)) {
@@ -174,10 +175,10 @@ function append<E extends BufferableEvent>(
 		}
 
 		data.historySets.empty = false
-		data.historySets.syncType = eventData.syncType
-		data.historySets.progress = eventData.progress
-		data.historySets.peerDataRequestSessionId = eventData.peerDataRequestSessionId
-		data.historySets.isLatest = eventData.isLatest || data.historySets.isLatest
+		data.historySets.syncType = messagingHistorySet.syncType
+		data.historySets.progress = messagingHistorySet.progress
+		data.historySets.peerDataRequestSessionId = typeof messagingHistorySet.peerDataRequestSessionId === 'string' ? messagingHistorySet.peerDataRequestSessionId : undefined
+		data.historySets.isLatest = messagingHistorySet.isLatest || data.historySets.isLatest
 
 		break
 	case 'chats.upsert':
@@ -375,7 +376,7 @@ function append<E extends BufferableEvent>(
 				updateMessageWithReaction(existing.message, reaction)
 			} else {
 				data.messageReactions[keyStr] = data.messageReactions[keyStr]
-					|| { key, reactions: [] }
+						|| { key, reactions: [] }
 				updateMessageWithReaction(data.messageReactions[keyStr], reaction)
 			}
 		}
@@ -390,7 +391,7 @@ function append<E extends BufferableEvent>(
 				updateMessageWithReceipt(existing.message, receipt)
 			} else {
 				data.messageReceipts[keyStr] = data.messageReceipts[keyStr]
-					|| { key, userReceipt: [] }
+						|| { key, userReceipt: [] }
 				updateMessageWithReceipt(data.messageReceipts[keyStr], receipt)
 			}
 		}

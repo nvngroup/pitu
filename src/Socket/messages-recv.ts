@@ -274,7 +274,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		case 'update':
 			const settingsNode: BinaryNode | undefined = getBinaryNodeChild(child, 'settings')
 			if (settingsNode) {
-				const update: Record<string, any> = {}
+				const update: Record<string, unknown> = {}
 				const nameNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'name')
 				if (nameNode?.content) {
 					update.name = nameNode.content.toString()
@@ -684,7 +684,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	}
 
 	const processNotification = async(node: BinaryNode) => {
-		const result: Partial<waproto.IWebMessageInfo> = {}
+		const result: Partial<WAMessage> = {}
 		const [child] = getAllBinaryNodeChildren(node)
 		const nodeType: string = node.attrs.type
 		const from: string = jidNormalizedUser(node.attrs.from)
@@ -846,7 +846,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const from: string = jidNormalizedUser(node.attrs.from)
 		let lidForPN: string | null = null
 		try {
-			lidForPN = await signalRepository.getLIDMappingStore().getLIDForPN(from)
+			lidForPN = await signalRepository.lidMapping.getLIDForPN(from)
 		} catch (error) {
 			logger.warn({ error, jid: from }, 'Failed to get lid for PN in handlePrivacyTokenNotification.')
 		}
@@ -1146,7 +1146,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		const senderLid: string = node.attrs.from.includes('@lid') ? node.attrs.from : node.attrs.sender_lid || node.attrs.participant_lid
 		const pn: string = node.attrs.from.includes('@s.whatsapp.net') ? node.attrs.from : node.attrs.sender_pn || node.attrs.participant_pn
 		if (senderLid && pn) {
-			await signalRepository.getLIDMappingStore().storeLIDPNMapping(senderLid, pn)
+			await signalRepository.lidMapping.storeLIDPNMapping(senderLid, pn)
 		}
 
 		if (shouldIgnoreJid(node.attrs.from) && node.attrs.from !== '@s.whatsapp.net') {
@@ -1209,7 +1209,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						const lidValue: number | Long = mapping.latestLid || mapping.assignedLid
 						const lid = `${lidValue}@lid`
 
-						await signalRepository.getLIDMappingStore().storeLIDPNMapping(lid, pn)
+						await signalRepository.lidMapping.storeLIDPNMapping(lid, pn)
 						logger.fatal(
 							{
 								pn,

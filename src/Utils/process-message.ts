@@ -270,7 +270,7 @@ const processMessage = async(
 						)
 
 						try {
-							await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidMappingsToStore)
+							await signalRepository.lidMapping.storeLIDPNMappings(lidMappingsToStore)
 						} catch (error) {
 							logger?.error(
 								{ error, count: lidMappingsToStore.length },
@@ -282,6 +282,10 @@ const processMessage = async(
 
 				ev.emit('messaging-history.set', {
 					...data,
+					messages: data.messages.map((msg) => ({
+						...msg,
+						messageStubParameters: msg.messageStubParameters ?? undefined
+					})),
 					isLatest:
 						histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND
 							? isLatest
@@ -402,7 +406,7 @@ const processMessage = async(
 				// all jids need to be PN
 				const eventCreatorKey: string = creationMsgKey.participant || creationMsgKey.remoteJid!
 				const eventCreatorPn = isLidUser(eventCreatorKey)
-					? await signalRepository.getLIDMappingStore().getPNForLID(eventCreatorKey)
+					? await signalRepository.lidMapping.getPNForLID(eventCreatorKey)
 					: eventCreatorKey
 				const eventCreatorJid: string = getKeyAuthor(
 					{ remoteJid: jidNormalizedUser(eventCreatorPn!), fromMe: meIdNormalised === eventCreatorPn },

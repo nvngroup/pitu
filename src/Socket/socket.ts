@@ -826,7 +826,7 @@ export const makeSocket = (config: SocketConfig) => {
 					const myPN = authState.creds.me!.id
 
 					// Store our own LID-PN mapping
-					await signalRepository.getLIDMappingStore().storeLIDPNMappings([{ lidUser: myLID, pnUser: myPN }])
+					await signalRepository.lidMapping.storeLIDPNMappings([{ lidUser: myLID, pnUser: myPN }])
 
 					// Create device list for our own user (needed for bulk migration)
 					const { user, device } = jidDecode(myPN)!

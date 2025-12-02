@@ -23,7 +23,7 @@ export type WAMessageKey = waproto.IMessageKey & {
 }
 export type WAMessage = waproto.IWebMessageInfo & {
     key: WAMessageKey
-    messageStubParameters?: any
+    messageStubParameters?: string[]
     category?: string
     retryCount?: number
 }

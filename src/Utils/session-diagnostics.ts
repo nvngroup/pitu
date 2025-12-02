@@ -277,7 +277,7 @@ export class SessionDiagnostics {
 	 */
 	private async clearLIDMapping(jid: string, repository: SignalRepository): Promise<void> {
 		try {
-			const lidForPN: string | null = await repository.getLIDMappingStore().getLIDForPN(jid)
+			const lidForPN: string | null = await repository.lidMapping.getLIDForPN(jid)
 
 			if (lidForPN) {
 				logger.debug({ jid, lidForPN }, 'LID mapping found but clearing not implemented in current SignalRepository interface')

@@ -25,7 +25,7 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	}
 
 	const normalizedSender: string = jidNormalizedUser(sender)
-	const lidForPN: string | null = await repository.getLIDMappingStore().getLIDForPN(normalizedSender)
+	const lidForPN: string | null = await repository.lidMapping.getLIDForPN(normalizedSender)
 
 	if (lidForPN?.includes('@lid')) {
 		const senderDecoded: FullJid | undefined = jidDecode(sender)
@@ -48,7 +48,7 @@ const storeMappingFromEnvelope = async(
 
 	if (senderAlt && isLidUser(senderAlt) && isPnUser(sender) && decryptionJid === sender) {
 		try {
-			await repository.getLIDMappingStore().storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
+			await repository.lidMapping.storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
 			await repository.migrateSession(sender, senderAlt)
 			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
 		} catch (error) {
@@ -63,7 +63,7 @@ const processMessageContent = async(
 	sender: string,
 	author: string,
 	repository: SignalRepository,
-	stanza: any,
+	stanza: BinaryNode,
 	logger: ILogger
 ): Promise<{ processed: boolean }> => {
 	const { tag, attrs, content } = item

@@ -1,11 +1,11 @@
 export const makeMutex = () => {
-	let task = Promise.resolve() as Promise<any>
+	let task: Promise<unknown> = Promise.resolve()
 
 	let taskTimeout: NodeJS.Timeout | undefined
 
 	return {
 		mutex<T>(code: () => Promise<T> | T): Promise<T> {
-			task = (async() => {
+			const newTask = (async() => {
 				try {
 					await task
 				} catch { }
@@ -17,7 +17,8 @@ export const makeMutex = () => {
 					clearTimeout(taskTimeout)
 				}
 			})()
-			return task
+			task = newTask
+			return newTask
 		},
 	}
 }

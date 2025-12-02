@@ -1,7 +1,7 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
-import { AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
+import { AlbumMedia, AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
 import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
@@ -233,7 +233,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const lidResults: USyncQueryResultList[] = result.list.filter(a => !!a.lid)
 				if (lidResults.length > 0) {
 					logger.trace({}, 'Storing LID maps from device call')
-					await signalRepository.getLIDMappingStore().storeLIDPNMappings(lidResults.map(a => ({ lidUser: a.lid as string, pnUser: a.id })))
+					await signalRepository.lidMapping.storeLIDPNMappings(lidResults.map(a => ({ lidUser: a.lid as string, pnUser: a.id })))
 
 					// Force-refresh sessions for newly mapped LIDs to align identity addressing
 					try {
@@ -346,7 +346,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 
 		if (jidsRequiringFetch.length) {
-			const lidMappings = await signalRepository.getLIDMappingStore().getLIDsForPNs(
+			const lidMappings = await signalRepository.lidMapping.getLIDsForPNs(
 				jidsRequiringFetch.filter(jid => !!isPnUser(jid) || !!isHostedPnUser(jid))
 			) || []
 
@@ -606,7 +606,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		if (!isGroup && !isStatus && !isLid && (isPnUser(jid) || isHostedPnUser(jid))) {
 			try {
 				// First, try to get LID mapping from store
-				const lidMappings = await signalRepository.getLIDMappingStore().getLIDsForPNs([jid])
+				const lidMappings = await signalRepository.lidMapping.getLIDsForPNs([jid])
 				if (lidMappings && lidMappings.length > 0 && lidMappings[0].lidUser) {
 					const potentialLid = lidMappings[0].lidUser
 
@@ -1618,9 +1618,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 					// Send each media with association to album
 					for (let i = 0; i < medias.length; i++) {
-						const media = medias[i]
+						const media: AlbumMedia = medias[i]
 
-						const mediaMsg = await generateWAMessage(jid, media as any, {
+						const mediaMsg = await generateWAMessage(jid, media, {
 							logger,
 							userJid,
 							getUrlInfo: text => getUrlInfo(text, {

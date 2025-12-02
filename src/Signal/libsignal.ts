@@ -23,7 +23,7 @@ const SIGNAL_CONSTANTS = {
 export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository {
 	const parsedKeys = auth.keys as SignalKeyStoreWithTransaction
 	const lidMapping = new LIDMappingStore(parsedKeys, logger)
-	const storage: SenderKeyStore & Record<string, unknown> = signalStorage(auth, lidMapping)
+	const storage: SenderKeyStore = signalStorage(auth, lidMapping)
 
 	const migratedSessionCache: CacheStore = CacheManager.getInstance('SESSION_MIGRATION_CACHE')
 	const sessionValidationCache: CacheStore = CacheManager.getInstance('SESSION_VALIDATION_CACHE')
@@ -249,6 +249,9 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 		getLIDMappingStore() {
 			return lidMapping
 		},
+
+		// Optimized direct access to LID mapping store
+		lidMapping,
 
 		async validateSession(jid: string): Promise<SessionValidationResult> {
 			try {
@@ -491,47 +494,45 @@ const jidToSignalSenderKeyName = (group: string, user: string): SenderKeyName =>
 	return new SenderKeyName(group, jidToSignalProtocolAddress(user))
 }
 
-function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingStore): SenderKeyStore & Record<string, unknown> {
+function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingStore): SenderKeyStore {
 	/**
 	 * Enhanced session loading with LID preference
 	 */
-	const loadSessionWithLIDPreference = async(id: string): Promise<any> => {
-		try {
-			let actualId: string = id
+	return {
+		loadSession: async(id: string): Promise<unknown> => {
+			try {
+				let actualId: string = id
 
-			if (id.includes('.') && !id.includes('_1')) {
-				const parts: string[] = id.split('.')
-				const device: string = parts[1] || '0'
-				const pnJid: string = device === '0'
-					? `${parts[0]}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
-					: `${parts[0]}:${device}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
+				if (id.includes('.') && !id.includes('_1')) {
+					const parts: string[] = id.split('.')
+					const device: string = parts[1] || '0'
+					const pnJid: string = device === '0'
+						? `${parts[0]}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
+						: `${parts[0]}:${device}${SIGNAL_CONSTANTS.WHATSAPP_DOMAIN}`
 
-				const lidForPN: string | null = await lidMapping.getLIDForPN(pnJid)
-				if (lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
-					const lidAddr = jidToSignalProtocolAddress(lidForPN)
-					const lidId = lidAddr.toString()
+					const lidForPN: string | null = await lidMapping.getLIDForPN(pnJid)
+					if (lidForPN?.includes(SIGNAL_CONSTANTS.LID_DOMAIN)) {
+						const lidAddr = jidToSignalProtocolAddress(lidForPN)
+						const lidId = lidAddr.toString()
 
-					const { [lidId]: lidSession } = await keys.get('session', [lidId])
-					if (lidSession) {
-						actualId = lidId
+						const { [lidId]: lidSession } = await keys.get('session', [lidId])
+						if (lidSession) {
+							actualId = lidId
+						}
 					}
 				}
+
+				const { [actualId]: sess } = await keys.get('session', [actualId])
+				if (sess) {
+					return libsignal.SessionRecord.deserialize(sess)
+				}
+
+				return null
+			} catch (error) {
+				logger.error({ error, id }, 'Failed to load session')
+				return null
 			}
-
-			const { [actualId]: sess } = await keys.get('session', [actualId])
-			if (sess) {
-				return libsignal.SessionRecord.deserialize(sess)
-			}
-
-			return null
-		} catch (error) {
-			logger.error({ error, id }, 'Failed to load session')
-			return null
-		}
-	}
-
-	return {
-		loadSession: loadSessionWithLIDPreference,
+		},
 
 		storeSession: async(id: string, session: libsignal.SessionRecord): Promise<void> => {
 			try {
