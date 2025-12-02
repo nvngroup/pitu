@@ -74,7 +74,6 @@ export default defineConfig([globalIgnores([
   quotes: [2, "single", {
    avoidEscape: true,
   }],
-
   "object-curly-spacing": ["error", "always"],
   "space-in-parens": ["error", "never"],
   curly: [2, "all"],
@@ -82,21 +81,17 @@ export default defineConfig([globalIgnores([
   "linebreak-style": ["error", "unix"],
   semi: ["error", "never"],
   "space-before-function-paren": ["error", "never"],
-
   "keyword-spacing": ["error", {
    overrides: {
     if: {
      after: true,
     },
-
     for: {
       after: true,
     },
-
     while: {
       after: true,
     },
-
     catch: {
       after: true,
     },
@@ -118,11 +113,9 @@ export default defineConfig([globalIgnores([
 
   eqeqeq: "error",
   "func-names": ["error", "never"],
-
   "func-style": ["error", "declaration", {
    allowArrowFunctions: true,
   }],
-
   "prefer-const": "error",
   "prefer-arrow-callback": "error",
   "arrow-spacing": ["error"],
@@ -132,7 +125,6 @@ export default defineConfig([globalIgnores([
   "comma-spacing": "error",
   "no-unused-vars": "off",
   "jsx-quotes": ["error", "prefer-single"],
-
   "simple-import-sort/imports": ["error", {
    groups: [[
     "^@?\\w",

@@ -42,17 +42,14 @@ export type AuthenticationCreds = SignalCreds & {
     readonly noiseKey: KeyPair
     readonly pairingEphemeralKeyPair: KeyPair
     advSecretKey: string
-
     me?: Contact
     account?: waproto.IADVSignedDeviceIdentity
     signalIdentities?: SignalIdentity[]
     myAppStateKeyId?: string
     firstUnuploadedPreKeyId: number
     nextPreKeyId: number
-
     lastAccountSyncTimestamp?: number
     platform?: string
-
     processedHistoryMessages: MinimalMessage[]
     accountSyncCounter: number
     accountSettings: AccountSettings

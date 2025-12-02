@@ -334,9 +334,13 @@ export const generateWAMessageContent = async(
 ) => {
 	let m: WAMessageContent = {}
 	if ('text' in message) {
-		const extContent = { text: message.text } as WATextMessage
+		const extContent = { text: typeof message.text === 'string' ? message.text : '' } as WATextMessage
 
-		let urlInfo: WAUrlInfo | null | undefined = message.linkPreview
+		let urlInfo: WAUrlInfo | null | undefined = undefined
+		if ('linkPreview' in message) {
+			urlInfo = message.linkPreview
+		}
+
 		if (typeof urlInfo === 'undefined' && typeof message.text !== 'undefined') {
 			urlInfo = await generateLinkPreviewIfRequired(message.text, options.getUrlInfo, options.logger)
 		}
@@ -577,8 +581,8 @@ export const generateWAMessageContent = async(
 		}
 
 		// Count images and videos
-		const expectedImageCount = medias.filter(media => 'image' in media).length
-		const expectedVideoCount = medias.filter(media => 'video' in media).length
+		const expectedImageCount: number = medias.filter(media => 'image' in media).length
+		const expectedVideoCount: number = medias.filter(media => 'video' in media).length
 
 		m.albumMessage = {
 			expectedImageCount,
@@ -601,73 +605,56 @@ export const generateWAMessageContent = async(
 			}
 		}
 	} else if ('buttons' in message && !!message.buttons) {
-		const buttonsMessage: any = {
-			buttons: message.buttons.map(b => ({
-				...b,
-				type: waproto.Message.ButtonsMessage.Button.Type.RESPONSE
-			}))
+		const buttonsMessage: waproto.Message.IButtonsMessage = {
+			buttons: message.buttons.map(b => ({ ...b, type: waproto.Message.ButtonsMessage.Button.Type.RESPONSE }))
 		}
-
 		if ('text' in message) {
-			buttonsMessage.contentText = message.text
-			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.EMPTY
+			buttonsMessage.contentText = typeof message.text === 'string' ? message.text : ''
+			buttonsMessage.headerType = ButtonType.EMPTY
 		} else {
 			if ('caption' in message) {
 				buttonsMessage.contentText = message.caption
 			}
 
-			const messageKeys: string[] = Object.keys(m)
-			if (messageKeys.length > 0) {
-				const type: string = messageKeys[0].replace('Message', '').toUpperCase()
-				buttonsMessage.headerType = (waproto.Message.ButtonsMessage.HeaderType)[type] || waproto.Message.ButtonsMessage.HeaderType.EMPTY
-				Object.assign(buttonsMessage, m)
-			}
+			const type = Object.keys(m)[0].replace('Message', '').toUpperCase()
+			buttonsMessage.headerType = ButtonType[type]
+
+			Object.assign(buttonsMessage, m)
 		}
 
 		if ('footer' in message && !!message.footer) {
 			buttonsMessage.footerText = message.footer
 		}
 
-		if ('title' in message && !!message.title) {
-			buttonsMessage.text = message.title
-			buttonsMessage.headerType = waproto.Message.ButtonsMessage.HeaderType.TEXT
-		}
-
-		const messageWithMentions = message
-		buttonsMessage.contextInfo = {
-			...(messageWithMentions.contextInfo || {}),
-			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
-		}
-
 		m = { buttonsMessage }
 	} else if ('templateButtons' in message && !!message.templateButtons) {
-		const hydratedTemplate: any = {
+		const msg: waproto.Message.TemplateMessage.IHydratedFourRowTemplate = {
 			hydratedButtons: message.templateButtons
 		}
 
 		if ('text' in message) {
-			hydratedTemplate.hydratedContentText = message.text
+			msg.hydratedContentText = typeof message.text === 'string' ? message.text : ''
 		} else {
+
 			if ('caption' in message) {
-				hydratedTemplate.hydratedContentText = message.caption
+				msg.hydratedContentText = typeof message.caption === 'string' ? message.caption : ''
 			}
 
-			Object.assign(hydratedTemplate, m)
+			Object.assign(msg, m)
 		}
 
 		if ('footer' in message && !!message.footer) {
-			hydratedTemplate.hydratedFooterText = message.footer
+			msg.hydratedFooterText = message.footer
 		}
 
-		const messageWithMentions = message
-		hydratedTemplate.contextInfo = {
-			...(messageWithMentions.contextInfo || {}),
-			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		m = {
+			templateMessage: {
+				fourRowTemplate: msg,
+				hydratedTemplate: msg
+			}
 		}
-
-		m = { templateMessage: { hydratedTemplate } }
 	} else if ('interactiveButtons' in message && !!message.interactiveButtons) {
-		const interactiveMessage: any = {
+		const interactiveMessage: waproto.Message.IInteractiveMessage = {
 			nativeFlowMessage: {
 				buttons: message.interactiveButtons
 			}
@@ -675,7 +662,7 @@ export const generateWAMessageContent = async(
 
 		if ('text' in message) {
 			interactiveMessage.body = {
-				text: message.text
+				text: typeof message.text === 'string' ? message.text : ''
 			}
 			interactiveMessage.header = {
 				title: message.title,
@@ -685,7 +672,7 @@ export const generateWAMessageContent = async(
 		} else {
 			if ('caption' in message) {
 				interactiveMessage.body = {
-					text: message.caption
+					text: typeof message.caption === 'string' ? message.caption : ''
 				}
 			}
 
@@ -711,41 +698,40 @@ export const generateWAMessageContent = async(
 
 		m = { interactiveMessage }
 	} else if ('shop' in message && !!message.shop) {
-		const msgAny = message as any
-		const interactiveMessage: any = {
+		const interactiveMessage: waproto.Message.IInteractiveMessage = {
 			shopStorefrontMessage: {
-				surface: msgAny.shop.surface,
-				id: msgAny.shop.id
+				surface: message.shop.surface,
+				id: message.shop.id
 			}
 		}
 
 		if ('text' in message) {
 			interactiveMessage.body = {
-				text: msgAny.text
+				text: typeof message.text === 'string' ? message.text : ''
 			}
 			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
+				title: typeof message.title === 'string' ? message.title : '',
+				subtitle: typeof message.subtitle === 'string' ? message.subtitle : '',
 				hasMediaAttachment: false
 			}
 		} else {
 			if ('caption' in message) {
 				interactiveMessage.body = {
-					text: msgAny.caption
+					text: typeof message.caption === 'string' ? message.caption : ''
 				}
 			}
 
 			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
-				hasMediaAttachment: msgAny.hasMediaAttachment ? msgAny.hasMediaAttachment : false,
+				title: typeof message.title === 'string' ? message.title : '',
+				subtitle: typeof message.subtitle === 'string' ? message.subtitle : '',
+				hasMediaAttachment: typeof message.hasMediaAttachment === 'boolean' ? message.hasMediaAttachment : false,
 				...m
 			}
 		}
 
-		if ('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in message && !!message.footer) {
 			interactiveMessage.footer = {
-				text: msgAny.footer
+				text: message.footer
 			}
 		}
 
@@ -757,114 +743,41 @@ export const generateWAMessageContent = async(
 
 		m = { interactiveMessage }
 	} else if ('collection' in message && !!message.collection) {
-		const msgAny = message as any
-		const interactiveMessage: any = {
+		const interactiveMessage: waproto.Message.IInteractiveMessage = {
 			collectionMessage: {
-				bizJid: msgAny.collection.bizJid,
-				id: msgAny.collection.id,
-				messageVersion: msgAny.collection.version
+				bizJid: message.collection.bizJid,
+				id: message.collection.id,
+				messageVersion: message.collection.messageVersion
 			}
 		}
 
 		if ('text' in message) {
 			interactiveMessage.body = {
-				text: msgAny.text
+				text: typeof message.text === 'string' ? message.text : ''
 			}
 			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
+				title: typeof message.title === 'string' ? message.title : '',
+				subtitle: typeof message.subtitle === 'string' ? message.subtitle : '',
 				hasMediaAttachment: false
 			}
 		} else {
 			if ('caption' in message) {
 				interactiveMessage.body = {
-					text: msgAny.caption
+					text: typeof message.caption === 'string' ? message.caption : ''
 				}
 			}
 
 			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
-				hasMediaAttachment: msgAny.hasMediaAttachment ? msgAny.hasMediaAttachment : false,
+				title: typeof message.title === 'string' ? message.title : '',
+				subtitle: typeof message.subtitle === 'string' ? message.subtitle : '',
+				hasMediaAttachment: typeof message.hasMediaAttachment === 'boolean' ? message.hasMediaAttachment : false,
 				...m
 			}
 		}
 
-		if ('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in message && !!message.footer) {
 			interactiveMessage.footer = {
-				text: msgAny.footer
-			}
-		}
-
-		const messageWithMentions = message
-		interactiveMessage.contextInfo = {
-			...(messageWithMentions.contextInfo || {}),
-			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
-		}
-
-		m = { interactiveMessage }
-	} else if ('cards' in message && !!message.cards) {
-		const msgAny = message as any
-		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
-			const { image, video, product, title, body, footer, buttons } = slide
-			let header: any
-
-			if (product) {
-				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
-				header = {
-					productMessage: {
-						product: {
-							...product,
-							productImage: imageMessage,
-						}
-					}
-				}
-			} else if (image) {
-				header = await prepareWAMessageMedia({ image: image }, options)
-			} else if (video) {
-				header = await prepareWAMessageMedia({ video: video }, options)
-			}
-
-			const msg = {
-				header: {
-					title,
-					hasMediaAttachment: true,
-					...header
-				},
-				body: {
-					text: body
-				},
-				footer: {
-					text: footer
-				},
-				nativeFlowMessage: {
-					buttons,
-				}
-			}
-
-			return msg
-		}))
-
-		const interactiveMessage: any = {
-			carouselMessage: {
-				cards: slides
-			}
-		}
-
-		if ('text' in message) {
-			interactiveMessage.body = {
-				text: msgAny.text
-			}
-			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
-				hasMediaAttachment: false
-			}
-		}
-
-		if ('footer' in msgAny && !!msgAny.footer) {
-			interactiveMessage.footer = {
-				text: msgAny.footer
+				text: typeof message.footer === 'string' ? message.footer : ''
 			}
 		}
 
@@ -876,26 +789,18 @@ export const generateWAMessageContent = async(
 
 		m = { interactiveMessage }
 	} else if ('sections' in message && !!message.sections) {
-		const msgAny = message as any
-		const listMessage: any = {
-			title: msgAny.title,
-			buttonText: msgAny.buttonText,
-			footerText: msgAny.footer,
-			description: msgAny.text,
-			sections: msgAny.sections,
-			listType: msgAny.listType || waproto.Message.ListMessage.ListType.SINGLE_SELECT
-		}
-
-		const messageWithMentions = message
-		listMessage.contextInfo = {
-			...(messageWithMentions.contextInfo || {}),
-			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
+		const listMessage: waproto.Message.IListMessage = {
+			sections: message.sections,
+			buttonText: message.buttonText,
+			title: message.title,
+			footerText: typeof message.footer === 'string' ? message.footer : '',
+			description: typeof message.text === 'string' ? message.text : '',
+			listType: message.hasOwnProperty('listType') ? message.listType : waproto.Message.ListMessage.ListType.PRODUCT_LIST
 		}
 
 		m = { listMessage }
 	} else if ('cards' in message && !!message.cards) {
-		const msgAny = message as any
-		const slides = await Promise.all(msgAny.cards.map(async(slide: any) => {
+		const slides = await Promise.all(message.cards.map(async(slide) => {
 			const { image, video, product, title, body, footer, buttons } = slide
 			let header: any
 
@@ -943,18 +848,18 @@ export const generateWAMessageContent = async(
 
 		if ('text' in message) {
 			interactiveMessage.body = {
-				text: msgAny.text
+				text: message.text
 			}
 			interactiveMessage.header = {
-				title: msgAny.title,
-				subtitle: msgAny.subtitle,
+				title: message.title,
+				subtitle: message.subtitle,
 				hasMediaAttachment: false
 			}
 		}
 
-		if ('footer' in msgAny && !!msgAny.footer) {
+		if ('footer' in message && !!message.footer) {
 			interactiveMessage.footer = {
-				text: msgAny.footer
+				text: message.footer
 			}
 		}
 
@@ -966,33 +871,26 @@ export const generateWAMessageContent = async(
 
 		m = { interactiveMessage }
 	} else if ('payment' in message) {
-		const msgAny = message as any
-		const requestPaymentMessage = {
+		const requestPaymentMessage: waproto.Message.IRequestPaymentMessage = {
 			amount: {
-				currencyCode: msgAny.payment?.currency || 'IDR',
-				offset: msgAny.payment?.offset || 0,
-				value: msgAny.payment?.amount || 999999999
+				currencyCode: message.payment?.currency || 'IDR',
+				offset: message.payment?.offset || 0,
+				value: message.payment?.amount || 999999999
 			},
-			expiryTimestamp: msgAny.payment?.expiry || 0,
-			amount1000: (msgAny.payment?.amount || 999999999) * 1000,
-			currencyCodeIso4217: msgAny.payment?.currency || 'IDR',
-			requestFrom: msgAny.payment?.from || '0@s.whatsapp.net',
+			expiryTimestamp: message.payment?.expiry || 0,
+			amount1000: (message.payment?.amount || 999999999) * 1000,
+			currencyCodeIso4217: message.payment?.currency || 'IDR',
+			requestFrom: message.payment?.from || '0@s.whatsapp.net',
 			noteMessage: {
 				extendedTextMessage: {
-					text: msgAny.payment?.note || 'Notes'
+					text: message.payment?.note || 'Notes'
 				}
 			},
 			background: {
-				placeholderArgb: msgAny.payment?.image?.placeholderArgb || 4278190080,
-				textArgb: msgAny.payment?.image?.textArgb || 4294967295,
-				subtextArgb: msgAny.payment?.image?.subtextArgb || 3087007743
+				placeholderArgb: message.payment?.image?.placeholderArgb || 4278190080,
+				textArgb: message.payment?.image?.textArgb || 4294967295,
+				subtextArgb: message.payment?.image?.subtextArgb || 3087007743
 			}
-		} as any
-
-		const messageWithMentions = message
-		requestPaymentMessage.contextInfo = {
-			...(messageWithMentions.contextInfo || {}),
-			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
 		}
 
 		m = { requestPaymentMessage }
@@ -1001,71 +899,6 @@ export const generateWAMessageContent = async(
 			message as AnyMediaMessageContent,
 			options
 		)
-	}
-
-	if ('buttons' in message && !!message.buttons) {
-		const buttonsMessage: waproto.Message.IButtonsMessage = {
-			buttons: message.buttons.map(b => ({ ...b, type: waproto.Message.ButtonsMessage.Button.Type.RESPONSE }))
-		}
-		if ('text' in message) {
-			buttonsMessage.contentText = message.text
-			buttonsMessage.headerType = ButtonType.EMPTY
-		} else {
-			if ('caption' in message) {
-				buttonsMessage.contentText = message.caption
-			}
-
-			const type = Object.keys(m)[0].replace('Message', '').toUpperCase()
-			buttonsMessage.headerType = ButtonType[type]
-
-			Object.assign(buttonsMessage, m)
-		}
-
-		if ('footer' in message && !!message.footer) {
-			buttonsMessage.footerText = message.footer
-		}
-
-		m = { buttonsMessage }
-	} else if ('templateButtons' in message && !!message.templateButtons) {
-		const msg: waproto.Message.TemplateMessage.IHydratedFourRowTemplate = {
-			hydratedButtons: message.templateButtons
-		}
-
-		if ('text' in message) {
-			msg.hydratedContentText = message.text
-		} else {
-
-			if ('caption' in message) {
-				msg.hydratedContentText = message.caption
-			}
-
-			Object.assign(msg, m)
-		}
-
-		if ('footer' in message && !!message.footer) {
-			msg.hydratedFooterText = message.footer
-		}
-
-		m = {
-			templateMessage: {
-				fourRowTemplate: msg,
-				hydratedTemplate: msg
-			}
-		}
-	}
-
-	if ('sections' in message && !!message.sections) {
-		const msgAny = message as any
-		const listMessage: waproto.Message.IListMessage = {
-			sections: msgAny.sections,
-			buttonText: msgAny.buttonText,
-			title: msgAny.title,
-			footerText: msgAny.footer,
-			description: msgAny.text,
-			listType: msgAny.hasOwnProperty('listType') ? msgAny.listType : waproto.Message.ListMessage.ListType.PRODUCT_LIST
-		}
-
-		m = { listMessage }
 	}
 
 	if ('viewOnce' in message && !!message.viewOnce) {

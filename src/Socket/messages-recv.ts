@@ -1142,7 +1142,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handleMessage = async (node: BinaryNode) => {
+	const handleMessage = async(node: BinaryNode) => {
 		const senderLid: string = node.attrs.from.includes('@lid') ? node.attrs.from : node.attrs.sender_lid || node.attrs.participant_lid
 		const pn: string = node.attrs.from.includes('@s.whatsapp.net') ? node.attrs.from : node.attrs.sender_pn || node.attrs.participant_pn
 		if (senderLid && pn) {
@@ -1362,13 +1362,6 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		if (!placeholderResendCache.get(messageKey?.id!)) {
 			logger.debug({ messageKey }, 'message received while resend requested')
 			return 'RESOLVED'
-		}
-
-		const pdoMessage = {
-			placeholderMessageResendRequest: [{
-				messageKey
-			}],
-			peerDataOperationRequestType: waproto.Message.PeerDataOperationRequestType.PLACEHOLDER_MESSAGE_RESEND
 		}
 
 		setTimeout(() => {

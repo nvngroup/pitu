@@ -162,6 +162,7 @@ type Listable = {
     sections?: waproto.Message.ListMessage.ISection[]
     /** Title of a List Message only */
     title?: string
+    text?: string;
     /** Text of the button on the list (required) */
     buttonText?: string
     /** ListType of a List Message only */
@@ -312,12 +313,11 @@ export type AnyRegularMessageContent = (
     ({
         body: string
         linkPreview?: WAUrlInfo | null
-    } & Mentionable & Contextable & Interactiveable
+    } & Mentionable & Contextable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable
     | {
         text: string
         linkPreview?: WAUrlInfo | null
-    }
-        & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         poll: PollMessageOptions
