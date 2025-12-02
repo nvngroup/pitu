@@ -28,7 +28,7 @@ export const Curve = {
 		try {
 			curve.verifySignature(generateSignalPubKey(pubKey), message, signature)
 			return true
-		} catch (error) {
+		} catch {
 			return false
 		}
 	}
