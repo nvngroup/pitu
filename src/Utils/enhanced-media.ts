@@ -44,8 +44,11 @@ export const enhancedDownloadEncryptedContent = async(
 		}
 
 		// Converte WebStream (fetch) -> NodeStream
-		// O cast 'as any' resolve o conflito de tipos ReadableStream<any> vs ReadableStream<Uint8Array>
-		const sourceStream: Readable = Readable.fromWeb(response.body as any)
+		if (response.body instanceof Readable) {
+			return response.body.pipe(fallbackDecryptor)
+		}
+
+		const sourceStream: Readable = Readable.fromWeb(response.body as unknown as import('stream/web').ReadableStream)
 
 		// Retorna o stream conectado. O processamento acontece conforme os dados chegam.
 		return sourceStream.pipe(fallbackDecryptor)

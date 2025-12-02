@@ -366,7 +366,7 @@ export const getHttpStream = async(url: string | URL, options: FetchRequestInit 
 		return response.body
 	}
 
-	return Readable.fromWeb(response.body as any)
+	return Readable.fromWeb(response.body as unknown as import('stream/web').ReadableStream)
 }
 
 type EncryptedStreamOptions = {
