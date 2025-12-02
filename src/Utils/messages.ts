@@ -1250,8 +1250,8 @@ export function getAggregateResponsesInEventMessage(
 		}
 	}
 
-	for (const update of eventResponses || []) {
-		const responseType = (update as any).eventResponse || 'UNKNOWN'
+	for (const update of eventResponses ?? []) {
+		const responseType = update.eventResponseMessage?.response || 'UNKNOWN'
 		if (responseType !== 'UNKNOWN' && responseMap[responseType]) {
 			responseMap[responseType].responders.push(getKeyAuthor(update.eventResponseMessageKey, meId))
 		}

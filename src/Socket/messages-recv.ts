@@ -155,6 +155,15 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	// Debounce identity-change session refreshes per JID to avoid bursts
 	const identityAssertDebounce: CacheStore = CacheManager.getInstance('IDENTITY_ASSERT_DEBOUNCE')
 
+	interface MexNotificationData {
+		operation?: string
+		updates?: Array<{
+			jid?: string
+			settings?: Record<string, unknown>
+			user?: string
+		}>
+	}
+
 	const baseEnd = sock.end
 	let recvResourcesClosed = false
 	const cleanupRecvResources = () => {
@@ -178,9 +187,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			return
 		}
 
-		let data: any
+		let data: MexNotificationData
 		try {
-			data = JSON.parse(mexNode.content.toString())
+			data = JSON.parse(mexNode.content.toString()) as MexNotificationData
 		} catch (error) {
 			logger.error({ err: error, node }, 'Failed to parse mex newsletter notification')
 			return

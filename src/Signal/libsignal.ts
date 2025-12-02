@@ -268,8 +268,8 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					return result
 				}
 
-				const addr = jidToSignalProtocolAddress(jid)
-				const session = await (storage as any).loadSession(addr.toString())
+				const addr: libsignal.ProtocolAddress = jidToSignalProtocolAddress(jid)
+				const session: libsignal.SessionRecord = await storage.loadSession(addr.toString())
 
 				if (!session) {
 					const result = { exists: false, reason: 'no session' }
@@ -485,7 +485,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	return repository
 }
 
-const jidToSignalProtocolAddress = (jid: string) => {
+const jidToSignalProtocolAddress = (jid: string): libsignal.ProtocolAddress => {
 	const { user, device } = jidDecode(jid)!
 	return new libsignal.ProtocolAddress(user, device || 0)
 }
@@ -499,7 +499,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 	 * Enhanced session loading with LID preference
 	 */
 	return {
-		loadSession: async(id: string): Promise<unknown> => {
+		loadSession: async (id: string): Promise<libsignal.SessionRecord | null> => {
 			try {
 				let actualId: string = id
 
