@@ -499,7 +499,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 	 * Enhanced session loading with LID preference
 	 */
 	return {
-		loadSession: async (id: string): Promise<libsignal.SessionRecord | null> => {
+		loadSession: async(id: string): Promise<libsignal.SessionRecord | null> => {
 			try {
 				let actualId: string = id
 
