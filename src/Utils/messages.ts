@@ -802,11 +802,11 @@ export const generateWAMessageContent = async(
 	} else if ('cards' in message && !!message.cards) {
 		const slides = await Promise.all(message.cards.map(async(slide) => {
 			const { image, video, product, title, body, footer, buttons } = slide
-			let header: any
+			let message: waproto.IMessage = {}
 
 			if (product) {
 				const { imageMessage } = await prepareWAMessageMedia({ image: product.productImage }, options)
-				header = {
+				message = {
 					productMessage: {
 						product: {
 							...product,
@@ -815,16 +815,16 @@ export const generateWAMessageContent = async(
 					}
 				}
 			} else if (image) {
-				header = await prepareWAMessageMedia({ image: image }, options)
+				message = await prepareWAMessageMedia({ image: image }, options)
 			} else if (video) {
-				header = await prepareWAMessageMedia({ video: video }, options)
+				message = await prepareWAMessageMedia({ video: video }, options)
 			}
 
 			const msg = {
 				header: {
 					title,
 					hasMediaAttachment: true,
-					...header
+					...message
 				},
 				body: {
 					text: body
@@ -840,7 +840,7 @@ export const generateWAMessageContent = async(
 			return msg
 		}))
 
-		const interactiveMessage: any = {
+		const interactiveMessage: waproto.Message.IInteractiveMessage = {
 			carouselMessage: {
 				cards: slides
 			}
@@ -863,7 +863,7 @@ export const generateWAMessageContent = async(
 			}
 		}
 
-		const messageWithMentions = message as any
+		const messageWithMentions = message
 		interactiveMessage.contextInfo = {
 			...(messageWithMentions.contextInfo || {}),
 			...(messageWithMentions.mentions ? { mentionedJid: messageWithMentions.mentions } : {})
