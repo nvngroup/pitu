@@ -39,7 +39,7 @@
     "@logtail/pino": "^0.5.7",
     "async-lock": "^1.4.1",
     "jimp": "^1.6.0",
-    "libsignal": "github:WhiskeySockets/libsignal-node",
+    "libsignal": "git+https://github.com/whiskeysockets/libsignal-node",
     "lodash": "^4.17.21",
     "music-metadata": "^11.10.3",
     "node-fetch": "^3.3.2",

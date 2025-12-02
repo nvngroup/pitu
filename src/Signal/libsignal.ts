@@ -269,7 +269,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 				}
 
 				const addr: libsignal.ProtocolAddress = jidToSignalProtocolAddress(jid)
-				const session: libsignal.SessionRecord = await storage.loadSession(addr.toString())
+				const session: libsignal.SessionRecord | null = await storage.loadSession(addr.toString())
 
 				if (!session) {
 					const result = { exists: false, reason: 'no session' }

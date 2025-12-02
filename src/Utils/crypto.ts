@@ -1,36 +1,34 @@
-import { CipherGCM, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, randomBytes } from 'crypto'
-import * as libsignal from 'libsignal'
+import { CipherGCM, Cipheriv, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, Decipheriv, randomBytes } from 'crypto'
+import * as curve from 'libsignal/src/curve'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
-import { KeyPair } from '../Types'
+import type { KeyPair } from '../Types'
 import logger from './logger'
 
-export const generateSignalPubKey = (pubKey: Uint8Array | Buffer) => (
-	pubKey.length === 33
-		? pubKey
-		: Buffer.concat([ KEY_BUNDLE_TYPE, pubKey ])
-)
+// insure browser & node compatibility
+const { subtle } = globalThis.crypto
+
+/** prefix version byte to the pub keys, required for some curve crypto functions */
+export const generateSignalPubKey = (pubKey: Uint8Array | Buffer) => pubKey.length === 33 ? pubKey : Buffer.concat([KEY_BUNDLE_TYPE, pubKey])
 
 export const Curve = {
 	generateKeyPair: (): KeyPair => {
-		const { pubKey, privKey } = libsignal.curve.generateKeyPair()
+		const { pubKey, privKey } = curve.generateKeyPair()
 		return {
 			private: Buffer.from(privKey),
-			public: Buffer.from((pubKey as Uint8Array).slice(1))
+			// remove version byte
+			public: Buffer.from(pubKey.slice(1))
 		}
 	},
 	sharedKey: (privateKey: Uint8Array, publicKey: Uint8Array) => {
-		const shared = libsignal.curve.calculateAgreement(generateSignalPubKey(publicKey), privateKey)
+		const shared: Uint8Array = curve.calculateAgreement(generateSignalPubKey(publicKey), privateKey)
 		return Buffer.from(shared)
 	},
-	sign: (privateKey: Uint8Array, buf: Uint8Array) => (
-		libsignal.curve.calculateSignature(privateKey, buf)
-	),
+	sign: (privateKey: Uint8Array, buf: Uint8Array) => curve.calculateSignature(privateKey, buf),
 	verify: (pubKey: Uint8Array, message: Uint8Array, signature: Uint8Array) => {
 		try {
-			libsignal.curve.verifySignature(generateSignalPubKey(pubKey), message, signature)
+			curve.verifySignature(generateSignalPubKey(pubKey), message, signature)
 			return true
 		} catch (error) {
-			logger.error({ error }, 'Error verifying signature')
 			return false
 		}
 	}
@@ -40,7 +38,7 @@ export const signedKeyPair = (identityKeyPair: KeyPair, keyId: number) => {
 	const preKey: KeyPair = Curve.generateKeyPair()
 	const pubKey: Uint8Array = generateSignalPubKey(preKey.public)
 
-	const signature = Curve.sign(identityKeyPair.private, pubKey)
+	const signature: Uint8Array = Curve.sign(identityKeyPair.private, pubKey)
 
 	return { keyPair: preKey, signature, keyId }
 }
@@ -48,9 +46,9 @@ export const signedKeyPair = (identityKeyPair: KeyPair, keyId: number) => {
 const GCM_TAG_LENGTH: number = 128 >> 3
 
 /**
- * encrypt AES 256 GCM;
- * where the tag tag is suffixed to the ciphertext
- * */
+	* encrypt AES 256 GCM;
+	* where the tag tag is suffixed to the ciphertext
+	* */
 export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
 	const cipher: CipherGCM = createCipheriv('aes-256-gcm', key, iv)
 	cipher.setAAD(additionalData)
@@ -58,15 +56,16 @@ export function aesEncryptGCM(plaintext: Uint8Array, key: Uint8Array, iv: Uint8A
 }
 
 /**
- * decrypt AES 256 GCM;
- * where the auth tag is suffixed to the ciphertext
- * */
+	* decrypt AES 256 GCM;
+	* where the auth tag is suffixed to the ciphertext
+	* */
 export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, additionalData: Uint8Array) {
 	try {
 		const decipher: DecipherGCM = createDecipheriv('aes-256-gcm', key, iv)
+		// decrypt additional data
 		const enc: Uint8Array = ciphertext.slice(0, ciphertext.length - GCM_TAG_LENGTH)
 		const tag: Uint8Array = ciphertext.slice(ciphertext.length - GCM_TAG_LENGTH)
-
+		// set additional data
 		decipher.setAAD(additionalData)
 		decipher.setAuthTag(tag)
 
@@ -84,36 +83,45 @@ export function aesDecryptGCM(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8
 }
 
 export function aesEncryptCTR(plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const cipher = createCipheriv('aes-256-ctr', key, iv)
+	const cipher: Cipheriv = createCipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([cipher.update(plaintext), cipher.final()])
 }
 
 export function aesDecryptCTR(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array) {
-	const decipher = createDecipheriv('aes-256-ctr', key, iv)
+	const decipher: Decipheriv = createDecipheriv('aes-256-ctr', key, iv)
 	return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 }
 
+/** decrypt AES 256 CBC; where the IV is prefixed to the buffer */
 export function aesDecrypt(buffer: Buffer, key: Buffer) {
 	return aesDecryptWithIV(buffer.subarray(16, buffer.length), key, buffer.subarray(0, 16))
 }
 
+/** decrypt AES 256 CBC */
 export function aesDecryptWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes = createDecipheriv('aes-256-cbc', key, IV)
+	const aes: Decipheriv = createDecipheriv('aes-256-cbc', key, IV)
 	return Buffer.concat([aes.update(buffer), aes.final()])
 }
 
+// encrypt AES 256 CBC; where a random IV is prefixed to the buffer
 export function aesEncrypt(buffer: Buffer | Uint8Array, key: Buffer) {
 	const IV: Buffer = randomBytes(16)
-	const aes = createCipheriv('aes-256-cbc', key, IV)
-	return Buffer.concat([IV, aes.update(buffer), aes.final()])
+	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
+	return Buffer.concat([IV, aes.update(buffer), aes.final()]) // prefix IV to the buffer
 }
 
+// encrypt AES 256 CBC with a given IV
 export function aesEncrypWithIV(buffer: Buffer, key: Buffer, IV: Buffer) {
-	const aes = createCipheriv('aes-256-cbc', key, IV)
-	return Buffer.concat([aes.update(buffer), aes.final()])
+	const aes: Cipheriv = createCipheriv('aes-256-cbc', key, IV)
+	return Buffer.concat([aes.update(buffer), aes.final()]) // prefix IV to the buffer
 }
 
-export function hmacSign(buffer: Buffer | Uint8Array, key: Buffer | Uint8Array, variant: 'sha256' | 'sha512' = 'sha256') {
+// sign HMAC using SHA 256
+export function hmacSign(
+	buffer: Buffer | Uint8Array,
+	key: Buffer | Uint8Array,
+	variant: 'sha256' | 'sha512' = 'sha256'
+) {
 	return createHmac(variant, key).update(buffer).digest()
 }
 
@@ -125,32 +133,27 @@ export function md5(buffer: Buffer) {
 	return createHash('md5').update(buffer).digest()
 }
 
+// HKDF key expansion
 export async function hkdf(
 	buffer: Uint8Array | Buffer,
 	expandedLength: number,
-	info: { salt?: Buffer, info?: string }
+	info: { salt?: Buffer; info?: string }
 ): Promise<Buffer> {
-	const inputKeyMaterial: Uint8Array | Buffer = buffer instanceof Uint8Array
-		? buffer
-		: new Uint8Array(buffer)
+	// Normalize to a Uint8Array whose underlying buffer is a regular ArrayBuffer (not ArrayBufferLike)
+	// Cloning via new Uint8Array(...) guarantees the generic parameter is ArrayBuffer which satisfies WebCrypto types.
+	const inputKeyMaterial = new Uint8Array(buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer))
 
-	const salt = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
-	const infoBytes = info.info
-		? new TextEncoder().encode(info.info)
-		: new Uint8Array(0)
+	// Set default values if not provided
+	const salt: Uint8Array<ArrayBuffer> = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
+	const infoBytes: Uint8Array<ArrayBuffer> = info.info ? new TextEncoder().encode(info.info) : new Uint8Array(0)
 
-	const keyBuffer = new ArrayBuffer(inputKeyMaterial.byteLength)
-	new Uint8Array(keyBuffer).set(inputKeyMaterial)
+	// Import the input key material (cast to BufferSource to appease TS DOM typings)
+	const importedKey: CryptoKey = await subtle.importKey('raw', inputKeyMaterial as BufferSource, { name: 'HKDF' }, false, [
+		'deriveBits'
+	])
 
-	const importedKey: CryptoKey = await crypto.subtle.importKey(
-		'raw',
-		keyBuffer,
-		{ name: 'HKDF' },
-		false,
-		['deriveBits']
-	)
-
-	const derivedBits: ArrayBuffer = await crypto.subtle.deriveBits(
+	// Derive bits using HKDF
+	const derivedBits: ArrayBuffer = await subtle.deriveBits(
 		{
 			name: 'HKDF',
 			hash: 'SHA-256',
@@ -158,36 +161,34 @@ export async function hkdf(
 			info: infoBytes
 		},
 		importedKey,
-		expandedLength * 8
+		expandedLength * 8 // Convert bytes to bits
 	)
 
 	return Buffer.from(derivedBits)
 }
 
 export async function derivePairingCodeKey(pairingCode: string, salt: Buffer): Promise<Buffer> {
+	// Convert inputs to formats Web Crypto API can work with
 	const encoder = new TextEncoder()
-	const pairingCodeBuffer = encoder.encode(pairingCode)
+	const pairingCodeBuffer: Uint8Array<ArrayBuffer> = encoder.encode(pairingCode)
+	const saltBuffer = new Uint8Array(salt instanceof Uint8Array ? salt : new Uint8Array(salt))
 
-	const saltArrayBuffer = new ArrayBuffer(salt.byteLength)
-	new Uint8Array(saltArrayBuffer).set(salt)
+	// Import the pairing code as key material
+	const keyMaterial: CryptoKey = await subtle.importKey('raw', pairingCodeBuffer as BufferSource, { name: 'PBKDF2' }, false, [
+		'deriveBits'
+	])
 
-	const keyMaterial = await crypto.subtle.importKey(
-		'raw',
-		pairingCodeBuffer,
-		{ name: 'PBKDF2' },
-		false,
-		['deriveBits']
-	)
-
-	const derivedBits: ArrayBuffer = await crypto.subtle.deriveBits(
+	// Derive bits using PBKDF2 with the same parameters
+	// 2 << 16 = 131,072 iterations
+	const derivedBits: ArrayBuffer = await subtle.deriveBits(
 		{
 			name: 'PBKDF2',
-			salt: saltArrayBuffer,
+			salt: saltBuffer as BufferSource,
 			iterations: 2 << 16,
 			hash: 'SHA-256'
 		},
 		keyMaterial,
-		32 * 8
+		32 * 8 // 32 bytes * 8 = 256 bits
 	)
 
 	return Buffer.from(derivedBits)

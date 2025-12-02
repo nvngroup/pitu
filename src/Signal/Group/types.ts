@@ -5,7 +5,7 @@ import { SenderKeyRecord } from './sender-key-record'
 export interface SenderKeyStore {
 	loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>
 	storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord): Promise<void>
-	loadSession(id: string): Promise<libsignal.SessionRecord>
+	loadSession(id: string): Promise<libsignal.SessionRecord | null>
 	storeSession(id: string, record: libsignal.SessionRecord): Promise<void>
 	isTrustedIdentity(): boolean
 	loadPreKey(keyId: number | string): Promise<{ privKey: Buffer; pubKey: Buffer } | undefined>
