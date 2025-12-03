@@ -36807,6 +36807,8 @@ $root.waproto = (function() {
                     case 3:
                     case 4:
                     case 5:
+                    case 6:
+                    case 7:
                         break;
                     }
                 }
@@ -36860,6 +36862,14 @@ $root.waproto = (function() {
                 case "MNS":
                 case 5:
                     message.dnsMethod = 5;
+                    break;
+                case "MNS_SECONDARY":
+                case 6:
+                    message.dnsMethod = 6;
+                    break;
+                case "SOCKS_PROXY":
+                case 7:
+                    message.dnsMethod = 7;
                     break;
                 }
                 if (object.appCached != null)
@@ -36929,6 +36939,8 @@ $root.waproto = (function() {
              * @property {number} OVERRIDE=3 OVERRIDE value
              * @property {number} FALLBACK=4 FALLBACK value
              * @property {number} MNS=5 MNS value
+             * @property {number} MNS_SECONDARY=6 MNS_SECONDARY value
+             * @property {number} SOCKS_PROXY=7 SOCKS_PROXY value
              */
             DNSSource.DNSResolutionMethod = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -36938,6 +36950,8 @@ $root.waproto = (function() {
                 values[valuesById[3] = "OVERRIDE"] = 3;
                 values[valuesById[4] = "FALLBACK"] = 4;
                 values[valuesById[5] = "MNS"] = 5;
+                values[valuesById[6] = "MNS_SECONDARY"] = 6;
+                values[valuesById[7] = "SOCKS_PROXY"] = 7;
                 return values;
             })();
 
@@ -49080,6 +49094,7 @@ $root.waproto = (function() {
                 case 0:
                 case 1:
                 case 2:
+                case 3:
                     break;
                 }
             }
@@ -49402,6 +49417,10 @@ $root.waproto = (function() {
             case "COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY":
             case 2:
                 message.endOfHistoryTransferType = 2;
+                break;
+            case "COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS":
+            case 3:
+                message.endOfHistoryTransferType = 3;
                 break;
             }
             if (object.conversationTimestamp != null)
@@ -49959,12 +49978,14 @@ $root.waproto = (function() {
          * @property {number} COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY=0 COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY value
          * @property {number} COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY=1 COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY value
          * @property {number} COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY=2 COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY value
+         * @property {number} COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS=3 COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS value
          */
         Conversation.EndOfHistoryTransferType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
             values[valuesById[0] = "COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY"] = 0;
             values[valuesById[1] = "COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY"] = 1;
             values[valuesById[2] = "COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY"] = 2;
+            values[valuesById[3] = "COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS"] = 3;
             return values;
         })();
 
