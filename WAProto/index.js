@@ -39235,6 +39235,8 @@ $root.waproto = (function() {
              * @property {string|null} [version] WebInfo version
              * @property {waproto.ClientPayload.WebInfo.IWebdPayload|null} [webdPayload] WebInfo webdPayload
              * @property {waproto.ClientPayload.WebInfo.WebSubPlatform|null} [webSubPlatform] WebInfo webSubPlatform
+             * @property {string|null} [browser] WebInfo browser
+             * @property {string|null} [browserVersion] WebInfo browserVersion
              */
 
             /**
@@ -39284,6 +39286,22 @@ $root.waproto = (function() {
              */
             WebInfo.prototype.webSubPlatform = null;
 
+            /**
+             * WebInfo browser.
+             * @member {string|null|undefined} browser
+             * @memberof waproto.ClientPayload.WebInfo
+             * @instance
+             */
+            WebInfo.prototype.browser = null;
+
+            /**
+             * WebInfo browserVersion.
+             * @member {string|null|undefined} browserVersion
+             * @memberof waproto.ClientPayload.WebInfo
+             * @instance
+             */
+            WebInfo.prototype.browserVersion = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -39308,6 +39326,18 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(WebInfo.prototype, "_webSubPlatform", {
                 get: $util.oneOfGetter($oneOfFields = ["webSubPlatform"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(WebInfo.prototype, "_browser", {
+                get: $util.oneOfGetter($oneOfFields = ["browser"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(WebInfo.prototype, "_browserVersion", {
+                get: $util.oneOfGetter($oneOfFields = ["browserVersion"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -39343,6 +39373,10 @@ $root.waproto = (function() {
                     $root.waproto.ClientPayload.WebInfo.WebdPayload.encode(message.webdPayload, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                 if (message.webSubPlatform != null && Object.hasOwnProperty.call(message, "webSubPlatform"))
                     writer.uint32(/* id 4, wireType 0 =*/32).int32(message.webSubPlatform);
+                if (message.browser != null && Object.hasOwnProperty.call(message, "browser"))
+                    writer.uint32(/* id 5, wireType 2 =*/42).string(message.browser);
+                if (message.browserVersion != null && Object.hasOwnProperty.call(message, "browserVersion"))
+                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.browserVersion);
                 return writer;
             };
 
@@ -39391,6 +39425,14 @@ $root.waproto = (function() {
                         }
                     case 4: {
                             message.webSubPlatform = reader.int32();
+                            break;
+                        }
+                    case 5: {
+                            message.browser = reader.string();
+                            break;
+                        }
+                    case 6: {
+                            message.browserVersion = reader.string();
                             break;
                         }
                     default:
@@ -39461,6 +39503,16 @@ $root.waproto = (function() {
                         break;
                     }
                 }
+                if (message.browser != null && message.hasOwnProperty("browser")) {
+                    properties._browser = 1;
+                    if (!$util.isString(message.browser))
+                        return "browser: string expected";
+                }
+                if (message.browserVersion != null && message.hasOwnProperty("browserVersion")) {
+                    properties._browserVersion = 1;
+                    if (!$util.isString(message.browserVersion))
+                        return "browserVersion: string expected";
+                }
                 return null;
             };
 
@@ -39517,6 +39569,10 @@ $root.waproto = (function() {
                     message.webSubPlatform = 5;
                     break;
                 }
+                if (object.browser != null)
+                    message.browser = String(object.browser);
+                if (object.browserVersion != null)
+                    message.browserVersion = String(object.browserVersion);
                 return message;
             };
 
@@ -39552,6 +39608,16 @@ $root.waproto = (function() {
                     object.webSubPlatform = options.enums === String ? $root.waproto.ClientPayload.WebInfo.WebSubPlatform[message.webSubPlatform] === undefined ? message.webSubPlatform : $root.waproto.ClientPayload.WebInfo.WebSubPlatform[message.webSubPlatform] : message.webSubPlatform;
                     if (options.oneofs)
                         object._webSubPlatform = "webSubPlatform";
+                }
+                if (message.browser != null && message.hasOwnProperty("browser")) {
+                    object.browser = message.browser;
+                    if (options.oneofs)
+                        object._browser = "browser";
+                }
+                if (message.browserVersion != null && message.hasOwnProperty("browserVersion")) {
+                    object.browserVersion = message.browserVersion;
+                    if (options.oneofs)
+                        object._browserVersion = "browserVersion";
                 }
                 return object;
             };
