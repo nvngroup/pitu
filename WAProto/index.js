@@ -13005,6 +13005,7 @@ $root.waproto = (function() {
                     case 51:
                     case 52:
                     case 53:
+                    case 54:
                         break;
                     }
             }
@@ -13250,6 +13251,10 @@ $root.waproto = (function() {
                     case 53:
                         message.capabilities[i] = 53;
                         break;
+                    case "AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR":
+                    case 54:
+                        message.capabilities[i] = 54;
+                        break;
                     }
             }
             return message;
@@ -13362,6 +13367,7 @@ $root.waproto = (function() {
          * @property {number} RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL=51 RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL value
          * @property {number} AI_IMAGINE_LOADING_INDICATOR=52 AI_IMAGINE_LOADING_INDICATOR value
          * @property {number} RICH_RESPONSE_UR_IMAGINE=53 RICH_RESPONSE_UR_IMAGINE value
+         * @property {number} AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR=54 AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR value
          */
         BotCapabilityMetadata.BotCapabilityType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -13419,6 +13425,7 @@ $root.waproto = (function() {
             values[valuesById[51] = "RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL"] = 51;
             values[valuesById[52] = "AI_IMAGINE_LOADING_INDICATOR"] = 52;
             values[valuesById[53] = "RICH_RESPONSE_UR_IMAGINE"] = 53;
+            values[valuesById[54] = "AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR"] = 54;
             return values;
         })();
 
@@ -189395,6 +189402,7 @@ $root.waproto = (function() {
          * @property {waproto.IGroupHistoryBundleInfo|null} [groupHistoryBundleInfo] WebMessageInfo groupHistoryBundleInfo
          * @property {waproto.IInteractiveMessageAdditionalMetadata|null} [interactiveMessageAdditionalMetadata] WebMessageInfo interactiveMessageAdditionalMetadata
          * @property {waproto.IQuarantinedMessage|null} [quarantinedMessage] WebMessageInfo quarantinedMessage
+         * @property {number|null} [nonJidMentions] WebMessageInfo nonJidMentions
          */
 
         /**
@@ -189950,6 +189958,14 @@ $root.waproto = (function() {
          */
         WebMessageInfo.prototype.quarantinedMessage = null;
 
+        /**
+         * WebMessageInfo nonJidMentions.
+         * @member {number|null|undefined} nonJidMentions
+         * @memberof waproto.WebMessageInfo
+         * @instance
+         */
+        WebMessageInfo.prototype.nonJidMentions = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -190283,6 +190299,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(WebMessageInfo.prototype, "_nonJidMentions", {
+            get: $util.oneOfGetter($oneOfFields = ["nonJidMentions"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new WebMessageInfo instance using the specified properties.
          * @function create
@@ -190448,6 +190470,8 @@ $root.waproto = (function() {
                 $root.waproto.InteractiveMessageAdditionalMetadata.encode(message.interactiveMessageAdditionalMetadata, writer.uint32(/* id 76, wireType 2 =*/610).fork()).ldelim();
             if (message.quarantinedMessage != null && Object.hasOwnProperty.call(message, "quarantinedMessage"))
                 $root.waproto.QuarantinedMessage.encode(message.quarantinedMessage, writer.uint32(/* id 77, wireType 2 =*/618).fork()).ldelim();
+            if (message.nonJidMentions != null && Object.hasOwnProperty.call(message, "nonJidMentions"))
+                writer.uint32(/* id 78, wireType 0 =*/624).uint32(message.nonJidMentions);
             return writer;
         };
 
@@ -190764,6 +190788,10 @@ $root.waproto = (function() {
                     }
                 case 77: {
                         message.quarantinedMessage = $root.waproto.QuarantinedMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 78: {
+                        message.nonJidMentions = reader.uint32();
                         break;
                     }
                 default:
@@ -191471,6 +191499,11 @@ $root.waproto = (function() {
                     if (error)
                         return "quarantinedMessage." + error;
                 }
+            }
+            if (message.nonJidMentions != null && message.hasOwnProperty("nonJidMentions")) {
+                properties._nonJidMentions = 1;
+                if (!$util.isInteger(message.nonJidMentions))
+                    return "nonJidMentions: integer expected";
             }
             return null;
         };
@@ -192751,6 +192784,8 @@ $root.waproto = (function() {
                     throw TypeError(".waproto.WebMessageInfo.quarantinedMessage: object expected");
                 message.quarantinedMessage = $root.waproto.QuarantinedMessage.fromObject(object.quarantinedMessage);
             }
+            if (object.nonJidMentions != null)
+                message.nonJidMentions = object.nonJidMentions >>> 0;
             return message;
         };
 
@@ -193122,6 +193157,11 @@ $root.waproto = (function() {
                 object.quarantinedMessage = $root.waproto.QuarantinedMessage.toObject(message.quarantinedMessage, options);
                 if (options.oneofs)
                     object._quarantinedMessage = "quarantinedMessage";
+            }
+            if (message.nonJidMentions != null && message.hasOwnProperty("nonJidMentions")) {
+                object.nonJidMentions = message.nonJidMentions;
+                if (options.oneofs)
+                    object._nonJidMentions = "nonJidMentions";
             }
             return object;
         };

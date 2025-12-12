@@ -4692,7 +4692,8 @@ export namespace waproto {
             RICH_RESPONSE_UR_ZEITGEIST_CITATIONS = 50,
             RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL = 51,
             AI_IMAGINE_LOADING_INDICATOR = 52,
-            RICH_RESPONSE_UR_IMAGINE = 53
+            RICH_RESPONSE_UR_IMAGINE = 53,
+            AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR = 54
         }
     }
 
@@ -62377,6 +62378,9 @@ export namespace waproto {
 
         /** WebMessageInfo quarantinedMessage */
         quarantinedMessage?: (waproto.IQuarantinedMessage|null);
+
+        /** WebMessageInfo nonJidMentions */
+        nonJidMentions?: (number|null);
     }
 
     /** Represents a WebMessageInfo. */
@@ -62585,6 +62589,9 @@ export namespace waproto {
 
         /** WebMessageInfo quarantinedMessage. */
         public quarantinedMessage?: (waproto.IQuarantinedMessage|null);
+
+        /** WebMessageInfo nonJidMentions. */
+        public nonJidMentions?: (number|null);
 
         /**
          * Creates a new WebMessageInfo instance using the specified properties.
