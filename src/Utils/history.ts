@@ -54,7 +54,11 @@ export const processHistoryMessage = (item: waproto.IHistorySync) => {
 			chat.pinned
 
 			for (const item of msgs) {
-				const message: waproto.IWebMessageInfo = item.message!
+				if (!item.message) {
+					continue
+				}
+
+				const message: waproto.IWebMessageInfo = item.message
 				messages.push(message)
 
 				if (!chat.messages?.length) {

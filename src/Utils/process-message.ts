@@ -1,11 +1,12 @@
 import { waproto } from '../../WAProto'
 import { AuthenticationCreds, BaileysEventEmitter, CacheStore, Chat, Contact, FetchRequestInit, GroupMetadata, ParticipantAction, RequestJoinAction, RequestJoinMethod, SignalKeyStoreWithTransaction, SignalRepository, SocketConfig, WAMessageKey, WAMessageStubType } from '../Types'
-import { getContentType, normalizeMessageContent } from '../Utils/messages'
 import { areJidsSameUser, isJidBroadcast, isJidStatusBroadcast, isLidUser, jidNormalizedUser } from '../WABinary'
 import { aesDecryptGCM, hmacSign } from './crypto'
 import { getKeyAuthor, toNumber } from './generics'
 import { downloadAndProcessHistorySyncNotification } from './history'
 import { ILogger } from './logger'
+import { getContentType, normalizeMessageContent } from './messages'
+import { assertEventCreationMessageKey, assertPollCreationMessageKey, assertPollEncKey, assertProtocolMessageKey, hasValidMessageKey } from './proto-guards'
 
 type ProcessMessageContext = {
 	shouldProcessHistoryMsg: boolean
@@ -34,12 +35,13 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid!)
 	message.key.participant = message.key.participant ? jidNormalizedUser(message.key.participant) : undefined
 	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
-	if (content?.reactionMessage) {
-		normaliseKey(content.reactionMessage.key!)
+	if (content?.reactionMessage?.key && hasValidMessageKey(content.reactionMessage.key)) {
+		normaliseKey(content.reactionMessage.key)
 	}
 
 	if (content?.pollUpdateMessage) {
-		normaliseKey(content.pollUpdateMessage.pollCreationMessageKey!)
+		assertPollCreationMessageKey(content.pollUpdateMessage)
+		normaliseKey(content.pollUpdateMessage.pollCreationMessageKey)
 	}
 
 	function normaliseKey(msgKey: waproto.IMessageKey) {
@@ -325,11 +327,12 @@ const processMessage = async(
 
 			break
 		case waproto.Message.ProtocolMessage.Type.REVOKE:
+			assertProtocolMessageKey(protocolMsg, 'Revoke protocol message')
 			ev.emit('messages.update', [
 				{
 					key: {
 						...message.key,
-						id: protocolMsg.key!.id
+						id: protocolMsg.key.id
 					},
 					update: { message: null, messageStubType: WAMessageStubType.REVOKE, key: message.key }
 				}
@@ -342,22 +345,27 @@ const processMessage = async(
 			})
 			break
 		case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
-			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
+			const response: waproto.Message.IPeerDataOperationRequestResponseMessage | null | undefined = protocolMsg.peerDataOperationRequestResponseMessage
 			if (response) {
-				placeholderResendCache?.del(response.stanzaId!)
+				if (response.stanzaId) {
+					placeholderResendCache?.del(response.stanzaId)
+				}
+
 				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
 				const { peerDataOperationResult } = response
-				for (const result of peerDataOperationResult!) {
-					const { placeholderMessageResendResponse: retryResponse } = result
-					if (retryResponse) {
-						const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
-						setTimeout(() => {
-							ev.emit('messages.upsert', {
-								messages: [webMessageInfo],
-								type: 'notify',
-								requestId: response.stanzaId!
-							})
-						}, 500)
+				if (peerDataOperationResult) {
+					for (const result of peerDataOperationResult) {
+						const { placeholderMessageResendResponse: retryResponse } = result
+						if (retryResponse?.webMessageInfoBytes) {
+							const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes)
+							setTimeout(() => {
+								ev.emit('messages.upsert', {
+									messages: [webMessageInfo],
+									type: 'notify',
+									requestId: response.stanzaId || ''
+								})
+							}, 500)
+						}
 					}
 				}
 			}
@@ -384,18 +392,21 @@ const processMessage = async(
 			break
 		}
 	} else if (content?.reactionMessage) {
-		const reaction: waproto.IReaction = {
-			...content.reactionMessage,
-			key: message.key,
+		if (content.reactionMessage.key && hasValidMessageKey(content.reactionMessage.key)) {
+			const reaction: waproto.IReaction = {
+				...content.reactionMessage,
+				key: message.key,
+			}
+			ev.emit('messages.reaction', [{
+				reaction,
+				key: content.reactionMessage.key,
+			}])
 		}
-		ev.emit('messages.reaction', [{
-			reaction,
-			key: content.reactionMessage?.key!,
-		}])
 	} else if (content?.encEventResponseMessage) {
 		// we need to fetch the event creation message to get the event enc key
 		const encEventResponse: waproto.Message.IEncEventResponseMessage = content.encEventResponseMessage
-		const creationMsgKey: WAMessageKey = encEventResponse.eventCreationMessageKey!
+		assertEventCreationMessageKey(encEventResponse)
+		const creationMsgKey: WAMessageKey = encEventResponse.eventCreationMessageKey as WAMessageKey
 
 		// we need to fetch the event creation message to get the event enc key
 		const eventMsg: waproto.IMessage | undefined = await getMessage(creationMsgKey)
@@ -419,7 +430,7 @@ const processMessage = async(
 				if (!eventEncKey) {
 					logger?.warn({ creationMsgKey }, 'event response: missing messageSecret for decryption')
 				} else {
-					const responseMsg = decryptEventResponse(encEventResponse, {
+					const responseMsg = decryptEventResponse(encEventResponse as any, {
 						eventEncKey,
 						eventCreatorJid,
 						eventMsgId: creationMsgKey.id!,
@@ -534,17 +545,19 @@ const processMessage = async(
 		}
 
 	} else if (content?.pollUpdateMessage) {
-		const creationMsgKey: waproto.IMessageKey = content.pollUpdateMessage.pollCreationMessageKey!
+		assertPollCreationMessageKey(content.pollUpdateMessage)
+		const creationMsgKey: waproto.IMessageKey = content.pollUpdateMessage.pollCreationMessageKey
 		const pollMsg: waproto.IMessage | undefined = await getMessage(creationMsgKey)
-		if (pollMsg) {
+		if (pollMsg?.messageContextInfo) {
+			assertPollEncKey(pollMsg.messageContextInfo)
 			const meIdNormalised: string = jidNormalizedUser(meId)
 			const pollCreatorJid: string = getKeyAuthor(creationMsgKey, meIdNormalised)
 			const voterJid: string = getKeyAuthor(message.key, meIdNormalised)
-			const pollEncKey: Uint8Array = pollMsg.messageContextInfo?.messageSecret!
+			const pollEncKey: Uint8Array = pollMsg.messageContextInfo.messageSecret
 
 			try {
 				const voteMsg: waproto.Message.PollVoteMessage = decryptPollVote(
-					content.pollUpdateMessage.vote!,
+					(content.pollUpdateMessage as any).vote,
 					{
 						pollEncKey,
 						pollCreatorJid,
@@ -560,7 +573,7 @@ const processMessage = async(
 								{
 									pollUpdateMessageKey: message.key,
 									vote: voteMsg,
-									senderTimestampMs: (content.pollUpdateMessage.senderTimestampMs! as Long).toNumber(),
+									senderTimestampMs: ((content.pollUpdateMessage as any).senderTimestampMs as Long).toNumber(),
 								}
 							]
 						}

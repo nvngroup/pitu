@@ -81,7 +81,7 @@ export function hasQuotedMessage(ctx: waproto.IContextInfo | null | undefined): 
 	return !!(ctx?.quotedMessage)
 }
 
-export function hasStanzaId(ctx: waproto.IContextInfo | null | undefined): ctx is waproto.IContextInfo & { stanzaId: string } {
+export function hasContextStanzaId(ctx: waproto.IContextInfo | null | undefined): ctx is waproto.IContextInfo & { stanzaId: string } {
 	return !!(ctx?.stanzaId)
 }
 
@@ -201,6 +201,74 @@ export function hasAccountSignature(device: { accountSignature?: Uint8Array | nu
 
 export function hasDetails(device: { details?: Uint8Array | null }): device is { details: Uint8Array } {
 	return !!(device.details && device.details.length > 0)
+}
+
+// ============================================================================
+// POLL AND EVENT MESSAGE VALIDATORS
+// ============================================================================
+
+export function hasPollCreationMessageKey(msg: { pollCreationMessageKey?: waproto.IMessageKey | null }): msg is { pollCreationMessageKey: waproto.IMessageKey } {
+	return !!(msg.pollCreationMessageKey && hasValidMessageKey(msg.pollCreationMessageKey))
+}
+
+export function assertPollCreationMessageKey(msg: { pollCreationMessageKey?: waproto.IMessageKey | null }): asserts msg is { pollCreationMessageKey: waproto.IMessageKey } {
+	if (!hasPollCreationMessageKey(msg)) {
+		throw new Error('Poll update message does not have a valid pollCreationMessageKey')
+	}
+}
+
+export function hasEventCreationMessageKey(msg: { eventCreationMessageKey?: waproto.IMessageKey | null }): msg is { eventCreationMessageKey: waproto.IMessageKey } {
+	return !!(msg.eventCreationMessageKey && hasValidMessageKey(msg.eventCreationMessageKey))
+}
+
+export function assertEventCreationMessageKey(msg: { eventCreationMessageKey?: waproto.IMessageKey | null }): asserts msg is { eventCreationMessageKey: waproto.IMessageKey } {
+	if (!hasEventCreationMessageKey(msg)) {
+		throw new Error('Event response message does not have a valid eventCreationMessageKey')
+	}
+}
+
+export function hasPollEncKey(msg: { messageSecret?: Uint8Array | null }): msg is { messageSecret: Uint8Array } {
+	return !!(msg.messageSecret && msg.messageSecret.length > 0)
+}
+
+export function assertPollEncKey(msg: { messageSecret?: Uint8Array | null }): asserts msg is { messageSecret: Uint8Array } {
+	if (!hasPollEncKey(msg)) {
+		throw new Error('Poll message does not have a valid messageSecret')
+	}
+}
+
+export function hasPollVote(msg: { vote?: waproto.Message.IPollEncValue | null }): msg is { vote: waproto.Message.IPollEncValue } {
+	return !!(msg.vote)
+}
+
+export function assertPollVote(msg: { vote?: waproto.Message.IPollEncValue | null }): asserts msg is { vote: waproto.Message.IPollEncValue } {
+	if (!hasPollVote(msg)) {
+		throw new Error('Poll update message does not have a valid vote')
+	}
+}
+
+// ============================================================================
+// PROTOCOL MESSAGE VALIDATORS
+// ============================================================================
+
+export function hasProtocolMessageKey(msg: { key?: waproto.IMessageKey | null }): msg is { key: waproto.IMessageKey } {
+	return !!(msg.key?.id)
+}
+
+export function assertProtocolMessageKey(msg: { key?: waproto.IMessageKey | null }, context = 'Protocol message'): asserts msg is { key: waproto.IMessageKey } {
+	if (!hasProtocolMessageKey(msg)) {
+		throw new Error(`${context} does not have a valid key`)
+	}
+}
+
+export function hasStanzaId(msg: { stanzaId?: string | null }): msg is { stanzaId: string } {
+	return !!(msg.stanzaId && msg.stanzaId.length > 0)
+}
+
+export function assertStanzaId(msg: { stanzaId?: string | null }, context = 'Message'): asserts msg is { stanzaId: string } {
+	if (!hasStanzaId(msg)) {
+		throw new Error(`${context} does not have a valid stanzaId`)
+	}
 }
 
 // ============================================================================

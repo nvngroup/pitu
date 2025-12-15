@@ -1455,8 +1455,12 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		createParticipantNodes,
 		getUSyncDevices,
 		updateMediaMessage: async(message: waproto.IWebMessageInfo) => {
-			const content: waproto.Message.IDocumentMessage | waproto.Message.IImageMessage | waproto.Message.IVideoMessage | waproto.Message.IAudioMessage | waproto.Message.IStickerMessage = assertMediaContent(message.message)
-			const mediaKey: Uint8Array = content.mediaKey!
+			const mediaContent: any = assertMediaContent(message.message)
+			if (!mediaContent.mediaKey || mediaContent.mediaKey.length === 0) {
+				throw new Error('Message does not have a valid mediaKey')
+			}
+
+			const mediaKey: Uint8Array = mediaContent.mediaKey
 			const meId: string = authState.creds.me!.id
 			const node: BinaryNode = await encryptMediaRetryRequest(message.key, mediaKey, meId)
 
@@ -1480,8 +1484,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 										)
 									}
 
-									content.directPath = media.directPath
-									content.url = getUrlFromDirectPath(content.directPath!)
+									mediaContent.directPath = media.directPath
+									if (mediaContent.directPath) {
+										mediaContent.url = getUrlFromDirectPath(mediaContent.directPath)
+									}
 
 									logger.debug({ directPath: media.directPath, key: result.key }, 'media update successful')
 								} catch (err) {
