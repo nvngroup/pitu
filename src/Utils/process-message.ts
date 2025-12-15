@@ -32,7 +32,11 @@ const REAL_MSG_REQ_ME_STUB_TYPES = new Set([
 ])
 
 export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => {
-	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid!)
+	if (!message.key.remoteJid) {
+		throw new Error('Message key must have remoteJid')
+	}
+
+	message.key.remoteJid = jidNormalizedUser(message.key.remoteJid)
 	message.key.participant = message.key.participant ? jidNormalizedUser(message.key.participant) : undefined
 	const content: waproto.IMessage | undefined = normalizeMessageContent(message.message)
 	if (content?.reactionMessage?.key && hasValidMessageKey(content.reactionMessage.key)) {
@@ -47,7 +51,7 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 	function normaliseKey(msgKey: waproto.IMessageKey) {
 		if (!message.key.fromMe) {
 			msgKey.fromMe = !msgKey.fromMe
-				? areJidsSameUser(msgKey.participant || msgKey.remoteJid!, meId)
+				? areJidsSameUser(msgKey.participant || msgKey.remoteJid || '', meId)
 				: false
 			msgKey.remoteJid = message.key.remoteJid
 			msgKey.participant = msgKey.participant || message.key.participant
@@ -55,21 +59,21 @@ export const cleanMessage = (message: waproto.IWebMessageInfo, meId: string) => 
 	}
 }
 
-export const isRealMessage = (message: waproto.IWebMessageInfo, meId: string) => {
+export const isRealMessage = (message: waproto.IWebMessageInfo, meId: string): boolean => {
 	const normalizedContent: waproto.IMessage | undefined = normalizeMessageContent(message.message)
 	const hasSomeContent = !!getContentType(normalizedContent)
-	return (
-		!!normalizedContent
-		|| REAL_MSG_STUB_TYPES.has(message.messageStubType!)
-		|| (
-			REAL_MSG_REQ_ME_STUB_TYPES.has(message.messageStubType!)
-			&& message.messageStubParameters?.some(p => areJidsSameUser(meId, p))
-		)
+	const hasStubType = !!message.messageStubType && REAL_MSG_STUB_TYPES.has(message.messageStubType)
+	const hasReqMeStubType = !!message.messageStubType &&
+		REAL_MSG_REQ_ME_STUB_TYPES.has(message.messageStubType) &&
+		!!message.messageStubParameters?.some(p => areJidsSameUser(meId, p))
+
+	return !!(
+		(!!normalizedContent || hasStubType || hasReqMeStubType)
+		&& hasSomeContent
+		&& !normalizedContent?.protocolMessage
+		&& !normalizedContent?.reactionMessage
+		&& !normalizedContent?.pollUpdateMessage
 	)
-	&& hasSomeContent
-	&& !normalizedContent?.protocolMessage
-	&& !normalizedContent?.reactionMessage
-	&& !normalizedContent?.pollUpdateMessage
 }
 
 export const shouldIncrementChatUnread = (message: waproto.IWebMessageInfo) => (
@@ -81,15 +85,23 @@ export const shouldIncrementChatUnread = (message: waproto.IWebMessageInfo) => (
  * Typically -- that'll be the remoteJid, but for broadcasts, it'll be the participant
  */
 export const getChatId = ({ remoteJid, participant, fromMe }: waproto.IMessageKey) => {
-	if (
-		isJidBroadcast(remoteJid!)
-		&& !isJidStatusBroadcast(remoteJid!)
-		&& !fromMe
-	) {
-		return participant!
+	if (!remoteJid) {
+		throw new Error('remoteJid is required')
 	}
 
-	return remoteJid!
+	if (
+		isJidBroadcast(remoteJid)
+		&& !isJidStatusBroadcast(remoteJid)
+		&& !fromMe
+	) {
+		if (!participant) {
+			throw new Error('participant is required for broadcast messages')
+		}
+
+		return participant
+	}
+
+	return remoteJid
 }
 
 type PollContext = {
@@ -195,7 +207,7 @@ const processMessage = async(
 	const { accountSettings } = creds
 
 	const chat: Partial<Chat> = { id: jidNormalizedUser(getChatId(message.key)) }
-	const isRealMsg: boolean | undefined = isRealMessage(message, meId)
+	const isRealMsg: boolean = isRealMessage(message, meId)
 
 	if (isRealMsg) {
 		chat.messages = [{ message }]

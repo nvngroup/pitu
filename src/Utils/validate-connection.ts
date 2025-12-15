@@ -223,26 +223,38 @@ export const configureSuccessfulPairing = (
 	const account: waproto.ADVSignedDeviceIdentity = waproto.ADVSignedDeviceIdentity.decode(detailsBuffer)
 	const { accountSignatureKey, accountSignature, details: deviceDetails } = account
 
-	const deviceIdentity: waproto.ADVDeviceIdentity = waproto.ADVDeviceIdentity.decode(deviceDetails!)
+	if (!deviceDetails || deviceDetails.length === 0) {
+		throw new Boom('Missing device details')
+	}
+
+	if (!accountSignatureKey || accountSignatureKey.length === 0) {
+		throw new Boom('Missing account signature key')
+	}
+
+	if (!accountSignature || accountSignature.length === 0) {
+		throw new Boom('Missing account signature')
+	}
+
+	const deviceIdentity: waproto.ADVDeviceIdentity = waproto.ADVDeviceIdentity.decode(deviceDetails)
 
 	const accountSignaturePrefix: Buffer =
 		deviceIdentity.deviceType === waproto.ADVEncryptionType.HOSTED
 			? WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX
 			: WA_ADV_ACCOUNT_SIG_PREFIX
-	const accountMsg: Buffer = Buffer.concat([accountSignaturePrefix, deviceDetails!, signedIdentityKey.public])
-	if (!Curve.verify(accountSignatureKey!, accountMsg, accountSignature!)) {
+	const accountMsg: Buffer = Buffer.concat([accountSignaturePrefix, deviceDetails, signedIdentityKey.public])
+	if (!Curve.verify(accountSignatureKey, accountMsg, accountSignature)) {
 		throw new Boom('Failed to verify account signature')
 	}
 
 	const deviceMsg: Buffer = Buffer.concat([
 		WA_ADV_DEVICE_SIG_PREFIX,
-		deviceDetails!,
+		deviceDetails,
 		signedIdentityKey.public,
-		accountSignatureKey!
+		accountSignatureKey
 	])
 	account.deviceSignature = Curve.sign(signedIdentityKey.private, deviceMsg)
 
-	const identity: SignalIdentity = createSignalIdentity(lid, accountSignatureKey!)
+	const identity: SignalIdentity = createSignalIdentity(lid, accountSignatureKey)
 	const accountEnc: Uint8Array = encodeSignedDeviceIdentity(account, false)
 
 	const reply: BinaryNode = {
@@ -259,7 +271,7 @@ export const configureSuccessfulPairing = (
 				content: [
 					{
 						tag: 'device-identity',
-						attrs: { 'key-index': deviceIdentity.keyIndex!.toString() },
+						attrs: { 'key-index': (deviceIdentity.keyIndex ?? 0).toString() },
 						content: accountEnc
 					}
 				]
