@@ -27,6 +27,7 @@ export default defineConfig([globalIgnores([
   "Example/Example.ts",
   "**/docs",
   "**/proto-extract",
+  "engine-requirements.js",
 ]),
 {
   extends: compat.extends("plugin:prettier/recommended"),
