@@ -10,6 +10,7 @@ import { ILogger } from './logger'
 import { LT_HASH_ANTI_TAMPERING } from './lt-hash'
 import { downloadContentFromMessage, } from './messages-media'
 import { ChatMutationMap, FetchAppStateSyncKey } from './types'
+import { protoToBuffer } from '.'
 
 
 const mutationKeys = async(keydata: Uint8Array) => {
@@ -284,13 +285,12 @@ export const extractSyncdPatches = async(
 
 				let snapshot: waproto.ISyncdSnapshot | undefined = undefined
 				if (snapshotNode && !!snapshotNode.content) {
-					if (!Buffer.isBuffer(snapshotNode)) {
+					if (!Buffer.isBuffer(snapshotNode.content)) {
 						snapshotNode.content = Buffer.from(Object.values(snapshotNode.content))
 					}
 
-					const blobRef: waproto.IExternalBlobReference = waproto.ExternalBlobReference.decode(
-						snapshotNode.content as Buffer
-					)
+					const snapshotBuffer: Buffer = protoToBuffer(snapshotNode.content)
+					const blobRef: waproto.IExternalBlobReference = waproto.ExternalBlobReference.decode(snapshotBuffer)
 					const data: Buffer = await downloadExternalBlob(blobRef, options)
 					snapshot = waproto.SyncdSnapshot.decode(data)
 				}

@@ -34,6 +34,7 @@ import {
 	promiseTimeout,
 	promiseTimeoutEnhanced,
 } from '../Utils'
+import { toBuffer } from '../Utils/proto-guards'
 import {
 	assertNodeErrorFree,
 	BinaryNode,
@@ -777,8 +778,9 @@ export const makeSocket = (config: SocketConfig) => {
 				return
 			}
 
-			const ref = (refNode.content as Buffer).toString('utf-8')
-			const qr = [ref, noiseKeyB64, identityKeyB64, advB64].join(',')
+			const refBuffer: Buffer = toBuffer(refNode.content)
+			const ref: string = refBuffer.toString('utf-8')
+			const qr: string = [ref, noiseKeyB64, identityKeyB64, advB64].join(',')
 
 			ev.emit('connection.update', { qr })
 

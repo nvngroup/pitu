@@ -1,5 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
+import { toBuffer } from '../Utils/proto-guards'
 import { BinaryNode } from './types'
 
 export const getBinaryNodeChildren = (node: BinaryNode | undefined, childTag: string) => {
@@ -70,7 +71,8 @@ export const getBinaryNodeMessages = ({ content }: BinaryNode) => {
 	if (Array.isArray(content)) {
 		for (const item of content) {
 			if (item.tag === 'message') {
-				msgs.push(waproto.WebMessageInfo.decode(item.content as Buffer))
+				const buffer = toBuffer(item.content)
+				msgs.push(waproto.WebMessageInfo.decode(buffer))
 			}
 		}
 	}

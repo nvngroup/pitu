@@ -30,6 +30,7 @@ import { sha256 } from './crypto'
 import { generateMessageIDV2, getKeyAuthor, unixTimestampSeconds } from './generics'
 import { ILogger } from './logger'
 import { downloadContentFromMessage, encryptedStream, generateThumbnail, getAudioDuration, getAudioWaveform, getRawMediaUploadData, MediaDownloadOptions } from './messages-media'
+import { assertMessageContent } from './proto-guards'
 import { ButtonType, MediaUploadData, MessageTypeProto, MIMETYPE_MAP } from './types'
 
 /**
@@ -306,7 +307,10 @@ export const generateForwardMessageContent = (
 	}
 
 	content = normalizeMessageContent(content)
-	content = waproto.Message.decode(waproto.Message.encode(content!).finish())
+	assertMessageContent(content)
+
+	// Clone the content to avoid mutating the original
+	content = waproto.Message.fromObject(waproto.Message.toObject(content as any)) as waproto.IMessage
 
 	let key: keyof waproto.Message = Object.keys(content)[0] as MessageType
 

@@ -11,6 +11,7 @@ import type { AuthenticationCreds, SignalCreds, SignalIdentity, SocketConfig } f
 import { type BinaryNode, getBinaryNodeChild, jidDecode, S_WHATSAPP_NET } from '../WABinary'
 import { Curve, hmacSign } from './crypto'
 import { encodeBigEndian } from './generics'
+import { hasDetails, toBuffer } from './proto-guards'
 import { createSignalIdentity } from './signal'
 
 const getUserAgent = (config: SocketConfig): waproto.ClientPayload.IUserAgent => {
@@ -195,19 +196,31 @@ export const configureSuccessfulPairing = (
 	const jid: string = deviceNode.attrs.jid
 	const lid: string = deviceNode.attrs.lid
 
-	const { details, hmac, accountType } = waproto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
+	const buffer = toBuffer(deviceIdentityNode.content)
+	const { details, hmac, accountType } = waproto.ADVSignedDeviceIdentityHMAC.decode(buffer)
+
+	if (!hasDetails({ details })) {
+		throw new Boom('Missing details in device identity')
+	}
+
+	// TypeScript now knows details is not null/undefined
+	const detailsBuffer = details as Uint8Array
 
 	let hmacPrefix: Buffer = Buffer.from([])
 	if (accountType !== undefined && accountType === waproto.ADVEncryptionType.HOSTED) {
 		hmacPrefix = WA_ADV_HOSTED_ACCOUNT_SIG_PREFIX
 	}
 
-	const advSign: Buffer = hmacSign(Buffer.concat([hmacPrefix, details!]), Buffer.from(advSecretKey, 'base64'))
-	if (Buffer.compare(hmac!, advSign) !== 0) {
+	if (!hmac) {
+		throw new Boom('Missing hmac in device identity')
+	}
+
+	const advSign: Buffer = hmacSign(Buffer.concat([hmacPrefix, detailsBuffer]), Buffer.from(advSecretKey, 'base64'))
+	if (Buffer.compare(hmac, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
 
-	const account: waproto.ADVSignedDeviceIdentity = waproto.ADVSignedDeviceIdentity.decode(details!)
+	const account: waproto.ADVSignedDeviceIdentity = waproto.ADVSignedDeviceIdentity.decode(detailsBuffer)
 	const { accountSignatureKey, accountSignature, details: deviceDetails } = account
 
 	const deviceIdentity: waproto.ADVDeviceIdentity = waproto.ADVDeviceIdentity.decode(deviceDetails!)
