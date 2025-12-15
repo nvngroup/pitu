@@ -144,8 +144,8 @@ export async function hkdf(
 	const inputKeyMaterial = new Uint8Array(buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer))
 
 	// Set default values if not provided
-	const salt: Uint8Array = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
-	const infoBytes: Uint8Array = info.info ? new TextEncoder().encode(info.info) : new Uint8Array(0)
+	const salt = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
+	const infoBytes = info.info ? new TextEncoder().encode(info.info) : new Uint8Array(0)
 
 	// Import the input key material (cast to BufferSource to appease TS DOM typings)
 	const importedKey: CryptoKey = await subtle.importKey('raw', inputKeyMaterial as BufferSource, { name: 'HKDF' }, false, [
