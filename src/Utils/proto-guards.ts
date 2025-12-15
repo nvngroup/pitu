@@ -349,3 +349,14 @@ export function getUserLid(creds: { me?: { lid?: string } | null }): string | un
 export function hasUserCredentials(creds: { me?: { id?: string } | null }): creds is { me: { id: string } } {
 	return !!(creds.me?.id)
 }
+
+/**
+ * Safely extracts account from authentication credentials
+ * Throws error if account is not available
+ */
+export function getAccount<T = any>(creds: { account?: T | null }): T {
+	if (!creds.account) {
+		throw new Error('Account information is not available')
+	}
+	return creds.account
+}

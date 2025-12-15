@@ -71,5 +71,6 @@ export {
 	getUserId,
 	getUserLid,
 	hasUserCredentials,
+	getAccount,
 	unwrapFutureProofMessage
 } from './proto-guards'
