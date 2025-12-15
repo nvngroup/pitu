@@ -144,8 +144,8 @@ export async function hkdf(
 	const inputKeyMaterial = new Uint8Array(buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer))
 
 	// Set default values if not provided
-	const salt: Uint8Array<ArrayBuffer> = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
-	const infoBytes: Uint8Array<ArrayBuffer> = info.info ? new TextEncoder().encode(info.info) : new Uint8Array(0)
+	const salt: Uint8Array = info.salt ? new Uint8Array(info.salt) : new Uint8Array(0)
+	const infoBytes: Uint8Array = info.info ? new TextEncoder().encode(info.info) : new Uint8Array(0)
 
 	// Import the input key material (cast to BufferSource to appease TS DOM typings)
 	const importedKey: CryptoKey = await subtle.importKey('raw', inputKeyMaterial as BufferSource, { name: 'HKDF' }, false, [
@@ -170,7 +170,7 @@ export async function hkdf(
 export async function derivePairingCodeKey(pairingCode: string, salt: Buffer): Promise<Buffer> {
 	// Convert inputs to formats Web Crypto API can work with
 	const encoder = new TextEncoder()
-	const pairingCodeBuffer: Uint8Array<ArrayBuffer> = encoder.encode(pairingCode)
+	const pairingCodeBuffer: Uint8Array = encoder.encode(pairingCode)
 	const saltBuffer = new Uint8Array(salt instanceof Uint8Array ? salt : new Uint8Array(salt))
 
 	// Import the pairing code as key material

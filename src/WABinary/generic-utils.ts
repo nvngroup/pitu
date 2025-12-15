@@ -4,7 +4,7 @@ import { BinaryNode } from './types'
 
 export const getBinaryNodeChildren = (node: BinaryNode | undefined, childTag: string) => {
 	if (Array.isArray(node?.content)) {
-		return node.content.filter(item => item.tag === childTag)
+		return node?.content.filter(item => item.tag === childTag)
 	}
 
 	return []
@@ -56,11 +56,11 @@ export const assertNodeErrorFree = (node: BinaryNode) => {
 
 export const reduceBinaryNodeToDictionary = (node: BinaryNode, tag: string) => {
 	const nodes = getBinaryNodeChildren(node, tag)
-	const dict = nodes.reduce(
+	const dict = nodes?.reduce(
 		(dict, { attrs }) => {
 			dict[attrs.name || attrs.config_code] = attrs.value || attrs.config_value
 			return dict
-		}, { } as { [_: string]: string }
+		}, {} as { [_: string]: string }
 	)
 	return dict
 }

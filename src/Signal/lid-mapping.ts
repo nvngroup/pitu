@@ -108,7 +108,7 @@ export class LIDMappingStore {
 
 			logger.trace({ pnUser, lidUser }, 'Storing USER LID mapping')
 
-			await this.keys.transaction(async() => {
+			await this.keys.transaction(async () => {
 				await this.keys.set({
 					[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
 						[pnUser]: lidUser,
@@ -172,7 +172,7 @@ export class LIDMappingStore {
 
 		this.logger.trace({ pairMap }, `Storing ${Object.keys(pairMap).length} pn mappings`)
 
-		await this.keys.transaction(async() => {
+		await this.keys.transaction(async () => {
 			for (const [pnUser, lidUser] of Object.entries(pairMap)) {
 				await this.keys.set({
 					'lid-mapping': {
@@ -271,7 +271,7 @@ export class LIDMappingStore {
 						const deviceSpecificLid = `${lidUser}${!!device ? `:${device}` : ''}@${device === 99 ? 'hosted.lid' : 'lid'}`
 
 						this.logger.trace(
-							{	pn: pair.pnUser, deviceSpecificLid, device },
+							{ pn: pair.pnUser, deviceSpecificLid, device },
 							`getLIDForPN: USYNC success for ${pair.pnUser} → ${deviceSpecificLid} (user mapping with device ${device})`
 						)
 
@@ -352,7 +352,7 @@ export class LIDMappingStore {
 					return false
 				}
 
-				await this.keys.transaction(async() => {
+				await this.keys.transaction(async () => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
 							[userIdentifier]: null,
@@ -361,7 +361,7 @@ export class LIDMappingStore {
 					})
 				})
 			} else {
-				await this.keys.transaction(async() => {
+				await this.keys.transaction(async () => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
 							[userIdentifier]: null,
@@ -481,10 +481,10 @@ export class LIDMappingStore {
 					return
 				}
 
-				await this.keys.transaction(async() => {
+				await this.keys.transaction(async () => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: {
-							[pnUser]: lidUser,
+							[pnUser!]: lidUser,
 							[`${lidUser}${LID_MAPPING_CONSTANTS.REVERSE_SUFFIX}`]: pnUser
 						}
 					})
@@ -543,7 +543,7 @@ export class LIDMappingStore {
 			return
 		}
 
-		await this.keys.transaction(async() => {
+		await this.keys.transaction(async () => {
 			const updates: { [key: string]: string } = {}
 
 			for (const [pnUser, lidUser] of Object.entries(mappingsToStore)) {
@@ -624,7 +624,7 @@ export class LIDMappingStore {
 			}
 
 			if (Object.keys(repairs).length > 0) {
-				await this.keys.transaction(async() => {
+				await this.keys.transaction(async () => {
 					await this.keys.set({
 						[LID_MAPPING_CONSTANTS.STORAGE_KEY]: repairs
 					})
