@@ -318,3 +318,34 @@ export function unwrapFutureProofMessage(message: waproto.IMessage | null | unde
 
 	return current
 }
+
+// ============================================================================
+// AUTHENTICATION CREDENTIAL HELPERS
+// ============================================================================
+
+/**
+ * Safely extracts user ID from authentication credentials
+ * Throws error if credentials or user info is missing
+ */
+export function getUserId(creds: { me?: { id?: string } | null }): string {
+	if (!creds.me?.id) {
+		throw new Error('User credentials are not initialized')
+	}
+
+	return creds.me.id
+}
+
+/**
+ * Safely extracts user LID from authentication credentials
+ * Returns undefined if LID is not available
+ */
+export function getUserLid(creds: { me?: { lid?: string } | null }): string | undefined {
+	return creds.me?.lid
+}
+
+/**
+ * Checks if user credentials are properly initialized
+ */
+export function hasUserCredentials(creds: { me?: { id?: string } | null }): creds is { me: { id: string } } {
+	return !!(creds.me?.id)
+}

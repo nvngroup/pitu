@@ -6,7 +6,7 @@ import { getKeyAuthor, toNumber } from './generics'
 import { downloadAndProcessHistorySyncNotification } from './history'
 import { ILogger } from './logger'
 import { getContentType, normalizeMessageContent } from './messages'
-import { assertEventCreationMessageKey, assertPollCreationMessageKey, assertPollEncKey, assertProtocolMessageKey, hasValidMessageKey } from './proto-guards'
+import { assertEventCreationMessageKey, assertPollCreationMessageKey, assertPollEncKey, assertProtocolMessageKey, getUserId, hasValidMessageKey } from './proto-guards'
 
 type ProcessMessageContext = {
 	shouldProcessHistoryMsg: boolean
@@ -203,7 +203,7 @@ const processMessage = async(
 		getMessage
 	}: ProcessMessageContext
 ) => {
-	const meId: string = creds.me!.id
+	const meId: string = getUserId(creds)
 	const { accountSettings } = creds
 
 	const chat: Partial<Chat> = { id: jidNormalizedUser(getChatId(message.key)) }

@@ -68,5 +68,8 @@ export {
 	assertProtocolMessageKey,
 	assertStanzaId,
 	getFutureProofContent,
+	getUserId,
+	getUserLid,
+	hasUserCredentials,
 	unwrapFutureProofMessage
 } from './proto-guards'

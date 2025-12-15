@@ -2,7 +2,7 @@ import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AlbumMedia, AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
-import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
+import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getUserId, getUserLid, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
@@ -261,12 +261,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 				}
 
-				const extracted: FullJid[] = extractDeviceJids(result?.list, authState.creds.me!.id, ignoreZeroDevices)
-				logger.debug({ extractedCount: extracted.length, ignoreZeroDevices }, 'extracted devices from server')
-
-				if (extracted.length === 0) {
-					logger.warn({ toFetch, ignoreZeroDevices }, 'no devices extracted from USyncQuery result')
-				}
+				const extracted: FullJid[] = extractDeviceJids(result?.list, getUserId(authState.creds), ignoreZeroDevices)
 
 				const deviceMap: { [_: string]: FullJid[] } = {}
 
@@ -604,8 +599,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			statusJidList
 		}: MessageRelayOptions
 	) => {
-		const meId: string = authState.creds.me!.id
-		const meLid: string | undefined = authState.creds.me!.lid
+		const meId: string = getUserId(authState.creds)
+		const meLid: string | undefined = getUserLid(authState.creds)
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity: boolean = isRetryResend
 
@@ -1461,7 +1456,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			}
 
 			const mediaKey: Uint8Array = mediaContent.mediaKey
-			const meId: string = authState.creds.me!.id
+			const meId: string = getUserId(authState.creds)
 			const node: BinaryNode = await encryptMediaRetryRequest(message.key, mediaKey, meId)
 
 			let error: Error | undefined = undefined
@@ -1516,7 +1511,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			content: AnyMessageContent,
 			options: MiscMessageGenerationOptions = {}
 		) => {
-			const userJid: string = authState.creds.me!.id
+			const userJid: string = getUserId(authState.creds)
 			if (
 				typeof content === 'object' &&
 				'disappearingMessagesInChat' in content &&
