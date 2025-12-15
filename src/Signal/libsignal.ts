@@ -1,4 +1,3 @@
-import * as libsignal from 'libsignal'
 import { CacheManager } from '../Socket'
 import type { CacheStore, SignalAuthState, SignalKeyStoreWithTransaction, SignedKeyPair } from '../Types'
 import { SignalRepository } from '../Types/Signal'
@@ -7,11 +6,12 @@ import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
 import { FullJid, isHostedLidUser, isHostedPnUser, isLidUser, isPnUser, jidDecode, transferDevice } from '../WABinary'
+import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
-import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
 import { EncryptionResult, SessionValidationResult } from './types'
+import * as libsignal from 'libsignal'
 
 const SIGNAL_CONSTANTS = {
 	PREKEY_MESSAGE_TYPE: 3,

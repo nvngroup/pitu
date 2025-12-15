@@ -1,13 +1,13 @@
-import { Boom } from '@hapi/boom'
-import { createHash, randomBytes } from 'crypto'
-import fetch from 'node-fetch'
-import { platform, release } from 'os'
 import { waproto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
 import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, FetchRequestInit, WACallUpdateType, WAMessageKey, WAVersion } from '../Types'
 import { BinaryNode, FullJid, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 import { sha256 } from './crypto'
 import { ILogger } from './logger'
+import { Boom } from '@hapi/boom'
+import { createHash, randomBytes } from 'crypto'
+import fetch from 'node-fetch'
+import { platform, release } from 'os'
 
 const PLATFORM_MAP = {
 	'aix': 'AIX',

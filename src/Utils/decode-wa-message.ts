@@ -1,4 +1,3 @@
-import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { CacheManager } from '../Socket/cache-manager'
 import { CacheStore, SignalRepository, WAMessage, WAMessageKey } from '../Types'
@@ -8,6 +7,7 @@ import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
 import { sessionDiagnostics } from './session-diagnostics'
 import { MessageType, NO_MESSAGE_FOUND_ERROR_TEXT } from './types'
+import { Boom } from '@hapi/boom'
 
 let lidCache: CacheStore | null = null
 

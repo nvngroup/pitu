@@ -1,6 +1,6 @@
-import * as libsignal from 'libsignal'
 import { SenderKeyName } from './sender-key-name'
 import { SenderKeyRecord } from './sender-key-record'
+import * as libsignal from 'libsignal'
 
 export interface SenderKeyStore {
 	loadSenderKey(senderKeyName: SenderKeyName): Promise<SenderKeyRecord>

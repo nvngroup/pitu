@@ -1,7 +1,7 @@
-import { calculateSignature, verifySignature } from 'libsignal/src/curve'
 import { waproto } from '../../../WAProto'
 import { CiphertextMessage } from './ciphertext-message'
 import { SenderKeyMessageStructure } from './types'
+import { calculateSignature, verifySignature } from 'libsignal/src/curve'
 
 export class SenderKeyMessage extends CiphertextMessage {
 	private readonly SIGNATURE_LENGTH = 64

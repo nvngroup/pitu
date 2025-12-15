@@ -1,4 +1,3 @@
-import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AlbumMedia, AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
@@ -7,6 +6,7 @@ import { getUrlInfo } from '../Utils/link-preview'
 import { areJidsSameUser, assertJidDecode, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
+import { Boom } from '@hapi/boom'
 import ListType = waproto.Message.ListMessage.ListType;
 import { MessageRetryManager } from '../Utils/message-retry-manager'
 import { makeNewsletterSocket } from './newsletter'
@@ -95,10 +95,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const localUserDevicesCache: CacheStore | undefined = shouldCloseUserDevicesCache ? (userDevicesCache) : undefined
 
 	let mediaConn: Promise<MediaConnInfo>
-	const refreshMediaConn = async(forceGet = false) => {
+	const refreshMediaConn = async (forceGet = false) => {
 		const media: MediaConnInfo = await mediaConn
 		if (!media || forceGet || (new Date().getTime() - media.fetchDate.getTime()) > media.ttl * 1000) {
-			mediaConn = (async() => {
+			mediaConn = (async () => {
 				const result: BinaryNode = await query({
 					tag: 'iq',
 					attrs: {
@@ -110,7 +110,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				})
 				const mediaConnNode: BinaryNode | undefined = getBinaryNodeChild(result, 'media_conn')
 				const node: MediaConnInfo = {
-					hosts: getBinaryNodeChildren(mediaConnNode, 'host').map(
+					hosts: getBinaryNodeChildren(mediaConnNode, 'host')!.map(
 						({ attrs }) => ({
 							hostname: attrs.hostname,
 							maxContentLengthBytes: +attrs.maxContentLengthBytes,
@@ -132,7 +132,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			* generic send receipt function
 			* used for receipts of phone call, read, delivery etc.
 			* */
-	const sendReceipt = async(jid: string, participant: string | undefined, messageIds: string[], type: MessageReceiptType) => {
+	const sendReceipt = async (jid: string, participant: string | undefined, messageIds: string[], type: MessageReceiptType) => {
 		const node: BinaryNode = {
 			tag: 'receipt',
 			attrs: {
@@ -176,20 +176,20 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		await sendNode(node)
 	}
 
-	const sendReceipts = async(keys: WAMessageKey[], type: MessageReceiptType) => {
+	const sendReceipts = async (keys: WAMessageKey[], type: MessageReceiptType) => {
 		const recps = aggregateMessageKeysNotFromMe(keys)
 		for (const { jid, participant, messageIds } of recps) {
 			await sendReceipt(jid, participant, messageIds, type)
 		}
 	}
 
-	const readMessages = async(keys: WAMessageKey[]) => {
+	const readMessages = async (keys: WAMessageKey[]) => {
 		const privacySettings = await fetchPrivacySettings()
 		const readType: MessageReceiptType = privacySettings?.readreceipts === 'all' ? 'read' : 'read-self'
 		await sendReceipts(keys, readType)
 	}
 
-	const getUSyncDevices = async(jids: string[], useCache: boolean, ignoreZeroDevices: boolean) => {
+	const getUSyncDevices = async (jids: string[], useCache: boolean, ignoreZeroDevices: boolean) => {
 		const deviceResults: JidWithDevice[] = []
 
 		if (!useCache) {
@@ -333,7 +333,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return deviceResults
 	}
 
-	const assertSessions = async(jids: string[], force: boolean) => {
+	const assertSessions = async (jids: string[], force: boolean) => {
 		let didFetchNewSession = false
 		let jidsRequiringFetch: string[] = []
 		if (force) {
@@ -459,7 +459,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return didFetchNewSession
 	}
 
-	const sendPeerDataOperationMessage = async(
+	const sendPeerDataOperationMessage = async (
 		pdoMessage: waproto.Message.IPeerDataOperationRequestMessage
 	): Promise<string> => {
 		//TODO: for later, abstract the logic to send a Peer Message instead of just PDO - useful for App State Key Resync with phone
@@ -486,7 +486,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return msgId
 	}
 
-	const createParticipantNodes = async(
+	const createParticipantNodes = async (
 		jids: string[],
 		message: waproto.IMessage,
 		extraAttrs?: BinaryNode['attrs']
@@ -544,7 +544,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return { nodes, shouldIncludeDeviceIdentity }
 	}
 
-	const relayMessage = async(
+	const relayMessage = async (
 		jid: string,
 		message: waproto.IMessage,
 		{
@@ -557,7 +557,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			statusJidList
 		}: MessageRelayOptions
 	) => {
-		return messageRelayMutex.mutex(async() => {
+		return messageRelayMutex.mutex(async () => {
 			const stats = messageRelayMutex.getStats()
 			logger.debug(
 				{
@@ -586,7 +586,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		})
 	}
 
-	const relayMessageInternal = async(
+	const relayMessageInternal = async (
 		jid: string,
 		message: waproto.IMessage,
 		{
@@ -738,7 +738,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 
 		await authState.keys.transaction(
-			async() => {
+			async () => {
 				const mediaType = getMediaType(message)
 				if (mediaType) {
 					extraAttrs['mediatype'] = mediaType
@@ -750,7 +750,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				if (isGroupOrStatus && !isRetryResend) {
 					const [groupData, senderKeyMap] = await Promise.all([
-						(async() => {
+						(async () => {
 							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // TODO: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
 							if (groupData && Array.isArray(groupData?.participants)) {
 								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
@@ -765,7 +765,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 							return groupData
 						})(),
-						(async() => {
+						(async () => {
 							if (!participant && !isStatus) {
 								const result = await authState.keys.get('sender-key-memory', [jid]) // TODO: check out what if the sender key memory doesn't include the LID stuff now?
 								return result[jid] || {}
@@ -1074,7 +1074,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const stanza: BinaryNode = {
 					tag: 'message',
 					attrs: {
-						id: msgId,
+						id: msgId!,
 						type: getMessageType(message),
 						...(additionalAttributes || {})
 					},
@@ -1219,7 +1219,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await sendNode(stanza)
 
 				if (messageRetryManager && !participant) {
-					messageRetryManager.addRecentMessage(destinationJid, msgId, message)
+					messageRetryManager.addRecentMessage(destinationJid, msgId!, message)
 				}
 			}
 		)
@@ -1292,23 +1292,23 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const getButtonAttrs = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['attrs'] => {
 		if (message.interactiveMessage?.nativeFlowMessage) {
 			switch (nativeFlowSpecial) {
-			case 'review_and_pay':
-			case 'payment_info':
-				return {
-					native_flow_name: nativeFlowSpecial === 'review_and_pay' ? 'order_details' : nativeFlowSpecial
-				}
-			case 'galaxy_message':
-				return {
-					actual_actors: '2',
-					host_storage: '2',
-					privacy_mode_ts: unixTimestampSeconds().toString()
-				}
-			default:
-				return {
-					actual_actors: '2',
-					host_storage: '2',
-					privacy_mode_ts: unixTimestampSeconds().toString()
-				}
+				case 'review_and_pay':
+				case 'payment_info':
+					return {
+						native_flow_name: nativeFlowSpecial === 'review_and_pay' ? 'order_details' : nativeFlowSpecial
+					}
+				case 'galaxy_message':
+					return {
+						actual_actors: '2',
+						host_storage: '2',
+						privacy_mode_ts: unixTimestampSeconds().toString()
+					}
+				default:
+					return {
+						actual_actors: '2',
+						host_storage: '2',
+						privacy_mode_ts: unixTimestampSeconds().toString()
+					}
 			}
 		} else if (message.templateMessage) {
 			return {}
@@ -1327,51 +1327,51 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	const getButtonContent = (message: waproto.IMessage, nativeFlowSpecial?: string): BinaryNode['content'] => {
 		if (message.interactiveMessage?.nativeFlowMessage && nativeFlowSpecial) {
 			switch (nativeFlowSpecial) {
-			case 'review_and_pay':
-			case 'payment_info':
-				return []
-			case 'galaxy_message':
-				return [{
-					tag: 'interactive',
-					attrs: {
-						type: 'native_flow',
-						v: '1'
-					},
-					content: [{
-						tag: 'native_flow',
+				case 'review_and_pay':
+				case 'payment_info':
+					return []
+				case 'galaxy_message':
+					return [{
+						tag: 'interactive',
 						attrs: {
-							v: '2',
-							name: nativeFlowSpecial
+							type: 'native_flow',
+							v: '1'
+						},
+						content: [{
+							tag: 'native_flow',
+							attrs: {
+								v: '2',
+								name: nativeFlowSpecial
+							}
+						}]
+					},
+					{
+						tag: 'quality_control',
+						attrs: {
+							source_type: 'third_party'
 						}
 					}]
-				},
-				{
-					tag: 'quality_control',
-					attrs: {
-						source_type: 'third_party'
-					}
-				}]
-			default:
-				return [{
-					tag: 'interactive',
-					attrs: {
-						type: 'native_flow',
-						v: '1'
-					},
-					content: [{
-						tag: 'native_flow',
+				default:
+					return [{
+						tag: 'interactive',
 						attrs: {
-							v: '2',
-							name: nativeFlowSpecial || 'mixed'
+							type: 'native_flow',
+							v: '1'
+						},
+						content: [{
+							tag: 'native_flow',
+							attrs: {
+								v: '2',
+								name: nativeFlowSpecial || 'mixed'
+							}
+						}]
+					},
+					{
+						tag: 'quality_control',
+						attrs: {
+							source_type: 'third_party'
 						}
 					}]
-				},
-				{
-					tag: 'quality_control',
-					attrs: {
-						source_type: 'third_party'
-					}
-				}]
 			}
 		} else if (message.interactiveMessage?.nativeFlowMessage) {
 			return [{
@@ -1393,7 +1393,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const getPrivacyTokens = async(jids: string[]) => {
+	const getPrivacyTokens = async (jids: string[]) => {
 		const t: string = unixTimestampSeconds().toString()
 		const result: BinaryNode = await query({
 			tag: 'iq',
@@ -1449,7 +1449,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		sendPeerDataOperationMessage,
 		createParticipantNodes,
 		getUSyncDevices,
-		updateMediaMessage: async(message: waproto.IWebMessageInfo) => {
+		updateMediaMessage: async (message: waproto.IWebMessageInfo) => {
 			const mediaContent: any = assertMediaContent(message.message)
 			if (!mediaContent.mediaKey || mediaContent.mediaKey.length === 0) {
 				throw new Error('Message does not have a valid mediaKey')
@@ -1463,7 +1463,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			await Promise.all(
 				[
 					sendNode(node),
-					waitForMsgMediaUpdate(async(update) => {
+					waitForMsgMediaUpdate(async (update) => {
 						const result = update.find(c => c.key.id === message.key.id)
 						if (result) {
 							if (result.error) {
@@ -1506,7 +1506,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 			return message
 		},
-		sendMessage: async(
+		sendMessage: async (
 			jid: string,
 			content: AnyMessageContent,
 			options: MiscMessageGenerationOptions = {}

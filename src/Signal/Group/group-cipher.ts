@@ -1,4 +1,3 @@
-import { decrypt, encrypt } from 'libsignal/src/crypto'
 import logger from '../../Utils/logger'
 import queueJob from './queue-job'
 import { SenderKeyMessage } from './sender-key-message'
@@ -7,6 +6,7 @@ import { SenderKeyRecord } from './sender-key-record'
 import { SenderKeyState } from './sender-key-state'
 import { SenderMessageKey } from './sender-message-key'
 import { GROUP_CONSTANTS, SenderKeyStore } from './types'
+import { decrypt, encrypt } from 'libsignal/src/crypto'
 
 export class GroupCipher {
 	private readonly senderKeyStore: SenderKeyStore

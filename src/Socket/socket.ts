@@ -1,7 +1,3 @@
-import { Boom } from '@hapi/boom'
-import { randomBytes } from 'crypto'
-import { URL } from 'url'
-import { promisify } from 'util'
 import { waproto } from '../../WAProto'
 import {
 	DEF_CALLBACK_PREFIX,
@@ -48,6 +44,10 @@ import {
 	S_WHATSAPP_NET
 } from '../WABinary'
 import { WebSocketClient } from './Client'
+import { Boom } from '@hapi/boom'
+import { randomBytes } from 'crypto'
+import { URL } from 'url'
+import { promisify } from 'util'
 
 /**
  * Connects to WA servers and performs:

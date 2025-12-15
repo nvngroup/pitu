@@ -1,12 +1,12 @@
-import { Transform } from 'stream'
-import { promisify } from 'util'
-import { inflate } from 'zlib'
 import { waproto } from '../../WAProto'
 import { Chat, Contact, FetchRequestInit, WAMessageContent, WAMessageStubType } from '../Types'
 import { isJidUser } from '../WABinary'
 import { toNumber } from './generics'
 import { normalizeMessageContent } from './messages'
 import { downloadContentFromMessage } from './messages-media'
+import { Transform } from 'stream'
+import { promisify } from 'util'
+import { inflate } from 'zlib'
 
 const inflatePromise = promisify(inflate)
 

@@ -1,10 +1,10 @@
+import type { BaileysEventEmitter } from '../Types'
+import { delay } from './generics'
+import { makeMutex } from './make-mutex'
 import EventEmitter from 'events'
 import { createReadStream, ReadStream } from 'fs'
 import { writeFile } from 'fs/promises'
 import { createInterface, Interface } from 'readline'
-import type { BaileysEventEmitter } from '../Types'
-import { delay } from './generics'
-import { makeMutex } from './make-mutex'
 
 /**
  * Captures events from a baileys event emitter & stores them in a file

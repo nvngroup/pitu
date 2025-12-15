@@ -1,13 +1,13 @@
 
-import type { Agent } from 'https'
-import type { URL } from 'url'
+import { FetchRequestInit } from '.'
 import { waproto } from '../../WAProto'
 import { ILogger } from '../Utils/logger'
 import { AuthenticationState, SignalAuthState, TransactionCapabilityOptions } from './Auth'
 import { GroupMetadata } from './GroupMetadata'
 import { MediaConnInfo } from './Message'
 import { SignalRepository } from './Signal'
-import { FetchRequestInit } from '.'
+import type { Agent } from 'https'
+import type { URL } from 'url'
 
 export type WAVersion = [number, number, number]
 export type WABrowserDescription = [string, string, string]

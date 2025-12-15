@@ -1,5 +1,3 @@
-import { Boom } from '@hapi/boom'
-import { createHash } from 'crypto'
 import { waproto } from '../../WAProto'
 import {
 	KEY_BUNDLE_TYPE,
@@ -13,6 +11,8 @@ import { Curve, hmacSign } from './crypto'
 import { encodeBigEndian } from './generics'
 import { hasDetails, toBuffer } from './proto-guards'
 import { createSignalIdentity } from './signal'
+import { Boom } from '@hapi/boom'
+import { createHash } from 'crypto'
 
 const getUserAgent = (config: SocketConfig): waproto.ClientPayload.IUserAgent => {
 	return {

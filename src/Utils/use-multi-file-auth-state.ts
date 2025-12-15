@@ -1,11 +1,11 @@
-import AsyncLock from 'async-lock'
-import { mkdir, readFile, stat, unlink, writeFile } from 'fs/promises'
-import { join } from 'path'
 import { waproto } from '../../WAProto'
 import { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from '../Types'
 import { initAuthCreds } from './auth-utils'
 import { BufferJSON } from './generics'
 import logger from './logger'
+import AsyncLock from 'async-lock'
+import { mkdir, readFile, stat, unlink, writeFile } from 'fs/promises'
+import { join } from 'path'
 
 const fileLock = new AsyncLock({ maxPending: Infinity })
 

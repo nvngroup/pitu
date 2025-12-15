@@ -1,8 +1,8 @@
-import { Boom } from '@hapi/boom'
 import type { SignalAuthState, SignalRepository } from '../Types'
 import { FullJid, jidNormalizedUser } from '../WABinary'
 import logger from './logger'
 import { BadMACError } from './types'
+import { Boom } from '@hapi/boom'
 
 /**
  * Specific handler for libsignal "Bad MAC" errors

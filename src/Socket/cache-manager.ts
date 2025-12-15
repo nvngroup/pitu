@@ -1,6 +1,6 @@
-import NodeCache from '@cacheable/node-cache'
 import { DEFAULT_CACHE_TTLS } from '../Defaults'
 import { CacheStore } from '../Types'
+import NodeCache from '@cacheable/node-cache'
 
 /**
  * Centralized cache manager for Socket operations

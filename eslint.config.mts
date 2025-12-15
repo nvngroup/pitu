@@ -11,131 +11,99 @@ import tsParser from "@typescript-eslint/parser";
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = path.dirname(__filename);
 const compat = new FlatCompat({
- baseDirectory: __dirname,
- recommendedConfig: js.configs.recommended,
- allConfig: js.configs.all
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all
 });
 
 export default defineConfig([globalIgnores([
- "src/Tests/*",
- "**/lib",
- "**/coverage",
- "**/*.lock",
- "**/.eslintrc.json",
- "src/WABinary/index.ts",
- "**/WAProto",
- "Example/Example.ts",
- "**/docs",
- "**/proto-extract",
+  "src/Tests/*",
+  "**/lib",
+  "**/coverage",
+  "**/*.lock",
+  "**/.eslintrc.json",
+  "src/WABinary/index.ts",
+  "**/WAProto",
+  "Example/Example.ts",
+  "**/docs",
+  "**/proto-extract",
 ]),
 {
- extends: compat.extends("plugin:prettier/recommended"),
+  extends: compat.extends("plugin:prettier/recommended"),
 
- plugins: {
-  prettier,
-  "@typescript-eslint": typescriptEslint as any,
-  "simple-import-sort": simpleImportSort,
- },
-
- languageOptions: {
-  globals: {},
-  parser: tsParser,
-  ecmaVersion: 5,
-  sourceType: "module",
-
-  parserOptions: {
-   project: "./tsconfig.json",
+  plugins: {
+    prettier,
+    "@typescript-eslint": typescriptEslint as any,
+    "simple-import-sort": simpleImportSort,
   },
- },
 
- rules: {
-  "@typescript-eslint/no-misused-promises": ["error", {
-   checksSpreads: true,
-   checksVoidReturn: false,
-   checksConditionals: true,
-  }],
-  "@typescript-eslint/prefer-optional-chain": ["error"],
-  "@typescript-eslint/no-unnecessary-type-assertion": ["error"],
-  "@typescript-eslint/no-unnecessary-type-constraint": ["error"],
-  "@typescript-eslint/no-redundant-type-constituents": ["error"],
-  "@typescript-eslint/no-inferrable-types": ["error"],
-  "@typescript-eslint/no-explicit-any": ["warn", {
-   ignoreRestArgs: true,
-  }],
-  "@typescript-eslint/no-unused-vars": ["error"],
-  camelcase: ["off"],
-  "no-unneeded-ternary": ["error"],
-  "no-constant-condition": ["error"],
-  "no-constant-binary-expression": "error",
-  "no-trailing-spaces": "error",
-  "no-multi-spaces": "error",
-  "space-infix-ops": "error",
-  indent: ["error", "tab"],
-  quotes: [2, "single", {
-   avoidEscape: true,
-  }],
-  "object-curly-spacing": ["error", "always"],
-  "space-in-parens": ["error", "never"],
-  curly: [2, "all"],
-  "brace-style": ["error"],
-  "linebreak-style": ["error", "unix"],
-  semi: ["error", "never"],
-  "space-before-function-paren": ["error", "never"],
-  "keyword-spacing": ["error", {
-   overrides: {
-    if: {
-     after: true,
-    },
-    for: {
-      after: true,
-    },
-    while: {
-      after: true,
-    },
-    catch: {
-      after: true,
-    },
-   },
-  }],
-  "padding-line-between-statements": ["error", {
-   blankLine: "always",
-   prev: "function",
-   next: "*",
-  }, {
-    blankLine: "always",
-    prev: "block-like",
-    next: "*",
-   }, {
-    blankLine: "always",
-    prev: "import",
-    next: "block-like",
-   }],
+  languageOptions: {
+    globals: {},
+    parser: tsParser,
+    ecmaVersion: 2022,
+    sourceType: "module",
 
-  eqeqeq: "error",
-  "func-names": ["error", "never"],
-  "func-style": ["error", "declaration", {
-   allowArrowFunctions: true,
-  }],
-  "prefer-const": "error",
-  "prefer-arrow-callback": "error",
-  "arrow-spacing": ["error"],
-  "implicit-arrow-linebreak": ["error", "beside"],
-  "no-multiple-empty-lines": "error",
-  "space-before-blocks": "error",
-  "comma-spacing": "error",
-  "no-unused-vars": "off",
-  "jsx-quotes": ["error", "prefer-single"],
-  "simple-import-sort/imports": ["error", {
-   groups: [[
-    "^@?\\w",
-    "^(components|modules|utils)(/.*|$)",
-    "^\\u0000",
-    "^\\.\\.(?!/?$)",
-    "^\\.\\./?$",
-    "^\\./(?=.*/)(?!/?$)",
-    "^\\.(?!/?$)",
-    "^\\./?$",
-   ]],
-  }],
- },
+    parserOptions: {
+      project: "./tsconfig.json",
+    },
+  },
+
+  rules: {
+    "@typescript-eslint/no-misused-promises": ["error", {
+      checksSpreads: true,
+      checksVoidReturn: false,
+      checksConditionals: true,
+    }],
+    "@typescript-eslint/prefer-optional-chain": ["error"],
+    "@typescript-eslint/no-unnecessary-type-assertion": ["error"],
+    "@typescript-eslint/no-unnecessary-type-constraint": ["error"],
+    "@typescript-eslint/no-redundant-type-constituents": ["error"],
+    "@typescript-eslint/no-inferrable-types": ["error"],
+    "@typescript-eslint/no-explicit-any": ["warn", {
+      ignoreRestArgs: true,
+    }],
+    "@typescript-eslint/no-unused-vars": ["error", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_",
+      "caughtErrorsIgnorePattern": "^_"
+    }],
+    camelcase: ["off"],
+    "no-console": ["warn"],
+    "no-unneeded-ternary": ["error"],
+    "no-constant-condition": ["error"],
+    "no-constant-binary-expression": "error",
+    curly: [2, "all"],
+
+    "padding-line-between-statements": ["error", {
+      blankLine: "always",
+      prev: "function",
+      next: "*",
+    }, {
+        blankLine: "always",
+        prev: "block-like",
+        next: "*",
+      }, {
+        blankLine: "always",
+        prev: "import",
+        next: "block-like",
+      }],
+
+    eqeqeq: "error",
+    "func-names": ["error", "never"],
+    "prefer-const": "error",
+    "no-unused-vars": "off",
+    "simple-import-sort/imports": ["error", {
+      groups: [[
+        "^@?\\w",
+        "^(components|modules|utils)(/.*|$)",
+        "^\\u0000",
+        "^\\.\\.(?!/?$)",
+        "^\\.\\./?$",
+        "^\\./(?=.*/)(?!/?$)",
+        "^\\.(?!/?$)",
+        "^\\./?$",
+        "^(.*)$",
+      ]],
+    }],
+  },
 }]);

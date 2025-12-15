@@ -1,11 +1,11 @@
 
-import type { Readable } from 'stream'
-import type { URL } from 'url'
 import { waproto } from '../../WAProto'
 import { MEDIA_HKDF_KEY_MAPPING } from '../Defaults'
 import { BinaryNode } from '../WABinary'
 import type { GroupMetadata } from './GroupMetadata'
 import { CacheStore } from './Socket'
+import type { Readable } from 'stream'
+import type { URL } from 'url'
 
 export { waproto as WAProto }
 export type WAMessageContent = waproto.IMessage
@@ -34,8 +34,8 @@ export type WALocationMessage = waproto.Message.ILocationMessage
 export type WAGenericMediaMessage = waproto.Message.IVideoMessage | waproto.Message.IImageMessage | waproto.Message.IAudioMessage | waproto.Message.IDocumentMessage | waproto.Message.IStickerMessage
 export const WAMessageStubType = waproto.WebMessageInfo.StubType
 export const WAMessageStatus = waproto.WebMessageInfo.Status
-import { ILogger } from '../Utils/logger'
 import { FetchRequestInit } from '.'
+import { ILogger } from '../Utils/logger'
 export type WAMediaPayloadURL = { url: URL | string }
 export type WAMediaPayloadStream = { stream: Readable }
 export type WAMediaUpload = Buffer | WAMediaPayloadStream | WAMediaPayloadURL

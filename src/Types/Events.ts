@@ -1,4 +1,3 @@
-import type { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { AuthenticationCreds } from './Auth'
 import { WACallEvent } from './Call'
@@ -9,6 +8,7 @@ import { Label } from './Label'
 import { LabelAssociation } from './LabelAssociation'
 import { MessageUpsertType, MessageUserReceiptUpdate, WAMessage, WAMessageKey, WAMessageUpdate } from './Message'
 import { ConnectionState } from './State'
+import type { Boom } from '@hapi/boom'
 
 export type BaileysEventMap = {
 	'connection.update': Partial<ConnectionState>

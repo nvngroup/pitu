@@ -1,6 +1,6 @@
-import { Boom } from '@hapi/boom'
 import type { BinaryNode } from '../WABinary'
 import { getBinaryNodeChild, S_WHATSAPP_NET } from '../WABinary'
+import { Boom } from '@hapi/boom'
 
 const wMexQuery = (
 	variables: Record<string, unknown>,

@@ -1,10 +1,10 @@
-import fetch from 'node-fetch'
-import { Readable } from 'stream'
 import { MediaDecryptionKeyInfo } from '../Types'
 import { createFallbackDecryptStream } from '../Utils/fallback-decryption'
 import { downloadEncryptedContent as originalDownloadEncryptedContent } from '../Utils/messages-media'
 import logger from './logger'
 import { MediaDownloadOptions } from './types'
+import fetch from 'node-fetch'
+import { Readable } from 'stream'
 
 /**
  * Versão modificada da função downloadEncryptedContent que tenta usar

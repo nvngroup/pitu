@@ -1,9 +1,4 @@
 
-import { Boom } from '@hapi/boom'
-import { randomBytes } from 'crypto'
-import { promises as fs } from 'fs'
-import fetch from 'node-fetch'
-import { type Transform } from 'stream'
 import { waproto } from '../../WAProto'
 import { CALL_AUDIO_PREFIX, CALL_VIDEO_PREFIX, MEDIA_KEYS, URL_REGEX, WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import {
@@ -32,6 +27,11 @@ import { ILogger } from './logger'
 import { downloadContentFromMessage, encryptedStream, generateThumbnail, getAudioDuration, getAudioWaveform, getRawMediaUploadData, MediaDownloadOptions } from './messages-media'
 import { assertMessageContent } from './proto-guards'
 import { ButtonType, MediaUploadData, MessageTypeProto, MIMETYPE_MAP } from './types'
+import { Boom } from '@hapi/boom'
+import { randomBytes } from 'crypto'
+import { promises as fs } from 'fs'
+import fetch from 'node-fetch'
+import { type Transform } from 'stream'
 
 /**
  * Uses a regex to test whether the string contains a URL, and returns the URL if it does.

@@ -1,6 +1,6 @@
-import { Boom } from '@hapi/boom'
 import { BinaryNode } from '../WABinary'
 import { QueryFunction, RetryConfig } from './types'
+import { Boom } from '@hapi/boom'
 
 /**
  * Enhanced query utility with configurable retry logic and exponential backoff

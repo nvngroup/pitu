@@ -1,4 +1,3 @@
-import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import {
 	type GroupMetadata,
@@ -21,6 +20,7 @@ import {
 	jidNormalizedUser
 } from '../WABinary'
 import { makeChatsSocket } from './chats'
+import { Boom } from '@hapi/boom'
 
 export const makeGroupsSocket = (config: SocketConfig) => {
 	const sock = makeChatsSocket(config)

@@ -1,6 +1,6 @@
+import logger from './logger'
 import { createDecipheriv, DecipherGCM } from 'crypto'
 import { Transform } from 'stream'
-import logger from './logger'
 
 /**
  * Função alternativa para descriptografia quando a padrão falhar

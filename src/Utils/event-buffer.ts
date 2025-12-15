@@ -1,4 +1,3 @@
-import EventEmitter from 'events'
 import { waproto } from '../../WAProto'
 import { BaileysEvent, BaileysEventMap, BufferedEventData, Chat, ChatUpdate, Contact, GroupMetadata, MessageUpsertType, WAMessage, WAMessageKey, WAMessageStatus, WAMessageUpdate } from '../Types'
 import { trimUndefined } from './generics'
@@ -6,6 +5,7 @@ import { ILogger } from './logger'
 import { updateMessageWithReaction, updateMessageWithReceipt } from './messages'
 import { isRealMessage, shouldIncrementChatUnread } from './process-message'
 import { BaileysBufferableEventEmitter, BaileysEventData, BUFFERABLE_EVENT_SET, BufferableEvent } from './types'
+import EventEmitter from 'events'
 
 /**
  * The event buffer logically consolidates different events into a single event

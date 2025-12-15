@@ -1,9 +1,9 @@
-import { randomBytes } from 'crypto'
 import { CacheManager } from '../Socket'
 import type { AuthenticationCreds, CacheStore, KeyPair, SignalDataSet, SignalDataTypeMap, SignalKeyStore, SignalKeyStoreWithTransaction, TransactionCapabilityOptions } from '../Types'
 import { Curve, signedKeyPair } from './crypto'
 import { delay, generateRegistrationId } from './generics'
 import { ILogger } from './logger'
+import { randomBytes } from 'crypto'
 
 
 function getUniqueId(type: string, id: string) {

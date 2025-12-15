@@ -1,5 +1,5 @@
-import { calculateMAC } from 'libsignal/src/crypto'
 import { SenderMessageKey } from './sender-message-key'
+import { calculateMAC } from 'libsignal/src/crypto'
 
 export class SenderChainKey {
 	private readonly MESSAGE_KEY_SEED: Uint8Array = Buffer.from([0x01])

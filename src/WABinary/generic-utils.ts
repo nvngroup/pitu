@@ -1,7 +1,7 @@
-import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { toBuffer } from '../Utils/proto-guards'
 import { BinaryNode } from './types'
+import { Boom } from '@hapi/boom'
 
 export const getBinaryNodeChildren = (node: BinaryNode | undefined, childTag: string) => {
 	if (Array.isArray(node?.content)) {

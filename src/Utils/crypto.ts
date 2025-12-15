@@ -1,8 +1,8 @@
-import { CipherGCM, Cipheriv, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, Decipheriv, randomBytes } from 'crypto'
-import * as curve from 'libsignal/src/curve'
 import { KEY_BUNDLE_TYPE } from '../Defaults'
 import type { KeyPair } from '../Types'
 import logger from './logger'
+import { CipherGCM, Cipheriv, createCipheriv, createDecipheriv, createHash, createHmac, DecipherGCM, Decipheriv, randomBytes } from 'crypto'
+import * as curve from 'libsignal/src/curve'
 
 // insure browser & node compatibility
 const { subtle } = globalThis.crypto

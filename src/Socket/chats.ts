@@ -1,4 +1,3 @@
-import { Boom } from '@hapi/boom'
 import { waproto } from '../../WAProto'
 import { PROCESSABLE_HISTORY_TYPES } from '../Defaults'
 import { ALL_WA_PATCH_NAMES, CacheStore, ChatModification, ChatMutation, Contact, ContactAction, LTHashState, MessageUpsertType, PresenceData, SocketConfig, WABusinessHoursConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPatchName, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types'
@@ -12,6 +11,7 @@ import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, isLidUser, jidDe
 import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import { makeUSyncSocket } from './usync'
+import { Boom } from '@hapi/boom'
 
 const MAX_SYNC_ATTEMPTS = 2
 

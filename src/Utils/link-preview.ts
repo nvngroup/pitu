@@ -1,8 +1,8 @@
-import { Readable } from 'stream'
 import { FetchHeadersInit, WAMediaUploadFunction, WAUrlInfo } from '../Types'
 import { ILogger } from './logger'
 import { prepareWAMessageMedia } from './messages'
 import { extractImageThumb, getHttpStream } from './messages-media'
+import { Readable } from 'stream'
 
 const THUMBNAIL_WIDTH_PX = 192
 

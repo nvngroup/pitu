@@ -1,5 +1,4 @@
-import { Boom } from '@hapi/boom'
-import { Transform } from 'stream'
+import { protoToBuffer } from '.'
 import { waproto } from '../../WAProto'
 import { AccountSettings, BaileysEventEmitter, Chat, ChatModification, ChatMutation, ChatUpdate, Contact, FetchRequestInit, InitialAppStateSyncOptions, LastMessageList, LTHashState, MinimalMessage, WAPatchCreate, WAPatchName } from '../Types'
 import { ChatLabelAssociation, LabelAssociationType, MessageLabelAssociation } from '../Types/LabelAssociation'
@@ -10,7 +9,8 @@ import { ILogger } from './logger'
 import { LT_HASH_ANTI_TAMPERING } from './lt-hash'
 import { downloadContentFromMessage, } from './messages-media'
 import { ChatMutationMap, FetchAppStateSyncKey } from './types'
-import { protoToBuffer } from '.'
+import { Boom } from '@hapi/boom'
+import { Transform } from 'stream'
 
 
 const mutationKeys = async(keydata: Uint8Array) => {

@@ -1,7 +1,7 @@
-import { Boom } from '@hapi/boom'
 import logger from './logger'
 import { sessionDiagnostics } from './session-diagnostics'
 import { MACErrorInfo } from './types'
+import { Boom } from '@hapi/boom'
 
 /**
  * Classe para gerenciar e recuperar erros de MAC

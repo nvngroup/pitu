@@ -1,13 +1,13 @@
-import { Boom } from '@hapi/boom'
-import { createHash, Hash } from 'crypto'
-import { createWriteStream, promises as fs, WriteStream } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import { CatalogCollection, CatalogStatus, OrderDetails, OrderProduct, Product, ProductCreate, ProductUpdate, WAMediaUpload, WAMediaUploadFunction } from '../Types'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, getBinaryNodeChildString } from '../WABinary'
 import { generateMessageIDV2 } from './generics'
 import logger from './logger'
 import { getStream, getUrlFromDirectPath } from './messages-media'
+import { Boom } from '@hapi/boom'
+import { createHash, Hash } from 'crypto'
+import { createWriteStream, promises as fs, WriteStream } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 
 export const parseCatalogNode = (node: BinaryNode) => {
 	const catalogNode: BinaryNode | undefined = getBinaryNodeChild(node, 'product_catalog')
