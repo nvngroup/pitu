@@ -27,6 +27,18 @@ export function hasValidMessageKey(key: waproto.IMessageKey | null | undefined):
 	return !!(key?.remoteJid && key.id)
 }
 
+/**
+ * Safely extracts message ID from message key
+ * Throws error if message key or ID is missing
+ */
+export function getMessageId(key: waproto.IMessageKey | null | undefined): string {
+	if (!key?.id) {
+		throw new Error('Message key ID is required')
+	}
+
+	return key.id
+}
+
 // ============================================================================
 // MESSAGE CONTENT VALIDATORS
 // ============================================================================
