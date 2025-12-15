@@ -68,7 +68,7 @@ const botRegexp = /^1313555\d{4}$|^131655500\d{2}$/
 export const isJidBot = (jid: string | undefined) => jid && botRegexp.test(jid.split('@')[0]) && jid.endsWith('@c.us')
 
 export const jidNormalizedUser = (jid: string | undefined) => {
-	const result = jidDecode(jid)
+	const result: FullJid | undefined = jidDecode(jid)
 	if (!result) {
 		return ''
 	}
@@ -80,6 +80,24 @@ export const jidNormalizedUser = (jid: string | undefined) => {
 export const transferDevice = (fromJid: string, toJid: string) => {
 	const fromDecoded: FullJid | undefined = jidDecode(fromJid)
 	const deviceId: number = fromDecoded?.device || 0
-	const { server, user } = jidDecode(toJid)!
+	const toDecoded: FullJid | undefined = jidDecode(toJid)
+	if (!toDecoded) {
+		throw new Error(`Invalid toJid: ${toJid}`)
+	}
+
+	const { server, user } = toDecoded
 	return jidEncode(user, server, deviceId)
+}
+
+/**
+ * Safely decodes a JID with error handling
+ * Throws an error if the JID is invalid
+ */
+export const assertJidDecode = (jid: string | undefined, context = 'JID'): FullJid => {
+	const decoded: FullJid | undefined = jidDecode(jid)
+	if (!decoded) {
+		throw new Error(`${context} is invalid or missing: ${jid}`)
+	}
+
+	return decoded
 }

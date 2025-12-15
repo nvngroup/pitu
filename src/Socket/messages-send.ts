@@ -4,7 +4,7 @@ import { WA_DEFAULT_EPHEMERAL } from '../Defaults'
 import { AlbumMedia, AnyMessageContent, CacheStore, GroupMetadata, MediaConnInfo, MessageReceiptType, MessageRelayOptions, MiscMessageGenerationOptions, nativeFlowSpecials, SocketConfig, WAMessageKey } from '../Types'
 import { aggregateMessageKeysNotFromMe, assertMediaContent, bindWaitForEvent, decryptMediaRetryData, delay, encodeSignedDeviceIdentity, encodeWAMessage, encryptMediaRetryRequest, extractDeviceJids, generateMessageIDV2, generateParticipantHashV2, generateWAMessage, getContentType, getStatusCodeForMediaRetry, getUrlFromDirectPath, getUserId, getUserLid, getWAUploadToServer, makeMessageRelayMutex, normalizeMessageContent, parseAndInjectE2ESessions, unixTimestampSeconds } from '../Utils'
 import { getUrlInfo } from '../Utils/link-preview'
-import { areJidsSameUser, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
+import { areJidsSameUser, assertJidDecode, BinaryNode, BinaryNodeAttributes, FullJid, getBinaryNodeChild, getBinaryNodeChildren, isHostedLidUser, isHostedPnUser, isJidGroup, isJidNewsletter, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser, JidWithDevice, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncQueryResultList, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import ListType = waproto.Message.ListMessage.ListType;
@@ -604,7 +604,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		const isRetryResend = Boolean(participant?.jid)
 		let shouldIncludeDeviceIdentity: boolean = isRetryResend
 
-		const { user, server } = jidDecode(jid)!
+		const { user, server } = assertJidDecode(jid, 'Destination JID')
 		const statusJid = 'status@broadcast'
 		const isGroup: boolean = server === 'g.us'
 		const isStatus: boolean = jid === statusJid
