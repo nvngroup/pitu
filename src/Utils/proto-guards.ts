@@ -358,5 +358,6 @@ export function getAccount<T = any>(creds: { account?: T | null }): T {
 	if (!creds.account) {
 		throw new Error('Account information is not available')
 	}
+
 	return creds.account
 }
