@@ -459,10 +459,19 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return didFetchNewSession
 	}
 
+	/**
+	 * Sends a Peer Data Operation (PDO) request message to the user's own device.
+	 * 
+	 * Current implementation is specialized for PDO messages. Future enhancement opportunity:
+	 * Abstract this into a generic peer message sender that can handle multiple protocol message types
+	 * (PDO, App State Key Resync, etc.) to reduce code duplication and improve maintainability.
+	 * 
+	 * @param pdoMessage - The PDO request message to send
+	 * @returns The message ID of the sent message
+	 */
 	const sendPeerDataOperationMessage = async (
 		pdoMessage: waproto.Message.IPeerDataOperationRequestMessage
 	): Promise<string> => {
-		//TODO: for later, abstract the logic to send a Peer Message instead of just PDO - useful for App State Key Resync with phone
 		if (!authState.creds.me?.id) {
 			throw new Boom('Not authenticated')
 		}
@@ -932,7 +941,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					})
 					await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
 				} else {
-					// TODO: investigate if this is true
+					/**
+					 * Select the correct identity (LID or PN) for 1:1 conversation encryption.
+					 * For @lid conversations, use meLid when available; otherwise use meId (PN).
+					 * This ensures consistent addressing mode between sender and recipient.
+					 */
 					let ownId: string = meId
 					if (isLid && meLid) {
 						ownId = meLid
