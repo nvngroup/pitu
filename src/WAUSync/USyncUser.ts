@@ -4,6 +4,9 @@ export class USyncUser {
 	username?: string
 	phone: string
 	type: string
+	devicePhash?: string
+	deviceTimestamp?: number
+	deviceExpectedTimestamp?: number
 
 	withId(id: string) {
 		this.id = id
@@ -27,6 +30,21 @@ export class USyncUser {
 
 	withType(type: string) {
 		this.type = type
+		return this
+	}
+
+	withDevicePhash(phash: string) {
+		this.devicePhash = phash
+		return this
+	}
+
+	withDeviceTimestamp(timestamp: number) {
+		this.deviceTimestamp = timestamp
+		return this
+	}
+
+	withDeviceExpectedTimestamp(expectedTimestamp: number) {
+		this.deviceExpectedTimestamp = expectedTimestamp
 		return this
 	}
 }

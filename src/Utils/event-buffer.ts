@@ -396,6 +396,7 @@ function append<E extends BufferableEvent>(
 					if (!data.messageDeletes[keyStr]) {
 						data.messageDeletes[keyStr] = key
 					}
+
 					delete data.messageUpdates[keyStr]
 					deletedCount++
 				}
