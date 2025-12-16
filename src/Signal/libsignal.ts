@@ -438,7 +438,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					const pnSessions = await parsedKeys.get('session', pnAddrs)
 
 					const sessionUpdates: { [key: string]: Uint8Array | null } = {}
-					let migratedCount: number = 0
+					let migratedCount = 0
 
 					for (const op of migrationOps) {
 						const pnSession = pnSessions[op.pnAddr]

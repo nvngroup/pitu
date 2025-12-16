@@ -751,10 +751,33 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				if (isGroupOrStatus && !isRetryResend) {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async () => {
-							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined // TODO: should we rely on the cache specially if the cache is outdated and the metadata has new fields?
-							if (groupData && Array.isArray(groupData?.participants)) {
-								logger.trace({ jid, participants: groupData.participants.length }, 'using cached group metadata')
+							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
+							
+							/**
+							 * Validate cached metadata has critical fields needed for message relay.
+							 * Critical fields: participants (required), addressingMode (required for LID/PN routing)
+							 * If cache is missing critical fields, fetch fresh data from server.
+							 */
+							const hasCriticalFields = groupData 
+								&& Array.isArray(groupData.participants) 
+								&& groupData.participants.length > 0
+								&& typeof groupData.addressingMode === 'string'
+							
+							if (hasCriticalFields) {
+								logger.trace({ 
+									jid, 
+									participants: groupData!.participants.length,
+									addressingMode: groupData!.addressingMode
+								}, 'using cached group metadata with all critical fields')
 							} else if (!isStatus) {
+								if (groupData && !hasCriticalFields) {
+									logger.debug({ 
+										jid, 
+										hasParticipants: Array.isArray(groupData?.participants),
+										hasAddressingMode: !!groupData?.addressingMode 
+									}, 'cached metadata missing critical fields, fetching from server')
+								}
+								
 								try {
 									groupData = await groupMetadataWithRetry(jid, 3, 300_000)
 								} catch (error) {
