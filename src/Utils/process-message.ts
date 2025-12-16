@@ -395,7 +395,7 @@ const processMessage = async(
 
 						// Handle media upload result
 						if (result.mediaUploadResult !== undefined && result.mediaUploadResult !== null) {
-							const resultType = waproto.MediaRetryNotification.ResultType[result.mediaUploadResult]
+							const resultType: string = waproto.MediaRetryNotification.ResultType[result.mediaUploadResult]
 							logger?.debug(
 								{
 									stanzaId: response.stanzaId,
@@ -409,8 +409,8 @@ const processMessage = async(
 
 						// Handle full history sync on-demand response
 						if (result.fullHistorySyncOnDemandRequestResponse) {
-							const historyResponse = result.fullHistorySyncOnDemandRequestResponse
-							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FullHistorySyncOnDemandResponseCode[historyResponse.responseCode || 0]
+							const historyResponse: waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.IFullHistorySyncOnDemandRequestResponse = result.fullHistorySyncOnDemandRequestResponse
+							const responseCodeName: string = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FullHistorySyncOnDemandResponseCode[historyResponse.responseCode || 0]
 							logger?.info(
 								{
 									stanzaId: response.stanzaId,
@@ -425,9 +425,9 @@ const processMessage = async(
 
 						// Handle history sync chunk retry response
 						if (result.historySyncChunkRetryResponse) {
-							const chunkRetry = result.historySyncChunkRetryResponse
-							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.HistorySyncChunkRetryResponseCode[chunkRetry.responseCode || 0]
-							const syncTypeName = waproto.Message.HistorySyncType[chunkRetry.syncType || 0]
+							const chunkRetry: waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.IHistorySyncChunkRetryResponse = result.historySyncChunkRetryResponse
+							const responseCodeName: string = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.HistorySyncChunkRetryResponseCode[chunkRetry.responseCode || 0]
+							const syncTypeName: string = waproto.Message.HistorySyncType[chunkRetry.syncType || 0]
 							logger?.info(
 								{
 									stanzaId: response.stanzaId,
