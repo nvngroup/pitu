@@ -752,32 +752,32 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const [groupData, senderKeyMap] = await Promise.all([
 						(async () => {
 							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
-							
+
 							/**
 							 * Validate cached metadata has critical fields needed for message relay.
 							 * Critical fields: participants (required), addressingMode (required for LID/PN routing)
 							 * If cache is missing critical fields, fetch fresh data from server.
 							 */
-							const hasCriticalFields = groupData 
-								&& Array.isArray(groupData.participants) 
+							const hasCriticalFields = groupData
+								&& Array.isArray(groupData.participants)
 								&& groupData.participants.length > 0
 								&& typeof groupData.addressingMode === 'string'
-							
+
 							if (hasCriticalFields) {
-								logger.trace({ 
-									jid, 
+								logger.trace({
+									jid,
 									participants: groupData!.participants.length,
 									addressingMode: groupData!.addressingMode
 								}, 'using cached group metadata with all critical fields')
 							} else if (!isStatus) {
 								if (groupData && !hasCriticalFields) {
-									logger.debug({ 
-										jid, 
+									logger.debug({
+										jid,
 										hasParticipants: Array.isArray(groupData?.participants),
-										hasAddressingMode: !!groupData?.addressingMode 
+										hasAddressingMode: !!groupData?.addressingMode
 									}, 'cached metadata missing critical fields, fetching from server')
 								}
-								
+
 								try {
 									groupData = await groupMetadataWithRetry(jid, 3, 300_000)
 								} catch (error) {
@@ -790,8 +790,55 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						})(),
 						(async () => {
 							if (!participant && !isStatus) {
-								const result = await authState.keys.get('sender-key-memory', [jid]) // TODO: check out what if the sender key memory doesn't include the LID stuff now?
-								return result[jid] || {}
+								/**
+								 * Sender key memory tracks which devices have received the sender key for this group.
+								 * With LID addressing, we need to ensure the memory uses the correct addressing mode.
+								 * 
+								 * Problem: If a group migrated from PN to LID addressing (or vice versa), the cached
+								 * sender-key-memory will have entries in the old format (e.g., user@s.whatsapp.net)
+								 * while we now need entries in the new format (e.g., user@lid).
+								 * 
+								 * Solution: For groups with LID addressing, validate that cached entries use @lid domain.
+								 * If they don't match the expected addressing mode, treat cache as empty to force resend.
+								 */
+								const cachedResult = await authState.keys.get('sender-key-memory', [jid])
+								const cachedMap = cachedResult[jid] || {}
+
+								// If no group metadata available yet, return cached map as-is
+								if (!groupData) {
+									return cachedMap
+								}
+
+								const expectedAddressingMode = groupData.addressingMode || 'lid'
+								const expectedDomain = expectedAddressingMode === 'lid' ? '@lid' : '@s.whatsapp.net'
+
+								// Validate cached entries match current addressing mode
+								const cachedKeys = Object.keys(cachedMap)
+								if (cachedKeys.length === 0) {
+									return cachedMap
+								}
+
+								// Check if cached entries use the correct domain
+								const allEntriesMatchAddressingMode = cachedKeys.every(key => key.includes(expectedDomain))
+
+								if (allEntriesMatchAddressingMode) {
+									logger.trace({ 
+										jid, 
+										addressingMode: expectedAddressingMode, 
+										cachedCount: cachedKeys.length 
+									}, 'sender-key-memory matches group addressing mode')
+									return cachedMap
+								}
+
+								// Addressing mode mismatch - cache is outdated, treat as empty
+								logger.debug({ 
+									jid, 
+									expectedMode: expectedAddressingMode, 
+									cachedSample: cachedKeys.slice(0, 3),
+									cachedCount: cachedKeys.length
+								}, 'sender-key-memory addressing mode mismatch, will resend sender keys')
+
+								return {}
 							}
 
 							return {}
