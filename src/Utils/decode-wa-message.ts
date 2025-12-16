@@ -1,7 +1,7 @@
 import { waproto } from '../../WAProto'
 import { CacheManager } from '../Socket/cache-manager'
 import { CacheStore, SignalRepository, WAMessage, WAMessageKey } from '../Types'
-import { areJidsSameUser, BinaryNode, FullJid, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
+import { areJidsSameUser, BinaryNode, FullJid, isHostedLidUser, isHostedPnUser, isJidBroadcast, isJidGroup, isJidMetaAI, isJidNewsletter, isJidStatusBroadcast, isJidUser, isLidUser, isPnUser, jidDecode, jidEncode, jidNormalizedUser } from '../WABinary'
 import { unpadRandomMax16 } from './generics'
 import { ILogger } from './logger'
 import { macErrorManager } from './mac-error-handler'
@@ -43,14 +43,32 @@ const storeMappingFromEnvelope = async(
 	decryptionJid: string,
 	logger: ILogger
 ): Promise<void> => {
-	// TODO: Handle hosted IDs
+	/**
+	 * Extract and store LID<->PN mappings from message envelope.
+	 * Handles both standard and hosted ID domains:
+	 * - Standard: @lid <-> @s.whatsapp.net
+	 * - Hosted: @hosted.lid <-> @hosted
+	 */
 	const { senderAlt } = extractAddressingContext(stanza)
 
-	if (senderAlt && isLidUser(senderAlt) && isPnUser(sender) && decryptionJid === sender) {
+	if (!senderAlt) {
+		return
+	}
+
+	// Check if senderAlt is LID (standard or hosted) and sender is PN (standard or hosted)
+	const isSenderAltLid: boolean = !!(isLidUser(senderAlt) || isHostedLidUser(senderAlt))
+	const isSenderPn: boolean = !!(isPnUser(sender) || isHostedPnUser(sender))
+
+	if (isSenderAltLid && isSenderPn && decryptionJid === sender) {
 		try {
 			await repository.lidMapping.storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
 			await repository.migrateSession(sender, senderAlt)
-			logger.debug({ sender, senderAlt }, 'Stored LID mapping from envelope')
+
+			const isHosted: boolean = !!(isHostedLidUser(senderAlt) || isHostedPnUser(sender))
+			logger.debug(
+				{ sender, senderAlt, isHosted },
+				`Stored ${isHosted ? 'hosted ' : ''}LID mapping from envelope`
+			)
 		} catch (error) {
 			logger.warn({ sender, senderAlt, error }, 'Failed to store LID mapping')
 		}
@@ -95,7 +113,7 @@ const processMessageContent = async(
 		const msgBuffer: Uint8Array = await decryptMessageContent(tag, attrs, content, sender, author, repository)
 		const decryptionJid: string = await getDecryptionJid(author, repository)
 		if (tag !== 'plaintext') {
-			// TODO: Handle hosted devices
+			// Store LID<->PN mapping from envelope (supports standard and hosted IDs)
 			storeMappingFromEnvelope(stanza, author, repository, decryptionJid, logger)
 		}
 
