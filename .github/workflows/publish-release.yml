@@ -78,6 +78,15 @@ jobs:
         with:
           node-version: 20.x
           registry-url: "https://registry.npmjs.org"
+
+      - name: Configure NPM with Granular Token
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
+
+      - name: Verify NPM Authentication
+        run: npm whoami
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -95,8 +104,6 @@ jobs:
 
       - name: Install Dependencies
         run: yarn
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Make Package
         run: npm pack
@@ -107,8 +114,6 @@ jobs:
       - name: Publish to npmjs
         continue-on-error: true
         run: npm publish nvngroup-baileys-npmjs.tgz --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-github-packages:
     runs-on: ubuntu-latest
