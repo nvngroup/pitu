@@ -746,17 +746,17 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
 				/**
 				 * Set decrypt-fail behavior for message types that should be hidden on decryption failure.
-				 * 
+				 *
 				 * Messages that use 'hide':
 				 * - pinInChatMessage: Pin/unpin actions shouldn't show decryption errors
 				 * - reactionMessage: Reactions should silently fail if they can't be decrypted
 				 * - viewOnceMessage/V2/V2Extension: View-once media should hide on failure
 				 * - ephemeralMessage: Disappearing messages should hide on failure
-				 * 
+				 *
 				 * This prevents confusing error messages for metadata-type operations.
 				 */
 				const normalizedMsg = normalizeMessageContent(message)
-				const shouldHideOnDecryptFail = 
+				const shouldHideOnDecryptFail =
 					normalizedMsg?.pinInChatMessage ||
 					normalizedMsg?.reactionMessage ||
 					normalizedMsg?.viewOnceMessage ||
