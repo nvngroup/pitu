@@ -363,10 +363,14 @@ const processMessage = async(
 					placeholderResendCache?.del(response.stanzaId)
 				}
 
-				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
+				/**
+				 * Process peer data operation results. These are responses from the companion device
+				 * for various operations like message resends, media uploads, history sync requests, etc.
+				 */
 				const { peerDataOperationResult } = response
 				if (peerDataOperationResult) {
 					for (const result of peerDataOperationResult) {
+						// Handle placeholder message resend (retry failed messages)
 						const { placeholderMessageResendResponse: retryResponse } = result
 						if (retryResponse?.webMessageInfoBytes) {
 							const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes)
@@ -377,6 +381,123 @@ const processMessage = async(
 									requestId: response.stanzaId || ''
 								})
 							}, 500)
+						}
+
+						// Handle sticker message result (sticker uploads from companion)
+						if (result.stickerMessage) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received sticker message via peer operation'
+							)
+							// Sticker is already uploaded by companion, can be used directly
+							// Future enhancement: emit event if application needs to track sticker uploads
+						}
+
+						// Handle media upload result
+						if (result.mediaUploadResult !== undefined && result.mediaUploadResult !== null) {
+							const resultType = waproto.MediaRetryNotification.ResultType[result.mediaUploadResult]
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									result: resultType
+								},
+								'Received media upload result via peer operation'
+							)
+							// Media upload completed by companion device
+							// Success/failure is indicated by mediaUploadResult enum value
+						}
+
+						// Handle full history sync on-demand response
+						if (result.fullHistorySyncOnDemandRequestResponse) {
+							const historyResponse = result.fullHistorySyncOnDemandRequestResponse
+							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FullHistorySyncOnDemandResponseCode[historyResponse.responseCode || 0]
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									responseCode: responseCodeName,
+									requestMetadata: historyResponse.requestMetadata
+								},
+								'Received full history sync on-demand response'
+							)
+							// History sync will be delivered via HISTORY_SYNC_NOTIFICATION messages
+							// This response just confirms the request was processed
+						}
+
+						// Handle history sync chunk retry response
+						if (result.historySyncChunkRetryResponse) {
+							const chunkRetry = result.historySyncChunkRetryResponse
+							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.HistorySyncChunkRetryResponseCode[chunkRetry.responseCode || 0]
+							const syncTypeName = waproto.Message.HistorySyncType[chunkRetry.syncType || 0]
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									syncType: syncTypeName,
+									chunkOrder: chunkRetry.chunkOrder,
+									responseCode: responseCodeName,
+									canRecover: chunkRetry.canRecover
+								},
+								'Received history sync chunk retry response'
+							)
+							// Indicates whether a failed history chunk can be retried
+							// Client should retry if canRecover is true
+						}
+
+						// Handle link preview response
+						if (result.linkPreviewResponse) {
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									url: result.linkPreviewResponse.url,
+									hasThumb: !!result.linkPreviewResponse.thumbData
+								},
+								'Received link preview response via peer operation'
+							)
+							// Link preview data fetched by companion device
+							// Contains title, description, thumbnail for the URL
+						}
+
+						// Handle syncd snapshot fatal recovery response
+						if (result.syncdSnapshotFatalRecoveryResponse) {
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									isCompressed: result.syncdSnapshotFatalRecoveryResponse.isCompressed,
+									snapshotSize: result.syncdSnapshotFatalRecoveryResponse.collectionSnapshot?.length
+								},
+								'Received syncd snapshot fatal recovery response'
+							)
+							// Critical recovery data for app state sync corruption
+							// Contains collection snapshot to restore app state
+						}
+
+						// Handle companion meta nonce fetch response (internal metadata)
+						if (result.companionMetaNonceFetchRequestResponse) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received companion meta nonce fetch response'
+							)
+							// Internal nonce for companion device security operations
+						}
+
+						// Handle companion canonical user nonce fetch response
+						if (result.companionCanonicalUserNonceFetchRequestResponse) {
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									forceRefresh: result.companionCanonicalUserNonceFetchRequestResponse.forceRefresh
+								},
+								'Received companion canonical user nonce fetch response'
+							)
+							// User identity nonce for canonical user verification
+						}
+
+						// Handle waffle nonce fetch response (internal)
+						if (result.waffleNonceFetchRequestResponse) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received waffle nonce fetch response'
+							)
+							// Internal nonce for WhatsApp feature flags system
 						}
 					}
 				}
