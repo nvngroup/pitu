@@ -412,15 +412,15 @@ export const generateWAMessageContent = async(
 			message.disappearingMessagesInChat
 		m = prepareDisappearingMessageSettingContent(exp)
 	} else if ('groupInvite' in message) {
-		m.groupInviteMessage = {}
-		m.groupInviteMessage.inviteCode = message.groupInvite.inviteCode
-		m.groupInviteMessage.inviteExpiration = message.groupInvite.inviteExpiration
-		m.groupInviteMessage.caption = message.groupInvite.text
+		m.groupInviteMessage = {
+			groupJid: message.groupInvite.jid,
+			inviteCode: message.groupInvite.inviteCode,
+			inviteExpiration: message.groupInvite.inviteExpiration,
+			groupName: message.groupInvite.subject,
+			caption: message.groupInvite.text,
+			groupType: waproto.Message.GroupInviteMessage.GroupType.DEFAULT
+		}
 
-		m.groupInviteMessage.groupJid = message.groupInvite.jid
-		m.groupInviteMessage.groupName = message.groupInvite.subject
-
-		//TODO: use built-in interface and get disappearing mode info etc.
 		if (options.getProfilePicUrl) {
 			const pfpUrl: string | undefined = await options.getProfilePicUrl(message.groupInvite.jid, 'preview')
 			if (pfpUrl) {

@@ -110,7 +110,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				})
 				const mediaConnNode: BinaryNode | undefined = getBinaryNodeChild(result, 'media_conn')
 				const node: MediaConnInfo = {
-					hosts: getBinaryNodeChildren(mediaConnNode, 'host')!.map(
+					hosts: getBinaryNodeChildren(mediaConnNode, 'host').map(
 						({ attrs }) => ({
 							hostname: attrs.hostname,
 							maxContentLengthBytes: +attrs.maxContentLengthBytes,
@@ -1074,7 +1074,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const stanza: BinaryNode = {
 					tag: 'message',
 					attrs: {
-						id: msgId!,
+						id: msgId,
 						type: getMessageType(message),
 						...(additionalAttributes || {})
 					},
@@ -1219,7 +1219,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await sendNode(stanza)
 
 				if (messageRetryManager && !participant) {
-					messageRetryManager.addRecentMessage(destinationJid, msgId!, message)
+					messageRetryManager.addRecentMessage(destinationJid, msgId, message)
 				}
 			}
 		)
