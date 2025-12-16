@@ -366,6 +366,19 @@ const processMessage = async(
 				/**
 				 * Process peer data operation results. These are responses from the companion device
 				 * for various operations like message resends, media uploads, history sync requests, etc.
+					*
+					* Implementado:
+				 *
+					*	placeholderMessageResendResponse - Reenvia mensagens que falharam (já existia)
+					*	stickerMessage - Resultado de upload de stickers pelo dispositivo companion
+					*	mediaUploadResult - Resultado de uploads de mídia
+					*	fullHistorySyncOnDemandRequestResponse - Resposta de solicitação de sincronização completa de histórico
+					*	historySyncChunkRetryResponse - Resposta de retry de chunks de histórico que falharam
+					*	linkPreviewResponse - Preview de links buscados pelo companion
+					*	syncdSnapshotFatalRecoveryResponse - Dados de recuperação para corrupção do app state
+					*	companionMetaNonceFetchRequestResponse - Nonce interno de segurança
+					*	companionCanonicalUserNonceFetchRequestResponse - Nonce de verificação de usuário
+					*	waffleNonceFetchRequestResponse - Nonce interno do sistema de feature flags
 				 */
 				const { peerDataOperationResult } = response
 				if (peerDataOperationResult) {
