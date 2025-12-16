@@ -362,8 +362,63 @@ function append<E extends BufferableEvent>(
 				}
 			}
 		} else {
-			// TODO: add support for "all" deletion
-			logger.trace({ eventData }, 'messages.delete with "all" not yet supported in event buffer')
+			/**
+			 * Delete all messages for a specific JID.
+			 * This removes all messages from the buffer for the given chat/user.
+			 */
+			const { jid } = deleteData
+			let deletedCount = 0
+
+			// Delete from history sets
+			for (const keyStr in data.historySets.messages) {
+				const message = data.historySets.messages[keyStr]
+				if (message.key.remoteJid === jid) {
+					data.messageDeletes[keyStr] = message.key
+					delete data.historySets.messages[keyStr]
+					deletedCount++
+				}
+			}
+
+			// Delete from message upserts
+			for (const keyStr in data.messageUpserts) {
+				const { message } = data.messageUpserts[keyStr]
+				if (message.key.remoteJid === jid) {
+					data.messageDeletes[keyStr] = message.key
+					delete data.messageUpserts[keyStr]
+					deletedCount++
+				}
+			}
+
+			// Delete from message updates
+			for (const keyStr in data.messageUpdates) {
+				const { key } = data.messageUpdates[keyStr]
+				if (key.remoteJid === jid) {
+					if (!data.messageDeletes[keyStr]) {
+						data.messageDeletes[keyStr] = key
+					}
+
+					delete data.messageUpdates[keyStr]
+					deletedCount++
+				}
+			}
+
+			// Delete from message reactions
+			for (const keyStr in data.messageReactions) {
+				const { key } = data.messageReactions[keyStr]
+				if (key.remoteJid === jid) {
+					delete data.messageReactions[keyStr]
+				}
+			}
+
+			// Delete from message receipts
+			for (const keyStr in data.messageReceipts) {
+				const { key } = data.messageReceipts[keyStr]
+				if (key.remoteJid === jid) {
+					delete data.messageReceipts[keyStr]
+				}
+			}
+
+			logger.debug({ jid, deletedCount }, 'deleted all messages for jid from event buffer')
 		}
 
 		break
