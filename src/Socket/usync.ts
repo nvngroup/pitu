@@ -5,6 +5,7 @@ import { makeSocket } from './socket'
 import { Boom } from '@hapi/boom'
 
 export const makeUSyncSocket = (config: SocketConfig) => {
+	const { logger } = config
 	const sock = makeSocket(config)
 
 	const {
@@ -17,9 +18,45 @@ export const makeUSyncSocket = (config: SocketConfig) => {
 			throw new Boom('USyncQuery must have at least one protocol')
 		}
 
-		// TODO: validate users, throw WARNING on no valid users
-		// variable below has only validated users
-		const validUsers: USyncUser[] = usyncQuery.users
+		/**
+		 * Validate users before processing:
+		 * - User must have a valid id (non-empty string)
+		 * - If phone is set, id should be a valid phone number format
+		 * Invalid users are filtered out and logged as warnings
+		 */
+		const validUsers: USyncUser[] = usyncQuery.users.filter(user => {
+			if (!user.id || typeof user.id !== 'string' || user.id.trim().length === 0) {
+				logger?.warn({ user }, 'Invalid USyncUser: missing or empty id')
+				return false
+			}
+
+			// If phone flag is set, validate that id looks like a phone number
+			if (user.phone && !user.id.match(/^\+?\d+(@s\.whatsapp\.net)?$/)) {
+				logger?.warn({ user }, 'Invalid USyncUser: phone flag set but id is not a valid phone number')
+				return false
+			}
+
+			return true
+		})
+
+		if (validUsers.length === 0) {
+			logger?.warn(
+				{ originalCount: usyncQuery.users.length },
+				'USyncQuery has no valid users after validation'
+			)
+			throw new Boom('USyncQuery must have at least one valid user', { statusCode: 400 })
+		}
+
+		if (validUsers.length < usyncQuery.users.length) {
+			logger?.warn(
+				{
+					originalCount: usyncQuery.users.length,
+					validCount: validUsers.length,
+					filteredCount: usyncQuery.users.length - validUsers.length
+				},
+				'Some users were filtered out due to validation errors'
+			)
+		}
 
 		const userNodes: BinaryNode[] = validUsers.map((user) => {
 			return {
