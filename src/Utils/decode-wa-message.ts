@@ -56,15 +56,15 @@ const storeMappingFromEnvelope = async(
 	}
 
 	// Check if senderAlt is LID (standard or hosted) and sender is PN (standard or hosted)
-	const isSenderAltLid: boolean = !!(isLidUser(senderAlt) || isHostedLidUser(senderAlt))
-	const isSenderPn: boolean = !!(isPnUser(sender) || isHostedPnUser(sender))
+	const isSenderAltLid = !!(isLidUser(senderAlt) || isHostedLidUser(senderAlt))
+	const isSenderPn = !!(isPnUser(sender) || isHostedPnUser(sender))
 
 	if (isSenderAltLid && isSenderPn && decryptionJid === sender) {
 		try {
 			await repository.lidMapping.storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
 			await repository.migrateSession(sender, senderAlt)
 
-			const isHosted: boolean = !!(isHostedLidUser(senderAlt) || isHostedPnUser(sender))
+			const isHosted = !!(isHostedLidUser(senderAlt) || isHostedPnUser(sender))
 			logger.debug(
 				{ sender, senderAlt, isHosted },
 				`Stored ${isHosted ? 'hosted ' : ''}LID mapping from envelope`
@@ -94,7 +94,8 @@ const processMessageContent = async(
 	}
 
 	if (tag === 'unavailable' && attrs.type === 'view_once') {
-		fullMessage.key.isViewOnce = true // TODO: remove from here and add a STUB TYPE
+		fullMessage.messageStubType = waproto.WebMessageInfo.StubType.VIEWED_ONCE
+		fullMessage.messageStubParameters = ['View-once media is no longer available']
 	}
 
 	if (attrs.count && tag === 'enc') {
@@ -559,7 +560,8 @@ export const decryptMessageNode = (
 				}
 			}
 
-			if (!decryptables && !fullMessage.key?.isViewOnce) {
+			// Only set CIPHERTEXT stub if no content was decrypted and it's not already marked with a stub type
+			if (!decryptables && !fullMessage.messageStubType) {
 				fullMessage.messageStubType = waproto.WebMessageInfo.StubType.CIPHERTEXT
 				fullMessage.messageStubParameters = [NO_MESSAGE_FOUND_ERROR_TEXT]
 			}
