@@ -371,7 +371,7 @@ function append<E extends BufferableEvent>(
 
 			// Delete from history sets
 			for (const keyStr in data.historySets.messages) {
-				const message = data.historySets.messages[keyStr]
+				const message: WAMessage = data.historySets.messages[keyStr]
 				if (message.key.remoteJid === jid) {
 					data.messageDeletes[keyStr] = message.key
 					delete data.historySets.messages[keyStr]
@@ -396,7 +396,6 @@ function append<E extends BufferableEvent>(
 					if (!data.messageDeletes[keyStr]) {
 						data.messageDeletes[keyStr] = key
 					}
-
 					delete data.messageUpdates[keyStr]
 					deletedCount++
 				}
