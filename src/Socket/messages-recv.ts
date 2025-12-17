@@ -1382,8 +1382,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			return 'RESOLVED'
 		}
 
-		setTimeout(() => {
-			if (!(placeholderResendCache.get(messageKey?.id!))) {
+		setTimeout(async () => {
+			if (!(await placeholderResendCache.get(messageKey?.id!))) {
 				logger.debug({ messageKey }, 'PDO message without response after 15 seconds. Phone possibly offline')
 				placeholderResendCache.del(messageKey?.id!)
 			}
