@@ -345,19 +345,117 @@ const processMessage = async(
 			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
 			if (response) {
 				placeholderResendCache?.del(response.stanzaId!)
-				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
+				/**
+					* Process peer data operation results. These are responses from the companion device
+					* for various operations like message resends, media uploads, history sync requests, etc.
+					*/
 				const { peerDataOperationResult } = response
-				for (const result of peerDataOperationResult!) {
-					const { placeholderMessageResendResponse: retryResponse } = result
-					if (retryResponse) {
-						const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
-						setTimeout(() => {
-							ev.emit('messages.upsert', {
-								messages: [webMessageInfo],
-								type: 'notify',
-								requestId: response.stanzaId!
-							})
-						}, 500)
+				if (peerDataOperationResult) {
+					for (const result of peerDataOperationResult) {
+						const { placeholderMessageResendResponse: retryResponse } = result
+						if (retryResponse?.webMessageInfoBytes) {
+							const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes)
+							setTimeout(() => {
+								ev.emit('messages.upsert', {
+									messages: [webMessageInfo],
+									type: 'notify',
+									requestId: response.stanzaId || ''
+								})
+							}, 500)
+						}
+
+						if (result.stickerMessage) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received sticker message via peer operation'
+							)
+						}
+
+						if (result.mediaUploadResult !== undefined && result.mediaUploadResult !== null) {
+							const resultType = waproto.MediaRetryNotification.ResultType[result.mediaUploadResult]
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									result: resultType
+								},
+								'Received media upload result via peer operation'
+							)
+						}
+
+						if (result.fullHistorySyncOnDemandRequestResponse) {
+							const historyResponse = result.fullHistorySyncOnDemandRequestResponse
+							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FullHistorySyncOnDemandResponseCode[historyResponse.responseCode || 0]
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									responseCode: responseCodeName,
+									requestMetadata: historyResponse.requestMetadata
+								},
+								'Received full history sync on-demand response'
+							)
+						}
+
+						if (result.historySyncChunkRetryResponse) {
+							const chunkRetry = result.historySyncChunkRetryResponse
+							const responseCodeName = waproto.Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.HistorySyncChunkRetryResponseCode[chunkRetry.responseCode || 0]
+							const syncTypeName = waproto.Message.HistorySyncType[chunkRetry.syncType || 0]
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									syncType: syncTypeName,
+									chunkOrder: chunkRetry.chunkOrder,
+									responseCode: responseCodeName,
+									canRecover: chunkRetry.canRecover
+								},
+								'Received history sync chunk retry response'
+							)
+						}
+
+						if (result.linkPreviewResponse) {
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									url: result.linkPreviewResponse.url,
+									hasThumb: !!result.linkPreviewResponse.thumbData
+								},
+								'Received link preview response via peer operation'
+							)
+						}
+
+						if (result.syncdSnapshotFatalRecoveryResponse) {
+							logger?.info(
+								{
+									stanzaId: response.stanzaId,
+									isCompressed: result.syncdSnapshotFatalRecoveryResponse.isCompressed,
+									snapshotSize: result.syncdSnapshotFatalRecoveryResponse.collectionSnapshot?.length
+								},
+								'Received syncd snapshot fatal recovery response'
+							)
+						}
+
+						if (result.companionMetaNonceFetchRequestResponse) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received companion meta nonce fetch response'
+							)
+						}
+
+						if (result.companionCanonicalUserNonceFetchRequestResponse) {
+							logger?.debug(
+								{
+									stanzaId: response.stanzaId,
+									forceRefresh: result.companionCanonicalUserNonceFetchRequestResponse.forceRefresh
+								},
+								'Received companion canonical user nonce fetch response'
+							)
+						}
+
+						if (result.waffleNonceFetchRequestResponse) {
+							logger?.debug(
+								{ stanzaId: response.stanzaId },
+								'Received waffle nonce fetch response'
+							)
+						}
 					}
 				}
 			}
