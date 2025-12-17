@@ -110,7 +110,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				})
 				const mediaConnNode: BinaryNode | undefined = getBinaryNodeChild(result, 'media_conn')
 				const node: MediaConnInfo = {
-					hosts: getBinaryNodeChildren(mediaConnNode, 'host').map(
+					hosts: getBinaryNodeChildren(mediaConnNode, 'host')!.map(
 						({ attrs }) => ({
 							hostname: attrs.hostname,
 							maxContentLengthBytes: +attrs.maxContentLengthBytes,
@@ -460,15 +460,15 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	/**
-	 * Sends a Peer Data Operation (PDO) request message to the user's own device.
-	 *
-	 * Current implementation is specialized for PDO messages. Future enhancement opportunity:
-	 * Abstract this into a generic peer message sender that can handle multiple protocol message types
-	 * (PDO, App State Key Resync, etc.) to reduce code duplication and improve maintainability.
-	 *
-	 * @param pdoMessage - The PDO request message to send
-	 * @returns The message ID of the sent message
-	 */
+		* Sends a Peer Data Operation (PDO) request message to the user's own device.
+		*
+		* Current implementation is specialized for PDO messages. Future enhancement opportunity:
+		* Abstract this into a generic peer message sender that can handle multiple protocol message types
+		* (PDO, App State Key Resync, etc.) to reduce code duplication and improve maintainability.
+		*
+		* @param pdoMessage - The PDO request message to send
+		* @returns The message ID of the sent message
+		*/
 	const sendPeerDataOperationMessage = async (
 		pdoMessage: waproto.Message.IPeerDataOperationRequestMessage
 	): Promise<string> => {
@@ -754,16 +754,16 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				}
 
 				/**
-				 * Set decrypt-fail behavior for message types that should be hidden on decryption failure.
-				 *
-				 * Messages that use 'hide':
-				 * - pinInChatMessage: Pin/unpin actions shouldn't show decryption errors
-				 * - reactionMessage: Reactions should silently fail if they can't be decrypted
-				 * - viewOnceMessage/V2/V2Extension: View-once media should hide on failure
-				 * - ephemeralMessage: Disappearing messages should hide on failure
-				 *
-				 * This prevents confusing error messages for metadata-type operations.
-				 */
+					* Set decrypt-fail behavior for message types that should be hidden on decryption failure.
+					*
+					* Messages that use 'hide':
+					* - pinInChatMessage: Pin/unpin actions shouldn't show decryption errors
+					* - reactionMessage: Reactions should silently fail if they can't be decrypted
+					* - viewOnceMessage/V2/V2Extension: View-once media should hide on failure
+					* - ephemeralMessage: Disappearing messages should hide on failure
+					*
+					* This prevents confusing error messages for metadata-type operations.
+					*/
 				const normalizedMsg = normalizeMessageContent(message)
 				const shouldHideOnDecryptFail =
 					normalizedMsg?.pinInChatMessage ||
@@ -783,10 +783,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 							let groupData: GroupMetadata | undefined = useCachedGroupMetadata && cachedGroupMetadata ? await cachedGroupMetadata(jid) : undefined
 
 							/**
-							 * Validate cached metadata has critical fields needed for message relay.
-							 * Critical fields: participants (required), addressingMode (required for LID/PN routing)
-							 * If cache is missing critical fields, fetch fresh data from server.
-							 */
+								* Validate cached metadata has critical fields needed for message relay.
+								* Critical fields: participants (required), addressingMode (required for LID/PN routing)
+								* If cache is missing critical fields, fetch fresh data from server.
+								*/
 							const hasCriticalFields = groupData
 								&& Array.isArray(groupData.participants)
 								&& groupData.participants.length > 0
@@ -820,16 +820,16 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						(async () => {
 							if (!participant && !isStatus) {
 								/**
-								 * Sender key memory tracks which devices have received the sender key for this group.
-								 * With LID addressing, we need to ensure the memory uses the correct addressing mode.
-								 *
-								 * Problem: If a group migrated from PN to LID addressing (or vice versa), the cached
-								 * sender-key-memory will have entries in the old format (e.g., user@s.whatsapp.net)
-								 * while we now need entries in the new format (e.g., user@lid).
-								 *
-								 * Solution: For groups with LID addressing, validate that cached entries use @lid domain.
-								 * If they don't match the expected addressing mode, treat cache as empty to force resend.
-								 */
+									* Sender key memory tracks which devices have received the sender key for this group.
+									* With LID addressing, we need to ensure the memory uses the correct addressing mode.
+									*
+									* Problem: If a group migrated from PN to LID addressing (or vice versa), the cached
+									* sender-key-memory will have entries in the old format (e.g., user@s.whatsapp.net)
+									* while we now need entries in the new format (e.g., user@lid).
+									*
+									* Solution: For groups with LID addressing, validate that cached entries use @lid domain.
+									* If they don't match the expected addressing mode, treat cache as empty to force resend.
+									*/
 								const cachedResult = await authState.keys.get('sender-key-memory', [jid])
 								const cachedMap = cachedResult[jid] || {}
 
@@ -942,10 +942,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					await authState.keys.set({ 'sender-key-memory': { [jid]: senderKeyMap } })
 				} else {
 					/**
-					 * Select the correct identity (LID or PN) for 1:1 conversation encryption.
-					 * For @lid conversations, use meLid when available; otherwise use meId (PN).
-					 * This ensures consistent addressing mode between sender and recipient.
-					 */
+						* Select the correct identity (LID or PN) for 1:1 conversation encryption.
+						* For @lid conversations, use meLid when available; otherwise use meId (PN).
+						* This ensures consistent addressing mode between sender and recipient.
+						*/
 					let ownId: string = meId
 					if (isLid && meLid) {
 						ownId = meLid
@@ -1173,7 +1173,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const stanza: BinaryNode = {
 					tag: 'message',
 					attrs: {
-						id: msgId,
+						id: msgId!,
 						type: getMessageType(message),
 						...(additionalAttributes || {})
 					},
@@ -1318,7 +1318,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				await sendNode(stanza)
 
 				if (messageRetryManager && !participant) {
-					messageRetryManager.addRecentMessage(destinationJid, msgId, message)
+					messageRetryManager.addRecentMessage(destinationJid, msgId!, message)
 				}
 			}
 		)
