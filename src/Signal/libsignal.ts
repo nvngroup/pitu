@@ -1,3 +1,4 @@
+import * as libsignal from 'libsignal'
 import { CacheManager } from '../Socket'
 import type { CacheStore, SignalAuthState, SignalKeyStoreWithTransaction, SignedKeyPair } from '../Types'
 import { SignalRepository } from '../Types/Signal'
@@ -6,12 +7,11 @@ import { badMACRecovery, handleBadMACError } from '../Utils/bad-mac-recovery'
 import logger from '../Utils/logger'
 import { handleMACError, macErrorManager } from '../Utils/mac-error-handler'
 import { FullJid, isHostedLidUser, isHostedPnUser, isLidUser, isPnUser, jidDecode, transferDevice } from '../WABinary'
-import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { SenderKeyName } from './Group/sender-key-name'
 import { SenderKeyRecord } from './Group/sender-key-record'
+import { GroupCipher, GroupSessionBuilder, SenderKeyDistributionMessage, SenderKeyStore } from './Group'
 import { LIDMappingStore } from './lid-mapping'
 import { EncryptionResult, SessionValidationResult } from './types'
-import * as libsignal from 'libsignal'
 
 const SIGNAL_CONSTANTS = {
 	PREKEY_MESSAGE_TYPE: 3,
@@ -59,7 +59,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	/**
 		* Get the optimal encryption JID (prefers LID if available)
 		*/
-	const getOptimalEncryptionJid = async (jid: string): Promise<string> => {
+	const getOptimalEncryptionJid = async(jid: string): Promise<string> => {
 		if (!shouldUseLID(jid)) {
 			return jid
 		}
@@ -106,7 +106,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					handleMACError(
 						`${group}:${authorJid}`,
 						error,
-						async () => {
+						async() => {
 							const keyId: string = senderName.toString()
 							await parsedKeys.set({ 'sender-key': { [keyId]: null } })
 						}
@@ -140,14 +140,14 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 			try {
 				switch (type) {
-					case 'pkmsg':
-						result = await session.decryptPreKeyWhisperMessage(ciphertext)
-						break
-					case 'msg':
-						result = await session.decryptWhisperMessage(ciphertext)
-						break
-					default:
-						throw new Error(`Unknown message type: ${type}`)
+				case 'pkmsg':
+					result = await session.decryptPreKeyWhisperMessage(ciphertext)
+					break
+				case 'msg':
+					result = await session.decryptWhisperMessage(ciphertext)
+					break
+				default:
+					throw new Error(`Unknown message type: ${type}`)
 				}
 			} catch (error) {
 				if (badMACRecovery.isBadMACError(error)) {
@@ -156,7 +156,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					await handleMACError(
 						jid,
 						error,
-						async () => {
+						async() => {
 							await parsedKeys.set({ 'session': { [addr.toString()]: null } })
 						}
 					)
@@ -304,7 +304,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 
 				const addr = jidToSignalProtocolAddress(jid)
 
-				await (parsedKeys).transaction(async () => {
+				await (parsedKeys).transaction(async() => {
 					await parsedKeys.set({ session: { [addr.toString()]: null } })
 				})
 
@@ -416,7 +416,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 			)
 
 			return parsedKeys.transaction(
-				async (): Promise<{ migrated: number; skipped: number; total: number }> => {
+				async(): Promise<{ migrated: number; skipped: number; total: number }> => {
 					type MigrationOp = {
 						deviceId: number
 						pnAddr: string
@@ -438,7 +438,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 					const pnSessions = await parsedKeys.get('session', pnAddrs)
 
 					const sessionUpdates: { [key: string]: Uint8Array | null } = {}
-					let migratedCount: number = 0
+					let migratedCount = 0
 
 					for (const op of migrationOps) {
 						const pnSession = pnSessions[op.pnAddr]
@@ -513,7 +513,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 		* Enhanced session loading with LID preference
 		*/
 	return {
-		loadSession: async (id: string): Promise<libsignal.SessionRecord | null> => {
+		loadSession: async(id: string): Promise<libsignal.SessionRecord | null> => {
 			try {
 				let actualId: string = id
 
@@ -548,7 +548,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			}
 		},
 
-		storeSession: async (id: string, session: libsignal.SessionRecord): Promise<void> => {
+		storeSession: async(id: string, session: libsignal.SessionRecord): Promise<void> => {
 			try {
 				await keys.set({ 'session': { [id]: session.serialize() } })
 				logger.trace({ id }, 'Session stored for')
@@ -562,7 +562,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			return true
 		},
 
-		loadPreKey: async (id: number | string): Promise<{ privKey: Buffer; pubKey: Buffer } | undefined> => {
+		loadPreKey: async(id: number | string): Promise<{ privKey: Buffer; pubKey: Buffer } | undefined> => {
 			try {
 				const keyId: string = id.toString()
 				const { [keyId]: key } = await keys.get('pre-key', [keyId])
@@ -580,7 +580,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			}
 		},
 
-		removePreKey: async (id: number): Promise<void> => {
+		removePreKey: async(id: number): Promise<void> => {
 			try {
 				await keys.set({ 'pre-key': { [id]: null } })
 				logger.trace({ id }, 'Pre-key removed')
@@ -598,7 +598,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			}
 		},
 
-		loadSenderKey: async (senderKeyName: SenderKeyName): Promise<SenderKeyRecord> => {
+		loadSenderKey: async(senderKeyName: SenderKeyName): Promise<SenderKeyRecord> => {
 			try {
 				const keyId: string = senderKeyName.toString()
 				const { [keyId]: key } = await keys.get('sender-key', [keyId])
@@ -613,7 +613,7 @@ function signalStorage({ creds, keys }: SignalAuthState, lidMapping: LIDMappingS
 			}
 		},
 
-		storeSenderKey: async (senderKeyName: SenderKeyName, key: SenderKeyRecord): Promise<void> => {
+		storeSenderKey: async(senderKeyName: SenderKeyName, key: SenderKeyRecord): Promise<void> => {
 			try {
 				const keyId: string = senderKeyName.toString()
 				const serialized: string = JSON.stringify(key.serialize())
