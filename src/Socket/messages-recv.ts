@@ -24,6 +24,7 @@ import {
 	xmppSignedPreKey
 } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
+import { MessageRetryManager } from '../Utils/message-retry-manager'
 import { MISSING_KEYS_ERROR_TEXT, NO_MESSAGE_FOUND_ERROR_TEXT } from '../Utils/types'
 import {
 	areJidsSameUser,
@@ -115,7 +116,8 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		retryRequestDelayMs,
 		maxMsgRetryCount,
 		getMessage,
-		shouldIgnoreJid
+		shouldIgnoreJid,
+		enableRecentMessageCache,
 	} = config
 	const sock = makeMessagesSocket(config)
 	const {
@@ -141,6 +143,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	} = sock
 
 	const retryMutex = makeMutex()
+	const messageRetryManager: MessageRetryManager | null = enableRecentMessageCache ? new MessageRetryManager(logger, maxMsgRetryCount) : null
 
 	const shouldCloseCallOfferCache = !config.callOfferCache
 	const shouldClosePlaceholderResendCache = !config.placeholderResendCache
@@ -1294,6 +1297,10 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 							}
 						})
 					} else {
+						if (messageRetryManager && msg.key.id) {
+							messageRetryManager.cancelPendingPhoneRequest(msg.key.id)
+						}
+
 						const isNewsletter = isJidNewsletter(msg.key.remoteJid!)
 						if (!isNewsletter) {
 							let type: MessageReceiptType = undefined
