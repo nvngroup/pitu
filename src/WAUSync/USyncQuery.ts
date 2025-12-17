@@ -6,8 +6,13 @@ import { USyncUser } from './USyncUser'
 export type USyncQueryResultList = { [protocol: string]: unknown, id: string }
 
 export type USyncQueryResult = {
-    list: USyncQueryResultList[]
-    sideList: USyncQueryResultList[]
+	list: USyncQueryResultList[]
+	sideList: USyncQueryResultList[]
+	errors?: Array<{
+		jid: string
+		errorCode: number
+		errorText: string
+	}>
 }
 
 export class USyncQuery {
@@ -48,21 +53,34 @@ export class USyncQuery {
 		}))
 
 		const queryResult: USyncQueryResult = {
-			// TODO: implement errors etc.
 			list: [],
 			sideList: [],
+			errors: []
 		}
 
 		const usyncNode = getBinaryNodeChild(result, 'usync')
 
-		//TODO: implement error backoff, refresh etc.
-		//TODO: see if there are any errors in the result node
-		//const resultNode = getBinaryNodeChild(usyncNode, 'result')
-
+		/**
+			* Process main list of query results
+			* Each user node may contain protocol-specific data or error information
+			*/
 		const listNode = getBinaryNodeChild(usyncNode, 'list')
 		if (Array.isArray(listNode?.content) && typeof listNode !== 'undefined') {
-			queryResult.list = listNode.content.map((node) => {
+			for (const node of listNode.content) {
 				const id = node?.attrs.jid
+
+				// Check for error node in user response
+				const errorNode = getBinaryNodeChild(node, 'error')
+				if (errorNode) {
+					queryResult.errors!.push({
+						jid: id,
+						errorCode: +errorNode.attrs.code || 0,
+						errorText: errorNode.attrs.text || 'Unknown error'
+					})
+					continue
+				}
+
+				// Parse protocol data for successful responses
 				const data = Array.isArray(node?.content) ? Object.fromEntries(node.content.map((content) => {
 					const protocol = content.tag
 					const parser = protocolMap[protocol]
@@ -72,12 +90,51 @@ export class USyncQuery {
 						return [protocol, null]
 					}
 				}).filter(([, b]) => b !== null) as [string, unknown][]) : {}
-				return { ...data, id }
-			})
+
+				queryResult.list.push({ ...data, id })
+			}
 		}
 
-		//TODO: implement side list
-		//const sideListNode = getBinaryNodeChild(usyncNode, 'side_list')
+		/**
+			* Process side list - additional users discovered through the query
+			* (e.g., linked accounts, alternate addresses)
+			*/
+		const sideListNode = getBinaryNodeChild(usyncNode, 'side_list')
+		if (Array.isArray(sideListNode?.content) && typeof sideListNode !== 'undefined') {
+			for (const node of sideListNode.content) {
+				const id = node?.attrs.jid
+
+				// Check for error node in side list entry
+				const errorNode = getBinaryNodeChild(node, 'error')
+				if (errorNode) {
+					queryResult.errors!.push({
+						jid: id,
+						errorCode: +errorNode.attrs.code || 0,
+						errorText: errorNode.attrs.text || 'Unknown error'
+					})
+					continue
+				}
+
+				// Parse protocol data for side list entries
+				const data = Array.isArray(node?.content) ? Object.fromEntries(node.content.map((content) => {
+					const protocol = content.tag
+					const parser = protocolMap[protocol]
+					if (parser) {
+						return [protocol, parser(content)]
+					} else {
+						return [protocol, null]
+					}
+				}).filter(([, b]) => b !== null) as [string, unknown][]) : {}
+
+				queryResult.sideList.push({ ...data, id })
+			}
+		}
+
+		// Clean up errors array if empty
+		if (queryResult.errors!.length === 0) {
+			delete queryResult.errors
+		}
+
 		return queryResult
 	}
 
