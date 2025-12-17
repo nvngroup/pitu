@@ -345,7 +345,7 @@ const processMessage = async(
 			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
 			if (response) {
 				placeholderResendCache?.del(response.stanzaId!)
-			/**
+				/**
 				 * Process peer data operation results. These are responses from the companion device
 				 * for various operations like message resends, media uploads, history sync requests, etc.
 					*

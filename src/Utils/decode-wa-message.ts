@@ -36,7 +36,7 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
-const storeMappingFromEnvelope = async (
+const storeMappingFromEnvelope = async(
 	stanza: BinaryNode,
 	sender: string,
 	repository: SignalRepository,
@@ -56,15 +56,15 @@ const storeMappingFromEnvelope = async (
 	}
 
 	// Check if senderAlt is LID (standard or hosted) and sender is PN (standard or hosted)
-	const isSenderAltLid: boolean = !!(isLidUser(senderAlt) || isHostedLidUser(senderAlt))
-	const isSenderPn: boolean = !!(isPnUser(sender) || isHostedPnUser(sender))
+	const isSenderAltLid = !!(isLidUser(senderAlt) || isHostedLidUser(senderAlt))
+	const isSenderPn = !!(isPnUser(sender) || isHostedPnUser(sender))
 
 	if (isSenderAltLid && isSenderPn && decryptionJid === sender) {
 		try {
 			await repository.lidMapping.storeLIDPNMappings([{ lidUser: senderAlt, pnUser: sender }])
 			await repository.migrateSession(sender, senderAlt)
 
-			const isHosted: boolean = !!(isHostedLidUser(senderAlt) || isHostedPnUser(sender))
+			const isHosted = !!(isHostedLidUser(senderAlt) || isHostedPnUser(sender))
 			logger.debug(
 				{ sender, senderAlt, isHosted },
 				`Stored ${isHosted ? 'hosted ' : ''}LID mapping from envelope`
@@ -204,10 +204,14 @@ export const handleDecryptionError = async(
 	logger: ILogger
 ) => {
 	const isMacError: boolean = macErrorManager.isMACError(err)
+	const isMessageCounterError: boolean =
+		(err as any)?.name === 'MessageCounterError' ||
+		/Key used already|never filled/i.test(err?.message || '')
 	const isSessionError: boolean = isMacError ||
 						  err.message?.includes('InvalidMessageException') ||
 						  err.message?.includes('session') ||
-						  err.message?.includes('Bad MAC')
+						  err.message?.includes('Bad MAC') ||
+						  isMessageCounterError
 
 	const isGroupMessage: boolean = tag === 'enc' && attrs.type === 'skmsg'
 
@@ -246,6 +250,15 @@ export const handleDecryptionError = async(
 			error: err.message,
 			recommendation: 'Session may need to be reset'
 		}, 'Session decryption error - possible key corruption')
+
+		if (!isGroupMessage && isMessageCounterError) {
+			try {
+				await repository.deleteSession(author)
+				logger.debug({ author }, 'Reset session after MessageCounterError')
+			} catch (cleanupErr) {
+				logger.warn({ author, cleanupErr }, 'Failed to reset session after MessageCounterError')
+			}
+		}
 	} else {
 		logger.error(
 			{ key: fullMessage.key, err },
@@ -263,7 +276,11 @@ export const handleDecryptionError = async(
 				: 'MAC verification failed - session needs reset'
 		]
 	} else if (isSessionError) {
-		fullMessage.messageStubParameters = ['Session key error - message corrupted']
+		fullMessage.messageStubParameters = [
+			isMessageCounterError
+				? 'Session counter mismatch - resetting session'
+				: 'Session key error - message corrupted'
+		]
 	} else {
 		fullMessage.messageStubParameters = [err.message || 'Unknown decryption error']
 	}
