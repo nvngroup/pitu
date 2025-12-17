@@ -1,40 +1,42 @@
-export const makeMutex = () => {
-	let task: Promise<unknown> = Promise.resolve()
+import { Mutex as AsyncMutex } from 'async-mutex'
 
-	let taskTimeout: NodeJS.Timeout | undefined
+export const makeMutex = () => {
+	const mutex = new AsyncMutex()
 
 	return {
 		mutex<T>(code: () => Promise<T> | T): Promise<T> {
-			const newTask = (async() => {
-				try {
-					await task
-				} catch { }
-
-				try {
-					const result = await code()
-					return result
-				} finally {
-					clearTimeout(taskTimeout)
-				}
-			})()
-			task = newTask
-			return newTask
-		},
+			return mutex.runExclusive(code)
+		}
 	}
 }
 
 export type Mutex = ReturnType<typeof makeMutex>
 
 export const makeKeyedMutex = () => {
-	const map: { [id: string]: Mutex } = {}
+	const map = new Map<string, { mutex: AsyncMutex; refCount: number }>()
 
 	return {
-		mutex<T>(key: string, task: () => Promise<T> | T): Promise<T> {
-			if (!map[key]) {
-				map[key] = makeMutex()
+		async mutex<T>(key: string, task: () => Promise<T> | T): Promise<T> {
+			let entry = map.get(key)
+
+			if (!entry) {
+				entry = { mutex: new AsyncMutex(), refCount: 0 }
+				map.set(key, entry)
 			}
 
-			return map[key].mutex(task)
+			entry.refCount++
+
+			try {
+				return await entry.mutex.runExclusive(task)
+			} finally {
+				entry.refCount--
+				// only delete it if this is still the current entry
+				if (entry.refCount === 0 && map.get(key) === entry) {
+					map.delete(key)
+				}
+			}
 		}
 	}
 }
+
+export type KeyedMutex = ReturnType<typeof makeKeyedMutex>
