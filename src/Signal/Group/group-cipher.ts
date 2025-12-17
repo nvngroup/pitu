@@ -8,6 +8,13 @@ import { SenderMessageKey } from './sender-message-key'
 import { GROUP_CONSTANTS, SenderKeyStore } from './types'
 import { decrypt, encrypt } from 'libsignal/src/crypto'
 
+export class DuplicateMessageError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'DuplicateMessageError'
+	}
+}
+
 export class GroupCipher {
 	private readonly senderKeyStore: SenderKeyStore
 	private readonly senderKeyName: SenderKeyName
@@ -26,7 +33,7 @@ export class GroupCipher {
 			throw new Error('Cannot encrypt empty or null plaintext')
 		}
 
-		return await this.queueJob(async() => {
+		return await this.queueJob(async () => {
 			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if (!record) {
 				throw new Error(`No SenderKeyRecord found for encryption: ${this.senderKeyName.toString()}`)
@@ -59,7 +66,7 @@ export class GroupCipher {
 			throw new Error('Cannot decrypt empty or null message bytes')
 		}
 
-		return await this.queueJob(async() => {
+		return await this.queueJob(async () => {
 			const record: SenderKeyRecord = await this.senderKeyStore.loadSenderKey(this.senderKeyName)
 			if (!record) {
 				throw new Error(`No SenderKeyRecord found for decryption: ${this.senderKeyName.toString()}`)
@@ -97,7 +104,7 @@ export class GroupCipher {
 				return messageKey
 			}
 
-			throw new Error(`Received message with old counter: ${senderChainKey.getIteration()}, ${iteration}`)
+			throw new DuplicateMessageError(`Received message with old counter: ${senderChainKey.getIteration()}, ${iteration}`)
 		}
 
 		if (iteration - senderChainKey.getIteration() > GROUP_CONSTANTS.MAX_FUTURE_MESSAGES) {

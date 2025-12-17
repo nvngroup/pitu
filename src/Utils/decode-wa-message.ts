@@ -19,7 +19,7 @@ const getLidCache = (): CacheStore => {
 	return lidCache
 }
 
-const getDecryptionJid = async(sender: string, repository: SignalRepository): Promise<string> => {
+const getDecryptionJid = async (sender: string, repository: SignalRepository): Promise<string> => {
 	if (!sender.includes('@s.whatsapp.net')) {
 		return sender
 	}
@@ -36,7 +36,7 @@ const getDecryptionJid = async(sender: string, repository: SignalRepository): Pr
 	return sender
 }
 
-const storeMappingFromEnvelope = async(
+const storeMappingFromEnvelope = async (
 	stanza: BinaryNode,
 	sender: string,
 	repository: SignalRepository,
@@ -44,11 +44,11 @@ const storeMappingFromEnvelope = async(
 	logger: ILogger
 ): Promise<void> => {
 	/**
-	 * Extract and store LID<->PN mappings from message envelope.
-	 * Handles both standard and hosted ID domains:
-	 * - Standard: @lid <-> @s.whatsapp.net
-	 * - Hosted: @hosted.lid <-> @hosted
-	 */
+		* Extract and store LID<->PN mappings from message envelope.
+		* Handles both standard and hosted ID domains:
+		* - Standard: @lid <-> @s.whatsapp.net
+		* - Hosted: @hosted.lid <-> @hosted
+		*/
 	const { senderAlt } = extractAddressingContext(stanza)
 
 	if (!senderAlt) {
@@ -75,7 +75,7 @@ const storeMappingFromEnvelope = async(
 	}
 }
 
-const processMessageContent = async(
+const processMessageContent = async (
 	item: BinaryNode,
 	fullMessage: WAMessage,
 	sender: string,
@@ -127,7 +127,7 @@ const processMessageContent = async(
 	}
 }
 
-const decryptMessageContent = async(
+const decryptMessageContent = async (
 	tag: string,
 	attrs: { type?: string },
 	content: Uint8Array,
@@ -138,31 +138,31 @@ const decryptMessageContent = async(
 	const e2eType: string | undefined = tag === 'plaintext' ? 'plaintext' : attrs.type
 
 	switch (e2eType) {
-	case 'skmsg':
-		return await repository.decryptGroupMessage({
-			group: sender,
-			authorJid: author,
-			msg: content
-		})
-	case 'pkmsg':
-	case 'msg':
-	case 'msmsg':
-		const user: string = isJidUser(sender) ? sender : author
-		const decryptionJid: string = await getDecryptionJid(user, repository)
-		const signalType: 'pkmsg' | 'msg' = e2eType === 'msmsg' ? 'msg' : (e2eType)
-		return await repository.decryptMessage({
-			jid: decryptionJid,
-			type: signalType,
-			ciphertext: content
-		})
-	case 'plaintext':
-		return content
-	default:
-		throw new Error(`Unknown e2e type: ${e2eType}`)
+		case 'skmsg':
+			return await repository.decryptGroupMessage({
+				group: sender,
+				authorJid: author,
+				msg: content
+			})
+		case 'pkmsg':
+		case 'msg':
+		case 'msmsg':
+			const user: string = isJidUser(sender) ? sender : author
+			const decryptionJid: string = await getDecryptionJid(user, repository)
+			const signalType: 'pkmsg' | 'msg' = e2eType === 'msmsg' ? 'msg' : (e2eType)
+			return await repository.decryptMessage({
+				jid: decryptionJid,
+				type: signalType,
+				ciphertext: content
+			})
+		case 'plaintext':
+			return content
+		default:
+			throw new Error(`Unknown e2e type: ${e2eType}`)
 	}
 }
 
-const processDecryptedMessage = async(
+const processDecryptedMessage = async (
 	msgBuffer: Uint8Array,
 	tag: string,
 	attrs: { type?: string },
@@ -193,7 +193,7 @@ const processDecryptedMessage = async(
 	}
 }
 
-export const handleDecryptionError = async(
+export const handleDecryptionError = async (
 	err: Error,
 	fullMessage: waproto.IWebMessageInfo,
 	author: string,
@@ -205,9 +205,9 @@ export const handleDecryptionError = async(
 ) => {
 	const isMacError: boolean = macErrorManager.isMACError(err)
 	const isSessionError: boolean = isMacError ||
-						  err.message?.includes('InvalidMessageException') ||
-						  err.message?.includes('session') ||
-						  err.message?.includes('Bad MAC')
+		err.message?.includes('InvalidMessageException') ||
+		err.message?.includes('session') ||
+		err.message?.includes('Bad MAC')
 
 	const isGroupMessage: boolean = tag === 'enc' && attrs.type === 'skmsg'
 
@@ -246,6 +246,13 @@ export const handleDecryptionError = async(
 			error: err.message,
 			recommendation: 'Session may need to be reset'
 		}, 'Session decryption error - possible key corruption')
+	} else if (err.name === 'DuplicateMessageError') {
+		logger.debug({
+			key: fullMessage.key,
+			sender: jid,
+			author: isGroupMessage ? author : undefined,
+			error: err.message
+		}, 'Decryption failed - duplicate message (ignored)')
 	} else {
 		logger.error(
 			{ key: fullMessage.key, err },
@@ -269,7 +276,7 @@ export const handleDecryptionError = async(
 	}
 }
 
-const attemptMACRecovery = async(
+const attemptMACRecovery = async (
 	jid: string,
 	author: string,
 	isGroupMessage: boolean,
@@ -318,7 +325,7 @@ const attemptMACRecovery = async(
 	}
 }
 
-const performSessionCleanup = async(
+const performSessionCleanup = async (
 	jid: string,
 	author: string,
 	isGroupMessage: boolean,
@@ -333,7 +340,7 @@ const performSessionCleanup = async(
 	}
 }
 
-const cleanupGroupSenderKey = async(
+const cleanupGroupSenderKey = async (
 	jid: string,
 	author: string,
 	repository: SignalRepository,
@@ -391,9 +398,9 @@ export const extractAddressingContext = (stanza: BinaryNode) => {
 }
 
 /**
- * Decode the received node as a message.
- * @note this will only parse the message, not decrypt it
- */
+	* Decode the received node as a message.
+	* @note this will only parse the message, not decrypt it
+	*/
 export function decodeMessageNode(
 	stanza: BinaryNode,
 	meId: string,
