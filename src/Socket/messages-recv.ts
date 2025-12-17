@@ -122,7 +122,9 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		ev,
 		authState,
 		ws,
-		processingMutex,
+		messageMutex,
+		notificationMutex,
+		receiptMutex,
 		signalRepository,
 		query,
 		upsertMessage,
@@ -1051,7 +1053,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		try {
 			await Promise.all([
-				processingMutex.mutex(
+				receiptMutex.mutex(
 					async () => {
 						const status = getStatusFromReceiptType(attrs.type)
 						if (
@@ -1122,7 +1124,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		try {
 			await Promise.all([
-				processingMutex.mutex(
+				notificationMutex.mutex(
 					async () => {
 						const msg: Partial<WAMessage> | undefined = await processNotification(node)
 						if (msg) {
@@ -1238,7 +1240,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		try {
 			await Promise.all([
-				processingMutex.mutex(async () => {
+				messageMutex.mutex(async () => {
 					await decrypt()
 					if (msg.messageStubType === waproto.WebMessageInfo.StubType.CIPHERTEXT && category !== 'peer') {
 						if (
