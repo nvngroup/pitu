@@ -94,7 +94,8 @@ const processMessageContent = async(
 	}
 
 	if (tag === 'unavailable' && attrs.type === 'view_once') {
-		fullMessage.key.isViewOnce = true // TODO: remove from here and add a STUB TYPE
+		fullMessage.messageStubType = waproto.WebMessageInfo.StubType.VIEWED_ONCE
+		fullMessage.messageStubParameters = ['View-once media is no longer available']
 	}
 
 	if (attrs.count && tag === 'enc') {
