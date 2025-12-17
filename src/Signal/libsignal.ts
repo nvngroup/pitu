@@ -93,7 +93,7 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 	}
 
 	const repository: SignalRepository = {
-		decryptGroupMessage({ group, authorJid, msg }) {
+		decryptGroupMessage: async({ group, authorJid, msg }) => {
 			const senderName: SenderKeyName = jidToSignalSenderKeyName(group, authorJid)
 			const cipher = new GroupCipher(storage, senderName)
 
@@ -111,6 +111,14 @@ export function makeLibSignalRepository(auth: SignalAuthState): SignalRepository
 							await parsedKeys.set({ 'sender-key': { [keyId]: null } })
 						}
 					)
+				} else if (typeof error?.message === 'string' && /old counter/i.test(error.message)) {
+					try {
+						const keyId: string = senderName.toString()
+						await parsedKeys.set({ 'sender-key': { [keyId]: null } })
+						logger.warn({ group, authorJid }, 'Cleared sender key due to old counter error')
+					} catch (clearErr) {
+						logger.error({ clearErr, group, authorJid }, 'Failed to clear sender key after old counter error')
+					}
 				}
 
 				throw error
