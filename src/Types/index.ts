@@ -11,6 +11,7 @@ export * from './Signal'
 export * from './Socket'
 export * from './State'
 export * from './Newsletter'
+export * from './Business'
 
 import { AuthenticationState } from './Auth'
 import { SocketConfig } from './Socket'

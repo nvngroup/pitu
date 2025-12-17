@@ -1,4 +1,5 @@
-import { GetCatalogOptions, ProductCreate, ProductUpdate, SocketConfig } from '../Types'
+import type { GetCatalogOptions, ProductCreate, ProductUpdate, SocketConfig, UpdateBussinesProfileProps, WAMediaUpload } from '../Types'
+import { getRawMediaUploadData } from '../Utils'
 import { parseCatalogNode, parseCollectionsNode, parseOrderDetailsNode, parseProductNode, toProductNode, uploadingNecessaryImagesOfProduct } from '../Utils/business'
 import { BinaryNode, jidNormalizedUser, S_WHATSAPP_NET } from '../WABinary'
 import { getBinaryNodeChild } from '../WABinary/generic-utils'
@@ -12,24 +13,161 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		waUploadToServer
 	} = sock
 
-	const getCatalog = async({ jid, limit, cursor }: GetCatalogOptions) => {
+	const updateBussinesProfile = async (args: UpdateBussinesProfileProps) => {
+		const node: BinaryNode[] = []
+		const simpleFields: (keyof UpdateBussinesProfileProps)[] = ['address', 'email', 'description']
+
+		node.push(
+			...simpleFields
+				.filter(key => args[key] !== undefined && args[key] !== null)
+				.map(key => ({
+					tag: key,
+					attrs: {},
+					content: args[key] as string
+				}))
+		)
+
+		if (args.websites) {
+			node.push(
+				...args.websites.map(website => ({
+					tag: 'website',
+					attrs: {},
+					content: website
+				}))
+			)
+		}
+
+		if (args.hours) {
+			node.push({
+				tag: 'business_hours',
+				attrs: { timezone: args.hours.timezone },
+				content: args.hours.days.map(dayConfig => {
+					const base = {
+						tag: 'business_hours_config',
+						attrs: {
+							day_of_week: dayConfig.day,
+							mode: dayConfig.mode
+						}
+					}
+
+					if (dayConfig.mode === 'specific_hours') {
+						return {
+							...base,
+							attrs: {
+								...base.attrs,
+								open_time: dayConfig.openTimeInMinutes,
+								close_time: dayConfig.closeTimeInMinutes
+							}
+						}
+					}
+
+					return base
+				})
+			})
+		}
+
+		const result = await query({
+			tag: 'iq',
+			attrs: {
+				to: S_WHATSAPP_NET,
+				type: 'set',
+				xmlns: 'w:biz'
+			},
+			content: [
+				{
+					tag: 'business_profile',
+					attrs: {
+						v: '3',
+						mutation_type: 'delta'
+					},
+					content: node
+				}
+			]
+		})
+
+		return result
+	}
+
+	const updateCoverPhoto = async (photo: WAMediaUpload) => {
+		const { fileSha256, filePath } = await getRawMediaUploadData(photo, 'biz-cover-photo')
+		const fileSha256B64 = fileSha256.toString('base64')
+
+		const { meta_hmac, fbid, ts } = await waUploadToServer(filePath, {
+			fileEncSha256B64: fileSha256B64,
+			mediaType: 'biz-cover-photo'
+		})
+
+		await query({
+			tag: 'iq',
+			attrs: {
+				to: S_WHATSAPP_NET,
+				type: 'set',
+				xmlns: 'w:biz'
+			},
+			content: [
+				{
+					tag: 'business_profile',
+					attrs: {
+						v: '3',
+						mutation_type: 'delta'
+					},
+					content: [
+						{
+							tag: 'cover_photo',
+							attrs: { id: String(fbid), op: 'update', token: meta_hmac!, ts: String(ts) }
+						}
+					]
+				}
+			]
+		})
+
+		return fbid!
+	}
+
+	const removeCoverPhoto = async (id: string) => {
+		return await query({
+			tag: 'iq',
+			attrs: {
+				to: S_WHATSAPP_NET,
+				type: 'set',
+				xmlns: 'w:biz'
+			},
+			content: [
+				{
+					tag: 'business_profile',
+					attrs: {
+						v: '3',
+						mutation_type: 'delta'
+					},
+					content: [
+						{
+							tag: 'cover_photo',
+							attrs: { op: 'delete', id }
+						}
+					]
+				}
+			]
+		})
+	}
+
+	const getCatalog = async ({ jid, limit, cursor }: GetCatalogOptions) => {
 		jid = jid || authState.creds.me?.id
 		jid = jidNormalizedUser(jid)
 
 		const queryParamNodes: BinaryNode[] = [
 			{
 				tag: 'limit',
-				attrs: { },
+				attrs: {},
 				content: Buffer.from((limit || 10).toString())
 			},
 			{
 				tag: 'width',
-				attrs: { },
+				attrs: {},
 				content: Buffer.from('100')
 			},
 			{
 				tag: 'height',
-				attrs: { },
+				attrs: {},
 				content: Buffer.from('100')
 			},
 		]
@@ -37,7 +175,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		if (cursor) {
 			queryParamNodes.push({
 				tag: 'after',
-				attrs: { },
+				attrs: {},
 				content: cursor
 			})
 		}
@@ -63,7 +201,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseCatalogNode(result)
 	}
 
-	const getCollections = async(jid?: string, limit = 51) => {
+	const getCollections = async (jid?: string, limit = 51) => {
 		jid = jid || authState.creds.me?.id
 		jid = jidNormalizedUser(jid)
 		const result: BinaryNode = await query({
@@ -83,22 +221,22 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 					content: [
 						{
 							tag: 'collection_limit',
-							attrs: { },
+							attrs: {},
 							content: Buffer.from(limit.toString())
 						},
 						{
 							tag: 'item_limit',
-							attrs: { },
+							attrs: {},
 							content: Buffer.from(limit.toString())
 						},
 						{
 							tag: 'width',
-							attrs: { },
+							attrs: {},
 							content: Buffer.from('100')
 						},
 						{
 							tag: 'height',
-							attrs: { },
+							attrs: {},
 							content: Buffer.from('100')
 						}
 					]
@@ -109,7 +247,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseCollectionsNode(result)
 	}
 
-	const getOrderDetails = async(orderId: string, tokenBase64: string) => {
+	const getOrderDetails = async (orderId: string, tokenBase64: string) => {
 		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
@@ -128,23 +266,23 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 					content: [
 						{
 							tag: 'image_dimensions',
-							attrs: { },
+							attrs: {},
 							content: [
 								{
 									tag: 'width',
-									attrs: { },
+									attrs: {},
 									content: Buffer.from('100')
 								},
 								{
 									tag: 'height',
-									attrs: { },
+									attrs: {},
 									content: Buffer.from('100')
 								}
 							]
 						},
 						{
 							tag: 'token',
-							attrs: { },
+							attrs: {},
 							content: Buffer.from(tokenBase64)
 						}
 					]
@@ -155,7 +293,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseOrderDetailsNode(result)
 	}
 
-	const productUpdate = async(productId: string, update: ProductUpdate) => {
+	const productUpdate = async (productId: string, update: ProductUpdate) => {
 		update = await uploadingNecessaryImagesOfProduct(update, waUploadToServer)
 		const editNode: BinaryNode = toProductNode(productId, update)
 
@@ -174,12 +312,12 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 						editNode,
 						{
 							tag: 'width',
-							attrs: { },
+							attrs: {},
 							content: '100'
 						},
 						{
 							tag: 'height',
-							attrs: { },
+							attrs: {},
 							content: '100'
 						}
 					]
@@ -193,7 +331,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseProductNode(productNode!)
 	}
 
-	const productCreate = async(create: ProductCreate) => {
+	const productCreate = async (create: ProductCreate) => {
 		// ensure isHidden is defined
 		create.isHidden = !!create.isHidden
 		create = await uploadingNecessaryImagesOfProduct(create, waUploadToServer)
@@ -214,12 +352,12 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 						createNode,
 						{
 							tag: 'width',
-							attrs: { },
+							attrs: {},
 							content: '100'
 						},
 						{
 							tag: 'height',
-							attrs: { },
+							attrs: {},
 							content: '100'
 						}
 					]
@@ -233,7 +371,7 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		return parseProductNode(productNode!)
 	}
 
-	const productDelete = async(productIds: string[]) => {
+	const productDelete = async (productIds: string[]) => {
 		const result: BinaryNode = await query({
 			tag: 'iq',
 			attrs: {
@@ -248,11 +386,11 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 					content: productIds.map(
 						id => ({
 							tag: 'product',
-							attrs: { },
+							attrs: {},
 							content: [
 								{
 									tag: 'id',
-									attrs: { },
+									attrs: {},
 									content: Buffer.from(id)
 								}
 							]
@@ -276,6 +414,9 @@ export const makeBusinessSocket = (config: SocketConfig) => {
 		getCollections,
 		productCreate,
 		productDelete,
-		productUpdate
+		productUpdate,
+		updateBussinesProfile,
+		updateCoverPhoto,
+		removeCoverPhoto
 	}
 }

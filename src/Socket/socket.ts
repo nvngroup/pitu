@@ -772,7 +772,7 @@ export const makeSocket = (config: SocketConfig) => {
 				return
 			}
 
-			const refNode = refNodes!.shift()
+			const refNode = refNodes.shift()
 			if (!refNode) {
 				end(new Boom('QR refs attempts ended', { statusCode: DisconnectReason.timedOut }))
 				return

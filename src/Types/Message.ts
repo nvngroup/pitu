@@ -138,7 +138,7 @@ type Interactiveable = {
 }
 
 type Editable = {
-  edit?: WAMessageKey
+    edit?: WAMessageKey
 }
 
 type Shopable = {
@@ -199,7 +199,7 @@ export type EventMessageOptions = {
     isCancelled?: boolean
     isScheduleCall?: boolean
     extraGuestsAllowed?: boolean
-    messageSecret?: Uint8Array<ArrayBufferLike>
+    messageSecret?: Uint8Array
 }
 
 export type AlbumMedia = (
@@ -314,10 +314,10 @@ export type AnyRegularMessageContent = (
         body: string
         linkPreview?: WAUrlInfo | null
     } & Mentionable & Contextable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable
-    | {
-        text: string
-        linkPreview?: WAUrlInfo | null
-    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
+        | {
+            text: string
+            linkPreview?: WAUrlInfo | null
+        } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         poll: PollMessageOptions
@@ -325,7 +325,7 @@ export type AnyRegularMessageContent = (
     | ({
         album: AlbumMessageOptions
     } & Contextable)
-	| {
+    | {
         contacts: {
             displayName?: string
             contacts: waproto.Message.IContactMessage[]
@@ -369,12 +369,12 @@ export type AnyRegularMessageContent = (
 ) & ViewOnce
 
 export type AnyMessageContent = AnyRegularMessageContent | {
-	forward: WAMessage
-	force?: boolean
+    forward: WAMessage
+    force?: boolean
 } | {
-	delete: WAMessageKey
+    delete: WAMessageKey
 } | {
-	disappearingMessagesInChat: boolean | number
+    disappearingMessagesInChat: boolean | number
 } | {
     limitSharing: boolean
 }
@@ -396,8 +396,8 @@ export type MessageRelayOptions = MinimalRelayOptions & {
 }
 
 export type MiscMessageGenerationOptions = MinimalRelayOptions & {
-	timestamp?: Date
-	quoted?: WAMessage
+    timestamp?: Date
+    quoted?: WAMessage
     ephemeralExpiration?: number | string
     mediaUploadTimeoutMs?: number
     statusJidList?: string[]
@@ -406,13 +406,13 @@ export type MiscMessageGenerationOptions = MinimalRelayOptions & {
     broadcast?: boolean
 }
 export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
-	userJid: string
+    userJid: string
 }
 
-export type WAMediaUploadFunction = (encFilePath: string, opts: { fileEncSha256B64: string, mediaType: MediaType, timeoutMs?: number }) => Promise<{ mediaUrl: string, directPath: string }>
+export type WAMediaUploadFunction = (encFilePath: string, opts: { fileEncSha256B64: string, mediaType: MediaType, timeoutMs?: number }) => Promise<{ mediaUrl: string, directPath: string; meta_hmac?: string; ts?: number; fbid?: number }>
 
 export type MediaGenerationOptions = {
-	logger?: ILogger
+    logger?: ILogger
     mediaTypeOverride?: MediaType
     upload: WAMediaUploadFunction
     mediaCache?: CacheStore
@@ -427,7 +427,7 @@ export type MediaGenerationOptions = {
     jid?: string
 }
 export type MessageContentGenerationOptions = MediaGenerationOptions & {
-	getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
+    getUrlInfo?: (text: string) => Promise<WAUrlInfo | undefined>
     getProfilePicUrl?: (jid: string, type: 'image' | 'preview') => Promise<string | undefined>
     getCallLink?: (type: 'audio' | 'video', event?: { startTime: number }) => Promise<string | undefined>
 }

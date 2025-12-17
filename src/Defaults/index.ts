@@ -25,7 +25,7 @@ export const NOISE_MODE = 'Noise_XX_25519_AESGCM_SHA256\0\0\0\0'
 export const DICT_VERSION = 2
 export const KEY_BUNDLE_TYPE: Buffer = Buffer.from([5])
 export const NOISE_WA_HEADER: Buffer = Buffer.from(
-	[ 87, 65, 6, DICT_VERSION ]
+	[87, 65, 6, DICT_VERSION]
 )
 
 export const URL_REGEX = /https:\/\/(?![^:@\/\s]+:[^:@\/\s]+@)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:\d+)?(\/[^\s]*)?/g
@@ -67,14 +67,14 @@ export const DEFAULT_CONNECTION_CONFIG: SocketConfig = {
 	linkPreviewImageThumbnailWidth: 192,
 	transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 },
 	generateHighQualityLinkPreview: false,
-	options: { },
+	options: {},
 	appStateMacVerification: {
 		patch: false,
 		snapshot: false,
 	},
 	countryCode: 'BR',
-	getMessage: async() => undefined,
-	cachedGroupMetadata: async() => undefined,
+	getMessage: async () => undefined,
+	cachedGroupMetadata: async () => undefined,
 	makeSignalRepository: makeLibSignalRepository,
 	messageRelayMaxConcurrent: 5,
 	messageRelayMaxQueueSize: 500,
@@ -93,15 +93,15 @@ export const MEDIA_PATH_MAP: { [T in MediaType]?: string } = {
 }
 
 export const MEDIA_HKDF_KEY_MAPPING = {
-	'audio': 'Audio',
-	'document': 'Document',
-	'gif': 'Video',
-	'image': 'Image',
-	'ppic': '',
-	'product': 'Image',
-	'ptt': 'Audio',
-	'sticker': 'Image',
-	'video': 'Video',
+	audio: 'Audio',
+	document: 'Document',
+	gif: 'Video',
+	image: 'Image',
+	ppic: '',
+	product: 'Image',
+	ptt: 'Audio',
+	sticker: 'Image',
+	video: 'Video',
 	'thumbnail-document': 'Document Thumbnail',
 	'thumbnail-image': 'Image Thumbnail',
 	'thumbnail-video': 'Video Thumbnail',
@@ -110,7 +110,8 @@ export const MEDIA_HKDF_KEY_MAPPING = {
 	'md-app-state': 'App State',
 	'product-catalog-image': '',
 	'payment-bg-image': 'Payment Background',
-	'ptv': 'Video'
+	ptv: 'Video',
+	'biz-cover-photo': 'Image'
 }
 
 export const MEDIA_KEYS = Object.keys(MEDIA_PATH_MAP) as MediaType[]

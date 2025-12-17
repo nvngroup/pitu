@@ -52,22 +52,22 @@ export const decodeDecompressedBinaryNode = (
 	}
 
 	const readFbJid = () => {
-		const user = readString(readByte()!)
+		const user = readString(readByte())
 		const device = readInt(2)
-		const server = readString(readByte()!)
+		const server = readString(readByte())
 		return `${user}:${device}@${server}`
 	}
 
 	const readInteropJid = () => {
-		const user = readString(readByte()!)
+		const user = readString(readByte())
 		const device = readInt(2)
 		const integrator = readInt(2)
 
 		let server = 'interop'
 		const beforeServer = indexRef.index
 		try {
-			server = readString(readByte()!)
-		} catch (err) {
+			server = readString(readByte())
+		} catch {
 			indexRef.index = beforeServer
 		}
 
