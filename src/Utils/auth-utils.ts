@@ -148,17 +148,27 @@ export const addTransactionCapability = (
 					if (Object.keys(mutations).length) {
 						logger.trace({}, 'committing transaction')
 						let tries: number = maxCommitRetries
+						let committed = false
+						let lastError: unknown
 						while (tries) {
 							tries -= 1
 							try {
 								await state.set(mutations)
 								logger.trace({ dbQueriesInTransaction }, 'committed transaction')
+								committed = true
 								break
 							} catch (error) {
+								lastError = error
 								logger.error({ mutations, error }, `failed to commit ${Object.keys(mutations).length} mutations, tries left=${tries}`)
 								logger.trace({ error }, 'error while committing transaction')
+								if (!tries) {
+									break
+								}
 								await delay(delayBetweenTriesMs)
 							}
+						}
+						if (!committed) {
+							throw lastError ?? new Error('failed to commit mutations')
 						}
 					} else {
 						logger.trace({}, 'no mutations in transaction')
