@@ -4691,7 +4691,9 @@ export namespace waproto {
             RICH_RESPONSE_UR_REASONING = 49,
             RICH_RESPONSE_UR_ZEITGEIST_CITATIONS = 50,
             RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL = 51,
-            AI_IMAGINE_LOADING_INDICATOR = 52
+            AI_IMAGINE_LOADING_INDICATOR = 52,
+            RICH_RESPONSE_UR_IMAGINE = 53,
+            AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR = 54
         }
     }
 
@@ -7258,6 +7260,9 @@ export namespace waproto {
         /** BotMetadata botGroupMetadata */
         botGroupMetadata?: (waproto.IBotGroupMetadata|null);
 
+        /** BotMetadata botRenderingConfigMetadata */
+        botRenderingConfigMetadata?: (waproto.IBotRenderingConfigMetadata|null);
+
         /** BotMetadata internalMetadata */
         internalMetadata?: (Uint8Array|null);
     }
@@ -7375,6 +7380,9 @@ export namespace waproto {
 
         /** BotMetadata botGroupMetadata. */
         public botGroupMetadata?: (waproto.IBotGroupMetadata|null);
+
+        /** BotMetadata botRenderingConfigMetadata. */
+        public botRenderingConfigMetadata?: (waproto.IBotRenderingConfigMetadata|null);
 
         /** BotMetadata internalMetadata. */
         public internalMetadata?: (Uint8Array|null);
@@ -7501,15 +7509,7 @@ export namespace waproto {
         MEDIA_PICKER_1_ON_1_CHAT = 39,
         MEDIA_PICKER_GROUP_CHAT = 40,
         ASK_META_AI_NO_SEARCH_RESULTS = 41,
-        META_AI_SETTINGS = 45,
-        AI_HOME_LEARN = 46,
-        AI_HOME_WRITE = 47,
-        AI_HOME_CREATE_IMAGE = 48,
-        AI_HOME_ANIMATE_PHOTO = 49,
-        AI_HOME_GET_ADVICE = 50,
-        AI_HOME_ANALYZE_FILE = 51,
-        AI_HOME_PLAN = 52,
-        AI_HOME_HAVE_FUN = 53
+        META_AI_SETTINGS = 45
     }
 
     /** Properties of a BotMetricsMetadata. */
@@ -8051,6 +8051,9 @@ export namespace waproto {
 
         /** BotProgressIndicatorMetadata stepsMetadata */
         stepsMetadata?: (waproto.BotProgressIndicatorMetadata.IBotPlanningStepMetadata[]|null);
+
+        /** BotProgressIndicatorMetadata estimatedCompletionTime */
+        estimatedCompletionTime?: (number|Long|null);
     }
 
     /** Represents a BotProgressIndicatorMetadata. */
@@ -8067,6 +8070,9 @@ export namespace waproto {
 
         /** BotProgressIndicatorMetadata stepsMetadata. */
         public stepsMetadata: waproto.BotProgressIndicatorMetadata.IBotPlanningStepMetadata[];
+
+        /** BotProgressIndicatorMetadata estimatedCompletionTime. */
+        public estimatedCompletionTime?: (number|Long|null);
 
         /**
          * Creates a new BotProgressIndicatorMetadata instance using the specified properties.
@@ -9317,6 +9323,109 @@ export namespace waproto {
         }
     }
 
+    /** Properties of a BotRenderingConfigMetadata. */
+    interface IBotRenderingConfigMetadata {
+
+        /** BotRenderingConfigMetadata bloksVersioningId */
+        bloksVersioningId?: (string|null);
+
+        /** BotRenderingConfigMetadata pixelDensity */
+        pixelDensity?: (number|null);
+    }
+
+    /** Represents a BotRenderingConfigMetadata. */
+    class BotRenderingConfigMetadata implements IBotRenderingConfigMetadata {
+
+        /**
+         * Constructs a new BotRenderingConfigMetadata.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: waproto.IBotRenderingConfigMetadata);
+
+        /** BotRenderingConfigMetadata bloksVersioningId. */
+        public bloksVersioningId?: (string|null);
+
+        /** BotRenderingConfigMetadata pixelDensity. */
+        public pixelDensity?: (number|null);
+
+        /**
+         * Creates a new BotRenderingConfigMetadata instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns BotRenderingConfigMetadata instance
+         */
+        public static create(properties?: waproto.IBotRenderingConfigMetadata): waproto.BotRenderingConfigMetadata;
+
+        /**
+         * Encodes the specified BotRenderingConfigMetadata message. Does not implicitly {@link waproto.BotRenderingConfigMetadata.verify|verify} messages.
+         * @param message BotRenderingConfigMetadata message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: waproto.IBotRenderingConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified BotRenderingConfigMetadata message, length delimited. Does not implicitly {@link waproto.BotRenderingConfigMetadata.verify|verify} messages.
+         * @param message BotRenderingConfigMetadata message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: waproto.IBotRenderingConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a BotRenderingConfigMetadata message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns BotRenderingConfigMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.BotRenderingConfigMetadata;
+
+        /**
+         * Decodes a BotRenderingConfigMetadata message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns BotRenderingConfigMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.BotRenderingConfigMetadata;
+
+        /**
+         * Verifies a BotRenderingConfigMetadata message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a BotRenderingConfigMetadata message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns BotRenderingConfigMetadata
+         */
+        public static fromObject(object: { [k: string]: any }): waproto.BotRenderingConfigMetadata;
+
+        /**
+         * Creates a plain object from a BotRenderingConfigMetadata message. Also converts values to other types if specified.
+         * @param message BotRenderingConfigMetadata
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: waproto.BotRenderingConfigMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this BotRenderingConfigMetadata to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for BotRenderingConfigMetadata
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a BotRenderingMetadata. */
     interface IBotRenderingMetadata {
 
@@ -9631,7 +9740,8 @@ export namespace waproto {
         USER_INPUT = 3,
         EMU_FLASH = 4,
         EMU_FLASH_FOLLOWUP = 5,
-        VOICE = 6
+        VOICE = 6,
+        AI_HOME_SESSION = 7
     }
 
     /** Properties of a BotSignatureVerificationMetadata. */
@@ -12473,7 +12583,9 @@ export namespace waproto {
                 HARDCODED = 2,
                 OVERRIDE = 3,
                 FALLBACK = 4,
-                MNS = 5
+                MNS = 5,
+                MNS_SECONDARY = 6,
+                SOCKS_PROXY = 7
             }
         }
 
@@ -13131,6 +13243,12 @@ export namespace waproto {
 
             /** WebInfo webSubPlatform */
             webSubPlatform?: (waproto.ClientPayload.WebInfo.WebSubPlatform|null);
+
+            /** WebInfo browser */
+            browser?: (string|null);
+
+            /** WebInfo browserVersion */
+            browserVersion?: (string|null);
         }
 
         /** Represents a WebInfo. */
@@ -13153,6 +13271,12 @@ export namespace waproto {
 
             /** WebInfo webSubPlatform. */
             public webSubPlatform?: (waproto.ClientPayload.WebInfo.WebSubPlatform|null);
+
+            /** WebInfo browser. */
+            public browser?: (string|null);
+
+            /** WebInfo browserVersion. */
+            public browserVersion?: (string|null);
 
             /**
              * Creates a new WebInfo instance using the specified properties.
@@ -16030,7 +16154,8 @@ export namespace waproto {
         enum EndOfHistoryTransferType {
             COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY = 0,
             COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY = 1,
-            COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY = 2
+            COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY = 2,
+            COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS = 3
         }
     }
 
@@ -62362,6 +62487,9 @@ export namespace waproto {
 
         /** WebMessageInfo quarantinedMessage */
         quarantinedMessage?: (waproto.IQuarantinedMessage|null);
+
+        /** WebMessageInfo nonJidMentions */
+        nonJidMentions?: (number|null);
     }
 
     /** Represents a WebMessageInfo. */
@@ -62570,6 +62698,9 @@ export namespace waproto {
 
         /** WebMessageInfo quarantinedMessage. */
         public quarantinedMessage?: (waproto.IQuarantinedMessage|null);
+
+        /** WebMessageInfo nonJidMentions. */
+        public nonJidMentions?: (number|null);
 
         /**
          * Creates a new WebMessageInfo instance using the specified properties.

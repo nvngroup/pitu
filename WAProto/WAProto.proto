@@ -1,7 +1,7 @@
 syntax = "proto3";
 package waproto;
 
-/// WhatsApp Version: 2.3000.1030444778
+/// WhatsApp Version: 2.3000.1031389603
 
 message ADVDeviceIdentity {
     optional uint32 rawId = 1;
@@ -394,6 +394,8 @@ message BotCapabilityMetadata {
         RICH_RESPONSE_UR_ZEITGEIST_CITATIONS = 50;
         RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL = 51;
         AI_IMAGINE_LOADING_INDICATOR = 52;
+        RICH_RESPONSE_UR_IMAGINE = 53;
+        AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR = 54;
     }
 }
 
@@ -615,6 +617,7 @@ message BotMetadata {
     optional SessionTransparencyMetadata sessionTransparencyMetadata = 33;
     optional BotDocumentMessageMetadata botDocumentMessageMetadata = 34;
     optional BotGroupMetadata botGroupMetadata = 35;
+    optional BotRenderingConfigMetadata botRenderingConfigMetadata = 36;
     optional bytes internalMetadata = 999;
 }
 
@@ -662,14 +665,6 @@ enum BotMetricsEntryPoint {
     MEDIA_PICKER_GROUP_CHAT = 40;
     ASK_META_AI_NO_SEARCH_RESULTS = 41;
     META_AI_SETTINGS = 45;
-    AI_HOME_LEARN = 46;
-    AI_HOME_WRITE = 47;
-    AI_HOME_CREATE_IMAGE = 48;
-    AI_HOME_ANIMATE_PHOTO = 49;
-    AI_HOME_GET_ADVICE = 50;
-    AI_HOME_ANALYZE_FILE = 51;
-    AI_HOME_PLAN = 52;
-    AI_HOME_HAVE_FUN = 53;
 }
 message BotMetricsMetadata {
     optional string destinationId = 1;
@@ -737,6 +732,7 @@ message BotPluginMetadata {
 message BotProgressIndicatorMetadata {
     optional string progressDescription = 1;
     repeated BotPlanningStepMetadata stepsMetadata = 2;
+    optional int64 estimatedCompletionTime = 3;
     message BotPlanningStepMetadata {
         optional string statusTitle = 1;
         optional string statusBody = 2;
@@ -840,6 +836,11 @@ message BotReminderMetadata {
     }
 }
 
+message BotRenderingConfigMetadata {
+    optional string bloksVersioningId = 1;
+    optional double pixelDensity = 2;
+}
+
 message BotRenderingMetadata {
     repeated Keyword keywords = 1;
     message Keyword {
@@ -862,6 +863,7 @@ enum BotSessionSource {
     EMU_FLASH = 4;
     EMU_FLASH_FOLLOWUP = 5;
     VOICE = 6;
+    AI_HOME_SESSION = 7;
 }
 message BotSignatureVerificationMetadata {
     repeated BotSignatureVerificationUseCaseProof proofs = 1;
@@ -1120,6 +1122,8 @@ message ClientPayload {
             OVERRIDE = 3;
             FALLBACK = 4;
             MNS = 5;
+            MNS_SECONDARY = 6;
+            SOCKS_PROXY = 7;
         }
     }
     
@@ -1241,6 +1245,8 @@ message ClientPayload {
         optional string version = 2;
         optional WebdPayload webdPayload = 3;
         optional WebSubPlatform webSubPlatform = 4;
+        optional string browser = 5;
+        optional string browserVersion = 6;
         enum WebSubPlatform {
             WEB_BROWSER = 0;
             APP_STORE = 1;
@@ -1565,6 +1571,7 @@ message Conversation {
         COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY = 0;
         COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY = 1;
         COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY = 2;
+        COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS = 3;
     }
 }
 
@@ -5345,6 +5352,7 @@ message WebMessageInfo {
     optional GroupHistoryBundleInfo groupHistoryBundleInfo = 75;
     optional InteractiveMessageAdditionalMetadata interactiveMessageAdditionalMetadata = 76;
     optional QuarantinedMessage quarantinedMessage = 77;
+    optional uint32 nonJidMentions = 78;
     enum BizPrivacyStatus {
         E2EE = 0;
         FB = 2;

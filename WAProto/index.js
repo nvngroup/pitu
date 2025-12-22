@@ -13004,6 +13004,8 @@ $root.waproto = (function() {
                     case 50:
                     case 51:
                     case 52:
+                    case 53:
+                    case 54:
                         break;
                     }
             }
@@ -13245,6 +13247,14 @@ $root.waproto = (function() {
                     case 52:
                         message.capabilities[i] = 52;
                         break;
+                    case "RICH_RESPONSE_UR_IMAGINE":
+                    case 53:
+                        message.capabilities[i] = 53;
+                        break;
+                    case "AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR":
+                    case 54:
+                        message.capabilities[i] = 54;
+                        break;
                     }
             }
             return message;
@@ -13356,6 +13366,8 @@ $root.waproto = (function() {
          * @property {number} RICH_RESPONSE_UR_ZEITGEIST_CITATIONS=50 RICH_RESPONSE_UR_ZEITGEIST_CITATIONS value
          * @property {number} RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL=51 RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL value
          * @property {number} AI_IMAGINE_LOADING_INDICATOR=52 AI_IMAGINE_LOADING_INDICATOR value
+         * @property {number} RICH_RESPONSE_UR_IMAGINE=53 RICH_RESPONSE_UR_IMAGINE value
+         * @property {number} AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR=54 AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR value
          */
         BotCapabilityMetadata.BotCapabilityType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -13412,6 +13424,8 @@ $root.waproto = (function() {
             values[valuesById[50] = "RICH_RESPONSE_UR_ZEITGEIST_CITATIONS"] = 50;
             values[valuesById[51] = "RICH_RESPONSE_UR_ZEITGEIST_CAROUSEL"] = 51;
             values[valuesById[52] = "AI_IMAGINE_LOADING_INDICATOR"] = 52;
+            values[valuesById[53] = "RICH_RESPONSE_UR_IMAGINE"] = 53;
+            values[valuesById[54] = "AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR"] = 54;
             return values;
         })();
 
@@ -19867,14 +19881,6 @@ $root.waproto = (function() {
                 case 40:
                 case 41:
                 case 45:
-                case 46:
-                case 47:
-                case 48:
-                case 49:
-                case 50:
-                case 51:
-                case 52:
-                case 53:
                     break;
                 }
             }
@@ -20077,38 +20083,6 @@ $root.waproto = (function() {
             case 45:
                 message.botEntryPointOrigin = 45;
                 break;
-            case "AI_HOME_LEARN":
-            case 46:
-                message.botEntryPointOrigin = 46;
-                break;
-            case "AI_HOME_WRITE":
-            case 47:
-                message.botEntryPointOrigin = 47;
-                break;
-            case "AI_HOME_CREATE_IMAGE":
-            case 48:
-                message.botEntryPointOrigin = 48;
-                break;
-            case "AI_HOME_ANIMATE_PHOTO":
-            case 49:
-                message.botEntryPointOrigin = 49;
-                break;
-            case "AI_HOME_GET_ADVICE":
-            case 50:
-                message.botEntryPointOrigin = 50;
-                break;
-            case "AI_HOME_ANALYZE_FILE":
-            case 51:
-                message.botEntryPointOrigin = 51;
-                break;
-            case "AI_HOME_PLAN":
-            case 52:
-                message.botEntryPointOrigin = 52;
-                break;
-            case "AI_HOME_HAVE_FUN":
-            case 53:
-                message.botEntryPointOrigin = 53;
-                break;
             }
             if (object.forwardScore != null)
                 message.forwardScore = object.forwardScore >>> 0;
@@ -20211,6 +20185,7 @@ $root.waproto = (function() {
          * @property {waproto.ISessionTransparencyMetadata|null} [sessionTransparencyMetadata] BotMetadata sessionTransparencyMetadata
          * @property {waproto.IBotDocumentMessageMetadata|null} [botDocumentMessageMetadata] BotMetadata botDocumentMessageMetadata
          * @property {waproto.IBotGroupMetadata|null} [botGroupMetadata] BotMetadata botGroupMetadata
+         * @property {waproto.IBotRenderingConfigMetadata|null} [botRenderingConfigMetadata] BotMetadata botRenderingConfigMetadata
          * @property {Uint8Array|null} [internalMetadata] BotMetadata internalMetadata
          */
 
@@ -20510,6 +20485,14 @@ $root.waproto = (function() {
         BotMetadata.prototype.botGroupMetadata = null;
 
         /**
+         * BotMetadata botRenderingConfigMetadata.
+         * @member {waproto.IBotRenderingConfigMetadata|null|undefined} botRenderingConfigMetadata
+         * @memberof waproto.BotMetadata
+         * @instance
+         */
+        BotMetadata.prototype.botRenderingConfigMetadata = null;
+
+        /**
          * BotMetadata internalMetadata.
          * @member {Uint8Array|null|undefined} internalMetadata
          * @memberof waproto.BotMetadata
@@ -20731,6 +20714,12 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotMetadata.prototype, "_botRenderingConfigMetadata", {
+            get: $util.oneOfGetter($oneOfFields = ["botRenderingConfigMetadata"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
         Object.defineProperty(BotMetadata.prototype, "_internalMetadata", {
             get: $util.oneOfGetter($oneOfFields = ["internalMetadata"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -20830,6 +20819,8 @@ $root.waproto = (function() {
                 $root.waproto.BotDocumentMessageMetadata.encode(message.botDocumentMessageMetadata, writer.uint32(/* id 34, wireType 2 =*/274).fork()).ldelim();
             if (message.botGroupMetadata != null && Object.hasOwnProperty.call(message, "botGroupMetadata"))
                 $root.waproto.BotGroupMetadata.encode(message.botGroupMetadata, writer.uint32(/* id 35, wireType 2 =*/282).fork()).ldelim();
+            if (message.botRenderingConfigMetadata != null && Object.hasOwnProperty.call(message, "botRenderingConfigMetadata"))
+                $root.waproto.BotRenderingConfigMetadata.encode(message.botRenderingConfigMetadata, writer.uint32(/* id 36, wireType 2 =*/290).fork()).ldelim();
             if (message.internalMetadata != null && Object.hasOwnProperty.call(message, "internalMetadata"))
                 writer.uint32(/* id 999, wireType 2 =*/7994).bytes(message.internalMetadata);
             return writer;
@@ -21004,6 +20995,10 @@ $root.waproto = (function() {
                     }
                 case 35: {
                         message.botGroupMetadata = $root.waproto.BotGroupMetadata.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 36: {
+                        message.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.decode(reader, reader.uint32());
                         break;
                     }
                 case 999: {
@@ -21305,6 +21300,14 @@ $root.waproto = (function() {
                         return "botGroupMetadata." + error;
                 }
             }
+            if (message.botRenderingConfigMetadata != null && message.hasOwnProperty("botRenderingConfigMetadata")) {
+                properties._botRenderingConfigMetadata = 1;
+                {
+                    var error = $root.waproto.BotRenderingConfigMetadata.verify(message.botRenderingConfigMetadata);
+                    if (error)
+                        return "botRenderingConfigMetadata." + error;
+                }
+            }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 properties._internalMetadata = 1;
                 if (!(message.internalMetadata && typeof message.internalMetadata.length === "number" || $util.isString(message.internalMetadata)))
@@ -21481,6 +21484,11 @@ $root.waproto = (function() {
                 if (typeof object.botGroupMetadata !== "object")
                     throw TypeError(".waproto.BotMetadata.botGroupMetadata: object expected");
                 message.botGroupMetadata = $root.waproto.BotGroupMetadata.fromObject(object.botGroupMetadata);
+            }
+            if (object.botRenderingConfigMetadata != null) {
+                if (typeof object.botRenderingConfigMetadata !== "object")
+                    throw TypeError(".waproto.BotMetadata.botRenderingConfigMetadata: object expected");
+                message.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.fromObject(object.botRenderingConfigMetadata);
             }
             if (object.internalMetadata != null)
                 if (typeof object.internalMetadata === "string")
@@ -21678,6 +21686,11 @@ $root.waproto = (function() {
                 if (options.oneofs)
                     object._botGroupMetadata = "botGroupMetadata";
             }
+            if (message.botRenderingConfigMetadata != null && message.hasOwnProperty("botRenderingConfigMetadata")) {
+                object.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.toObject(message.botRenderingConfigMetadata, options);
+                if (options.oneofs)
+                    object._botRenderingConfigMetadata = "botRenderingConfigMetadata";
+            }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 object.internalMetadata = options.bytes === String ? $util.base64.encode(message.internalMetadata, 0, message.internalMetadata.length) : options.bytes === Array ? Array.prototype.slice.call(message.internalMetadata) : message.internalMetadata;
                 if (options.oneofs)
@@ -21762,14 +21775,6 @@ $root.waproto = (function() {
      * @property {number} MEDIA_PICKER_GROUP_CHAT=40 MEDIA_PICKER_GROUP_CHAT value
      * @property {number} ASK_META_AI_NO_SEARCH_RESULTS=41 ASK_META_AI_NO_SEARCH_RESULTS value
      * @property {number} META_AI_SETTINGS=45 META_AI_SETTINGS value
-     * @property {number} AI_HOME_LEARN=46 AI_HOME_LEARN value
-     * @property {number} AI_HOME_WRITE=47 AI_HOME_WRITE value
-     * @property {number} AI_HOME_CREATE_IMAGE=48 AI_HOME_CREATE_IMAGE value
-     * @property {number} AI_HOME_ANIMATE_PHOTO=49 AI_HOME_ANIMATE_PHOTO value
-     * @property {number} AI_HOME_GET_ADVICE=50 AI_HOME_GET_ADVICE value
-     * @property {number} AI_HOME_ANALYZE_FILE=51 AI_HOME_ANALYZE_FILE value
-     * @property {number} AI_HOME_PLAN=52 AI_HOME_PLAN value
-     * @property {number} AI_HOME_HAVE_FUN=53 AI_HOME_HAVE_FUN value
      */
     waproto.BotMetricsEntryPoint = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -21816,14 +21821,6 @@ $root.waproto = (function() {
         values[valuesById[40] = "MEDIA_PICKER_GROUP_CHAT"] = 40;
         values[valuesById[41] = "ASK_META_AI_NO_SEARCH_RESULTS"] = 41;
         values[valuesById[45] = "META_AI_SETTINGS"] = 45;
-        values[valuesById[46] = "AI_HOME_LEARN"] = 46;
-        values[valuesById[47] = "AI_HOME_WRITE"] = 47;
-        values[valuesById[48] = "AI_HOME_CREATE_IMAGE"] = 48;
-        values[valuesById[49] = "AI_HOME_ANIMATE_PHOTO"] = 49;
-        values[valuesById[50] = "AI_HOME_GET_ADVICE"] = 50;
-        values[valuesById[51] = "AI_HOME_ANALYZE_FILE"] = 51;
-        values[valuesById[52] = "AI_HOME_PLAN"] = 52;
-        values[valuesById[53] = "AI_HOME_HAVE_FUN"] = 53;
         return values;
     })();
 
@@ -22063,14 +22060,6 @@ $root.waproto = (function() {
                 case 40:
                 case 41:
                 case 45:
-                case 46:
-                case 47:
-                case 48:
-                case 49:
-                case 50:
-                case 51:
-                case 52:
-                case 53:
                     break;
                 }
             }
@@ -22282,38 +22271,6 @@ $root.waproto = (function() {
             case "META_AI_SETTINGS":
             case 45:
                 message.destinationEntryPoint = 45;
-                break;
-            case "AI_HOME_LEARN":
-            case 46:
-                message.destinationEntryPoint = 46;
-                break;
-            case "AI_HOME_WRITE":
-            case 47:
-                message.destinationEntryPoint = 47;
-                break;
-            case "AI_HOME_CREATE_IMAGE":
-            case 48:
-                message.destinationEntryPoint = 48;
-                break;
-            case "AI_HOME_ANIMATE_PHOTO":
-            case 49:
-                message.destinationEntryPoint = 49;
-                break;
-            case "AI_HOME_GET_ADVICE":
-            case 50:
-                message.destinationEntryPoint = 50;
-                break;
-            case "AI_HOME_ANALYZE_FILE":
-            case 51:
-                message.destinationEntryPoint = 51;
-                break;
-            case "AI_HOME_PLAN":
-            case 52:
-                message.destinationEntryPoint = 52;
-                break;
-            case "AI_HOME_HAVE_FUN":
-            case 53:
-                message.destinationEntryPoint = 53;
                 break;
             }
             switch (object.threadOrigin) {
@@ -23777,6 +23734,7 @@ $root.waproto = (function() {
          * @interface IBotProgressIndicatorMetadata
          * @property {string|null} [progressDescription] BotProgressIndicatorMetadata progressDescription
          * @property {Array.<waproto.BotProgressIndicatorMetadata.IBotPlanningStepMetadata>|null} [stepsMetadata] BotProgressIndicatorMetadata stepsMetadata
+         * @property {number|Long|null} [estimatedCompletionTime] BotProgressIndicatorMetadata estimatedCompletionTime
          */
 
         /**
@@ -23811,12 +23769,26 @@ $root.waproto = (function() {
          */
         BotProgressIndicatorMetadata.prototype.stepsMetadata = $util.emptyArray;
 
+        /**
+         * BotProgressIndicatorMetadata estimatedCompletionTime.
+         * @member {number|Long|null|undefined} estimatedCompletionTime
+         * @memberof waproto.BotProgressIndicatorMetadata
+         * @instance
+         */
+        BotProgressIndicatorMetadata.prototype.estimatedCompletionTime = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
         // Virtual OneOf for proto3 optional field
         Object.defineProperty(BotProgressIndicatorMetadata.prototype, "_progressDescription", {
             get: $util.oneOfGetter($oneOfFields = ["progressDescription"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotProgressIndicatorMetadata.prototype, "_estimatedCompletionTime", {
+            get: $util.oneOfGetter($oneOfFields = ["estimatedCompletionTime"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -23849,6 +23821,8 @@ $root.waproto = (function() {
             if (message.stepsMetadata != null && message.stepsMetadata.length)
                 for (var i = 0; i < message.stepsMetadata.length; ++i)
                     $root.waproto.BotProgressIndicatorMetadata.BotPlanningStepMetadata.encode(message.stepsMetadata[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.estimatedCompletionTime != null && Object.hasOwnProperty.call(message, "estimatedCompletionTime"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int64(message.estimatedCompletionTime);
             return writer;
         };
 
@@ -23891,6 +23865,10 @@ $root.waproto = (function() {
                         if (!(message.stepsMetadata && message.stepsMetadata.length))
                             message.stepsMetadata = [];
                         message.stepsMetadata.push($root.waproto.BotProgressIndicatorMetadata.BotPlanningStepMetadata.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 3: {
+                        message.estimatedCompletionTime = reader.int64();
                         break;
                     }
                 default:
@@ -23943,6 +23921,11 @@ $root.waproto = (function() {
                         return "stepsMetadata." + error;
                 }
             }
+            if (message.estimatedCompletionTime != null && message.hasOwnProperty("estimatedCompletionTime")) {
+                properties._estimatedCompletionTime = 1;
+                if (!$util.isInteger(message.estimatedCompletionTime) && !(message.estimatedCompletionTime && $util.isInteger(message.estimatedCompletionTime.low) && $util.isInteger(message.estimatedCompletionTime.high)))
+                    return "estimatedCompletionTime: integer|Long expected";
+            }
             return null;
         };
 
@@ -23970,6 +23953,15 @@ $root.waproto = (function() {
                     message.stepsMetadata[i] = $root.waproto.BotProgressIndicatorMetadata.BotPlanningStepMetadata.fromObject(object.stepsMetadata[i]);
                 }
             }
+            if (object.estimatedCompletionTime != null)
+                if ($util.Long)
+                    (message.estimatedCompletionTime = $util.Long.fromValue(object.estimatedCompletionTime)).unsigned = false;
+                else if (typeof object.estimatedCompletionTime === "string")
+                    message.estimatedCompletionTime = parseInt(object.estimatedCompletionTime, 10);
+                else if (typeof object.estimatedCompletionTime === "number")
+                    message.estimatedCompletionTime = object.estimatedCompletionTime;
+                else if (typeof object.estimatedCompletionTime === "object")
+                    message.estimatedCompletionTime = new $util.LongBits(object.estimatedCompletionTime.low >>> 0, object.estimatedCompletionTime.high >>> 0).toNumber();
             return message;
         };
 
@@ -23997,6 +23989,14 @@ $root.waproto = (function() {
                 object.stepsMetadata = [];
                 for (var j = 0; j < message.stepsMetadata.length; ++j)
                     object.stepsMetadata[j] = $root.waproto.BotProgressIndicatorMetadata.BotPlanningStepMetadata.toObject(message.stepsMetadata[j], options);
+            }
+            if (message.estimatedCompletionTime != null && message.hasOwnProperty("estimatedCompletionTime")) {
+                if (typeof message.estimatedCompletionTime === "number")
+                    object.estimatedCompletionTime = options.longs === String ? String(message.estimatedCompletionTime) : message.estimatedCompletionTime;
+                else
+                    object.estimatedCompletionTime = options.longs === String ? $util.Long.prototype.toString.call(message.estimatedCompletionTime) : options.longs === Number ? new $util.LongBits(message.estimatedCompletionTime.low >>> 0, message.estimatedCompletionTime.high >>> 0).toNumber() : message.estimatedCompletionTime;
+                if (options.oneofs)
+                    object._estimatedCompletionTime = "estimatedCompletionTime";
             }
             return object;
         };
@@ -27276,6 +27276,255 @@ $root.waproto = (function() {
         return BotReminderMetadata;
     })();
 
+    waproto.BotRenderingConfigMetadata = (function() {
+
+        /**
+         * Properties of a BotRenderingConfigMetadata.
+         * @memberof waproto
+         * @interface IBotRenderingConfigMetadata
+         * @property {string|null} [bloksVersioningId] BotRenderingConfigMetadata bloksVersioningId
+         * @property {number|null} [pixelDensity] BotRenderingConfigMetadata pixelDensity
+         */
+
+        /**
+         * Constructs a new BotRenderingConfigMetadata.
+         * @memberof waproto
+         * @classdesc Represents a BotRenderingConfigMetadata.
+         * @implements IBotRenderingConfigMetadata
+         * @constructor
+         * @param {waproto.IBotRenderingConfigMetadata=} [properties] Properties to set
+         */
+        function BotRenderingConfigMetadata(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BotRenderingConfigMetadata bloksVersioningId.
+         * @member {string|null|undefined} bloksVersioningId
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @instance
+         */
+        BotRenderingConfigMetadata.prototype.bloksVersioningId = null;
+
+        /**
+         * BotRenderingConfigMetadata pixelDensity.
+         * @member {number|null|undefined} pixelDensity
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @instance
+         */
+        BotRenderingConfigMetadata.prototype.pixelDensity = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotRenderingConfigMetadata.prototype, "_bloksVersioningId", {
+            get: $util.oneOfGetter($oneOfFields = ["bloksVersioningId"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotRenderingConfigMetadata.prototype, "_pixelDensity", {
+            get: $util.oneOfGetter($oneOfFields = ["pixelDensity"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new BotRenderingConfigMetadata instance using the specified properties.
+         * @function create
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {waproto.IBotRenderingConfigMetadata=} [properties] Properties to set
+         * @returns {waproto.BotRenderingConfigMetadata} BotRenderingConfigMetadata instance
+         */
+        BotRenderingConfigMetadata.create = function create(properties) {
+            return new BotRenderingConfigMetadata(properties);
+        };
+
+        /**
+         * Encodes the specified BotRenderingConfigMetadata message. Does not implicitly {@link waproto.BotRenderingConfigMetadata.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {waproto.IBotRenderingConfigMetadata} message BotRenderingConfigMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotRenderingConfigMetadata.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.bloksVersioningId != null && Object.hasOwnProperty.call(message, "bloksVersioningId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.bloksVersioningId);
+            if (message.pixelDensity != null && Object.hasOwnProperty.call(message, "pixelDensity"))
+                writer.uint32(/* id 2, wireType 1 =*/17).double(message.pixelDensity);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BotRenderingConfigMetadata message, length delimited. Does not implicitly {@link waproto.BotRenderingConfigMetadata.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {waproto.IBotRenderingConfigMetadata} message BotRenderingConfigMetadata message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotRenderingConfigMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BotRenderingConfigMetadata message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.BotRenderingConfigMetadata} BotRenderingConfigMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotRenderingConfigMetadata.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotRenderingConfigMetadata();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.bloksVersioningId = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.pixelDensity = reader.double();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BotRenderingConfigMetadata message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.BotRenderingConfigMetadata} BotRenderingConfigMetadata
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotRenderingConfigMetadata.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BotRenderingConfigMetadata message.
+         * @function verify
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BotRenderingConfigMetadata.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.bloksVersioningId != null && message.hasOwnProperty("bloksVersioningId")) {
+                properties._bloksVersioningId = 1;
+                if (!$util.isString(message.bloksVersioningId))
+                    return "bloksVersioningId: string expected";
+            }
+            if (message.pixelDensity != null && message.hasOwnProperty("pixelDensity")) {
+                properties._pixelDensity = 1;
+                if (typeof message.pixelDensity !== "number")
+                    return "pixelDensity: number expected";
+            }
+            return null;
+        };
+
+        /**
+         * Creates a BotRenderingConfigMetadata message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.BotRenderingConfigMetadata} BotRenderingConfigMetadata
+         */
+        BotRenderingConfigMetadata.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.BotRenderingConfigMetadata)
+                return object;
+            var message = new $root.waproto.BotRenderingConfigMetadata();
+            if (object.bloksVersioningId != null)
+                message.bloksVersioningId = String(object.bloksVersioningId);
+            if (object.pixelDensity != null)
+                message.pixelDensity = Number(object.pixelDensity);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BotRenderingConfigMetadata message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {waproto.BotRenderingConfigMetadata} message BotRenderingConfigMetadata
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BotRenderingConfigMetadata.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.bloksVersioningId != null && message.hasOwnProperty("bloksVersioningId")) {
+                object.bloksVersioningId = message.bloksVersioningId;
+                if (options.oneofs)
+                    object._bloksVersioningId = "bloksVersioningId";
+            }
+            if (message.pixelDensity != null && message.hasOwnProperty("pixelDensity")) {
+                object.pixelDensity = options.json && !isFinite(message.pixelDensity) ? String(message.pixelDensity) : message.pixelDensity;
+                if (options.oneofs)
+                    object._pixelDensity = "pixelDensity";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this BotRenderingConfigMetadata to JSON.
+         * @function toJSON
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BotRenderingConfigMetadata.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BotRenderingConfigMetadata
+         * @function getTypeUrl
+         * @memberof waproto.BotRenderingConfigMetadata
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BotRenderingConfigMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.BotRenderingConfigMetadata";
+        };
+
+        return BotRenderingConfigMetadata;
+    })();
+
     waproto.BotRenderingMetadata = (function() {
 
         /**
@@ -27935,6 +28184,7 @@ $root.waproto = (function() {
                 case 4:
                 case 5:
                 case 6:
+                case 7:
                     break;
                 }
             }
@@ -27989,6 +28239,10 @@ $root.waproto = (function() {
             case "VOICE":
             case 6:
                 message.sessionSource = 6;
+                break;
+            case "AI_HOME_SESSION":
+            case 7:
+                message.sessionSource = 7;
                 break;
             }
             return message;
@@ -28060,6 +28314,7 @@ $root.waproto = (function() {
      * @property {number} EMU_FLASH=4 EMU_FLASH value
      * @property {number} EMU_FLASH_FOLLOWUP=5 EMU_FLASH_FOLLOWUP value
      * @property {number} VOICE=6 VOICE value
+     * @property {number} AI_HOME_SESSION=7 AI_HOME_SESSION value
      */
     waproto.BotSessionSource = (function() {
         var valuesById = {}, values = Object.create(valuesById);
@@ -28070,6 +28325,7 @@ $root.waproto = (function() {
         values[valuesById[4] = "EMU_FLASH"] = 4;
         values[valuesById[5] = "EMU_FLASH_FOLLOWUP"] = 5;
         values[valuesById[6] = "VOICE"] = 6;
+        values[valuesById[7] = "AI_HOME_SESSION"] = 7;
         return values;
     })();
 
@@ -36807,6 +37063,8 @@ $root.waproto = (function() {
                     case 3:
                     case 4:
                     case 5:
+                    case 6:
+                    case 7:
                         break;
                     }
                 }
@@ -36860,6 +37118,14 @@ $root.waproto = (function() {
                 case "MNS":
                 case 5:
                     message.dnsMethod = 5;
+                    break;
+                case "MNS_SECONDARY":
+                case 6:
+                    message.dnsMethod = 6;
+                    break;
+                case "SOCKS_PROXY":
+                case 7:
+                    message.dnsMethod = 7;
                     break;
                 }
                 if (object.appCached != null)
@@ -36929,6 +37195,8 @@ $root.waproto = (function() {
              * @property {number} OVERRIDE=3 OVERRIDE value
              * @property {number} FALLBACK=4 FALLBACK value
              * @property {number} MNS=5 MNS value
+             * @property {number} MNS_SECONDARY=6 MNS_SECONDARY value
+             * @property {number} SOCKS_PROXY=7 SOCKS_PROXY value
              */
             DNSSource.DNSResolutionMethod = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -36938,6 +37206,8 @@ $root.waproto = (function() {
                 values[valuesById[3] = "OVERRIDE"] = 3;
                 values[valuesById[4] = "FALLBACK"] = 4;
                 values[valuesById[5] = "MNS"] = 5;
+                values[valuesById[6] = "MNS_SECONDARY"] = 6;
+                values[valuesById[7] = "SOCKS_PROXY"] = 7;
                 return values;
             })();
 
@@ -39221,6 +39491,8 @@ $root.waproto = (function() {
              * @property {string|null} [version] WebInfo version
              * @property {waproto.ClientPayload.WebInfo.IWebdPayload|null} [webdPayload] WebInfo webdPayload
              * @property {waproto.ClientPayload.WebInfo.WebSubPlatform|null} [webSubPlatform] WebInfo webSubPlatform
+             * @property {string|null} [browser] WebInfo browser
+             * @property {string|null} [browserVersion] WebInfo browserVersion
              */
 
             /**
@@ -39270,6 +39542,22 @@ $root.waproto = (function() {
              */
             WebInfo.prototype.webSubPlatform = null;
 
+            /**
+             * WebInfo browser.
+             * @member {string|null|undefined} browser
+             * @memberof waproto.ClientPayload.WebInfo
+             * @instance
+             */
+            WebInfo.prototype.browser = null;
+
+            /**
+             * WebInfo browserVersion.
+             * @member {string|null|undefined} browserVersion
+             * @memberof waproto.ClientPayload.WebInfo
+             * @instance
+             */
+            WebInfo.prototype.browserVersion = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -39294,6 +39582,18 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(WebInfo.prototype, "_webSubPlatform", {
                 get: $util.oneOfGetter($oneOfFields = ["webSubPlatform"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(WebInfo.prototype, "_browser", {
+                get: $util.oneOfGetter($oneOfFields = ["browser"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(WebInfo.prototype, "_browserVersion", {
+                get: $util.oneOfGetter($oneOfFields = ["browserVersion"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -39329,6 +39629,10 @@ $root.waproto = (function() {
                     $root.waproto.ClientPayload.WebInfo.WebdPayload.encode(message.webdPayload, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                 if (message.webSubPlatform != null && Object.hasOwnProperty.call(message, "webSubPlatform"))
                     writer.uint32(/* id 4, wireType 0 =*/32).int32(message.webSubPlatform);
+                if (message.browser != null && Object.hasOwnProperty.call(message, "browser"))
+                    writer.uint32(/* id 5, wireType 2 =*/42).string(message.browser);
+                if (message.browserVersion != null && Object.hasOwnProperty.call(message, "browserVersion"))
+                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.browserVersion);
                 return writer;
             };
 
@@ -39377,6 +39681,14 @@ $root.waproto = (function() {
                         }
                     case 4: {
                             message.webSubPlatform = reader.int32();
+                            break;
+                        }
+                    case 5: {
+                            message.browser = reader.string();
+                            break;
+                        }
+                    case 6: {
+                            message.browserVersion = reader.string();
                             break;
                         }
                     default:
@@ -39447,6 +39759,16 @@ $root.waproto = (function() {
                         break;
                     }
                 }
+                if (message.browser != null && message.hasOwnProperty("browser")) {
+                    properties._browser = 1;
+                    if (!$util.isString(message.browser))
+                        return "browser: string expected";
+                }
+                if (message.browserVersion != null && message.hasOwnProperty("browserVersion")) {
+                    properties._browserVersion = 1;
+                    if (!$util.isString(message.browserVersion))
+                        return "browserVersion: string expected";
+                }
                 return null;
             };
 
@@ -39503,6 +39825,10 @@ $root.waproto = (function() {
                     message.webSubPlatform = 5;
                     break;
                 }
+                if (object.browser != null)
+                    message.browser = String(object.browser);
+                if (object.browserVersion != null)
+                    message.browserVersion = String(object.browserVersion);
                 return message;
             };
 
@@ -39538,6 +39864,16 @@ $root.waproto = (function() {
                     object.webSubPlatform = options.enums === String ? $root.waproto.ClientPayload.WebInfo.WebSubPlatform[message.webSubPlatform] === undefined ? message.webSubPlatform : $root.waproto.ClientPayload.WebInfo.WebSubPlatform[message.webSubPlatform] : message.webSubPlatform;
                     if (options.oneofs)
                         object._webSubPlatform = "webSubPlatform";
+                }
+                if (message.browser != null && message.hasOwnProperty("browser")) {
+                    object.browser = message.browser;
+                    if (options.oneofs)
+                        object._browser = "browser";
+                }
+                if (message.browserVersion != null && message.hasOwnProperty("browserVersion")) {
+                    object.browserVersion = message.browserVersion;
+                    if (options.oneofs)
+                        object._browserVersion = "browserVersion";
                 }
                 return object;
             };
@@ -49080,6 +49416,7 @@ $root.waproto = (function() {
                 case 0:
                 case 1:
                 case 2:
+                case 3:
                     break;
                 }
             }
@@ -49402,6 +49739,10 @@ $root.waproto = (function() {
             case "COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY":
             case 2:
                 message.endOfHistoryTransferType = 2;
+                break;
+            case "COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS":
+            case 3:
+                message.endOfHistoryTransferType = 3;
                 break;
             }
             if (object.conversationTimestamp != null)
@@ -49959,12 +50300,14 @@ $root.waproto = (function() {
          * @property {number} COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY=0 COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY value
          * @property {number} COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY=1 COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY value
          * @property {number} COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY=2 COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY value
+         * @property {number} COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS=3 COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS value
          */
         Conversation.EndOfHistoryTransferType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
             values[valuesById[0] = "COMPLETE_BUT_MORE_MESSAGES_REMAIN_ON_PRIMARY"] = 0;
             values[valuesById[1] = "COMPLETE_AND_NO_MORE_MESSAGE_REMAIN_ON_PRIMARY"] = 1;
             values[valuesById[2] = "COMPLETE_ON_DEMAND_SYNC_BUT_MORE_MSG_REMAIN_ON_PRIMARY"] = 2;
+            values[valuesById[3] = "COMPLETE_ON_DEMAND_SYNC_WITH_MORE_MSG_ON_PRIMARY_BUT_NO_ACCESS"] = 3;
             return values;
         })();
 
@@ -189347,6 +189690,7 @@ $root.waproto = (function() {
          * @property {waproto.IGroupHistoryBundleInfo|null} [groupHistoryBundleInfo] WebMessageInfo groupHistoryBundleInfo
          * @property {waproto.IInteractiveMessageAdditionalMetadata|null} [interactiveMessageAdditionalMetadata] WebMessageInfo interactiveMessageAdditionalMetadata
          * @property {waproto.IQuarantinedMessage|null} [quarantinedMessage] WebMessageInfo quarantinedMessage
+         * @property {number|null} [nonJidMentions] WebMessageInfo nonJidMentions
          */
 
         /**
@@ -189902,6 +190246,14 @@ $root.waproto = (function() {
          */
         WebMessageInfo.prototype.quarantinedMessage = null;
 
+        /**
+         * WebMessageInfo nonJidMentions.
+         * @member {number|null|undefined} nonJidMentions
+         * @memberof waproto.WebMessageInfo
+         * @instance
+         */
+        WebMessageInfo.prototype.nonJidMentions = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -190235,6 +190587,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(WebMessageInfo.prototype, "_nonJidMentions", {
+            get: $util.oneOfGetter($oneOfFields = ["nonJidMentions"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new WebMessageInfo instance using the specified properties.
          * @function create
@@ -190400,6 +190758,8 @@ $root.waproto = (function() {
                 $root.waproto.InteractiveMessageAdditionalMetadata.encode(message.interactiveMessageAdditionalMetadata, writer.uint32(/* id 76, wireType 2 =*/610).fork()).ldelim();
             if (message.quarantinedMessage != null && Object.hasOwnProperty.call(message, "quarantinedMessage"))
                 $root.waproto.QuarantinedMessage.encode(message.quarantinedMessage, writer.uint32(/* id 77, wireType 2 =*/618).fork()).ldelim();
+            if (message.nonJidMentions != null && Object.hasOwnProperty.call(message, "nonJidMentions"))
+                writer.uint32(/* id 78, wireType 0 =*/624).uint32(message.nonJidMentions);
             return writer;
         };
 
@@ -190716,6 +191076,10 @@ $root.waproto = (function() {
                     }
                 case 77: {
                         message.quarantinedMessage = $root.waproto.QuarantinedMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 78: {
+                        message.nonJidMentions = reader.uint32();
                         break;
                     }
                 default:
@@ -191423,6 +191787,11 @@ $root.waproto = (function() {
                     if (error)
                         return "quarantinedMessage." + error;
                 }
+            }
+            if (message.nonJidMentions != null && message.hasOwnProperty("nonJidMentions")) {
+                properties._nonJidMentions = 1;
+                if (!$util.isInteger(message.nonJidMentions))
+                    return "nonJidMentions: integer expected";
             }
             return null;
         };
@@ -192703,6 +193072,8 @@ $root.waproto = (function() {
                     throw TypeError(".waproto.WebMessageInfo.quarantinedMessage: object expected");
                 message.quarantinedMessage = $root.waproto.QuarantinedMessage.fromObject(object.quarantinedMessage);
             }
+            if (object.nonJidMentions != null)
+                message.nonJidMentions = object.nonJidMentions >>> 0;
             return message;
         };
 
@@ -193074,6 +193445,11 @@ $root.waproto = (function() {
                 object.quarantinedMessage = $root.waproto.QuarantinedMessage.toObject(message.quarantinedMessage, options);
                 if (options.oneofs)
                     object._quarantinedMessage = "quarantinedMessage";
+            }
+            if (message.nonJidMentions != null && message.hasOwnProperty("nonJidMentions")) {
+                object.nonJidMentions = message.nonJidMentions;
+                if (options.oneofs)
+                    object._nonJidMentions = "nonJidMentions";
             }
             return object;
         };
