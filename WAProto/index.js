@@ -13006,6 +13006,8 @@ $root.waproto = (function() {
                     case 52:
                     case 53:
                     case 54:
+                    case 55:
+                    case 56:
                         break;
                     }
             }
@@ -13255,6 +13257,14 @@ $root.waproto = (function() {
                     case 54:
                         message.capabilities[i] = 54;
                         break;
+                    case "RICH_RESPONSE_UR_BLOKS_ENABLED":
+                    case 55:
+                        message.capabilities[i] = 55;
+                        break;
+                    case "RICH_RESPONSE_INLINE_LINKS_ENABLED":
+                    case 56:
+                        message.capabilities[i] = 56;
+                        break;
                     }
             }
             return message;
@@ -13368,6 +13378,8 @@ $root.waproto = (function() {
          * @property {number} AI_IMAGINE_LOADING_INDICATOR=52 AI_IMAGINE_LOADING_INDICATOR value
          * @property {number} RICH_RESPONSE_UR_IMAGINE=53 RICH_RESPONSE_UR_IMAGINE value
          * @property {number} AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR=54 AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR value
+         * @property {number} RICH_RESPONSE_UR_BLOKS_ENABLED=55 RICH_RESPONSE_UR_BLOKS_ENABLED value
+         * @property {number} RICH_RESPONSE_INLINE_LINKS_ENABLED=56 RICH_RESPONSE_INLINE_LINKS_ENABLED value
          */
         BotCapabilityMetadata.BotCapabilityType = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -13426,6 +13438,8 @@ $root.waproto = (function() {
             values[valuesById[52] = "AI_IMAGINE_LOADING_INDICATOR"] = 52;
             values[valuesById[53] = "RICH_RESPONSE_UR_IMAGINE"] = 53;
             values[valuesById[54] = "AI_IMAGINE_UR_TO_NATIVE_LOADING_INDICATOR"] = 54;
+            values[valuesById[55] = "RICH_RESPONSE_UR_BLOKS_ENABLED"] = 55;
+            values[valuesById[56] = "RICH_RESPONSE_INLINE_LINKS_ENABLED"] = 56;
             return values;
         })();
 
@@ -22565,11 +22579,11 @@ $root.waproto = (function() {
                             message.mode[i] = object.mode[i];
                             break;
                         }
-                    case "UNKNOWN_MODE":
+                    case "DEFAULT_MODE":
                     case 0:
                         message.mode[i] = 0;
                         break;
-                    case "REASONING_MODE":
+                    case "THINK_HARD_MODE":
                     case 1:
                         message.mode[i] = 1;
                         break;
@@ -22631,13 +22645,13 @@ $root.waproto = (function() {
          * BotUserSelectionMode enum.
          * @name waproto.BotModeSelectionMetadata.BotUserSelectionMode
          * @enum {number}
-         * @property {number} UNKNOWN_MODE=0 UNKNOWN_MODE value
-         * @property {number} REASONING_MODE=1 REASONING_MODE value
+         * @property {number} DEFAULT_MODE=0 DEFAULT_MODE value
+         * @property {number} THINK_HARD_MODE=1 THINK_HARD_MODE value
          */
         BotModeSelectionMetadata.BotUserSelectionMode = (function() {
             var valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "UNKNOWN_MODE"] = 0;
-            values[valuesById[1] = "REASONING_MODE"] = 1;
+            values[valuesById[0] = "DEFAULT_MODE"] = 0;
+            values[valuesById[1] = "THINK_HARD_MODE"] = 1;
             return values;
         })();
 
@@ -70899,6 +70913,7 @@ $root.waproto = (function() {
          * @property {waproto.Message.INewsletterFollowerInviteMessage|null} [newsletterFollowerInviteMessageV2] Message newsletterFollowerInviteMessageV2
          * @property {waproto.Message.IPollResultSnapshotMessage|null} [pollResultSnapshotMessageV3] Message pollResultSnapshotMessageV3
          * @property {waproto.Message.IFutureProofMessage|null} [newsletterAdminProfileMessage] Message newsletterAdminProfileMessage
+         * @property {waproto.Message.IFutureProofMessage|null} [newsletterAdminProfileMessageV2] Message newsletterAdminProfileMessageV2
          */
 
         /**
@@ -71684,6 +71699,14 @@ $root.waproto = (function() {
          */
         Message.prototype.newsletterAdminProfileMessage = null;
 
+        /**
+         * Message newsletterAdminProfileMessageV2.
+         * @member {waproto.Message.IFutureProofMessage|null|undefined} newsletterAdminProfileMessageV2
+         * @memberof waproto.Message
+         * @instance
+         */
+        Message.prototype.newsletterAdminProfileMessageV2 = null;
+
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
@@ -72263,6 +72286,12 @@ $root.waproto = (function() {
             set: $util.oneOfSetter($oneOfFields)
         });
 
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(Message.prototype, "_newsletterAdminProfileMessageV2", {
+            get: $util.oneOfGetter($oneOfFields = ["newsletterAdminProfileMessageV2"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
         /**
          * Creates a new Message instance using the specified properties.
          * @function create
@@ -72479,6 +72508,8 @@ $root.waproto = (function() {
                 $root.waproto.Message.PollResultSnapshotMessage.encode(message.pollResultSnapshotMessageV3, writer.uint32(/* id 115, wireType 2 =*/922).fork()).ldelim();
             if (message.newsletterAdminProfileMessage != null && Object.hasOwnProperty.call(message, "newsletterAdminProfileMessage"))
                 $root.waproto.Message.FutureProofMessage.encode(message.newsletterAdminProfileMessage, writer.uint32(/* id 116, wireType 2 =*/930).fork()).ldelim();
+            if (message.newsletterAdminProfileMessageV2 != null && Object.hasOwnProperty.call(message, "newsletterAdminProfileMessageV2"))
+                $root.waproto.Message.FutureProofMessage.encode(message.newsletterAdminProfileMessageV2, writer.uint32(/* id 117, wireType 2 =*/938).fork()).ldelim();
             return writer;
         };
 
@@ -72895,6 +72926,10 @@ $root.waproto = (function() {
                     }
                 case 116: {
                         message.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 117: {
+                        message.newsletterAdminProfileMessageV2 = $root.waproto.Message.FutureProofMessage.decode(reader, reader.uint32());
                         break;
                     }
                 default:
@@ -73698,6 +73733,14 @@ $root.waproto = (function() {
                         return "newsletterAdminProfileMessage." + error;
                 }
             }
+            if (message.newsletterAdminProfileMessageV2 != null && message.hasOwnProperty("newsletterAdminProfileMessageV2")) {
+                properties._newsletterAdminProfileMessageV2 = 1;
+                {
+                    var error = $root.waproto.Message.FutureProofMessage.verify(message.newsletterAdminProfileMessageV2);
+                    if (error)
+                        return "newsletterAdminProfileMessageV2." + error;
+                }
+            }
             return null;
         };
 
@@ -74189,6 +74232,11 @@ $root.waproto = (function() {
                 if (typeof object.newsletterAdminProfileMessage !== "object")
                     throw TypeError(".waproto.Message.newsletterAdminProfileMessage: object expected");
                 message.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.fromObject(object.newsletterAdminProfileMessage);
+            }
+            if (object.newsletterAdminProfileMessageV2 != null) {
+                if (typeof object.newsletterAdminProfileMessageV2 !== "object")
+                    throw TypeError(".waproto.Message.newsletterAdminProfileMessageV2: object expected");
+                message.newsletterAdminProfileMessageV2 = $root.waproto.Message.FutureProofMessage.fromObject(object.newsletterAdminProfileMessageV2);
             }
             return message;
         };
@@ -74685,6 +74733,11 @@ $root.waproto = (function() {
                 object.newsletterAdminProfileMessage = $root.waproto.Message.FutureProofMessage.toObject(message.newsletterAdminProfileMessage, options);
                 if (options.oneofs)
                     object._newsletterAdminProfileMessage = "newsletterAdminProfileMessage";
+            }
+            if (message.newsletterAdminProfileMessageV2 != null && message.hasOwnProperty("newsletterAdminProfileMessageV2")) {
+                object.newsletterAdminProfileMessageV2 = $root.waproto.Message.FutureProofMessage.toObject(message.newsletterAdminProfileMessageV2, options);
+                if (options.oneofs)
+                    object._newsletterAdminProfileMessageV2 = "newsletterAdminProfileMessageV2";
             }
             return object;
         };
