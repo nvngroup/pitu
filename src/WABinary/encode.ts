@@ -59,7 +59,7 @@ const encodeBinaryNodeInner = (
 	}
 
 	const writeStringRaw = (str: string) => {
-		const bytes = Buffer.from (str, 'utf-8')
+		const bytes = Buffer.from(str, 'utf-8')
 		writeByteLength(bytes.length)
 		pushBytes(bytes)
 	}
@@ -84,18 +84,18 @@ const encodeBinaryNodeInner = (
 
 	const packNibble = (char: string) => {
 		switch (char) {
-		case '-':
-			return 10
-		case '.':
-			return 11
-		case '\0':
-			return 15
-		default:
-			if (char >= '0' && char <= '9') {
-				return char.charCodeAt(0) - '0'.charCodeAt(0)
-			}
+			case '-':
+				return 10
+			case '.':
+				return 11
+			case '\0':
+				return 15
+			default:
+				if (char >= '0' && char <= '9') {
+					return char.charCodeAt(0) - '0'.charCodeAt(0)
+				}
 
-			throw new Error(`invalid byte for nibble "${char}"`)
+				throw new Error(`invalid byte for nibble "${char}"`)
 		}
 	}
 
@@ -140,7 +140,7 @@ const encodeBinaryNodeInner = (
 		}
 
 		const strLengthHalf = Math.floor(str.length / 2)
-		for (let i = 0; i < strLengthHalf;i++) {
+		for (let i = 0; i < strLengthHalf; i++) {
 			pushByte(packBytePair(str[2 * i], str[2 * i + 1]))
 		}
 
@@ -180,6 +180,11 @@ const encodeBinaryNodeInner = (
 	}
 
 	const writeString = (str: string) => {
+		if (str === '') {
+			writeStringRaw(str)
+			return
+		}
+
 		const tokenIndex = TOKEN_MAP[str]
 		if (tokenIndex) {
 			if (typeof tokenIndex.dict === 'number') {
@@ -191,7 +196,7 @@ const encodeBinaryNodeInner = (
 			writePackedBytes(str, 'nibble')
 		} else if (isHex(str)) {
 			writePackedBytes(str, 'hex')
-		} else if (str) {
+		} else {
 			const decodedJid = jidDecode(str)
 			if (decodedJid) {
 				writeJid(decodedJid)

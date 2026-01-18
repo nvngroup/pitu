@@ -6,7 +6,7 @@ import type { BinaryNode, BinaryNodeCodingOptions } from './types'
 
 const inflatePromise = promisify(inflate)
 
-export const decompressingIfRequired = async(buffer: Buffer) => {
+export const decompressingIfRequired = async (buffer: Buffer) => {
 	if (buffer.length === 0) {
 		throw new Error('Buffer is empty, cannot decompress')
 	}
@@ -85,14 +85,14 @@ export const decodeDecompressedBinaryNode = (
 		}
 
 		switch (value) {
-		case 10:
-			return '-'.charCodeAt(0)
-		case 11:
-			return '.'.charCodeAt(0)
-		case 15:
-			return '\0'.charCodeAt(0)
-		default:
-			throw new Error('invalid nibble: ' + value)
+			case 10:
+				return '-'.charCodeAt(0)
+			case 11:
+				return '.'.charCodeAt(0)
+			case 15:
+				return '\0'.charCodeAt(0)
+			default:
+				throw new Error('invalid nibble: ' + value)
 		}
 	}
 
@@ -129,14 +129,14 @@ export const decodeDecompressedBinaryNode = (
 
 	const readListSize = (tag: number) => {
 		switch (tag) {
-		case TAGS.LIST_EMPTY:
-			return 0
-		case TAGS.LIST_8:
-			return readByte()
-		case TAGS.LIST_16:
-			return readInt(2)
-		default:
-			throw new Error('invalid tag for list size: ' + tag)
+			case TAGS.LIST_EMPTY:
+				return 0
+			case TAGS.LIST_8:
+				return readByte()
+			case TAGS.LIST_16:
+				return readInt(2)
+			default:
+				throw new Error('invalid tag for list size: ' + tag)
 		}
 	}
 
@@ -158,41 +158,68 @@ export const decodeDecompressedBinaryNode = (
 		return jidEncode(user, agent === 0 ? 's.whatsapp.net' : 'lid', device)
 	}
 
+	const readFbJid = () => {
+		const user = readString(readByte()!)
+		const device = readInt(2)
+		const server = readString(readByte()!)
+		return `${user}:${device}@${server}`
+	}
+
+	const readInteropJid = () => {
+		const user = readString(readByte()!)
+		const device = readInt(2)
+		const integrator = readInt(2)
+
+		let server = 'interop'
+		const beforeServer = indexRef.index
+		try {
+			server = readString(readByte()!)
+		} catch (err) {
+			indexRef.index = beforeServer
+		}
+
+		return `${integrator}-${user}:${device}@${server}`
+	}
+
 	const readString = (tag: number): string => {
 		if (tag >= 1 && tag < SINGLE_BYTE_TOKENS.length) {
 			return SINGLE_BYTE_TOKENS[tag] || ''
 		}
 
 		switch (tag) {
-		case TAGS.DICTIONARY_0:
-		case TAGS.DICTIONARY_1:
-		case TAGS.DICTIONARY_2:
-		case TAGS.DICTIONARY_3:
-			return getTokenDouble(tag - TAGS.DICTIONARY_0, readByte())
-		case TAGS.LIST_EMPTY:
-			return ''
-		case TAGS.BINARY_8:
-			return readStringFromChars(readByte())
-		case TAGS.BINARY_20:
-			return readStringFromChars(readInt20())
-		case TAGS.BINARY_32:
-			return readStringFromChars(readInt(4))
-		case TAGS.JID_PAIR:
-			return readJidPair()
-		case TAGS.AD_JID:
-			return readAdJid()
-		case TAGS.HEX_8:
-		case TAGS.NIBBLE_8:
-			return readPacked8(tag)
-		default:
-			throw new Error('invalid string with tag: ' + tag)
+			case TAGS.DICTIONARY_0:
+			case TAGS.DICTIONARY_1:
+			case TAGS.DICTIONARY_2:
+			case TAGS.DICTIONARY_3:
+				return getTokenDouble(tag - TAGS.DICTIONARY_0, readByte())
+			case TAGS.LIST_EMPTY:
+				return ''
+			case TAGS.BINARY_8:
+				return readStringFromChars(readByte())
+			case TAGS.BINARY_20:
+				return readStringFromChars(readInt20())
+			case TAGS.BINARY_32:
+				return readStringFromChars(readInt(4))
+			case TAGS.JID_PAIR:
+				return readJidPair()
+			case TAGS.FB_JID:
+				return readFbJid()
+			case TAGS.INTEROP_JID:
+				return readInteropJid()
+			case TAGS.AD_JID:
+				return readAdJid()
+			case TAGS.HEX_8:
+			case TAGS.NIBBLE_8:
+				return readPacked8(tag)
+			default:
+				throw new Error('invalid string with tag: ' + tag)
 		}
 	}
 
 	const readList = (tag: number) => {
 		const items: BinaryNode[] = []
 		const size = readListSize(tag)
-		for (let i = 0;i < size;i++) {
+		for (let i = 0; i < size; i++) {
 			items.push(decodeDecompressedBinaryNode(buffer, opts, indexRef))
 		}
 
@@ -219,7 +246,7 @@ export const decodeDecompressedBinaryNode = (
 		throw new Error('invalid node')
 	}
 
-	const attrs: BinaryNode['attrs'] = { }
+	const attrs: BinaryNode['attrs'] = {}
 	let data: BinaryNode['content']
 	if (listSize === 0 || !header) {
 		throw new Error('invalid node')
@@ -240,18 +267,18 @@ export const decodeDecompressedBinaryNode = (
 		} else {
 			let decoded: Buffer | string
 			switch (tag) {
-			case TAGS.BINARY_8:
-				decoded = readBytes(readByte())
-				break
-			case TAGS.BINARY_20:
-				decoded = readBytes(readInt20())
-				break
-			case TAGS.BINARY_32:
-				decoded = readBytes(readInt(4))
-				break
-			default:
-				decoded = readString(tag)
-				break
+				case TAGS.BINARY_8:
+					decoded = readBytes(readByte())
+					break
+				case TAGS.BINARY_20:
+					decoded = readBytes(readInt20())
+					break
+				case TAGS.BINARY_32:
+					decoded = readBytes(readInt(4))
+					break
+				default:
+					decoded = readString(tag)
+					break
 			}
 
 			data = decoded
@@ -265,7 +292,7 @@ export const decodeDecompressedBinaryNode = (
 	}
 }
 
-export const decodeBinaryNode = async(buff: Buffer): Promise<BinaryNode> => {
+export const decodeBinaryNode = async (buff: Buffer): Promise<BinaryNode> => {
 	if (!buff || buff.length === 0) {
 		throw new Error('Invalid buffer: Buffer is null or empty')
 	}
