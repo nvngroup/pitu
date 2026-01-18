@@ -1,4 +1,4 @@
-import type { AuthenticationCreds, SignalKeyStoreWithTransaction } from '../Types'
+import type { SignalKeyStoreWithTransaction } from '../Types'
 import type { BinaryNode } from '../WABinary'
 
 type TcTokenParams = {
@@ -19,7 +19,9 @@ export async function buildTcTokenFromJid({
 
   const tcTokenBuffer = tcTokenData?.[jid]?.token
 
-  if (!tcTokenBuffer) return baseContent.length > 0 ? baseContent : undefined
+  if (!tcTokenBuffer) {
+   return baseContent.length > 0 ? baseContent : undefined
+  }
 
   baseContent.push({
    tag: 'tctoken',
@@ -28,7 +30,7 @@ export async function buildTcTokenFromJid({
   })
 
   return baseContent
- } catch (error) {
+ } catch {
   return baseContent.length > 0 ? baseContent : undefined
  }
 }

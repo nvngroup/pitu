@@ -7,12 +7,12 @@ import { SyncState } from '../Types/State'
 import { chatModificationToAppPatch, decodePatches, decodeSyncdSnapshot, encodeSyncdPatch, extractSyncdPatches, generateProfilePicture, getHistoryMsg, newLTHashState, processSyncAction } from '../Utils'
 import { makeMutex } from '../Utils/make-mutex'
 import processMessage from '../Utils/process-message'
+import { buildTcTokenFromJid } from '../Utils/tc-token-utils'
 import { ChatMutationMap } from '../Utils/types'
 import { BinaryNode, getBinaryNodeChild, getBinaryNodeChildren, isLidUser, jidDecode, jidNormalizedUser, reduceBinaryNodeToDictionary, S_WHATSAPP_NET } from '../WABinary'
 import { USyncQuery, USyncQueryResult, USyncUser } from '../WAUSync'
 import { CacheManager } from './cache-manager'
 import { makeUSyncSocket } from './usync'
-import { buildTcTokenFromJid } from '../Utils/tc-token-utils'
 
 const MAX_SYNC_ATTEMPTS = 2
 
@@ -42,7 +42,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	let syncState: SyncState = SyncState.Connecting
 	const processingMutex = makeMutex()
 
-	let awaitingSyncTimeout: NodeJS.Timeout | undefined
+	let awaitingSyncTimeout: number | undefined
 
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
@@ -620,7 +620,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 		* @param toJid the jid to subscribe to
 		* @param tcToken token for subscription, use if present
 		*/
-	const presenceSubscribe = async (toJid: string, tcToken?: Buffer) => {
+	const presenceSubscribe = async (toJid: string, _tcToken?: Buffer) => {
 		const tcTokenContent = await buildTcTokenFromJid({ authState, jid: toJid })
 		return sendNode({
 			tag: 'presence',

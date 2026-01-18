@@ -164,9 +164,11 @@ export const addTransactionCapability = (
 								if (!tries) {
 									break
 								}
+
 								await delay(delayBetweenTriesMs)
 							}
 						}
+
 						if (!committed) {
 							throw lastError ?? new Error('failed to commit mutations')
 						}
