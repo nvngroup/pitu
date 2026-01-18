@@ -59,12 +59,12 @@ export const makeNoiseHandler = ({
 		return result
 	}
 
-	const localHKDF = async(data: Uint8Array) => {
+	const localHKDF = async (data: Uint8Array) => {
 		const key: Buffer = await hkdf(Buffer.from(data), 64, { salt, info: '' })
 		return [key.subarray(0, 32), key.subarray(32)]
 	}
 
-	const mixIntoKey = async(data: Uint8Array) => {
+	const mixIntoKey = async (data: Uint8Array) => {
 		const [write, read] = await localHKDF(data)
 		salt = write
 		encKey = read
@@ -73,7 +73,7 @@ export const makeNoiseHandler = ({
 		writeCounter = 0
 	}
 
-	const finishInit = async() => {
+	const finishInit = async () => {
 		const [write, read] = await localHKDF(new Uint8Array(0))
 		encKey = write
 		decKey = read
@@ -104,7 +104,7 @@ export const makeNoiseHandler = ({
 		authenticate,
 		mixIntoKey,
 		finishInit,
-		processHandshake: async({ serverHello }: waproto.HandshakeMessage, noiseKey: KeyPair) => {
+		processHandshake: async ({ serverHello }: waproto.HandshakeMessage, noiseKey: KeyPair) => {
 			authenticate(serverHello!.ephemeral!)
 			await mixIntoKey(Curve.sharedKey(privateKey, serverHello!.ephemeral!))
 
@@ -113,9 +113,35 @@ export const makeNoiseHandler = ({
 
 			const certDecoded: Buffer = decrypt(serverHello!.payload!)
 
-			const { intermediate: certIntermediate } = waproto.CertChain.decode(certDecoded)
+			const { intermediate: certIntermediate, leaf } = waproto.CertChain.decode(certDecoded)
+			// leaf
+			if (!leaf?.details || !leaf?.signature) {
+				throw new Boom('invalid noise leaf certificate', { statusCode: 400 })
+			}
 
-			const { issuerSerial } = waproto.CertChain.NoiseCertificate.Details.decode(certIntermediate!.details!)
+			if (!certIntermediate?.details || !certIntermediate?.signature) {
+				throw new Boom('invalid noise intermediate certificate', { statusCode: 400 })
+			}
+
+			const details = waproto.CertChain.NoiseCertificate.Details.decode(certIntermediate.details)
+
+			const { issuerSerial } = details
+
+			const verify = Curve.verify(details.key!, leaf.details, leaf.signature)
+
+			const verifyIntermediate = Curve.verify(
+				WA_CERT_DETAILS.PUBLIC_KEY,
+				certIntermediate.details,
+				certIntermediate.signature
+			)
+
+			if (!verify) {
+				throw new Boom('noise certificate signature invalid', { statusCode: 400 })
+			}
+
+			if (!verifyIntermediate) {
+				throw new Boom('noise intermediate certificate signature invalid', { statusCode: 400 })
+			}
 
 			if (issuerSerial !== WA_CERT_DETAILS.SERIAL) {
 				throw new Boom('certification match failed', { statusCode: 400 })
@@ -159,7 +185,7 @@ export const makeNoiseHandler = ({
 
 			return frame
 		},
-		decodeFrame: async(newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
+		decodeFrame: async (newData: Buffer | Uint8Array, onFrame: (buff: Uint8Array | BinaryNode) => void) => {
 			const getBytesSize = () => {
 				if (inBytes.length >= 3) {
 					try {
@@ -173,7 +199,7 @@ export const makeNoiseHandler = ({
 				return undefined
 			}
 
-			inBytes = Buffer.concat([ inBytes, newData ])
+			inBytes = Buffer.concat([inBytes, newData])
 
 			logger.trace({ newData, inBytes }, `recv ${newData.length} bytes, total recv ${inBytes.length} bytes`)
 
