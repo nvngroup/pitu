@@ -64,10 +64,10 @@ export const isRealMessage = (message: waproto.IWebMessageInfo, meId: string) =>
 			&& message.messageStubParameters?.some(p => areJidsSameUser(meId, p))
 		)
 	)
-	&& hasSomeContent
-	&& !normalizedContent?.protocolMessage
-	&& !normalizedContent?.reactionMessage
-	&& !normalizedContent?.pollUpdateMessage
+		&& hasSomeContent
+		&& !normalizedContent?.protocolMessage
+		&& !normalizedContent?.reactionMessage
+		&& !normalizedContent?.pollUpdateMessage
 }
 
 export const shouldIncrementChatUnread = (message: waproto.IWebMessageInfo) => (
@@ -75,9 +75,9 @@ export const shouldIncrementChatUnread = (message: waproto.IWebMessageInfo) => (
 )
 
 /**
- * Get the ID of the chat from the given key.
- * Typically -- that'll be the remoteJid, but for broadcasts, it'll be the participant
- */
+	* Get the ID of the chat from the given key.
+	* Typically -- that'll be the remoteJid, but for broadcasts, it'll be the participant
+	*/
 export const getChatId = ({ remoteJid, participant, fromMe }: waproto.IMessageKey) => {
 	if (
 		isJidBroadcast(remoteJid!)
@@ -109,11 +109,11 @@ type EventContext = {
 }
 
 /**
- * Decrypt a poll vote
- * @param vote encrypted vote
- * @param ctx additional info about the poll required for decryption
- * @returns list of SHA256 options
- */
+	* Decrypt a poll vote
+	* @param vote encrypted vote
+	* @param ctx additional info about the poll required for decryption
+	* @returns list of SHA256 options
+	*/
 export function decryptPollVote(
 	{ encPayload, encIv }: waproto.Message.IPollEncValue,
 	{
@@ -175,7 +175,7 @@ export function decryptEventResponse(
 	}
 }
 
-const processMessage = async(
+const processMessage = async (
 	message: waproto.IWebMessageInfo,
 	{
 		shouldProcessHistoryMsg,
@@ -216,172 +216,203 @@ const processMessage = async(
 	const protocolMsg: waproto.Message.IProtocolMessage | null | undefined = content?.protocolMessage
 	if (protocolMsg) {
 		switch (protocolMsg.type) {
-		case waproto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION:
-			const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
-			const process: boolean = shouldProcessHistoryMsg
-			const isLatest = !creds.processedHistoryMessages?.length
+			case waproto.Message.ProtocolMessage.Type.HISTORY_SYNC_NOTIFICATION:
+				const histNotification: waproto.Message.IHistorySyncNotification = protocolMsg.historySyncNotification!
+				const process: boolean = shouldProcessHistoryMsg
+				const isLatest = !creds.processedHistoryMessages?.length
 
-			logger?.trace({
-				histNotification,
-				process,
-				id: message.key.id,
-				isLatest,
-			}, 'got history notification')
+				logger?.trace({
+					histNotification,
+					process,
+					id: message.key.id,
+					isLatest,
+				}, 'got history notification')
 
-			if (process) {
-				if (histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND) {
-					ev.emit('creds.update', {
-						processedHistoryMessages: [
-							...(creds.processedHistoryMessages || []),
-							{ key: message.key, messageTimestamp: message.messageTimestamp }
-						]
+				if (process) {
+					if (histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND) {
+						ev.emit('creds.update', {
+							processedHistoryMessages: [
+								...(creds.processedHistoryMessages || []),
+								{ key: message.key, messageTimestamp: message.messageTimestamp }
+							]
+						})
+					}
+
+					const data: {
+						chats: Chat[];
+						contacts: Contact[];
+						messages: waproto.IWebMessageInfo[];
+						syncType: waproto.HistorySync.HistorySyncType;
+						progress: number | null | undefined;
+					} = await downloadAndProcessHistorySyncNotification(
+						histNotification,
+						options
+					)
+
+					// Auto-create LID mappings for contacts from history sync
+					if (data.contacts?.length > 0) {
+						const lidMappingsToStore: Array<{ lidUser: string; pnUser: string }> = []
+
+						for (const contact of data.contacts) {
+							if (contact.lid && contact.jid) {
+								// Contact has both LID and JID (PN), create mapping
+								lidMappingsToStore.push({
+									lidUser: contact.lid,
+									pnUser: contact.jid
+								})
+							}
+						}
+
+						if (lidMappingsToStore.length > 0) {
+							logger?.info(
+								{ count: lidMappingsToStore.length },
+								'Auto-storing LID mappings from history sync contacts'
+							)
+
+							try {
+								await signalRepository.lidMapping.storeLIDPNMappings(lidMappingsToStore)
+							} catch (error) {
+								logger?.error(
+									{ error, count: lidMappingsToStore.length },
+									'Failed to store LID mappings from history sync'
+								)
+							}
+						}
+					}
+
+					ev.emit('messaging-history.set', {
+						...data,
+						messages: data.messages.map((msg) => ({
+							...msg,
+							messageStubParameters: msg.messageStubParameters ?? undefined
+						})),
+						isLatest:
+							histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND
+								? isLatest
+								: undefined,
+						peerDataRequestSessionId: histNotification.peerDataRequestSessionId
 					})
 				}
 
-				const data: {
-					chats: Chat[];
-					contacts: Contact[];
-					messages: waproto.IWebMessageInfo[];
-					syncType: waproto.HistorySync.HistorySyncType;
-					progress: number | null | undefined;
-				} = await downloadAndProcessHistorySyncNotification(
-					histNotification,
-					options
-				)
+				break
+			case waproto.Message.ProtocolMessage.Type.APP_STATE_SYNC_KEY_SHARE:
+				const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
+				if (keys?.length) {
+					let newAppStateSyncKeyId = ''
+					await keyStore.transaction(
+						async () => {
+							const newKeys: string[] = []
+							for (const { keyData, keyId } of keys) {
+								const strKeyId: string = Buffer.from(keyId!.keyId!).toString('base64')
+								newKeys.push(strKeyId)
 
-				// Auto-create LID mappings for contacts from history sync
-				if (data.contacts?.length > 0) {
-					const lidMappingsToStore: Array<{ lidUser: string; pnUser: string }> = []
+								await keyStore.set({ 'app-state-sync-key': { [strKeyId]: keyData! } })
 
-					for (const contact of data.contacts) {
-						if (contact.lid && contact.jid) {
-							// Contact has both LID and JID (PN), create mapping
-							lidMappingsToStore.push({
-								lidUser: contact.lid,
-								pnUser: contact.jid
-							})
-						}
-					}
+								newAppStateSyncKeyId = strKeyId
+							}
 
-					if (lidMappingsToStore.length > 0) {
-						logger?.info(
-							{ count: lidMappingsToStore.length },
-							'Auto-storing LID mappings from history sync contacts'
-						)
-
-						try {
-							await signalRepository.lidMapping.storeLIDPNMappings(lidMappingsToStore)
-						} catch (error) {
-							logger?.error(
-								{ error, count: lidMappingsToStore.length },
-								'Failed to store LID mappings from history sync'
+							logger?.info(
+								{ newAppStateSyncKeyId, newKeys },
+								'injecting new app state sync keys'
 							)
 						}
-					}
+					)
+
+					ev.emit('creds.update', { myAppStateKeyId: newAppStateSyncKeyId })
+				} else {
+					logger?.info({ protocolMsg }, 'recv app state sync with 0 keys')
 				}
 
-				ev.emit('messaging-history.set', {
-					...data,
-					messages: data.messages.map((msg) => ({
-						...msg,
-						messageStubParameters: msg.messageStubParameters ?? undefined
-					})),
-					isLatest:
-						histNotification.syncType !== waproto.HistorySync.HistorySyncType.ON_DEMAND
-							? isLatest
-							: undefined,
-					peerDataRequestSessionId: histNotification.peerDataRequestSessionId
-				})
-			}
-
-			break
-		case waproto.Message.ProtocolMessage.Type.APP_STATE_SYNC_KEY_SHARE:
-			const keys: waproto.Message.IAppStateSyncKey[] | null | undefined = protocolMsg.appStateSyncKeyShare!.keys
-			if (keys?.length) {
-				let newAppStateSyncKeyId = ''
-				await keyStore.transaction(
-					async() => {
-						const newKeys: string[] = []
-						for (const { keyData, keyId } of keys) {
-							const strKeyId: string = Buffer.from(keyId!.keyId!).toString('base64')
-							newKeys.push(strKeyId)
-
-							await keyStore.set({ 'app-state-sync-key': { [strKeyId]: keyData! } })
-
-							newAppStateSyncKeyId = strKeyId
-						}
-
-						logger?.info(
-							{ newAppStateSyncKeyId, newKeys },
-							'injecting new app state sync keys'
-						)
-					}
-				)
-
-				ev.emit('creds.update', { myAppStateKeyId: newAppStateSyncKeyId })
-			} else {
-				logger?.info({ protocolMsg }, 'recv app state sync with 0 keys')
-			}
-
-			break
-		case waproto.Message.ProtocolMessage.Type.REVOKE:
-			ev.emit('messages.update', [
-				{
-					key: {
-						...message.key,
-						id: protocolMsg.key!.id
-					},
-					update: { message: null, messageStubType: WAMessageStubType.REVOKE, key: message.key }
-				}
-			])
-			break
-		case waproto.Message.ProtocolMessage.Type.EPHEMERAL_SETTING:
-			Object.assign(chat, {
-				ephemeralSettingTimestamp: toNumber(message.messageTimestamp),
-				ephemeralExpiration: protocolMsg.ephemeralExpiration || null
-			})
-			break
-		case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
-			const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
-			if (response) {
-				placeholderResendCache?.del(response.stanzaId!)
-				// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
-				const { peerDataOperationResult } = response
-				for (const result of peerDataOperationResult!) {
-					const { placeholderMessageResendResponse: retryResponse } = result
-					if (retryResponse) {
-						const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
-						setTimeout(() => {
-							ev.emit('messages.upsert', {
-								messages: [webMessageInfo],
-								type: 'notify',
-								requestId: response.stanzaId!
-							})
-						}, 500)
-					}
-				}
-			}
-
-		case waproto.Message.ProtocolMessage.Type.MESSAGE_EDIT:
-			ev.emit(
-				'messages.update',
-				[
+				break
+			case waproto.Message.ProtocolMessage.Type.REVOKE:
+				ev.emit('messages.update', [
 					{
-						key: { ...message.key, id: protocolMsg.key?.id },
-						update: {
-							message: {
-								editedMessage: {
-									message: protocolMsg.editedMessage
-								}
-							},
-							messageTimestamp: protocolMsg.timestampMs
-								? Math.floor(toNumber(protocolMsg.timestampMs) / 1000)
-								: message.messageTimestamp
+						key: {
+							...message.key,
+							id: protocolMsg.key!.id
+						},
+						update: { message: null, messageStubType: WAMessageStubType.REVOKE, key: message.key }
+					}
+				])
+				break
+			case waproto.Message.ProtocolMessage.Type.EPHEMERAL_SETTING:
+				Object.assign(chat, {
+					ephemeralSettingTimestamp: toNumber(message.messageTimestamp),
+					ephemeralExpiration: protocolMsg.ephemeralExpiration || null
+				})
+				break
+			case waproto.Message.ProtocolMessage.Type.PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE:
+				const response: waproto.Message.IPeerDataOperationRequestResponseMessage = protocolMsg.peerDataOperationRequestResponseMessage!
+				if (response) {
+					placeholderResendCache?.del(response.stanzaId!)
+					// TODO: IMPLEMENT HISTORY SYNC ETC (sticker uploads etc.).
+					const { peerDataOperationResult } = response
+					for (const result of peerDataOperationResult!) {
+						const { placeholderMessageResendResponse: retryResponse } = result
+						if (retryResponse) {
+							const webMessageInfo = waproto.WebMessageInfo.decode(retryResponse.webMessageInfoBytes!)
+							setTimeout(() => {
+								ev.emit('messages.upsert', {
+									messages: [webMessageInfo],
+									type: 'notify',
+									requestId: response.stanzaId!
+								})
+							}, 500)
 						}
 					}
-				]
-			)
-			break
+				}
+
+			case waproto.Message.ProtocolMessage.Type.MESSAGE_EDIT:
+				ev.emit(
+					'messages.update',
+					[
+						{
+							key: { ...message.key, id: protocolMsg.key?.id },
+							update: {
+								message: {
+									editedMessage: {
+										message: protocolMsg.editedMessage
+									}
+								},
+								messageTimestamp: protocolMsg.timestampMs
+									? Math.floor(toNumber(protocolMsg.timestampMs) / 1000)
+									: message.messageTimestamp
+							}
+						}
+					]
+				)
+				break
+
+			case waproto.Message.ProtocolMessage.Type.GROUP_MEMBER_LABEL_CHANGE:
+				const labelAssociationMsg = protocolMsg.memberLabel
+				if (labelAssociationMsg?.label) {
+					ev.emit('group.member-tag.update', {
+						groupId: chat.id!,
+						label: labelAssociationMsg.label,
+						participant: message.key.participant!,
+						messageTimestamp: Number(message.messageTimestamp)
+					})
+				}
+
+				break
+			case waproto.Message.ProtocolMessage.Type.LID_MIGRATION_MAPPING_SYNC:
+				const encodedPayload = protocolMsg.lidMigrationMappingSyncMessage?.encodedMappingPayload!
+				const { pnToLidMappings, chatDbMigrationTimestamp } =
+					waproto.LIDMigrationMappingSyncPayload.decode(encodedPayload)
+				logger?.debug({ pnToLidMappings, chatDbMigrationTimestamp }, 'got lid mappings and chat db migration timestamp')
+				const pairs: Array<{ lidUser: string; pnUser: string }> = []
+				for (const { pn, latestLid, assignedLid } of pnToLidMappings) {
+					const lid = latestLid || assignedLid
+					pairs.push({ lidUser: `${lid}@lid`, pnUser: `${pn}@s.whatsapp.net` })
+				}
+
+				await signalRepository.lidMapping.storeLIDPNMappings(pairs)
+				if (pairs.length) {
+					for (const { pnUser, lidUser } of pairs) {
+						await signalRepository.migrateSession(pnUser, lidUser)
+					}
+				}
+				break
 		}
 	} else if (content?.reactionMessage) {
 		const reaction: waproto.IReaction = {
@@ -464,73 +495,73 @@ const processMessage = async(
 		const participantsIncludesMe = () => participants.find(jid => areJidsSameUser(meId, jid))
 
 		switch (message.messageStubType) {
-		case WAMessageStubType.GROUP_PARTICIPANT_CHANGE_NUMBER:
-			participants = message.messageStubParameters || []
-			emitParticipantsUpdate('modify')
-			break
-		case WAMessageStubType.GROUP_PARTICIPANT_LEAVE:
-		case WAMessageStubType.GROUP_PARTICIPANT_REMOVE:
-			participants = message.messageStubParameters || []
-			emitParticipantsUpdate('remove')
-			if (participantsIncludesMe()) {
-				chat.readOnly = true
-			}
+			case WAMessageStubType.GROUP_PARTICIPANT_CHANGE_NUMBER:
+				participants = message.messageStubParameters || []
+				emitParticipantsUpdate('modify')
+				break
+			case WAMessageStubType.GROUP_PARTICIPANT_LEAVE:
+			case WAMessageStubType.GROUP_PARTICIPANT_REMOVE:
+				participants = message.messageStubParameters || []
+				emitParticipantsUpdate('remove')
+				if (participantsIncludesMe()) {
+					chat.readOnly = true
+				}
 
-			break
-		case WAMessageStubType.GROUP_PARTICIPANT_ADD:
-		case WAMessageStubType.GROUP_PARTICIPANT_INVITE:
-		case WAMessageStubType.GROUP_PARTICIPANT_ADD_REQUEST_JOIN:
-			participants = message.messageStubParameters || []
-			if (participantsIncludesMe()) {
-				chat.readOnly = false
-			}
+				break
+			case WAMessageStubType.GROUP_PARTICIPANT_ADD:
+			case WAMessageStubType.GROUP_PARTICIPANT_INVITE:
+			case WAMessageStubType.GROUP_PARTICIPANT_ADD_REQUEST_JOIN:
+				participants = message.messageStubParameters || []
+				if (participantsIncludesMe()) {
+					chat.readOnly = false
+				}
 
-			emitParticipantsUpdate('add')
-			break
-		case WAMessageStubType.GROUP_PARTICIPANT_DEMOTE:
-			participants = message.messageStubParameters || []
-			emitParticipantsUpdate('demote')
-			break
-		case WAMessageStubType.GROUP_PARTICIPANT_PROMOTE:
-			participants = message.messageStubParameters || []
-			emitParticipantsUpdate('promote')
-			break
-		case WAMessageStubType.GROUP_CHANGE_ANNOUNCE:
-			const announceValue: string | undefined = message.messageStubParameters?.[0]
-			emitGroupUpdate({ announce: announceValue === 'true' || announceValue === 'on' })
-			break
-		case WAMessageStubType.GROUP_CHANGE_RESTRICT:
-			const restrictValue: string | undefined = message.messageStubParameters?.[0]
-			emitGroupUpdate({ restrict: restrictValue === 'true' || restrictValue === 'on' })
-			break
-		case WAMessageStubType.GROUP_CHANGE_SUBJECT:
-			const name: string | undefined = message.messageStubParameters?.[0]
-			chat.name = name
-			emitGroupUpdate({ subject: name })
-			break
-		case WAMessageStubType.GROUP_CHANGE_DESCRIPTION:
-			const description: string | undefined = message.messageStubParameters?.[0]
-			chat.description = description
-			emitGroupUpdate({ desc: description })
-			break
-		case WAMessageStubType.GROUP_CHANGE_INVITE_LINK:
-			const code: string | undefined = message.messageStubParameters?.[0]
-			emitGroupUpdate({ inviteCode: code })
-			break
-		case WAMessageStubType.GROUP_MEMBER_ADD_MODE:
-			const memberAddValue: string | undefined = message.messageStubParameters?.[0]
-			emitGroupUpdate({ memberAddMode: memberAddValue === 'all_member_add' })
-			break
-		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE:
-			const approvalMode: string | undefined = message.messageStubParameters?.[0]
-			emitGroupUpdate({ joinApprovalMode: approvalMode === 'on' })
-			break
-		case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD:
-			const participant = message.messageStubParameters?.[0] as string
-			const action = message.messageStubParameters?.[1] as RequestJoinAction
-			const method = message.messageStubParameters?.[2] as RequestJoinMethod
-			emitGroupRequestJoin(participant, action, method)
-			break
+				emitParticipantsUpdate('add')
+				break
+			case WAMessageStubType.GROUP_PARTICIPANT_DEMOTE:
+				participants = message.messageStubParameters || []
+				emitParticipantsUpdate('demote')
+				break
+			case WAMessageStubType.GROUP_PARTICIPANT_PROMOTE:
+				participants = message.messageStubParameters || []
+				emitParticipantsUpdate('promote')
+				break
+			case WAMessageStubType.GROUP_CHANGE_ANNOUNCE:
+				const announceValue: string | undefined = message.messageStubParameters?.[0]
+				emitGroupUpdate({ announce: announceValue === 'true' || announceValue === 'on' })
+				break
+			case WAMessageStubType.GROUP_CHANGE_RESTRICT:
+				const restrictValue: string | undefined = message.messageStubParameters?.[0]
+				emitGroupUpdate({ restrict: restrictValue === 'true' || restrictValue === 'on' })
+				break
+			case WAMessageStubType.GROUP_CHANGE_SUBJECT:
+				const name: string | undefined = message.messageStubParameters?.[0]
+				chat.name = name
+				emitGroupUpdate({ subject: name })
+				break
+			case WAMessageStubType.GROUP_CHANGE_DESCRIPTION:
+				const description: string | undefined = message.messageStubParameters?.[0]
+				chat.description = description
+				emitGroupUpdate({ desc: description })
+				break
+			case WAMessageStubType.GROUP_CHANGE_INVITE_LINK:
+				const code: string | undefined = message.messageStubParameters?.[0]
+				emitGroupUpdate({ inviteCode: code })
+				break
+			case WAMessageStubType.GROUP_MEMBER_ADD_MODE:
+				const memberAddValue: string | undefined = message.messageStubParameters?.[0]
+				emitGroupUpdate({ memberAddMode: memberAddValue === 'all_member_add' })
+				break
+			case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE:
+				const approvalMode: string | undefined = message.messageStubParameters?.[0]
+				emitGroupUpdate({ joinApprovalMode: approvalMode === 'on' })
+				break
+			case WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD:
+				const participant = message.messageStubParameters?.[0] as string
+				const action = message.messageStubParameters?.[1] as RequestJoinAction
+				const method = message.messageStubParameters?.[2] as RequestJoinMethod
+				emitGroupRequestJoin(participant, action, method)
+				break
 		}
 
 	} else if (content?.pollUpdateMessage) {

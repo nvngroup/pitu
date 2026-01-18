@@ -11,7 +11,7 @@ import { MessageUpsertType, MessageUserReceiptUpdate, WAMessage, WAMessageKey, W
 import { ConnectionState } from './State'
 
 export type BaileysEventMap = {
-	'connection.update': Partial<ConnectionState>
+    'connection.update': Partial<ConnectionState>
     'creds.update': Partial<AuthenticationCreds>
     'messaging-history.set': {
         chats: Chat[]
@@ -25,7 +25,7 @@ export type BaileysEventMap = {
     'chats.upsert': Chat[]
     'chats.update': ChatUpdate[]
     'lid-mapping.update': { lid: string; pn: string }
-    'chats.phoneNumberShare': {lid: string, jid: string}
+    'chats.phoneNumberShare': { lid: string, jid: string }
     'chats.delete': string[]
     'presence.update': { id: string, presences: { [participant: string]: PresenceData } }
     'contacts.upsert': Contact[]
@@ -40,6 +40,14 @@ export type BaileysEventMap = {
     'groups.update': Partial<GroupMetadata>[]
     'group-participants.update': { id: string, author: string, participants: string[], action: ParticipantAction }
     'group.join-request': { id: string, author: string, participant: string, action: RequestJoinAction, method: RequestJoinMethod }
+    /*	update the labels assigned to a group participant */
+    'group.member-tag.update': {
+        groupId: string
+        participant: string
+        participantAlt?: string
+        label: string
+        messageTimestamp?: number
+    }
     'blocklist.set': { blocklist: string[] }
     'blocklist.update': { blocklist: string[], type: 'add' | 'remove' }
     'call': WACallEvent[]
@@ -102,8 +110,8 @@ export type BufferedEventData = {
 export type BaileysEvent = keyof BaileysEventMap
 
 export interface BaileysEventEmitter {
-	on<T extends keyof BaileysEventMap>(event: T, listener: (arg: BaileysEventMap[T]) => void): void
+    on<T extends keyof BaileysEventMap>(event: T, listener: (arg: BaileysEventMap[T]) => void): void
     off<T extends keyof BaileysEventMap>(event: T, listener: (arg: BaileysEventMap[T]) => void): void
     removeAllListeners<T extends keyof BaileysEventMap>(event: T): void
-	emit<T extends keyof BaileysEventMap>(event: T, arg: BaileysEventMap[T]): boolean
+    emit<T extends keyof BaileysEventMap>(event: T, arg: BaileysEventMap[T]): boolean
 }
