@@ -180,7 +180,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	let sendActiveReceipts = false
 
 	// Handles mex newsletter notifications
-	const handleMexNewsletterNotification = async(node: BinaryNode) => {
+	const handleMexNewsletterNotification = async (node: BinaryNode) => {
 		const mexNode: BinaryNode | undefined = getBinaryNodeChild(node, 'mex')
 		if (!mexNode?.content) {
 			logger.warn({ node }, 'Invalid mex newsletter notification')
@@ -206,41 +206,41 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		logger.info({ operation, updates }, 'got mex newsletter notification')
 
 		switch (operation) {
-		case 'NotificationNewsletterUpdate':
-			for (const update of updates) {
-				if (update.jid && update.settings && Object.keys(update.settings).length > 0) {
-					ev.emit('newsletter-settings.update', {
-						id: update.jid,
-						update: update.settings
-					})
+			case 'NotificationNewsletterUpdate':
+				for (const update of updates) {
+					if (update.jid && update.settings && Object.keys(update.settings).length > 0) {
+						ev.emit('newsletter-settings.update', {
+							id: update.jid,
+							update: update.settings
+						})
+					}
 				}
-			}
 
-			break
+				break
 
-		case 'NotificationNewsletterAdminPromote':
-			for (const update of updates) {
-				if (update.jid && update.user) {
-					ev.emit('newsletter-participants.update', {
-						id: update.jid,
-						author: node.attrs.from,
-						user: update.user,
-						new_role: 'ADMIN',
-						action: 'promote'
-					})
+			case 'NotificationNewsletterAdminPromote':
+				for (const update of updates) {
+					if (update.jid && update.user) {
+						ev.emit('newsletter-participants.update', {
+							id: update.jid,
+							author: node.attrs.from,
+							user: update.user,
+							new_role: 'ADMIN',
+							action: 'promote'
+						})
+					}
 				}
-			}
 
-			break
+				break
 
-		default:
-			logger.info({ operation, data }, 'Unhandled mex newsletter notification')
-			break
+			default:
+				logger.info({ operation, data }, 'Unhandled mex newsletter notification')
+				break
 		}
 	}
 
 	// Handles newsletter notifications
-	const handleNewsletterNotification = async(node: BinaryNode) => {
+	const handleNewsletterNotification = async (node: BinaryNode) => {
 		const from: string = node.attrs.from
 		const child: BinaryNode = getAllBinaryNodeChildren(node)[0]
 		const author: string = node.attrs.participant
@@ -248,94 +248,94 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		logger.info({ from, child }, 'got newsletter notification')
 
 		switch (child.tag) {
-		case 'reaction':
-			const reactionUpdate = {
-				id: from,
-				server_id: child.attrs.message_id,
-				reaction: {
-					code: getBinaryNodeChildString(child, 'reaction'),
-					count: 1
-				}
-			}
-			ev.emit('newsletter.reaction', reactionUpdate)
-			break
-
-		case 'view':
-			const viewUpdate = {
-				id: from,
-				server_id: child.attrs.message_id,
-				count: parseInt(child.content?.toString() || '0', 10)
-			}
-			ev.emit('newsletter.view', viewUpdate)
-			break
-
-		case 'participant':
-			const participantUpdate = {
-				id: from,
-				author,
-				user: child.attrs.jid,
-				action: child.attrs.action,
-				new_role: child.attrs.role
-			}
-			ev.emit('newsletter-participants.update', participantUpdate)
-			break
-
-		case 'update':
-			const settingsNode: BinaryNode | undefined = getBinaryNodeChild(child, 'settings')
-			if (settingsNode) {
-				const update: Record<string, unknown> = {}
-				const nameNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'name')
-				if (nameNode?.content) {
-					update.name = nameNode.content.toString()
-				}
-
-				const descriptionNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'description')
-				if (descriptionNode?.content) {
-					update.description = descriptionNode.content.toString()
-				}
-
-				ev.emit('newsletter-settings.update', {
+			case 'reaction':
+				const reactionUpdate = {
 					id: from,
-					update
-				})
-			}
+					server_id: child.attrs.message_id,
+					reaction: {
+						code: getBinaryNodeChildString(child, 'reaction'),
+						count: 1
+					}
+				}
+				ev.emit('newsletter.reaction', reactionUpdate)
+				break
 
-			break
+			case 'view':
+				const viewUpdate = {
+					id: from,
+					server_id: child.attrs.message_id,
+					count: parseInt(child.content?.toString() || '0', 10)
+				}
+				ev.emit('newsletter.view', viewUpdate)
+				break
 
-		case 'message':
-			const plaintextNode: BinaryNode | undefined = getBinaryNodeChild(child, 'plaintext')
-			if (plaintextNode?.content) {
-				try {
-					const contentBuf: Buffer =
+			case 'participant':
+				const participantUpdate = {
+					id: from,
+					author,
+					user: child.attrs.jid,
+					action: child.attrs.action,
+					new_role: child.attrs.role
+				}
+				ev.emit('newsletter-participants.update', participantUpdate)
+				break
+
+			case 'update':
+				const settingsNode: BinaryNode | undefined = getBinaryNodeChild(child, 'settings')
+				if (settingsNode) {
+					const update: Record<string, unknown> = {}
+					const nameNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'name')
+					if (nameNode?.content) {
+						update.name = nameNode.content.toString()
+					}
+
+					const descriptionNode: BinaryNode | undefined = getBinaryNodeChild(settingsNode, 'description')
+					if (descriptionNode?.content) {
+						update.description = descriptionNode.content.toString()
+					}
+
+					ev.emit('newsletter-settings.update', {
+						id: from,
+						update
+					})
+				}
+
+				break
+
+			case 'message':
+				const plaintextNode: BinaryNode | undefined = getBinaryNodeChild(child, 'plaintext')
+				if (plaintextNode?.content) {
+					try {
+						const contentBuf: Buffer =
 							typeof plaintextNode.content === 'string'
 								? Buffer.from(plaintextNode.content, 'binary')
 								: Buffer.from(plaintextNode.content as Uint8Array)
-					const messageProto = waproto.Message.decode(contentBuf).toJSON()
-					const fullMessage = waproto.WebMessageInfo.fromObject({
-						key: {
-							remoteJid: from,
-							id: child.attrs.message_id || child.attrs.server_id,
-							fromMe: false // TODO: is this really true though
-						},
-						message: messageProto,
-						messageTimestamp: +child.attrs.t
-					}).toJSON() as WAMessage
-					await upsertMessage(fullMessage, 'append')
-					logger.info({}, 'Processed plaintext newsletter message')
-				} catch (error) {
-					logger.error({ error }, 'Failed to decode plaintext newsletter message')
+						const messageProto = waproto.Message.decode(contentBuf).toJSON()
+						const fullMessage = waproto.WebMessageInfo.fromObject({
+							key: {
+								remoteJid: from,
+								id: child.attrs.message_id || child.attrs.server_id,
+								fromMe: false // TODO: is this really true though
+							},
+							message: messageProto,
+							messageTimestamp: +child.attrs.t
+						}).toJSON() as WAMessage
+						await upsertMessage(fullMessage, 'append')
+						logger.info({}, 'Processed plaintext newsletter message')
+					} catch (error) {
+						logger.error({ error }, 'Failed to decode plaintext newsletter message')
+					}
 				}
-			}
 
-			break
+				break
 
-		default:
-			logger.warn({ node }, 'Unknown newsletter notification')
-			break
+			default:
+				logger.warn({ node }, 'Unknown newsletter notification')
+				break
 		}
 	}
 
-	const sendMessageAck = async({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
+	const sendMessageAck = async ({ tag, attrs, content }: BinaryNode, errorCode?: number) => {
 		const stanza: BinaryNode = {
 			tag: 'ack',
 			attrs: {
@@ -369,7 +369,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		await sendNode(stanza)
 	}
 
-	const offerCall = async(toJid: string, isVideo = false) => {
+	const offerCall = async (toJid: string, isVideo = false) => {
 		const callId: string = randomBytes(16).toString('hex').toUpperCase().substring(0, 64)
 		const offerContent: BinaryNode[] = []
 		offerContent.push({ tag: 'audio', attrs: { enc: 'opus', rate: '16000' }, content: undefined })
@@ -424,7 +424,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const terminateCall = async(callId: string, toJid: string) => {
+	const terminateCall = async (callId: string, toJid: string) => {
 		const stanza: BinaryNode = ({
 			tag: 'call',
 			attrs: {
@@ -443,7 +443,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		await query(stanza)
 	}
 
-	const rejectCall = async(callId: string, callFrom: string) => {
+	const rejectCall = async (callId: string, callFrom: string) => {
 		const stanza: BinaryNode = ({
 			tag: 'call',
 			attrs: {
@@ -464,7 +464,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		await query(stanza)
 	}
 
-	const sendRetryRequest = async(node: BinaryNode, forceIncludeKeys = false) => {
+	const sendRetryRequest = async (node: BinaryNode, forceIncludeKeys = false) => {
 		const { fullMessage } = decodeMessageNode(node, authState.creds.me!.id, authState.creds.me!.lid || '')
 		const { key: msgKey } = fullMessage
 		const msgId: string = msgKey.id!
@@ -489,7 +489,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		const deviceIdentity = encodeSignedDeviceIdentity(account!, true)
 		await authState.keys.transaction(
-			async() => {
+			async () => {
 				const receipt: BinaryNode = {
 					tag: 'receipt',
 					attrs: {
@@ -552,7 +552,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		)
 	}
 
-	const handleEncryptNotification = async(node: BinaryNode) => {
+	const handleEncryptNotification = async (node: BinaryNode) => {
 		const from: string = node.attrs.from
 		if (from === S_WHATSAPP_NET) {
 			const countChild: BinaryNode | undefined = getBinaryNodeChild(node, 'count')
@@ -591,258 +591,258 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 	) => {
 		const participantJid: string = getBinaryNodeChild(child, 'participant')?.attrs?.jid || participant
 		switch (child?.tag) {
-		case 'create':
-			const metadata: GroupMetadata = extractGroupMetadata(child)
+			case 'create':
+				const metadata: GroupMetadata = extractGroupMetadata(child)
 
-			msg.messageStubType = WAMessageStubType.GROUP_CREATE
-			msg.messageStubParameters = [metadata.subject]
-			msg.key = { participant: metadata.owner }
+				msg.messageStubType = WAMessageStubType.GROUP_CREATE
+				msg.messageStubParameters = [metadata.subject]
+				msg.key = { participant: metadata.owner }
 
-			ev.emit('chats.upsert', [{
-				id: metadata.id,
-				name: metadata.subject,
-				conversationTimestamp: metadata.creation,
-			}])
-			ev.emit('groups.upsert', [{
-				...metadata,
-				author: participant
-			}])
-			break
-		case 'ephemeral':
-		case 'not_ephemeral':
-			msg.message = {
-				protocolMessage: {
-					type: waproto.Message.ProtocolMessage.Type.EPHEMERAL_SETTING,
-					ephemeralExpiration: +(child.attrs.expiration || 0)
+				ev.emit('chats.upsert', [{
+					id: metadata.id,
+					name: metadata.subject,
+					conversationTimestamp: metadata.creation,
+				}])
+				ev.emit('groups.upsert', [{
+					...metadata,
+					author: participant
+				}])
+				break
+			case 'ephemeral':
+			case 'not_ephemeral':
+				msg.message = {
+					protocolMessage: {
+						type: waproto.Message.ProtocolMessage.Type.EPHEMERAL_SETTING,
+						ephemeralExpiration: +(child.attrs.expiration || 0)
+					}
 				}
-			}
-			break
-		case 'modify':
-			const oldNumber: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
-			msg.messageStubParameters = oldNumber || []
-			msg.messageStubType = WAMessageStubType.GROUP_PARTICIPANT_CHANGE_NUMBER
-			break
-		case 'promote':
-		case 'demote':
-		case 'remove':
-		case 'add':
-		case 'leave':
-			const stubType = `GROUP_PARTICIPANT_${child.tag.toUpperCase()}`
-			msg.messageStubType = WAMessageStubType[stubType]
+				break
+			case 'modify':
+				const oldNumber: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
+				msg.messageStubParameters = oldNumber || []
+				msg.messageStubType = WAMessageStubType.GROUP_PARTICIPANT_CHANGE_NUMBER
+				break
+			case 'promote':
+			case 'demote':
+			case 'remove':
+			case 'add':
+			case 'leave':
+				const stubType = `GROUP_PARTICIPANT_${child.tag.toUpperCase()}`
+				msg.messageStubType = WAMessageStubType[stubType]
 
-			const participants: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
-			if (
-				participants.length === 1 &&
+				const participants: string[] = getBinaryNodeChildren(child, 'participant').map(p => p.attrs.jid)
+				if (
+					participants.length === 1 &&
 					areJidsSameUser(participants[0], participant) &&
 					child.tag === 'remove'
-			) {
-				msg.messageStubType = WAMessageStubType.GROUP_PARTICIPANT_LEAVE
-			}
+				) {
+					msg.messageStubType = WAMessageStubType.GROUP_PARTICIPANT_LEAVE
+				}
 
-			msg.messageStubParameters = participants
-			break
-		case 'subject':
-			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_SUBJECT
-			msg.messageStubParameters = [child.attrs.subject]
-			break
-		case 'description':
-			const description: string | undefined = getBinaryNodeChild(child, 'body')?.content?.toString()
-			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_DESCRIPTION
-			msg.messageStubParameters = description ? [description] : undefined
-			break
-		case 'announcement':
-		case 'not_announcement':
-			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_ANNOUNCE
-			msg.messageStubParameters = [(child.tag === 'announcement') ? 'on' : 'off']
-			break
-		case 'locked':
-		case 'unlocked':
-			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_RESTRICT
-			msg.messageStubParameters = [(child.tag === 'locked') ? 'on' : 'off']
-			break
-		case 'invite':
-			msg.messageStubType = WAMessageStubType.GROUP_CHANGE_INVITE_LINK
-			msg.messageStubParameters = [child.attrs.code]
-			break
-		case 'member_add_mode':
-			const addMode = child.content
-			if (addMode) {
-				msg.messageStubType = WAMessageStubType.GROUP_MEMBER_ADD_MODE
-				msg.messageStubParameters = [addMode.toString()]
-			}
+				msg.messageStubParameters = participants
+				break
+			case 'subject':
+				msg.messageStubType = WAMessageStubType.GROUP_CHANGE_SUBJECT
+				msg.messageStubParameters = [child.attrs.subject]
+				break
+			case 'description':
+				const description: string | undefined = getBinaryNodeChild(child, 'body')?.content?.toString()
+				msg.messageStubType = WAMessageStubType.GROUP_CHANGE_DESCRIPTION
+				msg.messageStubParameters = description ? [description] : undefined
+				break
+			case 'announcement':
+			case 'not_announcement':
+				msg.messageStubType = WAMessageStubType.GROUP_CHANGE_ANNOUNCE
+				msg.messageStubParameters = [(child.tag === 'announcement') ? 'on' : 'off']
+				break
+			case 'locked':
+			case 'unlocked':
+				msg.messageStubType = WAMessageStubType.GROUP_CHANGE_RESTRICT
+				msg.messageStubParameters = [(child.tag === 'locked') ? 'on' : 'off']
+				break
+			case 'invite':
+				msg.messageStubType = WAMessageStubType.GROUP_CHANGE_INVITE_LINK
+				msg.messageStubParameters = [child.attrs.code]
+				break
+			case 'member_add_mode':
+				const addMode = child.content
+				if (addMode) {
+					msg.messageStubType = WAMessageStubType.GROUP_MEMBER_ADD_MODE
+					msg.messageStubParameters = [addMode.toString()]
+				}
 
-			break
-		case 'membership_approval_mode':
-			const approvalMode: BinaryNode | undefined = getBinaryNodeChild(child, 'group_join')
-			if (approvalMode) {
-				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE
-				msg.messageStubParameters = [approvalMode.attrs.state]
-			}
+				break
+			case 'membership_approval_mode':
+				const approvalMode: BinaryNode | undefined = getBinaryNodeChild(child, 'group_join')
+				if (approvalMode) {
+					msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_MODE
+					msg.messageStubParameters = [approvalMode.attrs.state]
+				}
 
-			break
-		case 'created_membership_requests':
-			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [participantJid, 'created', child.attrs.request_method]
-			break
-		case 'revoked_membership_requests':
-			const isDenied: boolean = areJidsSameUser(participantJid, participant)
-			msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
-			msg.messageStubParameters = [participantJid, isDenied ? 'revoked' : 'rejected']
-			break
+				break
+			case 'created_membership_requests':
+				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
+				msg.messageStubParameters = [participantJid, 'created', child.attrs.request_method]
+				break
+			case 'revoked_membership_requests':
+				const isDenied: boolean = areJidsSameUser(participantJid, participant)
+				msg.messageStubType = WAMessageStubType.GROUP_MEMBERSHIP_JOIN_APPROVAL_REQUEST_NON_ADMIN_ADD
+				msg.messageStubParameters = [participantJid, isDenied ? 'revoked' : 'rejected']
+				break
 		}
 	}
 
-	const processNotification = async(node: BinaryNode) => {
+	const processNotification = async (node: BinaryNode) => {
 		const result: Partial<WAMessage> = {}
 		const [child] = getAllBinaryNodeChildren(node)
 		const nodeType: string = node.attrs.type
 		const from: string = jidNormalizedUser(node.attrs.from)
 
 		switch (nodeType) {
-		case 'newsletter':
-			await handleNewsletterNotification(node)
-			break
-		case 'mex':
-			await handleMexNewsletterNotification(node)
-			break
-		case 'w:gp2':
-			handleGroupNotification(node.attrs.participant, child, result)
-			break
-		case 'mediaretry':
-			const event = decodeMediaRetryNode(node)
-			ev.emit('messages.media-update', [event])
-			break
-		case 'encrypt':
-			await handleEncryptNotification(node)
-			break
-		case 'devices':
-			const devices: BinaryNode[] = getBinaryNodeChildren(child, 'device')
-			if (areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
-				const deviceJids: string[] = devices.map(d => d.attrs.jid)
-				logger.trace({ deviceJids }, 'got my own devices')
-			}
-
-			break
-		case 'server_sync':
-			const update: BinaryNode | undefined = getBinaryNodeChild(node, 'collection')
-			if (update) {
-				const name = update.attrs.name as WAPatchName
-				await resyncAppState([name], false)
-			}
-
-			break
-		case 'picture':
-			const setPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'set')
-			const delPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'delete')
-
-			ev.emit('contacts.update', [{
-				id: jidNormalizedUser(node?.attrs?.from) || from || ((setPicture || delPicture)?.attrs?.hash) || '',
-				imgUrl: setPicture ? 'changed' : 'removed'
-			}])
-
-			if (isJidGroup(from)) {
-				const node: BinaryNode | undefined = setPicture || delPicture
-				result.messageStubType = WAMessageStubType.GROUP_CHANGE_ICON
-
-				if (setPicture) {
-					result.messageStubParameters = [setPicture.attrs.id]
+			case 'newsletter':
+				await handleNewsletterNotification(node)
+				break
+			case 'mex':
+				await handleMexNewsletterNotification(node)
+				break
+			case 'w:gp2':
+				handleGroupNotification(node.attrs.participant, child, result)
+				break
+			case 'mediaretry':
+				const event = decodeMediaRetryNode(node)
+				ev.emit('messages.media-update', [event])
+				break
+			case 'encrypt':
+				await handleEncryptNotification(node)
+				break
+			case 'devices':
+				const devices: BinaryNode[] = getBinaryNodeChildren(child, 'device')
+				if (areJidsSameUser(child.attrs.jid, authState.creds.me!.id)) {
+					const deviceJids: string[] = devices.map(d => d.attrs.jid)
+					logger.trace({ deviceJids }, 'got my own devices')
 				}
 
-				result.participant = node?.attrs.author
-				result.key = {
-					...result.key || {},
-					participant: setPicture?.attrs.author
+				break
+			case 'server_sync':
+				const update: BinaryNode | undefined = getBinaryNodeChild(node, 'collection')
+				if (update) {
+					const name = update.attrs.name as WAPatchName
+					await resyncAppState([name], false)
 				}
-			}
 
-			break
-		case 'account_sync':
-			if (child.tag === 'disappearing_mode') {
-				const newDuration: number = +child.attrs.duration
-				const timestamp: number = +child.attrs.t
+				break
+			case 'picture':
+				const setPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'set')
+				const delPicture: BinaryNode | undefined = getBinaryNodeChild(node, 'delete')
 
-				logger.trace({ newDuration }, 'updated account disappearing mode')
+				ev.emit('contacts.update', [{
+					id: jidNormalizedUser(node?.attrs?.from) || from || ((setPicture || delPicture)?.attrs?.hash) || '',
+					imgUrl: setPicture ? 'changed' : 'removed'
+				}])
 
-				ev.emit('creds.update', {
-					accountSettings: {
-						...authState.creds.accountSettings,
-						defaultDisappearingMode: {
-							ephemeralExpiration: newDuration,
-							ephemeralSettingTimestamp: timestamp,
-						},
+				if (isJidGroup(from)) {
+					const node: BinaryNode | undefined = setPicture || delPicture
+					result.messageStubType = WAMessageStubType.GROUP_CHANGE_ICON
+
+					if (setPicture) {
+						result.messageStubParameters = [setPicture.attrs.id]
 					}
+
+					result.participant = node?.attrs.author
+					result.key = {
+						...result.key || {},
+						participant: setPicture?.attrs.author
+					}
+				}
+
+				break
+			case 'account_sync':
+				if (child.tag === 'disappearing_mode') {
+					const newDuration: number = +child.attrs.duration
+					const timestamp: number = +child.attrs.t
+
+					logger.trace({ newDuration }, 'updated account disappearing mode')
+
+					ev.emit('creds.update', {
+						accountSettings: {
+							...authState.creds.accountSettings,
+							defaultDisappearingMode: {
+								ephemeralExpiration: newDuration,
+								ephemeralSettingTimestamp: timestamp,
+							},
+						}
+					})
+				} else if (child.tag === 'blocklist') {
+					const blocklists: BinaryNode[] = getBinaryNodeChildren(child, 'item')
+
+					for (const { attrs } of blocklists) {
+						const blocklist: string[] = [attrs.jid]
+						const type: 'add' | 'remove' = (attrs.action === 'block') ? 'add' : 'remove'
+						ev.emit('blocklist.update', { blocklist, type })
+					}
+				}
+
+				break
+			case 'privacy_token':
+				await handlePrivacyTokenNotification(node)
+				break
+			case 'link_code_companion_reg':
+				const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
+				const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
+				const primaryIdentityPublicKey: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
+				const primaryEphemeralPublicKeyWrapped: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
+				const codePairingPublicKey: Buffer = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
+				const companionSharedKey: Buffer = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
+				const random: Buffer = randomBytes(32)
+				const linkCodeSalt: Buffer = randomBytes(32)
+				const linkCodePairingExpanded: Buffer = await hkdf(companionSharedKey, 32, {
+					salt: linkCodeSalt,
+					info: 'link_code_pairing_key_bundle_encryption_key'
 				})
-			} else if (child.tag === 'blocklist') {
-				const blocklists: BinaryNode[] = getBinaryNodeChildren(child, 'item')
-
-				for (const { attrs } of blocklists) {
-					const blocklist: string[] = [attrs.jid]
-					const type: 'add' | 'remove' = (attrs.action === 'block') ? 'add' : 'remove'
-					ev.emit('blocklist.update', { blocklist, type })
-				}
-			}
-
-			break
-		case 'privacy_token':
-			await handlePrivacyTokenNotification(node)
-			break
-		case 'link_code_companion_reg':
-			const linkCodeCompanionReg: BinaryNode | undefined = getBinaryNodeChild(node, 'link_code_companion_reg')
-			const ref: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_ref'))
-			const primaryIdentityPublicKey: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'primary_identity_pub'))
-			const primaryEphemeralPublicKeyWrapped: Buffer = toRequiredBuffer(getBinaryNodeChildBuffer(linkCodeCompanionReg, 'link_code_pairing_wrapped_primary_ephemeral_pub'))
-			const codePairingPublicKey: Buffer = await decipherLinkPublicKey(primaryEphemeralPublicKeyWrapped)
-			const companionSharedKey: Buffer = Curve.sharedKey(authState.creds.pairingEphemeralKeyPair.private, codePairingPublicKey)
-			const random: Buffer = randomBytes(32)
-			const linkCodeSalt: Buffer = randomBytes(32)
-			const linkCodePairingExpanded: Buffer = await hkdf(companionSharedKey, 32, {
-				salt: linkCodeSalt,
-				info: 'link_code_pairing_key_bundle_encryption_key'
-			})
-			const encryptPayload: Buffer = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
-			const encryptIv: Buffer = randomBytes(12)
-			const encrypted: Buffer = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
-			const encryptedPayload: Buffer = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
-			const identitySharedKey: Buffer = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
-			const identityPayload: Buffer = Buffer.concat([companionSharedKey, identitySharedKey, random])
-			authState.creds.advSecretKey = (await hkdf(identityPayload, 32, { info: 'adv_secret' })).toString('base64')
-			await query({
-				tag: 'iq',
-				attrs: {
-					to: S_WHATSAPP_NET,
-					type: 'set',
-					id: sock.generateMessageTag(),
-					xmlns: 'md'
-				},
-				content: [
-					{
-						tag: 'link_code_companion_reg',
-						attrs: {
-							jid: authState.creds.me!.id,
-							stage: 'companion_finish',
-						},
-						content: [
-							{
-								tag: 'link_code_pairing_wrapped_key_bundle',
-								attrs: {},
-								content: encryptedPayload
+				const encryptPayload: Buffer = Buffer.concat([Buffer.from(authState.creds.signedIdentityKey.public), primaryIdentityPublicKey, random])
+				const encryptIv: Buffer = randomBytes(12)
+				const encrypted: Buffer = aesEncryptGCM(encryptPayload, linkCodePairingExpanded, encryptIv, Buffer.alloc(0))
+				const encryptedPayload: Buffer = Buffer.concat([linkCodeSalt, encryptIv, encrypted])
+				const identitySharedKey: Buffer = Curve.sharedKey(authState.creds.signedIdentityKey.private, primaryIdentityPublicKey)
+				const identityPayload: Buffer = Buffer.concat([companionSharedKey, identitySharedKey, random])
+				authState.creds.advSecretKey = (await hkdf(identityPayload, 32, { info: 'adv_secret' })).toString('base64')
+				await query({
+					tag: 'iq',
+					attrs: {
+						to: S_WHATSAPP_NET,
+						type: 'set',
+						id: sock.generateMessageTag(),
+						xmlns: 'md'
+					},
+					content: [
+						{
+							tag: 'link_code_companion_reg',
+							attrs: {
+								jid: authState.creds.me!.id,
+								stage: 'companion_finish',
 							},
-							{
-								tag: 'companion_identity_public',
-								attrs: {},
-								content: authState.creds.signedIdentityKey.public
-							},
-							{
-								tag: 'link_code_pairing_ref',
-								attrs: {},
-								content: ref
-							}
-						]
-					}
-				]
-			})
-			authState.creds.registered = true
-			ev.emit('creds.update', authState.creds)
+							content: [
+								{
+									tag: 'link_code_pairing_wrapped_key_bundle',
+									attrs: {},
+									content: encryptedPayload
+								},
+								{
+									tag: 'companion_identity_public',
+									attrs: {},
+									content: authState.creds.signedIdentityKey.public
+								},
+								{
+									tag: 'link_code_pairing_ref',
+									attrs: {},
+									content: ref
+								}
+							]
+						}
+					]
+				})
+				authState.creds.registered = true
+				ev.emit('creds.update', authState.creds)
 		}
 
 		if (Object.keys(result).length) {
@@ -850,7 +850,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handlePrivacyTokenNotification = async(node: BinaryNode) => {
+	const handlePrivacyTokenNotification = async (node: BinaryNode) => {
 		const tokensNode: BinaryNode | undefined = getBinaryNodeChild(node, 'tokens')
 		const from: string = jidNormalizedUser(node.attrs.from)
 		let lidForPN: string | null = null
@@ -923,7 +923,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		msgRetryCache.set(key, newValue)
 	}
 
-	const sendMessagesAgain = async(
+	const sendMessagesAgain = async (
 		key: waproto.IMessageKey,
 		ids: string[],
 		retryNode: BinaryNode
@@ -933,7 +933,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 			return
 		}
 
-		const msgs: (waproto.IMessage | undefined)[] = await Promise.all(ids.map(async(id) => {
+		const msgs: (waproto.IMessage | undefined)[] = await Promise.all(ids.map(async (id) => {
 			try {
 				const msg: waproto.IMessage | undefined = await getMessage({ ...key, id })
 				if (!msg) {
@@ -1023,7 +1023,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handleReceipt = async(node: BinaryNode) => {
+	const handleReceipt = async (node: BinaryNode) => {
 		const { attrs, content } = node
 		const isLid: boolean = attrs.from.includes('lid')
 		const isNodeFromMe: boolean = areJidsSameUser(attrs.participant || attrs.from, isLid ? authState.creds.me?.lid : authState.creds.me?.id)
@@ -1052,7 +1052,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		try {
 			await Promise.all([
 				processingMutex.mutex(
-					async() => {
+					async () => {
 						const status = getStatusFromReceiptType(attrs.type)
 						if (
 							typeof status !== 'undefined' &&
@@ -1112,7 +1112,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handleNotification = async(node: BinaryNode) => {
+	const handleNotification = async (node: BinaryNode) => {
 		const remoteJid: string = node.attrs.from
 		if (shouldIgnoreJid(remoteJid) && remoteJid !== S_WHATSAPP_NET) {
 			logger.debug({ remoteJid, id: node.attrs.id }, 'ignored notification')
@@ -1123,7 +1123,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		try {
 			await Promise.all([
 				processingMutex.mutex(
-					async() => {
+					async () => {
 						const msg: Partial<WAMessage> | undefined = await processNotification(node)
 						if (msg) {
 							const isLid: boolean = node.attrs.from.includes('lid')
@@ -1151,7 +1151,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const handleMessage = async(node: BinaryNode) => {
+	const handleMessage = async (node: BinaryNode) => {
 		const senderLid: string = node.attrs.from.includes('@lid') ? node.attrs.from : node.attrs.sender_lid || node.attrs.participant_lid
 		const pn: string = node.attrs.from.includes('@s.whatsapp.net') ? node.attrs.from : node.attrs.sender_pn || node.attrs.participant_pn
 		if (senderLid && pn) {
@@ -1238,7 +1238,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		try {
 			await Promise.all([
-				processingMutex.mutex(async() => {
+				processingMutex.mutex(async () => {
 					await decrypt()
 					if (msg.messageStubType === waproto.WebMessageInfo.StubType.CIPHERTEXT && category !== 'peer') {
 						if (
@@ -1251,7 +1251,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 						const errorMessage: string = msg?.messageStubParameters?.[0] || ''
 						const isPreKeyError: boolean = errorMessage.includes('PreKey')
 
-						retryMutex.mutex(async() => {
+						retryMutex.mutex(async () => {
 							try {
 								if (!ws.isOpen) {
 									logger.debug({ node }, 'Connection closed, skipping retry')
@@ -1331,7 +1331,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		}
 	}
 
-	const fetchMessageHistory = async(
+	const fetchMessageHistory = async (
 		count: number,
 		oldestMsgKey: WAMessageKey,
 		oldestMsgTimestamp: number | Long
@@ -1354,12 +1354,12 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		return sendPeerDataOperationMessage(pdoMessage)
 	}
 
-	const requestPlaceholderResend = async(messageKey: WAMessageKey): Promise<string | undefined> => {
+	const requestPlaceholderResend = async (messageKey: WAMessageKey): Promise<string | undefined> => {
 		if (!authState.creds.me?.id) {
 			throw new Boom('Not authenticated')
 		}
 
-		if (placeholderResendCache.get(messageKey?.id!)) {
+		if (await placeholderResendCache.get(messageKey?.id!)) {
 			logger.debug({ messageKey }, 'already requested resend')
 			return
 		} else {
@@ -1368,20 +1368,20 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 		await delay(5000)
 
-		if (!placeholderResendCache.get(messageKey?.id!)) {
+		if (!await placeholderResendCache.get(messageKey?.id!)) {
 			logger.debug({ messageKey }, 'message received while resend requested')
 			return 'RESOLVED'
 		}
 
-		setTimeout(() => {
-			if (placeholderResendCache.get(messageKey?.id!)) {
+		setTimeout(async () => {
+			if (await placeholderResendCache.get(messageKey?.id!)) {
 				logger.debug({ messageKey }, 'PDO message without response after 15 seconds. Phone possibly offline')
 				placeholderResendCache.del(messageKey?.id!)
 			}
 		}, 15_000)
 	}
 
-	const handleCall = async(node: BinaryNode) => {
+	const handleCall = async (node: BinaryNode) => {
 		let status: WACallUpdateType
 		const { attrs } = node
 		const [infoChild] = getAllBinaryNodeChildren(node)
@@ -1436,7 +1436,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		await sendMessageAck(node)
 	}
 
-	const handleBadAck = async({ attrs }: BinaryNode) => {
+	const handleBadAck = async ({ attrs }: BinaryNode) => {
 		const key: WAMessageKey = { remoteJid: attrs.from, fromMe: true, id: attrs.id }
 
 		if (attrs.error) {
@@ -1499,7 +1499,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 
 			isProcessing = true
 
-			const promise = async() => {
+			const promise = async () => {
 				while (nodes.length && ws.isOpen) {
 					const { type, node } = nodes.shift()!
 
@@ -1541,7 +1541,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		processNode('message', node, 'processing message', handleMessage)
 	})
 
-	ws.on('CB:call', async(node: BinaryNode) => {
+	ws.on('CB:call', async (node: BinaryNode) => {
 		processNode('call', node, 'handling call', handleCall)
 	})
 
@@ -1549,7 +1549,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
 		processNode('receipt', node, 'handling receipt', handleReceipt)
 	})
 
-	ws.on('CB:notification', async(node: BinaryNode) => {
+	ws.on('CB:notification', async (node: BinaryNode) => {
 		processNode('notification', node, 'handling notification', handleNotification)
 	})
 	ws.on('CB:ack,class:message', (node: BinaryNode) => {
