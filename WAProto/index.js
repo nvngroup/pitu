@@ -2071,6 +2071,7 @@ $root.waproto = (function() {
              * @property {string|null} [imageWdsIdentifier] AIHomeOption imageWdsIdentifier
              * @property {string|null} [imageTintColor] AIHomeOption imageTintColor
              * @property {string|null} [imageBackgroundColor] AIHomeOption imageBackgroundColor
+             * @property {string|null} [cardTypeId] AIHomeOption cardTypeId
              */
 
             /**
@@ -2144,6 +2145,14 @@ $root.waproto = (function() {
              */
             AIHomeOption.prototype.imageBackgroundColor = null;
 
+            /**
+             * AIHomeOption cardTypeId.
+             * @member {string|null|undefined} cardTypeId
+             * @memberof waproto.AIHomeState.AIHomeOption
+             * @instance
+             */
+            AIHomeOption.prototype.cardTypeId = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -2189,6 +2198,12 @@ $root.waproto = (function() {
                 set: $util.oneOfSetter($oneOfFields)
             });
 
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(AIHomeOption.prototype, "_cardTypeId", {
+                get: $util.oneOfGetter($oneOfFields = ["cardTypeId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
             /**
              * Creates a new AIHomeOption instance using the specified properties.
              * @function create
@@ -2227,6 +2242,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 6, wireType 2 =*/50).string(message.imageTintColor);
                 if (message.imageBackgroundColor != null && Object.hasOwnProperty.call(message, "imageBackgroundColor"))
                     writer.uint32(/* id 7, wireType 2 =*/58).string(message.imageBackgroundColor);
+                if (message.cardTypeId != null && Object.hasOwnProperty.call(message, "cardTypeId"))
+                    writer.uint32(/* id 8, wireType 2 =*/66).string(message.cardTypeId);
                 return writer;
             };
 
@@ -2287,6 +2304,10 @@ $root.waproto = (function() {
                         }
                     case 7: {
                             message.imageBackgroundColor = reader.string();
+                            break;
+                        }
+                    case 8: {
+                            message.cardTypeId = reader.string();
                             break;
                         }
                     default:
@@ -2367,6 +2388,11 @@ $root.waproto = (function() {
                     if (!$util.isString(message.imageBackgroundColor))
                         return "imageBackgroundColor: string expected";
                 }
+                if (message.cardTypeId != null && message.hasOwnProperty("cardTypeId")) {
+                    properties._cardTypeId = 1;
+                    if (!$util.isString(message.cardTypeId))
+                        return "cardTypeId: string expected";
+                }
                 return null;
             };
 
@@ -2418,6 +2444,8 @@ $root.waproto = (function() {
                     message.imageTintColor = String(object.imageTintColor);
                 if (object.imageBackgroundColor != null)
                     message.imageBackgroundColor = String(object.imageBackgroundColor);
+                if (object.cardTypeId != null)
+                    message.cardTypeId = String(object.cardTypeId);
                 return message;
             };
 
@@ -2468,6 +2496,11 @@ $root.waproto = (function() {
                     object.imageBackgroundColor = message.imageBackgroundColor;
                     if (options.oneofs)
                         object._imageBackgroundColor = "imageBackgroundColor";
+                }
+                if (message.cardTypeId != null && message.hasOwnProperty("cardTypeId")) {
+                    object.cardTypeId = message.cardTypeId;
+                    if (options.oneofs)
+                        object._cardTypeId = "cardTypeId";
                 }
                 return object;
             };
@@ -82572,6 +82605,7 @@ $root.waproto = (function() {
              * @property {string|null} [displayName] ContactMessage displayName
              * @property {string|null} [vcard] ContactMessage vcard
              * @property {waproto.IContextInfo|null} [contextInfo] ContactMessage contextInfo
+             * @property {boolean|null} [isSelfContact] ContactMessage isSelfContact
              */
 
             /**
@@ -82613,6 +82647,14 @@ $root.waproto = (function() {
              */
             ContactMessage.prototype.contextInfo = null;
 
+            /**
+             * ContactMessage isSelfContact.
+             * @member {boolean|null|undefined} isSelfContact
+             * @memberof waproto.Message.ContactMessage
+             * @instance
+             */
+            ContactMessage.prototype.isSelfContact = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -82631,6 +82673,12 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(ContactMessage.prototype, "_contextInfo", {
                 get: $util.oneOfGetter($oneOfFields = ["contextInfo"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(ContactMessage.prototype, "_isSelfContact", {
+                get: $util.oneOfGetter($oneOfFields = ["isSelfContact"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -82664,6 +82712,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 16, wireType 2 =*/130).string(message.vcard);
                 if (message.contextInfo != null && Object.hasOwnProperty.call(message, "contextInfo"))
                     $root.waproto.ContextInfo.encode(message.contextInfo, writer.uint32(/* id 17, wireType 2 =*/138).fork()).ldelim();
+                if (message.isSelfContact != null && Object.hasOwnProperty.call(message, "isSelfContact"))
+                    writer.uint32(/* id 18, wireType 0 =*/144).bool(message.isSelfContact);
                 return writer;
             };
 
@@ -82708,6 +82758,10 @@ $root.waproto = (function() {
                         }
                     case 17: {
                             message.contextInfo = $root.waproto.ContextInfo.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 18: {
+                            message.isSelfContact = reader.bool();
                             break;
                         }
                     default:
@@ -82764,6 +82818,11 @@ $root.waproto = (function() {
                             return "contextInfo." + error;
                     }
                 }
+                if (message.isSelfContact != null && message.hasOwnProperty("isSelfContact")) {
+                    properties._isSelfContact = 1;
+                    if (typeof message.isSelfContact !== "boolean")
+                        return "isSelfContact: boolean expected";
+                }
                 return null;
             };
 
@@ -82788,6 +82847,8 @@ $root.waproto = (function() {
                         throw TypeError(".waproto.Message.ContactMessage.contextInfo: object expected");
                     message.contextInfo = $root.waproto.ContextInfo.fromObject(object.contextInfo);
                 }
+                if (object.isSelfContact != null)
+                    message.isSelfContact = Boolean(object.isSelfContact);
                 return message;
             };
 
@@ -82818,6 +82879,11 @@ $root.waproto = (function() {
                     object.contextInfo = $root.waproto.ContextInfo.toObject(message.contextInfo, options);
                     if (options.oneofs)
                         object._contextInfo = "contextInfo";
+                }
+                if (message.isSelfContact != null && message.hasOwnProperty("isSelfContact")) {
+                    object.isSelfContact = message.isSelfContact;
+                    if (options.oneofs)
+                        object._isSelfContact = "isSelfContact";
                 }
                 return object;
             };
@@ -106133,6 +106199,7 @@ $root.waproto = (function() {
              * @interface IPaymentInviteMessage
              * @property {waproto.Message.PaymentInviteMessage.ServiceType|null} [serviceType] PaymentInviteMessage serviceType
              * @property {number|Long|null} [expiryTimestamp] PaymentInviteMessage expiryTimestamp
+             * @property {boolean|null} [incentiveEligible] PaymentInviteMessage incentiveEligible
              */
 
             /**
@@ -106166,6 +106233,14 @@ $root.waproto = (function() {
              */
             PaymentInviteMessage.prototype.expiryTimestamp = null;
 
+            /**
+             * PaymentInviteMessage incentiveEligible.
+             * @member {boolean|null|undefined} incentiveEligible
+             * @memberof waproto.Message.PaymentInviteMessage
+             * @instance
+             */
+            PaymentInviteMessage.prototype.incentiveEligible = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -106178,6 +106253,12 @@ $root.waproto = (function() {
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(PaymentInviteMessage.prototype, "_expiryTimestamp", {
                 get: $util.oneOfGetter($oneOfFields = ["expiryTimestamp"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(PaymentInviteMessage.prototype, "_incentiveEligible", {
+                get: $util.oneOfGetter($oneOfFields = ["incentiveEligible"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -106209,6 +106290,8 @@ $root.waproto = (function() {
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.serviceType);
                 if (message.expiryTimestamp != null && Object.hasOwnProperty.call(message, "expiryTimestamp"))
                     writer.uint32(/* id 2, wireType 0 =*/16).int64(message.expiryTimestamp);
+                if (message.incentiveEligible != null && Object.hasOwnProperty.call(message, "incentiveEligible"))
+                    writer.uint32(/* id 3, wireType 0 =*/24).bool(message.incentiveEligible);
                 return writer;
             };
 
@@ -106249,6 +106332,10 @@ $root.waproto = (function() {
                         }
                     case 2: {
                             message.expiryTimestamp = reader.int64();
+                            break;
+                        }
+                    case 3: {
+                            message.incentiveEligible = reader.bool();
                             break;
                         }
                     default:
@@ -106304,6 +106391,11 @@ $root.waproto = (function() {
                     if (!$util.isInteger(message.expiryTimestamp) && !(message.expiryTimestamp && $util.isInteger(message.expiryTimestamp.low) && $util.isInteger(message.expiryTimestamp.high)))
                         return "expiryTimestamp: integer|Long expected";
                 }
+                if (message.incentiveEligible != null && message.hasOwnProperty("incentiveEligible")) {
+                    properties._incentiveEligible = 1;
+                    if (typeof message.incentiveEligible !== "boolean")
+                        return "incentiveEligible: boolean expected";
+                }
                 return null;
             };
 
@@ -106352,6 +106444,8 @@ $root.waproto = (function() {
                         message.expiryTimestamp = object.expiryTimestamp;
                     else if (typeof object.expiryTimestamp === "object")
                         message.expiryTimestamp = new $util.LongBits(object.expiryTimestamp.low >>> 0, object.expiryTimestamp.high >>> 0).toNumber();
+                if (object.incentiveEligible != null)
+                    message.incentiveEligible = Boolean(object.incentiveEligible);
                 return message;
             };
 
@@ -106380,6 +106474,11 @@ $root.waproto = (function() {
                         object.expiryTimestamp = options.longs === String ? $util.Long.prototype.toString.call(message.expiryTimestamp) : options.longs === Number ? new $util.LongBits(message.expiryTimestamp.low >>> 0, message.expiryTimestamp.high >>> 0).toNumber() : message.expiryTimestamp;
                     if (options.oneofs)
                         object._expiryTimestamp = "expiryTimestamp";
+                }
+                if (message.incentiveEligible != null && message.hasOwnProperty("incentiveEligible")) {
+                    object.incentiveEligible = message.incentiveEligible;
+                    if (options.oneofs)
+                        object._incentiveEligible = "incentiveEligible";
                 }
                 return object;
             };
