@@ -6195,6 +6195,112 @@ export namespace waproto {
         }
     }
 
+    /** Properties of a BotInfrastructureDiagnostics. */
+    interface IBotInfrastructureDiagnostics {
+
+        /** BotInfrastructureDiagnostics botBackend */
+        botBackend?: (waproto.BotInfrastructureDiagnostics.BotBackend|null);
+    }
+
+    /** Represents a BotInfrastructureDiagnostics. */
+    class BotInfrastructureDiagnostics implements IBotInfrastructureDiagnostics {
+
+        /**
+         * Constructs a new BotInfrastructureDiagnostics.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: waproto.IBotInfrastructureDiagnostics);
+
+        /** BotInfrastructureDiagnostics botBackend. */
+        public botBackend?: (waproto.BotInfrastructureDiagnostics.BotBackend|null);
+
+        /**
+         * Creates a new BotInfrastructureDiagnostics instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns BotInfrastructureDiagnostics instance
+         */
+        public static create(properties?: waproto.IBotInfrastructureDiagnostics): waproto.BotInfrastructureDiagnostics;
+
+        /**
+         * Encodes the specified BotInfrastructureDiagnostics message. Does not implicitly {@link waproto.BotInfrastructureDiagnostics.verify|verify} messages.
+         * @param message BotInfrastructureDiagnostics message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: waproto.IBotInfrastructureDiagnostics, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified BotInfrastructureDiagnostics message, length delimited. Does not implicitly {@link waproto.BotInfrastructureDiagnostics.verify|verify} messages.
+         * @param message BotInfrastructureDiagnostics message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: waproto.IBotInfrastructureDiagnostics, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a BotInfrastructureDiagnostics message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns BotInfrastructureDiagnostics
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): waproto.BotInfrastructureDiagnostics;
+
+        /**
+         * Decodes a BotInfrastructureDiagnostics message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns BotInfrastructureDiagnostics
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): waproto.BotInfrastructureDiagnostics;
+
+        /**
+         * Verifies a BotInfrastructureDiagnostics message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a BotInfrastructureDiagnostics message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns BotInfrastructureDiagnostics
+         */
+        public static fromObject(object: { [k: string]: any }): waproto.BotInfrastructureDiagnostics;
+
+        /**
+         * Creates a plain object from a BotInfrastructureDiagnostics message. Also converts values to other types if specified.
+         * @param message BotInfrastructureDiagnostics
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: waproto.BotInfrastructureDiagnostics, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this BotInfrastructureDiagnostics to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for BotInfrastructureDiagnostics
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    namespace BotInfrastructureDiagnostics {
+
+        /** BotBackend enum. */
+        enum BotBackend {
+            AAPI = 0,
+            CLIPPY = 1
+        }
+    }
+
     /** Properties of a BotLinkedAccount. */
     interface IBotLinkedAccount {
 
@@ -7277,6 +7383,9 @@ export namespace waproto {
         /** BotMetadata botRenderingConfigMetadata */
         botRenderingConfigMetadata?: (waproto.IBotRenderingConfigMetadata|null);
 
+        /** BotMetadata botInfrastructureDiagnostics */
+        botInfrastructureDiagnostics?: (waproto.IBotInfrastructureDiagnostics|null);
+
         /** BotMetadata internalMetadata */
         internalMetadata?: (Uint8Array|null);
     }
@@ -7397,6 +7506,9 @@ export namespace waproto {
 
         /** BotMetadata botRenderingConfigMetadata. */
         public botRenderingConfigMetadata?: (waproto.IBotRenderingConfigMetadata|null);
+
+        /** BotMetadata botInfrastructureDiagnostics. */
+        public botInfrastructureDiagnostics?: (waproto.IBotInfrastructureDiagnostics|null);
 
         /** BotMetadata internalMetadata. */
         public internalMetadata?: (Uint8Array|null);
@@ -15532,6 +15644,12 @@ export namespace waproto {
 
             /** StatusAudienceMetadata audienceType */
             audienceType?: (waproto.ContextInfo.StatusAudienceMetadata.AudienceType|null);
+
+            /** StatusAudienceMetadata listName */
+            listName?: (string|null);
+
+            /** StatusAudienceMetadata listEmoji */
+            listEmoji?: (string|null);
         }
 
         /** Represents a StatusAudienceMetadata. */
@@ -15545,6 +15663,12 @@ export namespace waproto {
 
             /** StatusAudienceMetadata audienceType. */
             public audienceType?: (waproto.ContextInfo.StatusAudienceMetadata.AudienceType|null);
+
+            /** StatusAudienceMetadata listName. */
+            public listName?: (string|null);
+
+            /** StatusAudienceMetadata listEmoji. */
+            public listEmoji?: (string|null);
 
             /**
              * Creates a new StatusAudienceMetadata instance using the specified properties.
@@ -50607,7 +50731,8 @@ export namespace waproto {
             GROUP_STATUS = 5,
             RL_ATTRIBUTION = 6,
             AI_CREATED = 7,
-            LAYOUTS = 8
+            LAYOUTS = 8,
+            STATUS_CLOSE_SHARING = 9
         }
     }
 
@@ -57714,6 +57839,30 @@ export namespace waproto {
 
             /** SettingsSyncAction notificationToneId */
             notificationToneId?: (number|null);
+
+            /** SettingsSyncAction mediaUploadQuality */
+            mediaUploadQuality?: (waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting|null);
+
+            /** SettingsSyncAction isSpellCheckEnabled */
+            isSpellCheckEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isEnterToSendEnabled */
+            isEnterToSendEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isGroupMessageNotificationEnabled */
+            isGroupMessageNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isGroupReactionsNotificationEnabled */
+            isGroupReactionsNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isStatusNotificationEnabled */
+            isStatusNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction statusNotificationToneId */
+            statusNotificationToneId?: (number|null);
+
+            /** SettingsSyncAction shouldPlaySoundForCallNotification */
+            shouldPlaySoundForCallNotification?: (boolean|null);
         }
 
         /** Represents a SettingsSyncAction. */
@@ -57793,6 +57942,30 @@ export namespace waproto {
 
             /** SettingsSyncAction notificationToneId. */
             public notificationToneId?: (number|null);
+
+            /** SettingsSyncAction mediaUploadQuality. */
+            public mediaUploadQuality?: (waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting|null);
+
+            /** SettingsSyncAction isSpellCheckEnabled. */
+            public isSpellCheckEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isEnterToSendEnabled. */
+            public isEnterToSendEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isGroupMessageNotificationEnabled. */
+            public isGroupMessageNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isGroupReactionsNotificationEnabled. */
+            public isGroupReactionsNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction isStatusNotificationEnabled. */
+            public isStatusNotificationEnabled?: (boolean|null);
+
+            /** SettingsSyncAction statusNotificationToneId. */
+            public statusNotificationToneId?: (number|null);
+
+            /** SettingsSyncAction shouldPlaySoundForCallNotification. */
+            public shouldPlaySoundForCallNotification?: (boolean|null);
 
             /**
              * Creates a new SettingsSyncAction instance using the specified properties.
@@ -57882,6 +58055,13 @@ export namespace waproto {
                 ONLY_WHEN_APP_IS_OPEN = 3
             }
 
+            /** MediaQualitySetting enum. */
+            enum MediaQualitySetting {
+                MEDIA_QUALITY_UNKNOWN = 0,
+                STANDARD = 1,
+                HD = 2
+            }
+
             /** SettingKey enum. */
             enum SettingKey {
                 SETTING_KEY_UNKNOWN = 0,
@@ -57907,7 +58087,15 @@ export namespace waproto {
                 IS_VIDEOS_AUTODOWNLOAD_ENABLED = 20,
                 IS_DOCUMENTS_AUTODOWNLOAD_ENABLED = 21,
                 DISABLE_LINK_PREVIEWS = 22,
-                NOTIFICATION_TONE_ID = 23
+                NOTIFICATION_TONE_ID = 23,
+                MEDIA_UPLOAD_QUALITY = 24,
+                IS_SPELL_CHECK_ENABLED = 25,
+                IS_ENTER_TO_SEND_ENABLED = 26,
+                IS_GROUP_MESSAGE_NOTIFICATION_ENABLED = 27,
+                IS_GROUP_REACTIONS_NOTIFICATION_ENABLED = 28,
+                IS_STATUS_NOTIFICATION_ENABLED = 29,
+                STATUS_NOTIFICATION_TONE_ID = 30,
+                SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION = 31
             }
 
             /** SettingPlatform enum. */

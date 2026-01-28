@@ -17503,6 +17503,255 @@ $root.waproto = (function() {
         return BotImagineMetadata;
     })();
 
+    waproto.BotInfrastructureDiagnostics = (function() {
+
+        /**
+         * Properties of a BotInfrastructureDiagnostics.
+         * @memberof waproto
+         * @interface IBotInfrastructureDiagnostics
+         * @property {waproto.BotInfrastructureDiagnostics.BotBackend|null} [botBackend] BotInfrastructureDiagnostics botBackend
+         */
+
+        /**
+         * Constructs a new BotInfrastructureDiagnostics.
+         * @memberof waproto
+         * @classdesc Represents a BotInfrastructureDiagnostics.
+         * @implements IBotInfrastructureDiagnostics
+         * @constructor
+         * @param {waproto.IBotInfrastructureDiagnostics=} [properties] Properties to set
+         */
+        function BotInfrastructureDiagnostics(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BotInfrastructureDiagnostics botBackend.
+         * @member {waproto.BotInfrastructureDiagnostics.BotBackend|null|undefined} botBackend
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @instance
+         */
+        BotInfrastructureDiagnostics.prototype.botBackend = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotInfrastructureDiagnostics.prototype, "_botBackend", {
+            get: $util.oneOfGetter($oneOfFields = ["botBackend"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new BotInfrastructureDiagnostics instance using the specified properties.
+         * @function create
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {waproto.IBotInfrastructureDiagnostics=} [properties] Properties to set
+         * @returns {waproto.BotInfrastructureDiagnostics} BotInfrastructureDiagnostics instance
+         */
+        BotInfrastructureDiagnostics.create = function create(properties) {
+            return new BotInfrastructureDiagnostics(properties);
+        };
+
+        /**
+         * Encodes the specified BotInfrastructureDiagnostics message. Does not implicitly {@link waproto.BotInfrastructureDiagnostics.verify|verify} messages.
+         * @function encode
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {waproto.IBotInfrastructureDiagnostics} message BotInfrastructureDiagnostics message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotInfrastructureDiagnostics.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.botBackend != null && Object.hasOwnProperty.call(message, "botBackend"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.botBackend);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BotInfrastructureDiagnostics message, length delimited. Does not implicitly {@link waproto.BotInfrastructureDiagnostics.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {waproto.IBotInfrastructureDiagnostics} message BotInfrastructureDiagnostics message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BotInfrastructureDiagnostics.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BotInfrastructureDiagnostics message from the specified reader or buffer.
+         * @function decode
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {waproto.BotInfrastructureDiagnostics} BotInfrastructureDiagnostics
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotInfrastructureDiagnostics.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.waproto.BotInfrastructureDiagnostics();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.botBackend = reader.int32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BotInfrastructureDiagnostics message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {waproto.BotInfrastructureDiagnostics} BotInfrastructureDiagnostics
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BotInfrastructureDiagnostics.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BotInfrastructureDiagnostics message.
+         * @function verify
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BotInfrastructureDiagnostics.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.botBackend != null && message.hasOwnProperty("botBackend")) {
+                properties._botBackend = 1;
+                switch (message.botBackend) {
+                default:
+                    return "botBackend: enum value expected";
+                case 0:
+                case 1:
+                    break;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a BotInfrastructureDiagnostics message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {waproto.BotInfrastructureDiagnostics} BotInfrastructureDiagnostics
+         */
+        BotInfrastructureDiagnostics.fromObject = function fromObject(object) {
+            if (object instanceof $root.waproto.BotInfrastructureDiagnostics)
+                return object;
+            var message = new $root.waproto.BotInfrastructureDiagnostics();
+            switch (object.botBackend) {
+            default:
+                if (typeof object.botBackend === "number") {
+                    message.botBackend = object.botBackend;
+                    break;
+                }
+                break;
+            case "AAPI":
+            case 0:
+                message.botBackend = 0;
+                break;
+            case "CLIPPY":
+            case 1:
+                message.botBackend = 1;
+                break;
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BotInfrastructureDiagnostics message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {waproto.BotInfrastructureDiagnostics} message BotInfrastructureDiagnostics
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BotInfrastructureDiagnostics.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.botBackend != null && message.hasOwnProperty("botBackend")) {
+                object.botBackend = options.enums === String ? $root.waproto.BotInfrastructureDiagnostics.BotBackend[message.botBackend] === undefined ? message.botBackend : $root.waproto.BotInfrastructureDiagnostics.BotBackend[message.botBackend] : message.botBackend;
+                if (options.oneofs)
+                    object._botBackend = "botBackend";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this BotInfrastructureDiagnostics to JSON.
+         * @function toJSON
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BotInfrastructureDiagnostics.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BotInfrastructureDiagnostics
+         * @function getTypeUrl
+         * @memberof waproto.BotInfrastructureDiagnostics
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BotInfrastructureDiagnostics.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/waproto.BotInfrastructureDiagnostics";
+        };
+
+        /**
+         * BotBackend enum.
+         * @name waproto.BotInfrastructureDiagnostics.BotBackend
+         * @enum {number}
+         * @property {number} AAPI=0 AAPI value
+         * @property {number} CLIPPY=1 CLIPPY value
+         */
+        BotInfrastructureDiagnostics.BotBackend = (function() {
+            var valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "AAPI"] = 0;
+            values[valuesById[1] = "CLIPPY"] = 1;
+            return values;
+        })();
+
+        return BotInfrastructureDiagnostics;
+    })();
+
     waproto.BotLinkedAccount = (function() {
 
         /**
@@ -20266,6 +20515,7 @@ $root.waproto = (function() {
          * @property {waproto.IBotDocumentMessageMetadata|null} [botDocumentMessageMetadata] BotMetadata botDocumentMessageMetadata
          * @property {waproto.IBotGroupMetadata|null} [botGroupMetadata] BotMetadata botGroupMetadata
          * @property {waproto.IBotRenderingConfigMetadata|null} [botRenderingConfigMetadata] BotMetadata botRenderingConfigMetadata
+         * @property {waproto.IBotInfrastructureDiagnostics|null} [botInfrastructureDiagnostics] BotMetadata botInfrastructureDiagnostics
          * @property {Uint8Array|null} [internalMetadata] BotMetadata internalMetadata
          */
 
@@ -20573,6 +20823,14 @@ $root.waproto = (function() {
         BotMetadata.prototype.botRenderingConfigMetadata = null;
 
         /**
+         * BotMetadata botInfrastructureDiagnostics.
+         * @member {waproto.IBotInfrastructureDiagnostics|null|undefined} botInfrastructureDiagnostics
+         * @memberof waproto.BotMetadata
+         * @instance
+         */
+        BotMetadata.prototype.botInfrastructureDiagnostics = null;
+
+        /**
          * BotMetadata internalMetadata.
          * @member {Uint8Array|null|undefined} internalMetadata
          * @memberof waproto.BotMetadata
@@ -20800,6 +21058,12 @@ $root.waproto = (function() {
         });
 
         // Virtual OneOf for proto3 optional field
+        Object.defineProperty(BotMetadata.prototype, "_botInfrastructureDiagnostics", {
+            get: $util.oneOfGetter($oneOfFields = ["botInfrastructureDiagnostics"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
         Object.defineProperty(BotMetadata.prototype, "_internalMetadata", {
             get: $util.oneOfGetter($oneOfFields = ["internalMetadata"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -20901,6 +21165,8 @@ $root.waproto = (function() {
                 $root.waproto.BotGroupMetadata.encode(message.botGroupMetadata, writer.uint32(/* id 35, wireType 2 =*/282).fork()).ldelim();
             if (message.botRenderingConfigMetadata != null && Object.hasOwnProperty.call(message, "botRenderingConfigMetadata"))
                 $root.waproto.BotRenderingConfigMetadata.encode(message.botRenderingConfigMetadata, writer.uint32(/* id 36, wireType 2 =*/290).fork()).ldelim();
+            if (message.botInfrastructureDiagnostics != null && Object.hasOwnProperty.call(message, "botInfrastructureDiagnostics"))
+                $root.waproto.BotInfrastructureDiagnostics.encode(message.botInfrastructureDiagnostics, writer.uint32(/* id 37, wireType 2 =*/298).fork()).ldelim();
             if (message.internalMetadata != null && Object.hasOwnProperty.call(message, "internalMetadata"))
                 writer.uint32(/* id 999, wireType 2 =*/7994).bytes(message.internalMetadata);
             return writer;
@@ -21079,6 +21345,10 @@ $root.waproto = (function() {
                     }
                 case 36: {
                         message.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 37: {
+                        message.botInfrastructureDiagnostics = $root.waproto.BotInfrastructureDiagnostics.decode(reader, reader.uint32());
                         break;
                     }
                 case 999: {
@@ -21388,6 +21658,14 @@ $root.waproto = (function() {
                         return "botRenderingConfigMetadata." + error;
                 }
             }
+            if (message.botInfrastructureDiagnostics != null && message.hasOwnProperty("botInfrastructureDiagnostics")) {
+                properties._botInfrastructureDiagnostics = 1;
+                {
+                    var error = $root.waproto.BotInfrastructureDiagnostics.verify(message.botInfrastructureDiagnostics);
+                    if (error)
+                        return "botInfrastructureDiagnostics." + error;
+                }
+            }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 properties._internalMetadata = 1;
                 if (!(message.internalMetadata && typeof message.internalMetadata.length === "number" || $util.isString(message.internalMetadata)))
@@ -21569,6 +21847,11 @@ $root.waproto = (function() {
                 if (typeof object.botRenderingConfigMetadata !== "object")
                     throw TypeError(".waproto.BotMetadata.botRenderingConfigMetadata: object expected");
                 message.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.fromObject(object.botRenderingConfigMetadata);
+            }
+            if (object.botInfrastructureDiagnostics != null) {
+                if (typeof object.botInfrastructureDiagnostics !== "object")
+                    throw TypeError(".waproto.BotMetadata.botInfrastructureDiagnostics: object expected");
+                message.botInfrastructureDiagnostics = $root.waproto.BotInfrastructureDiagnostics.fromObject(object.botInfrastructureDiagnostics);
             }
             if (object.internalMetadata != null)
                 if (typeof object.internalMetadata === "string")
@@ -21770,6 +22053,11 @@ $root.waproto = (function() {
                 object.botRenderingConfigMetadata = $root.waproto.BotRenderingConfigMetadata.toObject(message.botRenderingConfigMetadata, options);
                 if (options.oneofs)
                     object._botRenderingConfigMetadata = "botRenderingConfigMetadata";
+            }
+            if (message.botInfrastructureDiagnostics != null && message.hasOwnProperty("botInfrastructureDiagnostics")) {
+                object.botInfrastructureDiagnostics = $root.waproto.BotInfrastructureDiagnostics.toObject(message.botInfrastructureDiagnostics, options);
+                if (options.oneofs)
+                    object._botInfrastructureDiagnostics = "botInfrastructureDiagnostics";
             }
             if (message.internalMetadata != null && message.hasOwnProperty("internalMetadata")) {
                 object.internalMetadata = options.bytes === String ? $util.base64.encode(message.internalMetadata, 0, message.internalMetadata.length) : options.bytes === Array ? Array.prototype.slice.call(message.internalMetadata) : message.internalMetadata;
@@ -47676,6 +47964,8 @@ $root.waproto = (function() {
              * @memberof waproto.ContextInfo
              * @interface IStatusAudienceMetadata
              * @property {waproto.ContextInfo.StatusAudienceMetadata.AudienceType|null} [audienceType] StatusAudienceMetadata audienceType
+             * @property {string|null} [listName] StatusAudienceMetadata listName
+             * @property {string|null} [listEmoji] StatusAudienceMetadata listEmoji
              */
 
             /**
@@ -47701,12 +47991,40 @@ $root.waproto = (function() {
              */
             StatusAudienceMetadata.prototype.audienceType = null;
 
+            /**
+             * StatusAudienceMetadata listName.
+             * @member {string|null|undefined} listName
+             * @memberof waproto.ContextInfo.StatusAudienceMetadata
+             * @instance
+             */
+            StatusAudienceMetadata.prototype.listName = null;
+
+            /**
+             * StatusAudienceMetadata listEmoji.
+             * @member {string|null|undefined} listEmoji
+             * @memberof waproto.ContextInfo.StatusAudienceMetadata
+             * @instance
+             */
+            StatusAudienceMetadata.prototype.listEmoji = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
             // Virtual OneOf for proto3 optional field
             Object.defineProperty(StatusAudienceMetadata.prototype, "_audienceType", {
                 get: $util.oneOfGetter($oneOfFields = ["audienceType"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(StatusAudienceMetadata.prototype, "_listName", {
+                get: $util.oneOfGetter($oneOfFields = ["listName"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(StatusAudienceMetadata.prototype, "_listEmoji", {
+                get: $util.oneOfGetter($oneOfFields = ["listEmoji"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -47736,6 +48054,10 @@ $root.waproto = (function() {
                     writer = $Writer.create();
                 if (message.audienceType != null && Object.hasOwnProperty.call(message, "audienceType"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.audienceType);
+                if (message.listName != null && Object.hasOwnProperty.call(message, "listName"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.listName);
+                if (message.listEmoji != null && Object.hasOwnProperty.call(message, "listEmoji"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.listEmoji);
                 return writer;
             };
 
@@ -47772,6 +48094,14 @@ $root.waproto = (function() {
                     switch (tag >>> 3) {
                     case 1: {
                             message.audienceType = reader.int32();
+                            break;
+                        }
+                    case 2: {
+                            message.listName = reader.string();
+                            break;
+                        }
+                    case 3: {
+                            message.listEmoji = reader.string();
                             break;
                         }
                     default:
@@ -47820,6 +48150,16 @@ $root.waproto = (function() {
                         break;
                     }
                 }
+                if (message.listName != null && message.hasOwnProperty("listName")) {
+                    properties._listName = 1;
+                    if (!$util.isString(message.listName))
+                        return "listName: string expected";
+                }
+                if (message.listEmoji != null && message.hasOwnProperty("listEmoji")) {
+                    properties._listEmoji = 1;
+                    if (!$util.isString(message.listEmoji))
+                        return "listEmoji: string expected";
+                }
                 return null;
             };
 
@@ -47851,6 +48191,10 @@ $root.waproto = (function() {
                     message.audienceType = 1;
                     break;
                 }
+                if (object.listName != null)
+                    message.listName = String(object.listName);
+                if (object.listEmoji != null)
+                    message.listEmoji = String(object.listEmoji);
                 return message;
             };
 
@@ -47871,6 +48215,16 @@ $root.waproto = (function() {
                     object.audienceType = options.enums === String ? $root.waproto.ContextInfo.StatusAudienceMetadata.AudienceType[message.audienceType] === undefined ? message.audienceType : $root.waproto.ContextInfo.StatusAudienceMetadata.AudienceType[message.audienceType] : message.audienceType;
                     if (options.oneofs)
                         object._audienceType = "audienceType";
+                }
+                if (message.listName != null && message.hasOwnProperty("listName")) {
+                    object.listName = message.listName;
+                    if (options.oneofs)
+                        object._listName = "listName";
+                }
+                if (message.listEmoji != null && message.hasOwnProperty("listEmoji")) {
+                    object.listEmoji = message.listEmoji;
+                    if (options.oneofs)
+                        object._listEmoji = "listEmoji";
                 }
                 return object;
             };
@@ -153682,6 +154036,7 @@ $root.waproto = (function() {
                 case 6:
                 case 7:
                 case 8:
+                case 9:
                     break;
                 }
             }
@@ -153805,6 +154160,10 @@ $root.waproto = (function() {
             case "LAYOUTS":
             case 8:
                 message.type = 8;
+                break;
+            case "STATUS_CLOSE_SHARING":
+            case 9:
+                message.type = 9;
                 break;
             }
             if (object.actionUrl != null)
@@ -156081,6 +156440,7 @@ $root.waproto = (function() {
          * @property {number} RL_ATTRIBUTION=6 RL_ATTRIBUTION value
          * @property {number} AI_CREATED=7 AI_CREATED value
          * @property {number} LAYOUTS=8 LAYOUTS value
+         * @property {number} STATUS_CLOSE_SHARING=9 STATUS_CLOSE_SHARING value
          */
         StatusAttribution.Type = (function() {
             var valuesById = {}, values = Object.create(valuesById);
@@ -156093,6 +156453,7 @@ $root.waproto = (function() {
             values[valuesById[6] = "RL_ATTRIBUTION"] = 6;
             values[valuesById[7] = "AI_CREATED"] = 7;
             values[valuesById[8] = "LAYOUTS"] = 8;
+            values[valuesById[9] = "STATUS_CLOSE_SHARING"] = 9;
             return values;
         })();
 
@@ -175199,6 +175560,14 @@ $root.waproto = (function() {
              * @property {boolean|null} [isDocumentsAutodownloadEnabled] SettingsSyncAction isDocumentsAutodownloadEnabled
              * @property {boolean|null} [disableLinkPreviews] SettingsSyncAction disableLinkPreviews
              * @property {number|null} [notificationToneId] SettingsSyncAction notificationToneId
+             * @property {waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting|null} [mediaUploadQuality] SettingsSyncAction mediaUploadQuality
+             * @property {boolean|null} [isSpellCheckEnabled] SettingsSyncAction isSpellCheckEnabled
+             * @property {boolean|null} [isEnterToSendEnabled] SettingsSyncAction isEnterToSendEnabled
+             * @property {boolean|null} [isGroupMessageNotificationEnabled] SettingsSyncAction isGroupMessageNotificationEnabled
+             * @property {boolean|null} [isGroupReactionsNotificationEnabled] SettingsSyncAction isGroupReactionsNotificationEnabled
+             * @property {boolean|null} [isStatusNotificationEnabled] SettingsSyncAction isStatusNotificationEnabled
+             * @property {number|null} [statusNotificationToneId] SettingsSyncAction statusNotificationToneId
+             * @property {boolean|null} [shouldPlaySoundForCallNotification] SettingsSyncAction shouldPlaySoundForCallNotification
              */
 
             /**
@@ -175400,6 +175769,70 @@ $root.waproto = (function() {
              */
             SettingsSyncAction.prototype.notificationToneId = null;
 
+            /**
+             * SettingsSyncAction mediaUploadQuality.
+             * @member {waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting|null|undefined} mediaUploadQuality
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.mediaUploadQuality = null;
+
+            /**
+             * SettingsSyncAction isSpellCheckEnabled.
+             * @member {boolean|null|undefined} isSpellCheckEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isSpellCheckEnabled = null;
+
+            /**
+             * SettingsSyncAction isEnterToSendEnabled.
+             * @member {boolean|null|undefined} isEnterToSendEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isEnterToSendEnabled = null;
+
+            /**
+             * SettingsSyncAction isGroupMessageNotificationEnabled.
+             * @member {boolean|null|undefined} isGroupMessageNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isGroupMessageNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isGroupReactionsNotificationEnabled.
+             * @member {boolean|null|undefined} isGroupReactionsNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isGroupReactionsNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction isStatusNotificationEnabled.
+             * @member {boolean|null|undefined} isStatusNotificationEnabled
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.isStatusNotificationEnabled = null;
+
+            /**
+             * SettingsSyncAction statusNotificationToneId.
+             * @member {number|null|undefined} statusNotificationToneId
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.statusNotificationToneId = null;
+
+            /**
+             * SettingsSyncAction shouldPlaySoundForCallNotification.
+             * @member {boolean|null|undefined} shouldPlaySoundForCallNotification
+             * @memberof waproto.SyncActionValue.SettingsSyncAction
+             * @instance
+             */
+            SettingsSyncAction.prototype.shouldPlaySoundForCallNotification = null;
+
             // OneOf field names bound to virtual getters and setters
             var $oneOfFields;
 
@@ -175541,6 +175974,54 @@ $root.waproto = (function() {
                 set: $util.oneOfSetter($oneOfFields)
             });
 
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_mediaUploadQuality", {
+                get: $util.oneOfGetter($oneOfFields = ["mediaUploadQuality"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isSpellCheckEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isSpellCheckEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isEnterToSendEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isEnterToSendEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isGroupMessageNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isGroupMessageNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isGroupReactionsNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isGroupReactionsNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_isStatusNotificationEnabled", {
+                get: $util.oneOfGetter($oneOfFields = ["isStatusNotificationEnabled"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_statusNotificationToneId", {
+                get: $util.oneOfGetter($oneOfFields = ["statusNotificationToneId"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            // Virtual OneOf for proto3 optional field
+            Object.defineProperty(SettingsSyncAction.prototype, "_shouldPlaySoundForCallNotification", {
+                get: $util.oneOfGetter($oneOfFields = ["shouldPlaySoundForCallNotification"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
             /**
              * Creates a new SettingsSyncAction instance using the specified properties.
              * @function create
@@ -175611,6 +176092,22 @@ $root.waproto = (function() {
                     writer.uint32(/* id 22, wireType 0 =*/176).bool(message.disableLinkPreviews);
                 if (message.notificationToneId != null && Object.hasOwnProperty.call(message, "notificationToneId"))
                     writer.uint32(/* id 23, wireType 0 =*/184).int32(message.notificationToneId);
+                if (message.mediaUploadQuality != null && Object.hasOwnProperty.call(message, "mediaUploadQuality"))
+                    writer.uint32(/* id 24, wireType 0 =*/192).int32(message.mediaUploadQuality);
+                if (message.isSpellCheckEnabled != null && Object.hasOwnProperty.call(message, "isSpellCheckEnabled"))
+                    writer.uint32(/* id 25, wireType 0 =*/200).bool(message.isSpellCheckEnabled);
+                if (message.isEnterToSendEnabled != null && Object.hasOwnProperty.call(message, "isEnterToSendEnabled"))
+                    writer.uint32(/* id 26, wireType 0 =*/208).bool(message.isEnterToSendEnabled);
+                if (message.isGroupMessageNotificationEnabled != null && Object.hasOwnProperty.call(message, "isGroupMessageNotificationEnabled"))
+                    writer.uint32(/* id 27, wireType 0 =*/216).bool(message.isGroupMessageNotificationEnabled);
+                if (message.isGroupReactionsNotificationEnabled != null && Object.hasOwnProperty.call(message, "isGroupReactionsNotificationEnabled"))
+                    writer.uint32(/* id 28, wireType 0 =*/224).bool(message.isGroupReactionsNotificationEnabled);
+                if (message.isStatusNotificationEnabled != null && Object.hasOwnProperty.call(message, "isStatusNotificationEnabled"))
+                    writer.uint32(/* id 29, wireType 0 =*/232).bool(message.isStatusNotificationEnabled);
+                if (message.statusNotificationToneId != null && Object.hasOwnProperty.call(message, "statusNotificationToneId"))
+                    writer.uint32(/* id 30, wireType 0 =*/240).int32(message.statusNotificationToneId);
+                if (message.shouldPlaySoundForCallNotification != null && Object.hasOwnProperty.call(message, "shouldPlaySoundForCallNotification"))
+                    writer.uint32(/* id 31, wireType 0 =*/248).bool(message.shouldPlaySoundForCallNotification);
                 return writer;
             };
 
@@ -175735,6 +176232,38 @@ $root.waproto = (function() {
                         }
                     case 23: {
                             message.notificationToneId = reader.int32();
+                            break;
+                        }
+                    case 24: {
+                            message.mediaUploadQuality = reader.int32();
+                            break;
+                        }
+                    case 25: {
+                            message.isSpellCheckEnabled = reader.bool();
+                            break;
+                        }
+                    case 26: {
+                            message.isEnterToSendEnabled = reader.bool();
+                            break;
+                        }
+                    case 27: {
+                            message.isGroupMessageNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 28: {
+                            message.isGroupReactionsNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 29: {
+                            message.isStatusNotificationEnabled = reader.bool();
+                            break;
+                        }
+                    case 30: {
+                            message.statusNotificationToneId = reader.int32();
+                            break;
+                        }
+                    case 31: {
+                            message.shouldPlaySoundForCallNotification = reader.bool();
                             break;
                         }
                     default:
@@ -175902,6 +176431,52 @@ $root.waproto = (function() {
                     if (!$util.isInteger(message.notificationToneId))
                         return "notificationToneId: integer expected";
                 }
+                if (message.mediaUploadQuality != null && message.hasOwnProperty("mediaUploadQuality")) {
+                    properties._mediaUploadQuality = 1;
+                    switch (message.mediaUploadQuality) {
+                    default:
+                        return "mediaUploadQuality: enum value expected";
+                    case 0:
+                    case 1:
+                    case 2:
+                        break;
+                    }
+                }
+                if (message.isSpellCheckEnabled != null && message.hasOwnProperty("isSpellCheckEnabled")) {
+                    properties._isSpellCheckEnabled = 1;
+                    if (typeof message.isSpellCheckEnabled !== "boolean")
+                        return "isSpellCheckEnabled: boolean expected";
+                }
+                if (message.isEnterToSendEnabled != null && message.hasOwnProperty("isEnterToSendEnabled")) {
+                    properties._isEnterToSendEnabled = 1;
+                    if (typeof message.isEnterToSendEnabled !== "boolean")
+                        return "isEnterToSendEnabled: boolean expected";
+                }
+                if (message.isGroupMessageNotificationEnabled != null && message.hasOwnProperty("isGroupMessageNotificationEnabled")) {
+                    properties._isGroupMessageNotificationEnabled = 1;
+                    if (typeof message.isGroupMessageNotificationEnabled !== "boolean")
+                        return "isGroupMessageNotificationEnabled: boolean expected";
+                }
+                if (message.isGroupReactionsNotificationEnabled != null && message.hasOwnProperty("isGroupReactionsNotificationEnabled")) {
+                    properties._isGroupReactionsNotificationEnabled = 1;
+                    if (typeof message.isGroupReactionsNotificationEnabled !== "boolean")
+                        return "isGroupReactionsNotificationEnabled: boolean expected";
+                }
+                if (message.isStatusNotificationEnabled != null && message.hasOwnProperty("isStatusNotificationEnabled")) {
+                    properties._isStatusNotificationEnabled = 1;
+                    if (typeof message.isStatusNotificationEnabled !== "boolean")
+                        return "isStatusNotificationEnabled: boolean expected";
+                }
+                if (message.statusNotificationToneId != null && message.hasOwnProperty("statusNotificationToneId")) {
+                    properties._statusNotificationToneId = 1;
+                    if (!$util.isInteger(message.statusNotificationToneId))
+                        return "statusNotificationToneId: integer expected";
+                }
+                if (message.shouldPlaySoundForCallNotification != null && message.hasOwnProperty("shouldPlaySoundForCallNotification")) {
+                    properties._shouldPlaySoundForCallNotification = 1;
+                    if (typeof message.shouldPlaySoundForCallNotification !== "boolean")
+                        return "shouldPlaySoundForCallNotification: boolean expected";
+                }
                 return null;
             };
 
@@ -176007,6 +176582,40 @@ $root.waproto = (function() {
                     message.disableLinkPreviews = Boolean(object.disableLinkPreviews);
                 if (object.notificationToneId != null)
                     message.notificationToneId = object.notificationToneId | 0;
+                switch (object.mediaUploadQuality) {
+                default:
+                    if (typeof object.mediaUploadQuality === "number") {
+                        message.mediaUploadQuality = object.mediaUploadQuality;
+                        break;
+                    }
+                    break;
+                case "MEDIA_QUALITY_UNKNOWN":
+                case 0:
+                    message.mediaUploadQuality = 0;
+                    break;
+                case "STANDARD":
+                case 1:
+                    message.mediaUploadQuality = 1;
+                    break;
+                case "HD":
+                case 2:
+                    message.mediaUploadQuality = 2;
+                    break;
+                }
+                if (object.isSpellCheckEnabled != null)
+                    message.isSpellCheckEnabled = Boolean(object.isSpellCheckEnabled);
+                if (object.isEnterToSendEnabled != null)
+                    message.isEnterToSendEnabled = Boolean(object.isEnterToSendEnabled);
+                if (object.isGroupMessageNotificationEnabled != null)
+                    message.isGroupMessageNotificationEnabled = Boolean(object.isGroupMessageNotificationEnabled);
+                if (object.isGroupReactionsNotificationEnabled != null)
+                    message.isGroupReactionsNotificationEnabled = Boolean(object.isGroupReactionsNotificationEnabled);
+                if (object.isStatusNotificationEnabled != null)
+                    message.isStatusNotificationEnabled = Boolean(object.isStatusNotificationEnabled);
+                if (object.statusNotificationToneId != null)
+                    message.statusNotificationToneId = object.statusNotificationToneId | 0;
+                if (object.shouldPlaySoundForCallNotification != null)
+                    message.shouldPlaySoundForCallNotification = Boolean(object.shouldPlaySoundForCallNotification);
                 return message;
             };
 
@@ -176138,6 +176747,46 @@ $root.waproto = (function() {
                     if (options.oneofs)
                         object._notificationToneId = "notificationToneId";
                 }
+                if (message.mediaUploadQuality != null && message.hasOwnProperty("mediaUploadQuality")) {
+                    object.mediaUploadQuality = options.enums === String ? $root.waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting[message.mediaUploadQuality] === undefined ? message.mediaUploadQuality : $root.waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting[message.mediaUploadQuality] : message.mediaUploadQuality;
+                    if (options.oneofs)
+                        object._mediaUploadQuality = "mediaUploadQuality";
+                }
+                if (message.isSpellCheckEnabled != null && message.hasOwnProperty("isSpellCheckEnabled")) {
+                    object.isSpellCheckEnabled = message.isSpellCheckEnabled;
+                    if (options.oneofs)
+                        object._isSpellCheckEnabled = "isSpellCheckEnabled";
+                }
+                if (message.isEnterToSendEnabled != null && message.hasOwnProperty("isEnterToSendEnabled")) {
+                    object.isEnterToSendEnabled = message.isEnterToSendEnabled;
+                    if (options.oneofs)
+                        object._isEnterToSendEnabled = "isEnterToSendEnabled";
+                }
+                if (message.isGroupMessageNotificationEnabled != null && message.hasOwnProperty("isGroupMessageNotificationEnabled")) {
+                    object.isGroupMessageNotificationEnabled = message.isGroupMessageNotificationEnabled;
+                    if (options.oneofs)
+                        object._isGroupMessageNotificationEnabled = "isGroupMessageNotificationEnabled";
+                }
+                if (message.isGroupReactionsNotificationEnabled != null && message.hasOwnProperty("isGroupReactionsNotificationEnabled")) {
+                    object.isGroupReactionsNotificationEnabled = message.isGroupReactionsNotificationEnabled;
+                    if (options.oneofs)
+                        object._isGroupReactionsNotificationEnabled = "isGroupReactionsNotificationEnabled";
+                }
+                if (message.isStatusNotificationEnabled != null && message.hasOwnProperty("isStatusNotificationEnabled")) {
+                    object.isStatusNotificationEnabled = message.isStatusNotificationEnabled;
+                    if (options.oneofs)
+                        object._isStatusNotificationEnabled = "isStatusNotificationEnabled";
+                }
+                if (message.statusNotificationToneId != null && message.hasOwnProperty("statusNotificationToneId")) {
+                    object.statusNotificationToneId = message.statusNotificationToneId;
+                    if (options.oneofs)
+                        object._statusNotificationToneId = "statusNotificationToneId";
+                }
+                if (message.shouldPlaySoundForCallNotification != null && message.hasOwnProperty("shouldPlaySoundForCallNotification")) {
+                    object.shouldPlaySoundForCallNotification = message.shouldPlaySoundForCallNotification;
+                    if (options.oneofs)
+                        object._shouldPlaySoundForCallNotification = "shouldPlaySoundForCallNotification";
+                }
                 return object;
             };
 
@@ -176186,6 +176835,22 @@ $root.waproto = (function() {
             })();
 
             /**
+             * MediaQualitySetting enum.
+             * @name waproto.SyncActionValue.SettingsSyncAction.MediaQualitySetting
+             * @enum {number}
+             * @property {number} MEDIA_QUALITY_UNKNOWN=0 MEDIA_QUALITY_UNKNOWN value
+             * @property {number} STANDARD=1 STANDARD value
+             * @property {number} HD=2 HD value
+             */
+            SettingsSyncAction.MediaQualitySetting = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "MEDIA_QUALITY_UNKNOWN"] = 0;
+                values[valuesById[1] = "STANDARD"] = 1;
+                values[valuesById[2] = "HD"] = 2;
+                return values;
+            })();
+
+            /**
              * SettingKey enum.
              * @name waproto.SyncActionValue.SettingsSyncAction.SettingKey
              * @enum {number}
@@ -176213,6 +176878,14 @@ $root.waproto = (function() {
              * @property {number} IS_DOCUMENTS_AUTODOWNLOAD_ENABLED=21 IS_DOCUMENTS_AUTODOWNLOAD_ENABLED value
              * @property {number} DISABLE_LINK_PREVIEWS=22 DISABLE_LINK_PREVIEWS value
              * @property {number} NOTIFICATION_TONE_ID=23 NOTIFICATION_TONE_ID value
+             * @property {number} MEDIA_UPLOAD_QUALITY=24 MEDIA_UPLOAD_QUALITY value
+             * @property {number} IS_SPELL_CHECK_ENABLED=25 IS_SPELL_CHECK_ENABLED value
+             * @property {number} IS_ENTER_TO_SEND_ENABLED=26 IS_ENTER_TO_SEND_ENABLED value
+             * @property {number} IS_GROUP_MESSAGE_NOTIFICATION_ENABLED=27 IS_GROUP_MESSAGE_NOTIFICATION_ENABLED value
+             * @property {number} IS_GROUP_REACTIONS_NOTIFICATION_ENABLED=28 IS_GROUP_REACTIONS_NOTIFICATION_ENABLED value
+             * @property {number} IS_STATUS_NOTIFICATION_ENABLED=29 IS_STATUS_NOTIFICATION_ENABLED value
+             * @property {number} STATUS_NOTIFICATION_TONE_ID=30 STATUS_NOTIFICATION_TONE_ID value
+             * @property {number} SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION=31 SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION value
              */
             SettingsSyncAction.SettingKey = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -176240,6 +176913,14 @@ $root.waproto = (function() {
                 values[valuesById[21] = "IS_DOCUMENTS_AUTODOWNLOAD_ENABLED"] = 21;
                 values[valuesById[22] = "DISABLE_LINK_PREVIEWS"] = 22;
                 values[valuesById[23] = "NOTIFICATION_TONE_ID"] = 23;
+                values[valuesById[24] = "MEDIA_UPLOAD_QUALITY"] = 24;
+                values[valuesById[25] = "IS_SPELL_CHECK_ENABLED"] = 25;
+                values[valuesById[26] = "IS_ENTER_TO_SEND_ENABLED"] = 26;
+                values[valuesById[27] = "IS_GROUP_MESSAGE_NOTIFICATION_ENABLED"] = 27;
+                values[valuesById[28] = "IS_GROUP_REACTIONS_NOTIFICATION_ENABLED"] = 28;
+                values[valuesById[29] = "IS_STATUS_NOTIFICATION_ENABLED"] = 29;
+                values[valuesById[30] = "STATUS_NOTIFICATION_TONE_ID"] = 30;
+                values[valuesById[31] = "SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION"] = 31;
                 return values;
             })();
 
