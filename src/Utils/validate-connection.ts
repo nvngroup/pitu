@@ -20,7 +20,9 @@ const getUserAgent = (config: SocketConfig): waproto.ClientPayload.IUserAgent =>
 			secondary: config.version[1],
 			tertiary: config.version[2],
 		},
-		platform: waproto.ClientPayload.UserAgent.Platform.WEB,
+		platform: config.browser[1].toLocaleLowerCase().includes('android')
+			? waproto.ClientPayload.UserAgent.Platform.ANDROID
+			: waproto.ClientPayload.UserAgent.Platform.WEB,
 		releaseChannel: waproto.ClientPayload.UserAgent.ReleaseChannel.RELEASE,
 		osVersion: '0.1',
 		device: 'Desktop',
@@ -54,7 +56,9 @@ const getClientPayload = (config: SocketConfig) => {
 		userAgent: getUserAgent(config),
 	}
 
-	payload.webInfo = getWebInfo(config)
+	if (!config.browser[1].toLocaleLowerCase().includes('android')) {
+		payload.webInfo = getWebInfo(config)
+	}
 
 	return payload
 }
@@ -74,6 +78,9 @@ export const generateLoginNode = (userJid: string, config: SocketConfig): waprot
 
 const getPlatformType = (platform: string): waproto.DeviceProps.PlatformType => {
 	const platformType: string = platform.toUpperCase()
+	if (platformType === 'ANDROID') {
+		return waproto.DeviceProps.PlatformType.ANDROID_PHONE
+	}
 	return waproto.DeviceProps.PlatformType[platformType] || waproto.DeviceProps.PlatformType.DESKTOP
 }
 

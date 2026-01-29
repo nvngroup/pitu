@@ -42,7 +42,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	let syncState: SyncState = SyncState.Connecting
 	const processingMutex = makeMutex()
 
-	let awaitingSyncTimeout: number | undefined
+	let awaitingSyncTimeout: NodeJS.Timeout | number | undefined
 
 	const placeholderResendCache: CacheStore = config.placeholderResendCache || CacheManager.getInstance('MSG_RETRY')
 
